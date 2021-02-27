@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "vscjava.vscode-java-pack",
+        "richardwillis.vscode-gradle",
+        "naco-siren.gradle-language",
+        "bungcip.better-toml",
+        "spgoding.datapack-language-server",
+        "dotjoshjohnson.xml"
+    ]
+}
