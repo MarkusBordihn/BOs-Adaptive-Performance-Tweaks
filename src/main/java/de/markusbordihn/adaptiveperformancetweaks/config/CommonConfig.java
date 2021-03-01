@@ -64,6 +64,7 @@ public final class CommonConfig {
     public final ForgeConfigSpec.BooleanValue optimizeHostileMobs;
 
     public final ForgeConfigSpec.IntValue maxNumberOfItems;
+    public final ForgeConfigSpec.IntValue maxNumberOfItemsPerType;
 
     public final ForgeConfigSpec.ConfigValue<String> logLevel;
 
@@ -151,9 +152,12 @@ public final class CommonConfig {
       builder.pop();
 
       builder.push("Limits");
+      maxNumberOfItemsPerType = builder
+          .comment("Defines the max. number of items per type which are allowed to lay around in the world.")
+          .defineInRange("maxNumberOfItemsPerType", 32, 10, 100);
       maxNumberOfItems = builder
           .comment("Defines the max. number of items which are allowed to lay around in the world.")
-          .defineInRange("maxNumberOfItems", 100, 10, 1000);
+          .defineInRange("maxNumberOfItems", 128, 10, 1000);
       builder.pop();
 
       builder.comment(StringUtils.join(Arrays.asList("Spawn optimization",
@@ -168,7 +172,7 @@ public final class CommonConfig {
           builder.comment("Defines the max. number of mobs per entity type within a world.")
               .defineInRange("maxEntityPerWorld", 40, 1, 100);
       spawnAllowList = builder.comment(
-          "General allow list for spawn entities (e.g. minecraft:squid) which should ignored for optimization.")
+          "General allow list for spawn entities (e.g. minecraft:squid) which should be ignored for optimization.")
           .define("allowList", new ArrayList<String>(Arrays.asList("")));
       spawnDenyList = builder.comment(
           "General deny list for spawn entities (e.g. minecraft:bat) to no longer spawn in all worlds.")
@@ -207,14 +211,14 @@ public final class CommonConfig {
           .defineInRange("viewAreaXFactor", 16, 1, 16);
       viewAreaYFactor = builder.comment(
           "Max. number of Y blocks relative to the player position considered inside a chunk for the view area.")
-          .defineInRange("viewAreaYFactor", 5, 1, 16);
+          .defineInRange("viewAreaYFactor", 4, 1, 16);
       viewAreaZFactor = builder.comment(
           "Max. number of Z blocks relative to the player position considered inside a chunk for the view area.")
           .defineInRange("viewAreaZFactor", 16, 1, 16);
       viewAreaDistanceFactor = builder
           .comment(
               "Factor per view-distance which is used to calculated the view area of the player.")
-          .defineInRange("viewAreaDistanceFactor", 0.6, 0.1, 1);
+          .defineInRange("viewAreaDistanceFactor", 0.8, 0.1, 1);
       builder.pop();
 
       builder.comment("View / render distance optimization.").push("View Distance");

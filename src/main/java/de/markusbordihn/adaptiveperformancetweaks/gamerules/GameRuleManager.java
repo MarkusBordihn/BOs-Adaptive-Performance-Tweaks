@@ -26,17 +26,30 @@ import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
+import de.markusbordihn.adaptiveperformancetweaks.commands.CommandManager;
 import de.markusbordihn.adaptiveperformancetweaks.server.ServerLoadEvent;
 
 @EventBusSubscriber
 public class GameRuleManager extends Manager {
 
   private static int defaultRandomTickSpeed = 3;
+  private static int defaultMaxEntityCramming = 24;
   private static GameRules gameRules;
 
   @SubscribeEvent
   public static void handleServerStartingEvent(FMLServerStartingEvent event) {
     gameRules = ServerLifecycleHooks.getCurrentServer().getGameRules();
+    int configRandomTickSpeed = gameRules.getInt(GameRules.RANDOM_TICK_SPEED);
+    if (configRandomTickSpeed > defaultRandomTickSpeed) {
+      defaultRandomTickSpeed = configRandomTickSpeed;
+    }
+    int configMaxEntityCramming = gameRules.getInt(GameRules.MAX_ENTITY_CRAMMING);
+    if (configMaxEntityCramming > defaultMaxEntityCramming) {
+      defaultMaxEntityCramming = configMaxEntityCramming;
+    }
+    log.info("Random Tick Speed will be optimized between {} and {}", 1, defaultRandomTickSpeed);
+    log.info("Max Entity Cramming will be optimized between {} and {}", 1,
+        defaultMaxEntityCramming);
   }
 
   @SubscribeEvent
@@ -44,8 +57,10 @@ public class GameRuleManager extends Manager {
     gameRules = ServerLifecycleHooks.getCurrentServer().getGameRules();
     if (event.hasHighServerLoad()) {
       decreaseRandomTickSpeed();
-    } else {
+      decreaseMaxEntityCramming();
+    } else if (event.hasLowServerLoad()) {
       increaseRandomTickSpeed();
+      increaseMaxEntityCramming();
     }
   }
 
@@ -57,17 +72,39 @@ public class GameRuleManager extends Manager {
     setRandomTickSpeed(gameRules.getInt(GameRules.RANDOM_TICK_SPEED) + 1);
   }
 
-  public static void setRandomTickSpeed(Integer tickSpeed) {
+  public static void setRandomTickSpeed(int tickSpeed) {
     int currentTickSpeed = gameRules.getInt(GameRules.RANDOM_TICK_SPEED);
     if (tickSpeed < 1) {
       tickSpeed = 1;
-    }
-    if (tickSpeed > defaultRandomTickSpeed) {
+    } else if (tickSpeed > defaultRandomTickSpeed) {
       tickSpeed = defaultRandomTickSpeed;
     }
     if (currentTickSpeed != tickSpeed) {
       log.debug("Changing randomTickSpeed from {} to {}", currentTickSpeed, tickSpeed);
-      // ToDo implement a way to adjust the the games rules.
+      CommandManager.executeServerCommand(String.format("gamerule randomTickSpeed %s", tickSpeed));
+    }
+  }
+
+  public static void decreaseMaxEntityCramming() {
+    setMaxEntityCramming(gameRules.getInt(GameRules.MAX_ENTITY_CRAMMING) - 1);
+  }
+
+  public static void increaseMaxEntityCramming() {
+    setMaxEntityCramming(gameRules.getInt(GameRules.MAX_ENTITY_CRAMMING) + 1);
+  }
+
+  public static void setMaxEntityCramming(int maxEntityCramming) {
+    int currentMaxEntityCramming = gameRules.getInt(GameRules.MAX_ENTITY_CRAMMING);
+    if (maxEntityCramming < 1) {
+      maxEntityCramming = 1;
+    } else if (maxEntityCramming > defaultMaxEntityCramming) {
+      maxEntityCramming = defaultMaxEntityCramming;
+    }
+    if (currentMaxEntityCramming != maxEntityCramming) {
+      log.debug("Changing maxEntityCramming from {} to {}", currentMaxEntityCramming,
+          maxEntityCramming);
+      CommandManager
+          .executeServerCommand(String.format("gamerule maxEntityCramming %s", maxEntityCramming));
     }
   }
 }

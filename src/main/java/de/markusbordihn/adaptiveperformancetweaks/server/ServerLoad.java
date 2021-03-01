@@ -102,8 +102,6 @@ public class ServerLoad {
   }
 
   public static void postServerLoadEvent() {
-    if (currentServerLoad != lastServerLoad) {
-      MinecraftForge.EVENT_BUS.post(new ServerLoadEvent(currentServerLoad, lastServerLoad));
-    }
+    MinecraftForge.EVENT_BUS.post(new ServerLoadEvent(currentServerLoad, lastServerLoad));
   }
 }

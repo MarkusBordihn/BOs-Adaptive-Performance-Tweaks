@@ -38,11 +38,8 @@ public class CommandThreads implements Command<CommandSource> {
 
   private static final CommandThreads command = new CommandThreads();
 
-  public static ArgumentBuilder<CommandSource, ?> register()
-  {
-      return Commands.literal("threads")
-          .requires(cs->cs.hasPermissionLevel(0))
-          .executes(command);
+  public static ArgumentBuilder<CommandSource, ?> register() {
+    return Commands.literal("threads").requires(cs -> cs.hasPermissionLevel(2)).executes(command);
   }
 
   @Override
@@ -50,9 +47,9 @@ public class CommandThreads implements Command<CommandSource> {
     List<Thread> threads = ThreadManager.getThreadUsage();
     threads.sort(Comparator.comparing(Thread::getCPUTime).reversed());
 
-    StringBuilder overview = new StringBuilder(String.format("CPU Threads Overview:%n"));
-    for(Thread thread:threads) {
-      overview.append(String.format("► %s%n", thread.toString()));
+    StringBuilder overview = new StringBuilder(String.format("CPU Threads Overview\n==="));
+    for (Thread thread : threads) {
+      overview.append(String.format("► %s\n", thread.toString()));
     }
     context.getSource().sendFeedback(new StringTextComponent(overview.toString()), false);
     return 0;

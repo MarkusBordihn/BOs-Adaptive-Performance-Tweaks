@@ -39,25 +39,26 @@ public class CommandDebug implements Command<CommandSource> {
 
   private static final CommandDebug command = new CommandDebug();
 
-  public static ArgumentBuilder<CommandSource, ?> register()
-  {
-      return Commands.literal("debug")
-          .requires(cs->cs.hasPermissionLevel(0))
-          .then(
-            Commands.argument("enable", BoolArgumentType.bool())
-            .executes(command)
-          );
+  public static ArgumentBuilder<CommandSource, ?> register() {
+    return Commands.literal("debug").requires(cs -> cs.hasPermissionLevel(2))
+        .then(Commands.argument("enable", BoolArgumentType.bool()).executes(command));
   }
 
   @Override
   public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
     final boolean enable = BoolArgumentType.getBool(context, "enable");
     if (enable) {
-      context.getSource().sendFeedback(new StringTextComponent("Enable debug output!"), false);
+      context.getSource().sendFeedback(new StringTextComponent(
+          "Enable debug output, please check debug.log for the full output."), false);
+      context.getSource().sendFeedback(
+          new StringTextComponent("Use '/aptweaks debug false' to disable debug output!"), false);
     } else {
       context.getSource().sendFeedback(new StringTextComponent("Disable debug output!"), false);
+      context.getSource().sendFeedback(
+          new StringTextComponent("Please check the debug.log for the full output."), false);
     }
-    Configurator.setAllLevels(LogManager.getLogger(Constants.LOG_NAME).getName(), enable ? Level.DEBUG : Level.INFO);
+    Configurator.setAllLevels(LogManager.getLogger(Constants.LOG_NAME).getName(),
+        enable ? Level.DEBUG : Level.INFO);
     return 0;
   }
 }

@@ -55,11 +55,23 @@ In most cases these are clustered together but they could easily exceed the limi
 The mod automatically cleanup this items on a regular basis starting with the oldest one and adjust the lifespan based on the server load.
 This helps dramatically to allow greater TNT explosions because most of the trashed items are removed after reaching a certain limit.
 
+### randomTickSpeed and maxEntityCramming Optimization
+
+Automatically adjust the randomTickSpeed and maxEntityCramming based on the current server load.
+
 ### Setting file
 
 With the setting file you can disable / enable each of these features.
 
 ## Commands
+
+### Items Usage
+
+`/aptweaks items` shows an overview about the number of currently loaded monsters.
+
+### Monster Usage
+
+`/aptweaks monster` shows an overview about the number of currently loaded monsters.
 
 ### Spawner Usage
 

@@ -23,17 +23,17 @@ import de.markusbordihn.adaptiveperformancetweaks.server.ServerLoad.ServerLoadLe
 import net.minecraftforge.eventbus.api.Event;
 
 public class ServerLoadEvent extends Event {
-  private ServerLoadLevel currentServerLoadLevel = ServerLoadLevel.NORMAL;
+  private ServerLoadLevel serverLoadLevel = ServerLoadLevel.NORMAL;
   private ServerLoadLevel lastServerLoadLevel = ServerLoadLevel.NORMAL;
 
   public ServerLoadEvent(ServerLoadLevel currentServerLoad, ServerLoadLevel lastServerLoad) {
     super();
-    this.currentServerLoadLevel = currentServerLoad;
+    this.serverLoadLevel = currentServerLoad;
     this.lastServerLoadLevel = lastServerLoad;
   }
 
   public ServerLoadLevel getServerLoad() {
-    return currentServerLoadLevel;
+    return serverLoadLevel;
   }
 
   public ServerLoadLevel getLastServerLoad() {
@@ -41,17 +41,21 @@ public class ServerLoadEvent extends Event {
   }
 
   public boolean hasHighServerLoad() {
-    return (this.currentServerLoadLevel == ServerLoadLevel.MEDIUM
-        || this.currentServerLoadLevel == ServerLoadLevel.HIGH
-        || this.currentServerLoadLevel == ServerLoadLevel.VERY_HIGH);
+    return (this.serverLoadLevel == ServerLoadLevel.MEDIUM
+        || this.serverLoadLevel == ServerLoadLevel.HIGH
+        || this.serverLoadLevel == ServerLoadLevel.VERY_HIGH);
   }
 
   public boolean hasNormalServerLoad() {
-    return (this.currentServerLoadLevel == ServerLoadLevel.NORMAL);
+    return (this.serverLoadLevel == ServerLoadLevel.NORMAL);
   }
 
   public boolean hasLowServerLoad() {
-    return (this.currentServerLoadLevel == ServerLoadLevel.VERY_LOW
-        || this.currentServerLoadLevel == ServerLoadLevel.LOW);
+    return (this.serverLoadLevel == ServerLoadLevel.VERY_LOW
+        || this.serverLoadLevel == ServerLoadLevel.LOW);
+  }
+
+  public boolean hasChanged() {
+    return this.serverLoadLevel == this.lastServerLoadLevel;
   }
 }

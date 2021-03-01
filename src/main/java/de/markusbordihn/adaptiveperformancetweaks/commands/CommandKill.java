@@ -32,15 +32,9 @@ public class CommandKill implements Command<CommandSource> {
 
   private static final CommandKill command = new CommandKill();
 
-  public static ArgumentBuilder<CommandSource, ?> register()
-  {
-      return Commands.literal("kill")
-          .requires(cs->cs.hasPermissionLevel(0))
-          .then(
-            Commands.argument("enable",
-            StringArgumentType.string())
-            .executes(command)
-          );
+  public static ArgumentBuilder<CommandSource, ?> register() {
+    return Commands.literal("kill").requires(cs -> cs.hasPermissionLevel(2))
+        .then(Commands.argument("enable", StringArgumentType.string()).executes(command));
   }
 
   @Override

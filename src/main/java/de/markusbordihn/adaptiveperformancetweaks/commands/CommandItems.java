@@ -19,39 +19,39 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.commands;
 
+import java.util.Map;
+import java.util.Set;
+
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.util.text.StringTextComponent;
 
-import de.markusbordihn.adaptiveperformancetweaks.system.MemoryInfo;
-import de.markusbordihn.adaptiveperformancetweaks.system.MemoryManager;
+import de.markusbordihn.adaptiveperformancetweaks.entity.ItemEntityManager;
 
-public class CommandMemory implements Command<CommandSource> {
+public class CommandItems implements Command<CommandSource> {
 
-  private static final CommandMemory command = new CommandMemory();
+  private static final CommandItems command = new CommandItems();
 
   public static ArgumentBuilder<CommandSource, ?> register() {
-    return Commands.literal("memory").requires(cs -> cs.hasPermissionLevel(2)).executes(command);
+    return Commands.literal("items").requires(cs -> cs.hasPermissionLevel(2)).executes(command);
   }
 
   @Override
   public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
-    MemoryInfo memoryInfo = MemoryManager.getMemoryUsage();
-    StringBuilder memoryOverview = new StringBuilder(String.format("Memory Overview\n==="));
-    memoryOverview.append(String.format("► Initial memory: %.2f MB\n", memoryInfo.getInit()));
-    memoryOverview.append(String.format("► Used heap memory: %.2f MB\n", memoryInfo.getUsed()));
-    memoryOverview.append(String.format("► Max heap memory: %.2f MB\n", memoryInfo.getMax()));
-    memoryOverview
-        .append(String.format("► Committed memory: %.2f MB\n", memoryInfo.getCommitted()));
-    memoryOverview.append(
-        String.format("► Free memory: %.2f MB (%.2f%%)", memoryInfo.getMax() - memoryInfo.getUsed(),
-            100 - ((100 * memoryInfo.getUsed()) / memoryInfo.getMax())));
-    context.getSource().sendFeedback(new StringTextComponent(memoryOverview.toString()), false);
+    context.getSource().sendFeedback(new StringTextComponent("Items Entity Overview\n==="), false);
+    Map<String, Set<ItemEntity>> itemEntityMap = ItemEntityManager.getItemEntityMap();
+    for (Map.Entry<String, Set<ItemEntity>> itemEntities : itemEntityMap.entrySet()) {
+      context.getSource().sendFeedback(
+          new StringTextComponent(
+              String.format("%s %s", itemEntities.getKey(), itemEntities.getValue().size())),
+          false);
+    }
+
     return 0;
   }
 }

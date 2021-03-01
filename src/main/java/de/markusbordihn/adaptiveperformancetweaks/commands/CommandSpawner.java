@@ -44,14 +44,16 @@ public class CommandSpawner implements Command<CommandSource> {
   public static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   public static ArgumentBuilder<CommandSource, ?> register() {
-    return Commands.literal("spawner").requires(cs -> cs.hasPermissionLevel(0)).executes(command);
+    return Commands.literal("spawner").requires(cs -> cs.hasPermissionLevel(2)).executes(command);
   }
 
   @Override
   public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
     Set<MobSpawnerTileEntity> mobSpawnerList = ChunkManager.getMobSpawner();
-    context.getSource().sendFeedback(new StringTextComponent(
-        "Currently loaded Spawner Overview (please check latest.log for full output with positions):"), false);
+    context.getSource().sendFeedback(
+        new StringTextComponent(
+            "Spawner Overview (please check latest.log for full output with positions)\n==="),
+        false);
     Map<String, Integer> spawnerCounter = new HashMap<>();
     for (MobSpawnerTileEntity mobSpawner : mobSpawnerList) {
       String worldName = mobSpawner.getWorld().getDimensionKey().getLocation().toString();
@@ -62,9 +64,8 @@ public class CommandSpawner implements Command<CommandSource> {
       spawnerCounter.put(spawnEntityId, spawnerCounter.getOrDefault(spawnEntityId, 0) + 1);
     }
     for (Map.Entry<String, Integer> spawnerEntry : spawnerCounter.entrySet()) {
-      context.getSource().sendFeedback(new StringTextComponent(String
-          .format("► %s x %s mob spawners", spawnerEntry.getValue(), spawnerEntry.getKey())),
-          false);
+      context.getSource().sendFeedback(new StringTextComponent(
+          String.format("► %s x %s", spawnerEntry.getValue(), spawnerEntry.getKey())), false);
     }
     return 0;
   }

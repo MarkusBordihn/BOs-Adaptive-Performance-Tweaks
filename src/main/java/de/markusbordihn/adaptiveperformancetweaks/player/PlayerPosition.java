@@ -30,6 +30,7 @@ public class PlayerPosition {
   private String playerName = "";
   private String worldName = "";
   private boolean viewAreaCalculated = false;
+  private boolean canSeeSky = false;
   private int posX = 0;
   private int posY = 0;
   private int posZ = 0;
@@ -60,24 +61,21 @@ public class PlayerPosition {
     this.calculateViewArea();
   }
 
-  public boolean hasChanged(String worldName) {
-    return !this.worldName.equals(worldName)
+  public boolean update(String worldName) {
+    if (!this.worldName.equals(worldName)
         || this.viewDistance != WorldViewManager.getViewDistance(worldName)
         || this.posX != (int) this.player.getPosX() || this.posY != (int) this.player.getPosY()
-        || this.posZ != (int) this.player.getPosZ();
-  }
-
-  public boolean update(String worldName) {
-    boolean hasChanged = hasChanged(worldName);
-    if (hasChanged) {
+        || this.posZ != (int) this.player.getPosZ()) {
       updateViewDistance(WorldViewManager.getViewDistance(worldName));
       this.posX = (int) this.player.getPosX();
       this.posY = (int) this.player.getPosY();
       this.posZ = (int) this.player.getPosZ();
+      this.canSeeSky = this.player.getEntityWorld().canSeeSky(this.player.getPosition());
       this.worldName = worldName;
       this.viewAreaCalculated = false;
+      return true;
     }
-    return hasChanged;
+    return false;
   }
 
   public void updateViewDistance(int viewDistance) {
@@ -112,8 +110,10 @@ public class PlayerPosition {
     this.viewAreaStartX = this.posX - viewAreaXFactor;
     this.viewAreaStopX = this.posX + viewAreaXFactor;
     this.viewAreaStartY = this.posY - viewAreaYFactor;
-    if (this.posY >= 60) {
-      this.viewAreaStopY = (int) Math.round(this.posY + viewAreaYFactor * 1.5);
+
+    // Expand area with the player is able to see the sky
+    if (this.canSeeSky) {
+      this.viewAreaStopY = (int) Math.round(this.posY + viewAreaYFactor * 2.0);
     } else {
       this.viewAreaStopY = this.posY + viewAreaYFactor;
     }

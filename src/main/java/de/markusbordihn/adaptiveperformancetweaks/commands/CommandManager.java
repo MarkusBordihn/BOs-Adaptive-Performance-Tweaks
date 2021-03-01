@@ -24,10 +24,11 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
 
@@ -42,14 +43,24 @@ public class CommandManager extends Manager {
         commandDispatcher.register(Commands.literal(Constants.MOD_COMMAND)
         // @formatter:off
             .then(CommandDebug.register())
+            .then(CommandItems.register())
             .then(CommandKill.register())
             .then(CommandMemory.register())
+            .then(CommandMonster.register())
             .then(CommandSpawner.register())
             .then(CommandThreads.register())
             .then(CommandVersion.register())
         // @formatter:on
         );
-
     commandDispatcher.register(Commands.literal("ctrl").redirect(commands));
+  }
+
+  public static void  executeServerCommand(String command) {
+    MinecraftServer minecraftServer = ServerLifecycleHooks.getCurrentServer();
+    if (minecraftServer == null) {
+      return;
+    }
+    log.debug("Execute Server Command: {}", command);
+    minecraftServer.getCommandManager().handleCommand(minecraftServer.getCommandSource(), command);
   }
 }
