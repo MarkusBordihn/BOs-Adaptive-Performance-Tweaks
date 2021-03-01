@@ -22,17 +22,17 @@ package de.markusbordihn.adaptiveperformancetweaks.world;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 import de.markusbordihn.adaptiveperformancetweaks.Optimization;
 import de.markusbordihn.adaptiveperformancetweaks.player.PlayerManager;
 import de.markusbordihn.adaptiveperformancetweaks.server.ServerLoad;
 import de.markusbordihn.adaptiveperformancetweaks.server.ServerWorldLoadEvent;
 
-@Mod.EventBusSubscriber
+@EventBusSubscriber
 public class WorldOptimization extends Optimization {
 
-  public static final int VIEW_DISTANCE_EMPTY_WORLD = 4;
+  public static final int VIEW_DISTANCE_EMPTY_WORLD = 3;
 
   @SubscribeEvent
   public static void handleServerWorldLoadEvent(ServerWorldLoadEvent event) {

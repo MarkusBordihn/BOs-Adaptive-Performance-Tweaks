@@ -24,13 +24,13 @@ import java.util.Map;
 
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
 import de.markusbordihn.adaptiveperformancetweaks.server.ServerManager;
 
-@Mod.EventBusSubscriber
+@EventBusSubscriber
 public class WorldManager extends Manager {
 
   private static Map<String, ServerWorld> worlds = new HashMap<>();

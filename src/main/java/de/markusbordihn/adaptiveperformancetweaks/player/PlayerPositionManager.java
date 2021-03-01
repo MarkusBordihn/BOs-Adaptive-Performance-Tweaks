@@ -40,7 +40,7 @@ public class PlayerPositionManager extends Manager {
   private static int ticks = 0;
 
   @SubscribeEvent
-  public static void onServerStarting(FMLServerStartingEvent event) {
+  public static void handleServerStartingEvent(FMLServerStartingEvent event) {
     log.info(
         "Player position will be expanded by factor x:{} y:{} z:{} and view area by factor {}.",
         CommonConfig.COMMON.viewAreaXFactor.get(), CommonConfig.COMMON.viewAreaYFactor.get(),

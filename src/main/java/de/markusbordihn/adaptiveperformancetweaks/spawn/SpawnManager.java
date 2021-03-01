@@ -60,7 +60,7 @@ public class SpawnManager extends Manager {
   private static double difficultyFactor = 1;
 
   @SubscribeEvent
-  public static void onServerStarting(FMLServerAboutToStartEvent event) {
+  public static void onServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
     allowList = new HashSet<>(COMMON.spawnAllowList.get());
     denyList = new HashSet<>(COMMON.spawnDenyList.get());
     optimizeHostileMobs = COMMON.optimizeHostileMobs.get();
@@ -106,6 +106,7 @@ public class SpawnManager extends Manager {
       return;
     }
 
+    // Ignore Animals with custom name (e.g. name tags)
     if ((entity instanceof AnimalEntity || entity instanceof TameableEntity)
         && entity.hasCustomName()) {
       log.debug("[Custom Entity] Skip spawn event for {} in {} ", entity, worldName);

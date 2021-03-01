@@ -35,6 +35,7 @@
     "modid",
     "myrmex",
     "netherscorpion",
+    "overworld",
     "roka",
     "server",
     "serverworld",
@@ -60,5 +61,5 @@
   "java.format.settings.url": "./java-google-style.xml",
   "java.format.settings.profile": "GoogleStyle",
   "java.dependency.showMembers": true,
-  "java.dependency.packagePresentation": "hierarchical"
+  "java.dependency.packagePresentation": "flat"
 }

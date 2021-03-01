@@ -43,17 +43,27 @@ Number Of players * Max Number Of Entity * Server Load * Game Difficulty
 
 Note: Playing with difficulty HARD could exceed the max number of hostile entity from the config file by 1.5x;
 
+### Spawner Optimization
+
+Keeps track of the current number of loaded spawner and perform smaller optimization.
+You could also get a overview of all currently loaded spawners over `/aptweaks spawner`.
+
 ### Item garbage cleanup
 
-Sometimes there are a lot of items lying around in the world which are not picked up by the user or not used at all. In most cases they are clustered together but they could easily exceed the limit if you are mining and not picking up the items.
-The mod automatically cleanup this items on a regular basis starting with the oldest one.
-This also helps dramatically to allow greater TNT explosions because most of the trashed items are removed after a certain limit.
+Sometimes there are a lot of items lying around in the world which are not picked up by the user or not used at all.
+In most cases these are clustered together but they could easily exceed the limit if you are mining and not picking up the items.
+The mod automatically cleanup this items on a regular basis starting with the oldest one and adjust the lifespan based on the server load.
+This helps dramatically to allow greater TNT explosions because most of the trashed items are removed after reaching a certain limit.
 
 ### Setting file
 
 With the setting file you can disable / enable each of these features.
 
 ## Commands
+
+### Spawner Usage
+
+`/aptweaks spawner` shows an overview about the number of currently loaded mob spawners.
 
 ### Debug
 
@@ -81,11 +91,12 @@ Unfortunately not because of my time constrains and missing knowledge about the 
 
 ### Will it affect other mods ?
 
-The spawn control will affect other mods, but for supported mods it should not be noticeable for the user. In some cases it could be needed to adjust the settings to your preferences but the default should be fine for most casual players.
+The spawn control will affect other mods, but for supported mods it should not be noticeable for the user.
+In some cases it could be needed to adjust the settings to your preferences but the default should be fine for most casual players.
 
 ### What are the general performance gains ?
 
 In general this is hard to say, because it's depends on a lot of factors. In my case it helps me to run a server with about 170 mods.
-The mod will not help so much for extensive red stone constructions or other setups which requires several ticks for the calculation.
+The mod will not help so much for extensive red stone constructions, custom spawner or other tasks which requires several ticks for the calculation.
 
 [logo]: logo.png

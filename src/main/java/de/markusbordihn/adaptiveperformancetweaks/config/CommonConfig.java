@@ -47,6 +47,7 @@ public final class CommonConfig {
   public static final Config COMMON;
 
   static {
+    com.electronwill.nightconfig.core.Config.setInsertionOrderPreserved(true);
     final Pair<Config, ForgeConfigSpec> specPair =
         new ForgeConfigSpec.Builder().configure(Config::new);
     commonSpec = specPair.getRight();
@@ -87,6 +88,10 @@ public final class CommonConfig {
     public final ForgeConfigSpec.IntValue viewAreaYFactor;
     public final ForgeConfigSpec.IntValue viewAreaZFactor;
     public final ForgeConfigSpec.DoubleValue viewAreaDistanceFactor;
+
+    public final ForgeConfigSpec.IntValue viewDistanceMin;
+    public final ForgeConfigSpec.IntValue viewDistanceMax;
+    public final ForgeConfigSpec.IntValue viewDistanceDefault;
 
     public final ForgeConfigSpec.BooleanValue modAquacultureEnabled;
     public final ForgeConfigSpec.IntValue modAquacultureMaxFishPerPlayer;
@@ -210,6 +215,12 @@ public final class CommonConfig {
           .comment(
               "Factor per view-distance which is used to calculated the view area of the player.")
           .defineInRange("viewAreaDistanceFactor", 0.6, 0.1, 1);
+      builder.pop();
+
+      builder.comment("View / render distance optimization.").push("View Distance");
+      viewDistanceMax = builder.defineInRange("viewDistanceMax", 16, 2, 32);
+      viewDistanceMin = builder.defineInRange("viewDistanceMin", 2, 2, 16);
+      viewDistanceDefault = builder.defineInRange("viewDistanceDefault", 10, 2, 16);
       builder.pop();
 
       // @formatter:off

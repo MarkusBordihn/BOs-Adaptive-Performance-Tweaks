@@ -25,6 +25,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import de.markusbordihn.adaptiveperformancetweaks.Optimization;
+import de.markusbordihn.adaptiveperformancetweaks.gamerules.GameRuleManager;
 import de.markusbordihn.adaptiveperformancetweaks.world.WorldViewManager;
 import de.markusbordihn.adaptiveperformancetweaks.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.server.ServerManager;
@@ -44,6 +45,9 @@ public class PlayerOptimization extends Optimization {
       if (Boolean.TRUE.equals(COMMON.optimizeViewDistance.get())) {
         WorldViewManager.decreaseViewDistance(player.getServerWorld());
       }
+
+      // Decrease random ticks during the login process
+      GameRuleManager.decreaseRandomTickSpeed();
     }
   }
 

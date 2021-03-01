@@ -27,13 +27,13 @@ import net.minecraft.server.management.PlayerList;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
 
-@Mod.EventBusSubscriber
+@EventBusSubscriber
 public class ServerManager extends Manager {
 
   private static short ticks = 0;

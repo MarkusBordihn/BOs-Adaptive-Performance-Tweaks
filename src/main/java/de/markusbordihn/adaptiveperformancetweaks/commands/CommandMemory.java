@@ -43,10 +43,14 @@ public class CommandMemory implements Command<CommandSource> {
   public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
     MemoryInfo memoryInfo = MemoryManager.getMemoryUsage();
     StringBuilder memoryOverview = new StringBuilder(String.format("Memory Overview%n"));
-    memoryOverview.append(String.format("Initial memory: %.2f MB%n", memoryInfo.getInit()));
-    memoryOverview.append(String.format("Used heap memory: %.2f MB%n", memoryInfo.getUsed()));
-    memoryOverview.append(String.format("Max heap memory: %.2f MB%n", memoryInfo.getMax()));
-    memoryOverview.append(String.format("Committed memory: %.2f MB%n", memoryInfo.getCommitted()));
+    memoryOverview.append(String.format("► Initial memory: %.2f MB%n", memoryInfo.getInit()));
+    memoryOverview.append(String.format("► Used heap memory: %.2f MB%n", memoryInfo.getUsed()));
+    memoryOverview.append(String.format("► Max heap memory: %.2f MB%n", memoryInfo.getMax()));
+    memoryOverview
+        .append(String.format("► Committed memory: %.2f MB%n", memoryInfo.getCommitted()));
+    memoryOverview.append(
+        String.format("► Free memory: %.2f MB (%.2f%%)", memoryInfo.getMax() - memoryInfo.getUsed(),
+            100 - ((100 * memoryInfo.getUsed()) / memoryInfo.getMax())));
     context.getSource().sendFeedback(new StringTextComponent(memoryOverview.toString()), false);
     return 0;
   }

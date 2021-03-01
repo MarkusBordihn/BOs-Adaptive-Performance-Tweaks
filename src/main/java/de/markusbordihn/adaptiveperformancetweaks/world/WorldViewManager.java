@@ -21,33 +21,42 @@ package de.markusbordihn.adaptiveperformancetweaks.world;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.play.server.SUpdateViewDistancePacket;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
-import de.markusbordihn.adaptiveperformancetweaks.Manager;
-import de.markusbordihn.adaptiveperformancetweaks.server.ServerManager;
 
-@Mod.EventBusSubscriber
+import de.markusbordihn.adaptiveperformancetweaks.Manager;
+
+@EventBusSubscriber
 public class WorldViewManager extends Manager {
   private static Map<String, Integer> viewDistancePerWorld = new HashMap<>();
-  private static final int MIN_VIEW_DISTANCE = 2;
-  private static final int MAX_VIEW_DISTANCE = 16;
-  private static int defaultViewDistance = 10;
+  private static int viewDistanceMin = 2;
+  private static int viewDistanceMax = 16;
+  private static int viewDistanceDefault = 10;
+
+  @SubscribeEvent
+  public static void onServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+    viewDistanceMin = COMMON.viewDistanceMin.get();
+    viewDistanceMax = COMMON.viewDistanceMax.get();
+    viewDistanceDefault = COMMON.viewDistanceDefault.get();
+  }
 
   @SubscribeEvent
   public static void onServerStarting(FMLServerStartingEvent event) {
-    defaultViewDistance = ServerManager.getPlayerList().getViewDistance();
-    log.info("Default view distance is {}", defaultViewDistance);
+    log.info("ViewDistance will be optimized between {} and {} with {} as default", viewDistanceMin,
+        viewDistanceMax, viewDistanceDefault);
   }
 
   public static void setViewDistance(ServerWorld serverWorld, Integer viewDistance) {
-    if (viewDistance > MAX_VIEW_DISTANCE) {
-      viewDistance = MAX_VIEW_DISTANCE;
-    } else if (viewDistance < MIN_VIEW_DISTANCE) {
-      viewDistance = MIN_VIEW_DISTANCE;
+    if (viewDistance > viewDistanceMax) {
+      viewDistance = viewDistanceMax;
+    } else if (viewDistance < viewDistanceMin) {
+      viewDistance = viewDistanceMin;
     }
     String serverWorldName = serverWorld.getDimensionKey().getLocation().toString();
     Integer currentViewDistance = viewDistancePerWorld.get(serverWorldName);
@@ -83,6 +92,6 @@ public class WorldViewManager extends Manager {
   }
 
   public static int getViewDistance(String serverWorldName) {
-    return viewDistancePerWorld.getOrDefault(serverWorldName, defaultViewDistance);
+    return viewDistancePerWorld.getOrDefault(serverWorldName, viewDistanceDefault);
   }
 }

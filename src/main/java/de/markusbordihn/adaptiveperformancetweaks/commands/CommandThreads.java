@@ -50,9 +50,9 @@ public class CommandThreads implements Command<CommandSource> {
     List<Thread> threads = ThreadManager.getThreadUsage();
     threads.sort(Comparator.comparing(Thread::getCPUTime).reversed());
 
-    StringBuilder overview = new StringBuilder(String.format("CPU Threads Overview%n"));
+    StringBuilder overview = new StringBuilder(String.format("CPU Threads Overview:%n"));
     for(Thread thread:threads) {
-      overview.append(String.format("%s%n", thread.toString()));
+      overview.append(String.format("► %s%n", thread.toString()));
     }
     context.getSource().sendFeedback(new StringTextComponent(overview.toString()), false);
     return 0;

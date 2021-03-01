@@ -26,10 +26,12 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
 
+@EventBusSubscriber
 public class CommandManager extends Manager {
 
   @SubscribeEvent
@@ -42,6 +44,7 @@ public class CommandManager extends Manager {
             .then(CommandDebug.register())
             .then(CommandKill.register())
             .then(CommandMemory.register())
+            .then(CommandSpawner.register())
             .then(CommandThreads.register())
             .then(CommandVersion.register())
         // @formatter:on

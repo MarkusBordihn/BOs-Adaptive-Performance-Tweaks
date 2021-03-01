@@ -24,7 +24,7 @@ public class DebugManager extends Manager {
     log.info("Try to change log level to {}", logLevel);
     switch (logLevel) {
       case "info":
-        Configurator.setAllLevels(LogManager.getLogger(Constants.LOG_NAME).getName(), Level.TRACE);
+        Configurator.setAllLevels(LogManager.getLogger(Constants.LOG_NAME).getName(), Level.INFO);
         break;
       case "trace":
         Configurator.setAllLevels(LogManager.getLogger(Constants.LOG_NAME).getName(), Level.TRACE);

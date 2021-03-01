@@ -17,44 +17,48 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.adaptiveperformancetweaks.entity;
+package de.markusbordihn.adaptiveperformancetweaks.chunk;
 
 import java.util.LinkedHashSet;
-import java.util.Optional;
 import java.util.Set;
-
-import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.chunk.AbstractChunkProvider;
+import net.minecraft.world.chunk.Chunk;
 
 import de.markusbordihn.adaptiveperformancetweaks.Optimization;
 
-public class ItemEntityOptimization extends Optimization {
+public class ChunkOptimization extends Optimization {
 
-  private static Integer maxNumberOfItems = COMMON.maxNumberOfItems.get();
-  private static Set<ItemEntity> itemEntityList = new LinkedHashSet<>();
+  private static Integer maxNumberOfChunks = 1000;
+  private static Set<Chunk> chunkList = new LinkedHashSet<>();
 
-  public static void cleanupItems() {
-    for (int i = itemEntityList.size(); i > maxNumberOfItems; i--) {
-      if (!itemEntityList.isEmpty()) {
-        Optional<ItemEntity> firstItemEntity = itemEntityList.stream().findFirst();
-        if (firstItemEntity.isPresent()) {
-          ItemEntity itemEntity = firstItemEntity.get();
-          log.debug("Removing item {}", itemEntity);
-          itemEntity.remove(false);
-          itemEntityList.remove(itemEntity);
+  public static void addChunk(Chunk chunk) {
+    log.trace("Add chunk {}", chunk);
+    chunkList.add(chunk);
+  }
+
+  public static void removeChunk(Chunk chunk) {
+    log.trace("Remove chunk {}", chunk);
+    chunkList.remove(chunk);
+  }
+
+  public static void cleanupChunks() {
+    // Not working ...
+    if (chunkList.isEmpty()) {
+      return;
+    }
+    Integer currentNumberOfChunks = chunkList.size();
+    for (Chunk chunk : chunkList) {
+      if (currentNumberOfChunks > maxNumberOfChunks) {
+        AbstractChunkProvider chunkProvider = chunk.getWorld().getChunkProvider();
+        ChunkPos chunkPosition = chunk.getPos();
+        if (chunkProvider.isChunkLoaded(chunkPosition)) {
+          log.info("Cleanup chunk {} at {}", chunk, chunkPosition);
+          chunkProvider.forceChunk(chunkPosition, false);
+          currentNumberOfChunks--;
         }
       }
     }
-  }
-
-  public static void addItem(ItemEntity itemEntity) {
-    itemEntityList.add(itemEntity);
-    if (itemEntityList.size() > maxNumberOfItems) {
-      cleanupItems();
-    }
-  }
-
-  public static void removeItem(ItemEntity itemEntity) {
-    itemEntityList.remove(itemEntity);
   }
 
 }

@@ -33,12 +33,13 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
+
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
 import de.markusbordihn.adaptiveperformancetweaks.player.PlayerPosition;
 
-@Mod.EventBusSubscriber
+@EventBusSubscriber
 public class EntityManager extends Manager {
 
   private static Map<String, Set<Entity>> entityMap = new HashMap<>();
@@ -46,7 +47,7 @@ public class EntityManager extends Manager {
   private static Set<String> denyList = new HashSet<>(COMMON.spawnDenyList.get());
 
   @SubscribeEvent
-  public static void onServerStarting(FMLServerAboutToStartEvent event) {
+  public static void onServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
     allowList = new HashSet<>(COMMON.spawnAllowList.get());
     denyList = new HashSet<>(COMMON.spawnDenyList.get());
   }
@@ -63,15 +64,17 @@ public class EntityManager extends Manager {
       return;
     }
 
+    // ToDo: Adding BulletEntity support
+    if (entity instanceof LightningBoltEntity) {
+      return;
+    }
+
     if (allowList.contains(entityName)) {
       log.debug("Ignore allowed entity {}", entityName);
     } else if (entity.hasCustomName()) {
-      log.debug("Ignore custom entity {} with name {}", entityName, entity.getCustomName().getString());
+      log.debug("Ignore custom entity {} with name {}", entityName,
+          entity.getCustomName().getString());
     } else {
-      // ToDo: Adding BulletEntity support
-      if (entity instanceof LightningBoltEntity) {
-        return;
-      }
 
       if (entity instanceof ItemEntity) {
         ItemEntityManager.handleItemEntityJoinWorldEvent(event);
@@ -79,6 +82,7 @@ public class EntityManager extends Manager {
       }
 
       if (entity instanceof MonsterEntity) {
+        MonsterEntityManager.handleMonsterEntityJoinWorldEvent(event);
         // ToDo: Adding MonsterEntityManager to allow cleanup of specific Monsters
       }
 
@@ -103,6 +107,7 @@ public class EntityManager extends Manager {
   @SubscribeEvent
   public static void handleEntityLeaveWorldEvent(EntityLeaveWorldEvent event) {
     Entity entity = event.getEntity();
+
     if (entity instanceof LightningBoltEntity) {
       return;
     }
@@ -110,6 +115,11 @@ public class EntityManager extends Manager {
     if (entity instanceof ItemEntity) {
       ItemEntityManager.handleItemEntityLeaveWorldEvent(event);
       return;
+    }
+
+    if (entity instanceof MonsterEntity) {
+      MonsterEntityManager.handleMonsterEntityLeaveWorldEvent(event);
+      // ToDo: Adding MonsterEntityManager to allow cleanup of specific Monsters
     }
 
     if (entity instanceof PlayerEntity) {
