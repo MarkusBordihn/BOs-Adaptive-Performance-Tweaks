@@ -22,19 +22,17 @@ package de.markusbordihn.adaptiveperformancetweaks.commands;
 import java.util.Comparator;
 import java.util.List;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
-import net.minecraft.util.text.StringTextComponent;
 
 import de.markusbordihn.adaptiveperformancetweaks.system.Thread;
 import de.markusbordihn.adaptiveperformancetweaks.system.ThreadManager;
 
-public class CommandThreads implements Command<CommandSource> {
+public class CommandThreads extends CustomCommand {
 
   private static final CommandThreads command = new CommandThreads();
 
@@ -49,9 +47,9 @@ public class CommandThreads implements Command<CommandSource> {
 
     StringBuilder overview = new StringBuilder(String.format("CPU Threads Overview\n==="));
     for (Thread thread : threads) {
-      overview.append(String.format("► %s\n", thread.toString()));
+      overview.append(String.format("\u25BA %s\n", thread.toString()));
     }
-    context.getSource().sendFeedback(new StringTextComponent(overview.toString()), false);
+    sendFeedback(context, overview.toString());
     return 0;
   }
 }

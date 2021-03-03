@@ -19,16 +19,14 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.commands;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
-import net.minecraft.util.text.StringTextComponent;
 
-public class CommandKill implements Command<CommandSource> {
+public class CommandKill extends CustomCommand {
 
   private static final CommandKill command = new CommandKill();
 
@@ -40,7 +38,7 @@ public class CommandKill implements Command<CommandSource> {
   @Override
   public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
     final String enable = StringArgumentType.getString(context, "enable");
-    context.getSource().sendFeedback(new StringTextComponent("kill: " + enable), false);
+    sendFeedback(context, "kill: " + enable);
     return 0;
   }
 }

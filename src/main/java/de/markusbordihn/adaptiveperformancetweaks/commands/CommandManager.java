@@ -43,6 +43,7 @@ public class CommandManager extends Manager {
         commandDispatcher.register(Commands.literal(Constants.MOD_COMMAND)
         // @formatter:off
             .then(CommandDebug.register())
+            .then(CommandEntities.register())
             .then(CommandItems.register())
             .then(CommandKill.register())
             .then(CommandMemory.register())
@@ -50,6 +51,7 @@ public class CommandManager extends Manager {
             .then(CommandSpawner.register())
             .then(CommandThreads.register())
             .then(CommandVersion.register())
+            .then(CommandWorlds.register())
         // @formatter:on
         );
     commandDispatcher.register(Commands.literal("ctrl").redirect(commands));
@@ -61,6 +63,7 @@ public class CommandManager extends Manager {
       return;
     }
     log.debug("Execute Server Command: {}", command);
-    minecraftServer.getCommandManager().handleCommand(minecraftServer.getCommandSource(), command);
+    Commands commands = minecraftServer.getCommandManager();
+    commands.handleCommand(minecraftServer.getCommandSource(), command);
   }
 }

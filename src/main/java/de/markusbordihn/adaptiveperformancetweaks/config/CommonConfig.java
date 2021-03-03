@@ -68,6 +68,19 @@ public final class CommonConfig {
 
     public final ForgeConfigSpec.ConfigValue<String> logLevel;
 
+    public final ForgeConfigSpec.IntValue viewAreaXFactor;
+    public final ForgeConfigSpec.IntValue viewAreaYFactor;
+    public final ForgeConfigSpec.IntValue viewAreaZFactor;
+    public final ForgeConfigSpec.DoubleValue viewAreaDistanceFactor;
+
+    public final ForgeConfigSpec.IntValue viewDistanceMin;
+    public final ForgeConfigSpec.IntValue viewDistanceMax;
+    public final ForgeConfigSpec.IntValue viewDistanceDefault;
+
+    public final ForgeConfigSpec.BooleanValue gameruleEnabled;
+    public final ForgeConfigSpec.IntValue maxEntityCramming;
+    public final ForgeConfigSpec.IntValue randomTickSpeed;
+
     public final ForgeConfigSpec.IntValue maxEntityPerPlayer;
     public final ForgeConfigSpec.IntValue maxEntityPerWorld;
     public final ForgeConfigSpec.ConfigValue<List<String>> spawnAllowList;
@@ -84,15 +97,6 @@ public final class CommonConfig {
     public final ForgeConfigSpec.IntValue minecraftMaxWaterPassiveMobsPerWorld;
     public final ForgeConfigSpec.IntValue minecraftMaxWaterNeutralMobsPerPlayer;
     public final ForgeConfigSpec.IntValue minecraftMaxWaterNeutralMobsPerWorld;
-
-    public final ForgeConfigSpec.IntValue viewAreaXFactor;
-    public final ForgeConfigSpec.IntValue viewAreaYFactor;
-    public final ForgeConfigSpec.IntValue viewAreaZFactor;
-    public final ForgeConfigSpec.DoubleValue viewAreaDistanceFactor;
-
-    public final ForgeConfigSpec.IntValue viewDistanceMin;
-    public final ForgeConfigSpec.IntValue viewDistanceMax;
-    public final ForgeConfigSpec.IntValue viewDistanceDefault;
 
     public final ForgeConfigSpec.BooleanValue modAquacultureEnabled;
     public final ForgeConfigSpec.IntValue modAquacultureMaxFishPerPlayer;
@@ -152,12 +156,45 @@ public final class CommonConfig {
       builder.pop();
 
       builder.push("Limits");
-      maxNumberOfItemsPerType = builder
-          .comment("Defines the max. number of items per type which are allowed to lay around in the world.")
+      maxNumberOfItemsPerType = builder.comment(
+          "Defines the max. number of items per type which are allowed to lay around in the world.")
           .defineInRange("maxNumberOfItemsPerType", 32, 10, 100);
       maxNumberOfItems = builder
           .comment("Defines the max. number of items which are allowed to lay around in the world.")
           .defineInRange("maxNumberOfItems", 128, 10, 1000);
+      builder.pop();
+
+      builder.comment("View area optimization, should be only adjusted if really needed!")
+          .push("View Area");
+      viewAreaXFactor = builder.comment(
+          "Max. number of X blocks relative to the player position considered inside a chunk for the view area.")
+          .defineInRange("viewAreaXFactor", 16, 1, 16);
+      viewAreaYFactor = builder.comment(
+          "Max. number of Y blocks relative to the player position considered inside a chunk for the view area.")
+          .defineInRange("viewAreaYFactor", 4, 1, 16);
+      viewAreaZFactor = builder.comment(
+          "Max. number of Z blocks relative to the player position considered inside a chunk for the view area.")
+          .defineInRange("viewAreaZFactor", 16, 1, 16);
+      viewAreaDistanceFactor = builder
+          .comment(
+              "Factor per view-distance which is used to calculated the view area of the player.")
+          .defineInRange("viewAreaDistanceFactor", 0.8, 0.1, 1);
+      builder.pop();
+
+      builder.comment("View / render distance optimization.").push("View Distance");
+      viewDistanceMax = builder.defineInRange("viewDistanceMax", 16, 2, 32);
+      viewDistanceMin = builder.defineInRange("viewDistanceMin", 2, 2, 16);
+      viewDistanceDefault = builder.defineInRange("viewDistanceDefault", 10, 2, 16);
+      builder.pop();
+
+      builder.push("Gamerule");
+      gameruleEnabled = builder.comment("Enable/Disable dynamic gamerule adjustments.")
+          .define("gameruleEnabled", true);
+      maxEntityCramming =
+          builder.comment("Defines the max. numbers of mob singularity on a single block.")
+              .defineInRange("maxEntityCramming", 24, 0, 64);
+      randomTickSpeed = builder.comment("Defines the speed of crops grow, leaf decay, redstone, ... per chunk")
+          .defineInRange("randomTickSpeed", 3, 1, 256);
       builder.pop();
 
       builder.comment(StringUtils.join(Arrays.asList("Spawn optimization",
@@ -204,29 +241,6 @@ public final class CommonConfig {
 
       builder.pop();
 
-      builder.comment("View area optimization, should be only adjusted if really needed!")
-          .push("View Area");
-      viewAreaXFactor = builder.comment(
-          "Max. number of X blocks relative to the player position considered inside a chunk for the view area.")
-          .defineInRange("viewAreaXFactor", 16, 1, 16);
-      viewAreaYFactor = builder.comment(
-          "Max. number of Y blocks relative to the player position considered inside a chunk for the view area.")
-          .defineInRange("viewAreaYFactor", 4, 1, 16);
-      viewAreaZFactor = builder.comment(
-          "Max. number of Z blocks relative to the player position considered inside a chunk for the view area.")
-          .defineInRange("viewAreaZFactor", 16, 1, 16);
-      viewAreaDistanceFactor = builder
-          .comment(
-              "Factor per view-distance which is used to calculated the view area of the player.")
-          .defineInRange("viewAreaDistanceFactor", 0.8, 0.1, 1);
-      builder.pop();
-
-      builder.comment("View / render distance optimization.").push("View Distance");
-      viewDistanceMax = builder.defineInRange("viewDistanceMax", 16, 2, 32);
-      viewDistanceMin = builder.defineInRange("viewDistanceMin", 2, 2, 16);
-      viewDistanceDefault = builder.defineInRange("viewDistanceDefault", 10, 2, 16);
-      builder.pop();
-
       // @formatter:off
       builder.comment(StringUtils.join(Arrays.asList(
         "This sections allows to control specific setting for some mods.",
@@ -244,7 +258,7 @@ public final class CommonConfig {
         "minecraft:skeleton at the same time."), System.lineSeparator())).push("Mod");
         // @formatter:on
 
-      builder.push("Aquaculture");
+      builder.push("Aquaculture 2");
       modAquacultureEnabled = builder.define("modAquacultureEnabled", true);
       modAquacultureMaxFishPerPlayer =
           builder.defineInRange("modAquacultureMaxFishPerPlayer", 1, 1, 10);
@@ -252,7 +266,7 @@ public final class CommonConfig {
           builder.defineInRange("modAquacultureMaxFishPerWorld", 8, 1, 100);
       builder.pop();
 
-      builder.push("Ice and Fire");
+      builder.push("Ice and Fire: Dragons");
       modIceandfireEnabled = builder.define("modIceandfireEnabled", true);
       modIceandfireMaxPassiveMobsPerPlayer =
           builder.defineInRange("modIceandfireMaxPassiveMobsPerPlayer", 2, 1, 10);
@@ -296,7 +310,7 @@ public final class CommonConfig {
           builder.defineInRange("modQuarkMaxHostileMobsPerWorld", 10, 1, 100);
       builder.pop();
 
-      builder.push("Savage and Ravage");
+      builder.push("Savage & Ravage");
       modSavageandravageEnabled = builder.define("modSavageandravageEnabled", true);
       modSavageandravageMaxHostileMobsPerPlayer =
           builder.defineInRange("modSavageandravageMaxHostileMobsPerPlayer", 4, 1, 10);
@@ -304,7 +318,7 @@ public final class CommonConfig {
           builder.defineInRange("modSavageandravageMaxHostileMobsPerWorld", 10, 1, 100);
       builder.pop();
 
-      builder.push("The Abyss");
+      builder.push("The Abyss: Chapter II");
       modTheabyssEnabled = builder.define("modTheabyssEnabled", true);
       modTheabyssMaxPassiveMobsPerPlayer =
           builder.defineInRange("modTheabyssMaxPassiveMobsPerPlayer", 2, 1, 10);

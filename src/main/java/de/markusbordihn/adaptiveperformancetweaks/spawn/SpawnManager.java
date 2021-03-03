@@ -37,6 +37,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraftforge.event.DifficultyChangeEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
@@ -54,20 +55,30 @@ import de.markusbordihn.adaptiveperformancetweaks.server.ServerWorldLoadEvent;
 public class SpawnManager extends Manager {
 
   private static Map<String, Double> serverWorldLoadFactorMap = new HashMap<>();
+  private static Map<String, Integer> spawnConfigPerPlayer =
+      SpawnConfigManager.getSpawnConfigPerPlayer();
+  private static Map<String, Integer> spawnConfigPerWorld =
+      SpawnConfigManager.getSpawnConfigPerWorld();
+  private static Map<String, Integer> spawnConfigSpecial =
+      SpawnConfigManager.getSpawnConfigSpecial();
   private static Set<String> allowList = new HashSet<>(COMMON.spawnAllowList.get());
   private static Set<String> denyList = new HashSet<>(COMMON.spawnDenyList.get());
+  private static int maxEntityPerWorld = COMMON.maxEntityPerWorld.get();
+  private static int maxEntityPerPlayer = COMMON.maxEntityPerPlayer.get();
   private static boolean optimizeHostileMobs = COMMON.optimizeHostileMobs.get();
   private static double difficultyFactor = 1;
 
   @SubscribeEvent
-  public static void onServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+  public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
     allowList = new HashSet<>(COMMON.spawnAllowList.get());
     denyList = new HashSet<>(COMMON.spawnDenyList.get());
     optimizeHostileMobs = COMMON.optimizeHostileMobs.get();
+    maxEntityPerWorld = COMMON.maxEntityPerWorld.get();
+    maxEntityPerPlayer = COMMON.maxEntityPerPlayer.get();
   }
 
   @SubscribeEvent
-  public static void onServerStarting(FMLServerStartingEvent event) {
+  public static void handleServerStarting(FMLServerStartingEvent event) {
     updateGameDifficulty(
         ServerLifecycleHooks.getCurrentServer().getServerConfiguration().getDifficulty());
     log.info("Allow List: {}", allowList);
@@ -87,7 +98,7 @@ public class SpawnManager extends Manager {
     updateGameDifficulty(event.getDifficulty());
   }
 
-  @SubscribeEvent
+  @SubscribeEvent(priority = EventPriority.HIGH)
   public static void handleLivingCheckSpawnEvent(LivingSpawnEvent.CheckSpawn event) {
     Entity entity = event.getEntity();
     String entityName = entity.getEntityString();
@@ -164,21 +175,39 @@ public class SpawnManager extends Manager {
         ? serverWorldLoadFactorMap.getOrDefault(worldName, 1.0) * difficultyFactor
         : serverWorldLoadFactorMap.getOrDefault(worldName, 1.0);
 
-    // Limit spawn based on world limits.
-    int spawnLimitPerWorld = SpawnConfigManager.getSpawnLimitPerWorld(entityName);
+    // Get the number of current entities for this world.
     int numberOfEntities = EntityManager.getNumberOfEntities(worldName, entityName);
+
+    // Check for special spawn limits for specific dimensions like the_end and nether.
+    int spawnLimitSpecial = spawnConfigSpecial.getOrDefault(worldName + ':' + entityName, -1);
+    if (spawnLimitSpecial >= 0) {
+      if (numberOfEntities >= spawnLimitSpecial * spawnFactor) {
+        log.debug("[Special limit] Blocked spawn event for {} ({} >= {} * {}) in {}", entityName,
+            numberOfEntities, spawnLimitSpecial, spawnFactor, worldName);
+        event.setResult(Event.Result.DENY);
+        return;
+      } else {
+        log.debug("[Allow Special Spawn] For {} ({}) in {}", entityName, numberOfEntities,
+            worldName);
+        event.setResult(Event.Result.DEFAULT);
+        return;
+      }
+    }
+
+    // Limit spawn based on world limits.
+    int spawnLimitPerWorld = spawnConfigPerWorld.getOrDefault(entityName, maxEntityPerWorld);
     if (numberOfEntities >= spawnLimitPerWorld * spawnFactor) {
-      log.debug("[World limit] Blocked spawn event for {} ({} >= {}) in {}", entityName,
-          numberOfEntities, spawnLimitPerWorld, worldName);
+      log.debug("[World limit] Blocked spawn event for {} ({} >= {} * {}) in {}", entityName,
+          numberOfEntities, spawnLimitPerWorld, spawnFactor, worldName);
       event.setResult(Event.Result.DENY);
       return;
     }
 
     // Cheap and fast calculation to limit spawn based on possible entities within player limits.
-    int spawnLimitPerPlayer = SpawnConfigManager.getSpawnLimitPerPlayer(entityName);
+    int spawnLimitPerPlayer = spawnConfigPerPlayer.getOrDefault(entityName, maxEntityPerPlayer);
     if (numberOfEntities >= spawnLimitPerPlayer * numOfPlayersInsideViewArea * spawnFactor) {
-      log.debug("[Player limit] Blocked spawn event for {} ({} >= {}) in {}", entityName,
-          numberOfEntities, spawnLimitPerPlayer, worldName);
+      log.debug("[Player limit] Blocked spawn event for {} ({} >= {} * spawnFactor) in {}",
+          entityName, numberOfEntities, spawnLimitPerPlayer, spawnFactor, worldName);
       event.setResult(Event.Result.DENY);
       return;
     }
@@ -188,13 +217,15 @@ public class SpawnManager extends Manager {
         worldName, entityName, playersPositionsInsideViewArea);
     if (numberOfEntitiesInsideViewArea >= spawnLimitPerPlayer * numOfPlayersInsideViewArea
         * spawnFactor) {
-      log.debug("[View Area Limit] Blocked spawn event for {} ({} >= {}) in {}", entityName,
-          numberOfEntities, spawnLimitPerPlayer, worldName);
+      log.debug("[View Area Limit] Blocked spawn event for {} ({} >= {} * {}) in {}", entityName,
+          numberOfEntities, spawnLimitPerPlayer, spawnFactor, worldName);
       event.setResult(Event.Result.DENY);
       return;
     }
 
-    log.debug("[Check Spawn] Allow spawn event for {} in {}", entityName, worldName);
+    // Allow spawn is no rule is matching.
+    log.debug("[Allow Spawn] For {} ({} * {}) in {}", entityName, numberOfEntitiesInsideViewArea,
+        spawnFactor, worldName);
     event.setResult(Event.Result.DEFAULT);
   }
 

@@ -45,7 +45,7 @@ public class ItemEntityManager extends Manager {
   private static boolean hasHighServerLoad = false;
 
   @SubscribeEvent
-  public static void onServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+  public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
     maxNumberOfItems = COMMON.maxNumberOfItems.get();
     maxNumberOfItemsPerType = COMMON.maxNumberOfItemsPerType.get();
     if (maxNumberOfItems < maxNumberOfItemsPerType) {

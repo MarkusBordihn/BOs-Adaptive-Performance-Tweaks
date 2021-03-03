@@ -19,37 +19,38 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.commands;
 
+import java.util.Set;
+
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.util.ResourceLocation;
 
-import de.markusbordihn.adaptiveperformancetweaks.system.MemoryInfo;
-import de.markusbordihn.adaptiveperformancetweaks.system.MemoryManager;
+public class CommandEntities extends CustomCommand {
 
-public class CommandMemory extends CustomCommand {
-
-  private static final CommandMemory command = new CommandMemory();
+  private static final CommandEntities command = new CommandEntities();
 
   public static ArgumentBuilder<CommandSource, ?> register() {
-    return Commands.literal("memory").requires(cs -> cs.hasPermissionLevel(2)).executes(command);
+    return Commands.literal("entities").requires(cs -> cs.hasPermissionLevel(2)).executes(command);
   }
 
   @Override
   public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
-    MemoryInfo memoryInfo = MemoryManager.getMemoryUsage();
-    StringBuilder memoryOverview = new StringBuilder(String.format("Memory Overview\n===\n"));
-    memoryOverview.append(String.format("\u25BA Initial memory: %.2f MB\n", memoryInfo.getInit()));
-    memoryOverview.append(String.format("\u25BA Used heap memory: %.2f MB\n", memoryInfo.getUsed()));
-    memoryOverview.append(String.format("\u25BA Max heap memory: %.2f MB\n", memoryInfo.getMax()));
-    memoryOverview
-        .append(String.format("\u25BA Committed memory: %.2f MB\n", memoryInfo.getCommitted()));
-    memoryOverview.append(
-        String.format("\u25BA Free memory: %.2f MB (%.2f%%)", memoryInfo.getMax() - memoryInfo.getUsed(),
-            100 - ((100 * memoryInfo.getUsed()) / memoryInfo.getMax())));
-    sendFeedback(context, memoryOverview.toString());
+    Set<ResourceLocation> entitiesKeys = ForgeRegistries.ENTITIES.getKeys();
+    if (entitiesKeys.isEmpty()) {
+      sendFeedback(context,
+          "Unable to find any entities. Server / World is not loaded?");
+    } else {
+      sendFeedback(context, "Entity Overview,  please check info.log for the full output.\n===");
+      log.info("Entity overview: {}", entitiesKeys);
+      for (ResourceLocation entityKey : entitiesKeys) {
+        sendFeedback(context, String.format("\u25CB %s", entityKey));
+      }
+    }
     return 0;
   }
+
 }

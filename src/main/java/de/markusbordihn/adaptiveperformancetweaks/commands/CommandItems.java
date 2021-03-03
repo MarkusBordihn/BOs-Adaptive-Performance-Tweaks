@@ -22,18 +22,16 @@ package de.markusbordihn.adaptiveperformancetweaks.commands;
 import java.util.Map;
 import java.util.Set;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.util.text.StringTextComponent;
 
 import de.markusbordihn.adaptiveperformancetweaks.entity.ItemEntityManager;
 
-public class CommandItems implements Command<CommandSource> {
+public class CommandItems extends CustomCommand {
 
   private static final CommandItems command = new CommandItems();
 
@@ -43,15 +41,19 @@ public class CommandItems implements Command<CommandSource> {
 
   @Override
   public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
-    context.getSource().sendFeedback(new StringTextComponent("Items Entity Overview\n==="), false);
     Map<String, Set<ItemEntity>> itemEntityMap = ItemEntityManager.getItemEntityMap();
-    for (Map.Entry<String, Set<ItemEntity>> itemEntities : itemEntityMap.entrySet()) {
-      context.getSource().sendFeedback(
-          new StringTextComponent(
-              String.format("%s %s", itemEntities.getKey(), itemEntities.getValue().size())),
-          false);
+    if (itemEntityMap.isEmpty()) {
+      sendFeedback(context, "Unable to find any items entity. World is not loaded or nor items dropped?");
+    } else {
+      sendFeedback(context, "Items Entity Overview\n===");
+      for (Map.Entry<String, Set<ItemEntity>> itemEntities : itemEntityMap.entrySet()) {
+        int numOfItems = itemEntities.getValue().size();
+        if (numOfItems > 0) {
+          sendFeedback(context, String.format("\u25CB %s %s", itemEntities.getKey(), numOfItems));
+        }
+      }
     }
-
     return 0;
   }
+
 }

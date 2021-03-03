@@ -20,8 +20,8 @@
 package de.markusbordihn.adaptiveperformancetweaks;
 
 public final class Constants {
-  private Constants() {
-    // Restrict instantiation
+
+  protected Constants() {
   }
 
   public static final String MOD_COMMAND = "aptweaks";

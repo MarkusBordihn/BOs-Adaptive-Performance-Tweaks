@@ -17,35 +17,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.adaptiveperformancetweaks.world;
+package de.markusbordihn.adaptiveperformancetweaks.commands;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.context.CommandContext;
+import net.minecraft.command.CommandSource;
+import net.minecraft.util.text.StringTextComponent;
 
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
+import de.markusbordihn.adaptiveperformancetweaks.Constants;
 
-import de.markusbordihn.adaptiveperformancetweaks.Manager;
-import de.markusbordihn.adaptiveperformancetweaks.server.ServerManager;
+public abstract class CustomCommand implements Command<CommandSource> {
 
-@EventBusSubscriber
-public class WorldManager extends Manager {
-
-  private static Map<String, ServerWorld> worlds = new HashMap<>();
-
-  @SubscribeEvent
-  public static void handleServerStartingEvent(FMLServerStartingEvent event) {
-    java.lang.Iterable<ServerWorld> serverWorlds = ServerManager.getWorlds();
-    for (ServerWorld serverWorld : serverWorlds) {
-      String worldName = serverWorld.getDimensionKey().getLocation().toString();
-      worlds.put(worldName, serverWorld);
-    }
+  protected CustomCommand() {
   }
 
-  public static ServerWorld getWorldByName(String worldName) {
-    return worlds.get(worldName);
-  }
+  public static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
+  public static void sendFeedback(CommandContext<CommandSource> context, String feedback) {
+    CommandSource commandSource = context.getSource();
+    commandSource.sendFeedback(new StringTextComponent(feedback), false);
+  }
 }

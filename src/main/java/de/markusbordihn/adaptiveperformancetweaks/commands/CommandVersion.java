@@ -19,16 +19,14 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.commands;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
-import net.minecraft.util.text.StringTextComponent;
 
-public class CommandVersion implements Command<CommandSource> {
+public class CommandVersion extends CustomCommand {
 
   private static final CommandVersion command = new CommandVersion();
 
@@ -38,8 +36,7 @@ public class CommandVersion implements Command<CommandSource> {
 
   @Override
   public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
-    context.getSource()
-        .sendFeedback(new StringTextComponent("Version: Developer Version for testing!"), false);
+    sendFeedback(context, "Version: Developer Version for testing! \u2665");
     return 0;
   }
 }

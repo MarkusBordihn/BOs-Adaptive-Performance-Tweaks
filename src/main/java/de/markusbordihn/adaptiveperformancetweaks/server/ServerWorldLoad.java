@@ -80,11 +80,11 @@ public class ServerWorldLoad {
     return ServerWorldLoadLevel.NORMAL;
   }
 
-  public static Map<ServerWorld, Double> getLoad() {
+  public static Map<ServerWorld, Double> getWorldLoad() {
     return worldLoad;
   }
 
-  public static Map<ServerWorld, ServerWorldLoadLevel> getLoadLevel() {
+  public static Map<ServerWorld, ServerWorldLoadLevel> getWorldLoadLevel() {
     return worldLoadLevel;
   }
 

@@ -21,18 +21,17 @@ package de.markusbordihn.adaptiveperformancetweaks.commands;
 
 import java.util.Map;
 import java.util.Set;
-import com.mojang.brigadier.Command;
+
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.entity.monster.MonsterEntity;
-import net.minecraft.util.text.StringTextComponent;
 
 import de.markusbordihn.adaptiveperformancetweaks.entity.MonsterEntityManager;
 
-public class CommandMonster implements Command<CommandSource> {
+public class CommandMonster extends CustomCommand {
 
   private static final CommandMonster command = new CommandMonster();
 
@@ -42,16 +41,19 @@ public class CommandMonster implements Command<CommandSource> {
 
   @Override
   public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
-    context.getSource().sendFeedback(new StringTextComponent("Monster Entity Overview\n==="),
-        false);
     Map<String, Set<MonsterEntity>> monsterEntityMap = MonsterEntityManager.getMonsterEntityMap();
-    for (Map.Entry<String, Set<MonsterEntity>> monsterEntities : monsterEntityMap.entrySet()) {
-      context.getSource()
-          .sendFeedback(new StringTextComponent(
-              String.format("%s %s", monsterEntities.getKey(), monsterEntities.getValue().size())),
-              false);
+    if (monsterEntityMap.isEmpty()) {
+      sendFeedback(context,
+          "Unable to find any monster entity. World is not loaded or nor monster spawned?");
+    } else {
+      sendFeedback(context, "Monster Entity Overview\n===");
+      for (Map.Entry<String, Set<MonsterEntity>> monsterEntities : monsterEntityMap.entrySet()) {
+        int numOfMonster = monsterEntities.getValue().size();
+        if (numOfMonster > 0) {
+          sendFeedback(context, String.format("\u221F %s %s", monsterEntities.getKey(), numOfMonster));
+        }
+      }
     }
-
     return 0;
   }
 }

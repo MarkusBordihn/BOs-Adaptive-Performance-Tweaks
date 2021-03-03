@@ -32,6 +32,7 @@ import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
@@ -47,12 +48,12 @@ public class EntityManager extends Manager {
   private static Set<String> denyList = new HashSet<>(COMMON.spawnDenyList.get());
 
   @SubscribeEvent
-  public static void onServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+  public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
     allowList = new HashSet<>(COMMON.spawnAllowList.get());
     denyList = new HashSet<>(COMMON.spawnDenyList.get());
   }
 
-  @SubscribeEvent
+  @SubscribeEvent(priority = EventPriority.HIGH)
   public static void handleEntityJoinWorldEvent(EntityJoinWorldEvent event) {
     Entity entity = event.getEntity();
     String entityName = entity.getEntityString();

@@ -40,6 +40,10 @@ public class ServerLoadEvent extends Event {
     return lastServerLoadLevel;
   }
 
+  public boolean hasVeryHighServerLoad() {
+    return this.serverLoadLevel == ServerLoadLevel.VERY_HIGH;
+  }
+
   public boolean hasHighServerLoad() {
     return (this.serverLoadLevel == ServerLoadLevel.MEDIUM
         || this.serverLoadLevel == ServerLoadLevel.HIGH

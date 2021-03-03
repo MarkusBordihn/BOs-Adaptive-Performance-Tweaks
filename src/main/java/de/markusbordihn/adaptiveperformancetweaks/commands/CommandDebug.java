@@ -24,18 +24,16 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.config.Configurator;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
-import net.minecraft.util.text.StringTextComponent;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 
-public class CommandDebug implements Command<CommandSource> {
+public class CommandDebug extends CustomCommand {
 
   private static final CommandDebug command = new CommandDebug();
 
@@ -48,14 +46,11 @@ public class CommandDebug implements Command<CommandSource> {
   public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
     final boolean enable = BoolArgumentType.getBool(context, "enable");
     if (enable) {
-      context.getSource().sendFeedback(new StringTextComponent(
-          "Enable debug output, please check debug.log for the full output."), false);
-      context.getSource().sendFeedback(
-          new StringTextComponent("Use '/aptweaks debug false' to disable debug output!"), false);
+      sendFeedback(context, "\u25BA Enable debug output, please check debug.log for the full output.");
+      sendFeedback(context, "Use '/aptweaks debug false' to disable debug output!");
     } else {
-      context.getSource().sendFeedback(new StringTextComponent("Disable debug output!"), false);
-      context.getSource().sendFeedback(
-          new StringTextComponent("Please check the debug.log for the full output."), false);
+      sendFeedback(context,"\u25A0 Disable debug output!");
+      sendFeedback(context,"Please check the debug.log for the full output.");
     }
     Configurator.setAllLevels(LogManager.getLogger(Constants.LOG_NAME).getName(),
         enable ? Level.DEBUG : Level.INFO);

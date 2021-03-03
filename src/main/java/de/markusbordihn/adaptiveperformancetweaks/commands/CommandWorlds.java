@@ -19,37 +19,41 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.commands;
 
+import java.util.Map;
+
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
+import net.minecraft.world.server.ServerWorld;
 
-import de.markusbordihn.adaptiveperformancetweaks.system.MemoryInfo;
-import de.markusbordihn.adaptiveperformancetweaks.system.MemoryManager;
+import de.markusbordihn.adaptiveperformancetweaks.server.ServerWorldLoad;
 
-public class CommandMemory extends CustomCommand {
+public class CommandWorlds extends CustomCommand {
 
-  private static final CommandMemory command = new CommandMemory();
+  private static final CommandWorlds command = new CommandWorlds();
 
   public static ArgumentBuilder<CommandSource, ?> register() {
-    return Commands.literal("memory").requires(cs -> cs.hasPermissionLevel(2)).executes(command);
+    return Commands.literal("worlds").requires(cs -> cs.hasPermissionLevel(2)).executes(command);
   }
 
   @Override
   public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
-    MemoryInfo memoryInfo = MemoryManager.getMemoryUsage();
-    StringBuilder memoryOverview = new StringBuilder(String.format("Memory Overview\n===\n"));
-    memoryOverview.append(String.format("\u25BA Initial memory: %.2f MB\n", memoryInfo.getInit()));
-    memoryOverview.append(String.format("\u25BA Used heap memory: %.2f MB\n", memoryInfo.getUsed()));
-    memoryOverview.append(String.format("\u25BA Max heap memory: %.2f MB\n", memoryInfo.getMax()));
-    memoryOverview
-        .append(String.format("\u25BA Committed memory: %.2f MB\n", memoryInfo.getCommitted()));
-    memoryOverview.append(
-        String.format("\u25BA Free memory: %.2f MB (%.2f%%)", memoryInfo.getMax() - memoryInfo.getUsed(),
-            100 - ((100 * memoryInfo.getUsed()) / memoryInfo.getMax())));
-    sendFeedback(context, memoryOverview.toString());
+    Map<ServerWorld, Double> serverWorldLoad = ServerWorldLoad.getWorldLoad();
+    if (serverWorldLoad.isEmpty()) {
+      sendFeedback(context,
+          "Unable to find any worlds. Server / World is not loaded?");
+    } else {
+      sendFeedback(context, "World Overview\n===");
+      for (Map.Entry<ServerWorld, Double> worldEntry : serverWorldLoad.entrySet()) {
+        ServerWorld serverWorld = worldEntry.getKey();
+        String worldName = serverWorld.getDimensionKey().getLocation().toString();
+        Double avgTickTime = worldEntry.getValue();
+        sendFeedback(context, String.format("\u25CB %s %sms", worldName, avgTickTime));
+      }
+    }
     return 0;
   }
+
 }

@@ -19,9 +19,7 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.chunk;
 
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import net.minecraft.tileentity.MobSpawnerTileEntity;
 import net.minecraft.tileentity.TileEntity;
@@ -32,11 +30,10 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
+import de.markusbordihn.adaptiveperformancetweaks.spawn.SpawnerManager;
 
 @EventBusSubscriber
 public class ChunkManager extends Manager {
-
-  private static Set<MobSpawnerTileEntity> mobSpawnerList = new HashSet<>();
 
   @SubscribeEvent
   public static void handleChunkLoadEvent(ChunkEvent.Load event) {
@@ -46,7 +43,7 @@ public class ChunkManager extends Manager {
     for (Map.Entry<BlockPos, TileEntity> tileEntityEntry : tileEntityMap.entrySet()) {
       TileEntity tileEntity = tileEntityEntry.getValue();
       if (tileEntity instanceof MobSpawnerTileEntity) {
-        mobSpawnerList.add((MobSpawnerTileEntity) tileEntity);
+        SpawnerManager.addSpawner((MobSpawnerTileEntity) tileEntity);
       }
     }
   }
@@ -59,12 +56,8 @@ public class ChunkManager extends Manager {
     for (Map.Entry<BlockPos, TileEntity> tileEntityEntry : tileEntityMap.entrySet()) {
       TileEntity tileEntity = tileEntityEntry.getValue();
       if (tileEntity instanceof MobSpawnerTileEntity) {
-        mobSpawnerList.remove((MobSpawnerTileEntity) tileEntity);
+        SpawnerManager.removeSpawner((MobSpawnerTileEntity) tileEntity);
       }
     }
-  }
-
-  public static Set<MobSpawnerTileEntity> getMobSpawner() {
-    return mobSpawnerList;
   }
 }
