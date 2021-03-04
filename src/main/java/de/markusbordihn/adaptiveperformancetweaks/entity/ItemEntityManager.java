@@ -19,15 +19,20 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.entity;
 
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
@@ -43,6 +48,7 @@ public class ItemEntityManager extends Manager {
   private static Integer maxNumberOfItemsPerType = COMMON.maxNumberOfItemsPerType.get();
   private static Integer itemCounter = 0;
   private static boolean hasHighServerLoad = false;
+  private static boolean cleanUpRunning = false;
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
@@ -63,10 +69,16 @@ public class ItemEntityManager extends Manager {
     hasHighServerLoad = event.hasHighServerLoad();
   }
 
+  @SubscribeEvent(priority = EventPriority.HIGH)
   public static void handleItemEntityJoinWorldEvent(EntityJoinWorldEvent event) {
-    ItemEntity itemEntity = (ItemEntity) event.getEntity();
+    Entity entity = event.getEntity();
+    if (!(entity instanceof ItemEntity)) {
+      return;
+    }
+
     // All items has the entity minecraft.item, so we are using the translation key to better
     // distinguish the different types of items and minecraft.item as backup.
+    ItemEntity itemEntity = (ItemEntity) entity;
     String itemName = itemEntity.getItem().getTranslationKey();
     if (itemName == null) {
       itemName = itemEntity.getEntityString();
@@ -78,18 +90,22 @@ public class ItemEntityManager extends Manager {
       itemEntityMap.put('[' + worldName + ']' + itemName, itemEntities);
     }
     itemEntities.add(itemEntity);
+    int numberOfItemEntities = itemEntities.size();
 
     if (log.isDebugEnabled()) {
       log.debug("Item {} {} ({}) joined {}.", itemName, itemEntity.getDisplayName().getString(),
-          itemEntities.size(), worldName);
+          numberOfItemEntities, worldName);
     }
 
     // Automatic cleanup if we a reaching the maxNumberOfItemsPerType.
-    if (itemEntities.size() > maxNumberOfItemsPerType) {
-      cleanupItems(worldName, itemName, maxNumberOfItemsPerType);
+    if (numberOfItemEntities > maxNumberOfItemsPerType) {
+      ItemEntity firstItemEntity = itemEntities.iterator().next();
+      log.debug("Removing item {}", firstItemEntity);
+      firstItemEntity.remove(false);
+      itemEntities.remove(firstItemEntity);
     }
 
-    // Global Item counter to high
+    // Global Item counter to handle global number of items.
     if (itemCounter++ >= maxNumberOfItems) {
       cleanupItems(worldName);
     }
@@ -100,8 +116,14 @@ public class ItemEntityManager extends Manager {
     }
   }
 
+  @SubscribeEvent
   public static void handleItemEntityLeaveWorldEvent(EntityLeaveWorldEvent event) {
-    ItemEntity itemEntity = (ItemEntity) event.getEntity();
+    Entity entity = event.getEntity();
+    if (!(entity instanceof ItemEntity)) {
+      return;
+    }
+
+    ItemEntity itemEntity = (ItemEntity) entity;
     String itemName = itemEntity.getItem().getTranslationKey();
     if (itemName == null) {
       itemName = itemEntity.getEntityString();
@@ -119,38 +141,36 @@ public class ItemEntityManager extends Manager {
     }
   }
 
+  public static void cleanupItems(String worldName) {
+    if (cleanUpRunning) {
+      return;
+    }
+    cleanUpRunning= true;
+    String worldNamePrefix = '[' + worldName + ']';
+    // 1. Get relevant items for the world
+    Set<ItemEntity> relevantItems = new HashSet<>();
+    for (Map.Entry<String, Set<ItemEntity>> itemEntities : itemEntityMap.entrySet()) {
+      if (itemEntities.getKey().startsWith(worldNamePrefix)) {
+        relevantItems.addAll(itemEntities.getValue());
+      }
+    }
+    // 2. Sort list by entityId in a sorted list.
+    List<ItemEntity> sortedEntityList = relevantItems.stream()
+        .sorted(Comparator.comparing(ItemEntity::getEntityId)).collect(Collectors.toList());
+    // 3. Remove last added items
+    for (int i = 0; i < sortedEntityList.size() - maxNumberOfItems; i++) {
+      ItemEntity itemEntity = sortedEntityList.get(i);
+      if (itemEntity != null && itemEntity.isAlive()) {
+        log.debug("Removing item {}", itemEntity);
+        itemEntity.remove(false);
+      }
+    }
+    cleanUpRunning = false;
+  }
+
   public static Integer getNumberOfItems(String worldName, String itemName) {
     return itemEntityMap.getOrDefault('[' + worldName + ']' + itemName, new LinkedHashSet<>())
         .size();
-  }
-
-  public static void cleanupItems(String worldName) {
-    String worldNamePrefix = '[' + worldName + ']';
-    int maxNumberOfItemsAllowed = maxNumberOfItemsPerType / 2;
-    Map<String, Set<ItemEntity>> itemEntityMap = ItemEntityManager.getItemEntityMap();
-    for (Map.Entry<String, Set<ItemEntity>> itemEntities : itemEntityMap.entrySet()) {
-      if (itemEntities.getKey().startsWith(worldNamePrefix)) {
-        String itemName = itemEntities.getKey().substring(worldNamePrefix.length());
-        cleanupItems(worldName, itemName, maxNumberOfItemsAllowed);
-      }
-    }
-  }
-
-  public static void cleanupItems(String worldName, String itemName, int maxNumberOfItemsAllowed) {
-    Set<ItemEntity> itemEntities =
-        itemEntityMap.getOrDefault('[' + worldName + ']' + itemName, new LinkedHashSet<>());
-    if (itemEntities.isEmpty() || itemEntities.size() <= maxNumberOfItemsAllowed) {
-      return;
-    }
-    for (int i = itemEntities.size(); i > maxNumberOfItemsAllowed; i--) {
-      Optional<ItemEntity> firstItemEntity = itemEntities.stream().findFirst();
-      if (firstItemEntity.isPresent()) {
-        ItemEntity itemEntity = firstItemEntity.get();
-        log.debug("Removing item {}", itemEntity);
-        itemEntity.remove(false);
-        itemEntities.remove(itemEntity);
-      }
-    }
   }
 
   public static Map<String, Set<ItemEntity>> getItemEntityMap() {

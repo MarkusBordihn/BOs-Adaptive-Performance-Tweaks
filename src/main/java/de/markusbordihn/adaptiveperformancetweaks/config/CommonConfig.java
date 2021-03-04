@@ -178,13 +178,13 @@ public final class CommonConfig {
       viewAreaDistanceFactor = builder
           .comment(
               "Factor per view-distance which is used to calculated the view area of the player.")
-          .defineInRange("viewAreaDistanceFactor", 0.8, 0.1, 1);
+          .defineInRange("viewAreaDistanceFactor", 0.75, 0.1, 1);
       builder.pop();
 
       builder.comment("View / render distance optimization.").push("View Distance");
       viewDistanceMax = builder.defineInRange("viewDistanceMax", 16, 2, 32);
       viewDistanceMin = builder.defineInRange("viewDistanceMin", 2, 2, 16);
-      viewDistanceDefault = builder.defineInRange("viewDistanceDefault", 10, 2, 16);
+      viewDistanceDefault = builder.defineInRange("viewDistanceDefault", 8, 2, 16);
       builder.pop();
 
       builder.push("Gamerule");

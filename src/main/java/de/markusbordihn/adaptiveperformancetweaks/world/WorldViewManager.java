@@ -35,9 +35,9 @@ import de.markusbordihn.adaptiveperformancetweaks.Manager;
 @EventBusSubscriber
 public class WorldViewManager extends Manager {
   private static Map<String, Integer> viewDistancePerWorld = new HashMap<>();
-  private static int viewDistanceMin = 2;
-  private static int viewDistanceMax = 16;
-  private static int viewDistanceDefault = 10;
+  private static int viewDistanceMin = COMMON.viewDistanceMin.get();
+  private static int viewDistanceMax = COMMON.viewDistanceMax.get();
+  private static int viewDistanceDefault = COMMON.viewDistanceDefault.get();
 
   @SubscribeEvent
   public static void onServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
@@ -74,6 +74,14 @@ public class WorldViewManager extends Manager {
     }
     serverWorld.getChunkProvider().setViewDistance(viewDistance);
     viewDistancePerWorld.put(serverWorldName, viewDistance);
+  }
+
+  public static void setDefaultViewDistance(ServerWorld serverWorld) {
+    setViewDistance(serverWorld, viewDistanceDefault);
+  }
+
+  public static void setAvgViewDistance(ServerWorld serverWorld) {
+    setViewDistance(serverWorld, (int) Math.round((viewDistanceDefault + viewDistanceMin) / 2.0));
   }
 
   public static void increaseViewDistance(ServerWorld serverWorld) {

@@ -27,6 +27,7 @@ import net.minecraftforge.fml.common.Mod;
 import de.markusbordihn.adaptiveperformancetweaks.Optimization;
 import de.markusbordihn.adaptiveperformancetweaks.gamerules.GameRuleManager;
 import de.markusbordihn.adaptiveperformancetweaks.world.WorldViewManager;
+import de.markusbordihn.adaptiveperformancetweaks.server.ServerLoad;
 import de.markusbordihn.adaptiveperformancetweaks.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.server.ServerManager;
 
@@ -40,14 +41,20 @@ public class PlayerOptimization extends Optimization {
       ServerPlayerEntity player = ServerManager.getPlayerByUsername(username);
       log.info("Optimize Player Login for {} {}", username, player);
 
-      // Decrease initial view distance to for a faster login process.
-      // This will be increased with the next view distance optimization after 10-20secs.
-      if (Boolean.TRUE.equals(COMMON.optimizeViewDistance.get())) {
-        WorldViewManager.decreaseViewDistance(player.getServerWorld());
-      }
+      if (PlayerManager.getNumberOfPlayers() == 0
+          && (ServerLoad.hasLowServerLoad() || ServerLoad.hasNormalServerLoad())) {
+        WorldViewManager.setAvgViewDistance(player.getServerWorld());
+      } else {
 
-      // Decrease random ticks during the login process
-      GameRuleManager.decreaseRandomTickSpeed();
+        // Decrease initial view distance to for a faster login process.
+        // This will be increased with the next view distance optimization after 10-20secs.
+        if (Boolean.TRUE.equals(COMMON.optimizeViewDistance.get())) {
+          WorldViewManager.decreaseViewDistance(player.getServerWorld());
+        }
+
+        // Decrease random ticks during the login process
+        GameRuleManager.decreaseRandomTickSpeed();
+      }
     }
   }
 

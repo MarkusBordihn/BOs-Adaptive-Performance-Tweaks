@@ -42,7 +42,7 @@ public class ServerManager extends Manager {
   private static final short OPTIMIZATION_TICK = 12 * 20;
 
   @SubscribeEvent
-  public static void onServerStarting(FMLServerStartingEvent event) {
+  public static void handleServerStartingEvent(FMLServerStartingEvent event) {
     log.info("Game Difficulty {}",
         ServerLifecycleHooks.getCurrentServer().getServerConfiguration().getDifficulty());
     ServerLoad.measureLoad();

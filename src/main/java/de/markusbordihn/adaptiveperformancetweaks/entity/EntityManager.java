@@ -56,17 +56,17 @@ public class EntityManager extends Manager {
   @SubscribeEvent(priority = EventPriority.HIGH)
   public static void handleEntityJoinWorldEvent(EntityJoinWorldEvent event) {
     Entity entity = event.getEntity();
-    String entityName = entity.getEntityString();
 
+    // Ignore entity which are handled by other instances.
+    if (entity instanceof ItemEntity || entity instanceof LightningBoltEntity) {
+      return;
+    }
+
+    String entityName = entity.getEntityString();
     if (denyList.contains(entityName)) {
       log.debug("Removing denied entity {}", entityName);
       entity.remove();
       event.setCanceled(true);
-      return;
-    }
-
-    // ToDo: Adding BulletEntity support
-    if (entity instanceof LightningBoltEntity) {
       return;
     }
 
@@ -76,12 +76,6 @@ public class EntityManager extends Manager {
       log.debug("Ignore custom entity {} with name {}", entityName,
           entity.getCustomName().getString());
     } else {
-
-      if (entity instanceof ItemEntity) {
-        ItemEntityManager.handleItemEntityJoinWorldEvent(event);
-        return;
-      }
-
       if (entity instanceof MonsterEntity) {
         MonsterEntityManager.handleMonsterEntityJoinWorldEvent(event);
         // ToDo: Adding MonsterEntityManager to allow cleanup of specific Monsters
@@ -109,12 +103,12 @@ public class EntityManager extends Manager {
   public static void handleEntityLeaveWorldEvent(EntityLeaveWorldEvent event) {
     Entity entity = event.getEntity();
 
-    if (entity instanceof LightningBoltEntity) {
+    // Ignore entity which are handled by other instances.
+    if (entity instanceof ItemEntity) {
       return;
     }
 
-    if (entity instanceof ItemEntity) {
-      ItemEntityManager.handleItemEntityLeaveWorldEvent(event);
+    if (entity instanceof LightningBoltEntity) {
       return;
     }
 

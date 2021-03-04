@@ -42,10 +42,10 @@ public class PlayerManager extends Manager {
   private static boolean hasPlayers = false;
   private static int playerCount = 0;
   private static short ticks = 0;
-  private static int validationTimeout = 40;
+  private static int validationTimeout = 60;
 
   @SubscribeEvent
-  public static void onServerStarting(FMLServerStartingEvent event) {
+  public static void handleServerStartingEvent(FMLServerStartingEvent event) {
     for (ServerPlayerEntity player : ServerManager.getPlayers()) {
       playerValidationList.add(new PlayerValidation(player));
     }
@@ -156,7 +156,7 @@ public class PlayerManager extends Manager {
     return hasPlayers;
   }
 
-  public static int getCurrentPlayerCount() {
+  public static int getNumberOfPlayers() {
     return playerCount;
   }
 
