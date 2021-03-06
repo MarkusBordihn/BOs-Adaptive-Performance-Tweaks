@@ -70,6 +70,7 @@ With the setting file you can disable / enable each of these individual features
 This is a list of the currently supported mods within the config file for individual settings.
 
 - [Aquaculture 2][aquaculture]
+- [Dungeons Mod][dungeons_mod]
 - [Ice and Fire: Dragons][iceandfire]
 - [Mekanism Additions][mekanismadditions]
 - [Quark][quark]
@@ -137,12 +138,13 @@ The mod will not help so much for extensive red stone constructions, custom spaw
 - [RandomPatches (Forge)][random_patches] Collection of bug fixes and quality of life improvements for Minecraft
 
 [logo]: logo.png
-[ftb_backups]: https://www.curseforge.com/minecraft/mc-mods/ftb-backups
-[clumps]: https://www.curseforge.com/minecraft/mc-mods/clumps
-[random_patches]: https://www.curseforge.com/minecraft/mc-mods/randompatches-forge
 [aquaculture]: https://www.curseforge.com/minecraft/mc-mods/aquaculture
+[clumps]: https://www.curseforge.com/minecraft/mc-mods/clumps
+[dungeons_mod]: https://www.curseforge.com/minecraft/mc-mods/dungeons-mod
+[ftb_backups]: https://www.curseforge.com/minecraft/mc-mods/ftb-backups
 [iceandfire]: https://www.curseforge.com/minecraft/mc-mods/ice-and-fire-dragons
 [mekanismadditions]: https://www.curseforge.com/minecraft/mc-mods/mekanism-additions
 [quark]: https://www.curseforge.com/minecraft/mc-mods/quark
+[random_patches]: https://www.curseforge.com/minecraft/mc-mods/randompatches-forge
 [savageandravage]: https://www.curseforge.com/minecraft/mc-mods/savage-and-ravage
 [theabyss]: https://www.curseforge.com/minecraft/mc-mods/the-abyss-chapter-ii

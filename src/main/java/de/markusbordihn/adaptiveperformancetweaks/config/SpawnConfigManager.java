@@ -45,6 +45,7 @@ public class SpawnConfigManager extends Manager {
   public static void calculateSpawnRates() {
     log.info("Pre-calculate entity spawns rates for Players and World");
     AquacultureConfig.addSpawnRates(spawnConfigPerPlayer, spawnConfigPerWorld);
+    DungeonsmodConfig.addSpawnRates(spawnConfigPerPlayer, spawnConfigPerWorld);
     IceAndFireConfig.addSpawnRates(spawnConfigPerPlayer, spawnConfigPerWorld);
     MekanismAdditions.addSpawnRates(spawnConfigPerPlayer, spawnConfigPerWorld);
     MinecraftConfig.addSpawnRates(spawnConfigPerPlayer, spawnConfigPerWorld, spawnConfigSpecial);

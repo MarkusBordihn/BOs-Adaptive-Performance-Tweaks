@@ -48,8 +48,7 @@ public final class CommonConfig {
 
   static {
     com.electronwill.nightconfig.core.Config.setInsertionOrderPreserved(true);
-    final Pair<Config, ForgeConfigSpec> specPair =
-        new ForgeConfigSpec.Builder().configure(Config::new);
+    final Pair<Config, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Config::new);
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
     log.info("Registering common config ...");
@@ -102,6 +101,12 @@ public final class CommonConfig {
     public final ForgeConfigSpec.IntValue modAquacultureMaxFishPerPlayer;
     public final ForgeConfigSpec.IntValue modAquacultureMaxFishPerWorld;
 
+    public final ForgeConfigSpec.BooleanValue modDungeonsmodEnabled;
+    public final ForgeConfigSpec.IntValue modDungeonsmodMaxHostileMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue modDungeonsmodMaxHostileMobsPerWorld;
+    public final ForgeConfigSpec.IntValue modDungeonsmodMaxBossesPerPlayer;
+    public final ForgeConfigSpec.IntValue modDungeonsmodMaxBossesPerWorld;
+
     public final ForgeConfigSpec.BooleanValue modIceandfireEnabled;
     public final ForgeConfigSpec.IntValue modIceandfireMaxPassiveMobsPerPlayer;
     public final ForgeConfigSpec.IntValue modIceandfireMaxPassiveMobsPerWorld;
@@ -138,46 +143,42 @@ public final class CommonConfig {
       builder.comment("Adaptive Performance Tweaks (General configuration)");
 
       builder.push("Optimization");
-      optimizePlayerLogin =
-          builder.comment("Enable/Disable optimization which are happening during player login.")
-              .define("optimizePlayerLogin", true);
-      optimizeViewDistance =
-          builder.comment("Enable/Disable view distance optimization depending on the server load.")
-              .define("optimizeViewDistance", true);
-      optimizePassiveMobs =
-          builder.comment("Enable/Disable passive mobs optimization depending on the server load.")
-              .define("optimizePassiveMobs", true);
-      optimizeNeutralMobs =
-          builder.comment("Enable/Disable neutral mobs optimization depending on the server load.")
-              .define("optimizeNeutralMobs", true);
-      optimizeHostileMobs =
-          builder.comment("Enable/Disable hostile mobs optimization depending on the server load.")
-              .define("optimizeHostileMobs", true);
+      optimizePlayerLogin = builder.comment("Enable/Disable optimization which are happening during player login.")
+          .define("optimizePlayerLogin", true);
+      optimizeViewDistance = builder.comment("Enable/Disable view distance optimization depending on the server load.")
+          .define("optimizeViewDistance", true);
+      optimizePassiveMobs = builder.comment("Enable/Disable passive mobs optimization depending on the server load.")
+          .define("optimizePassiveMobs", true);
+      optimizeNeutralMobs = builder.comment("Enable/Disable neutral mobs optimization depending on the server load.")
+          .define("optimizeNeutralMobs", true);
+      optimizeHostileMobs = builder.comment("Enable/Disable hostile mobs optimization depending on the server load.")
+          .define("optimizeHostileMobs", true);
       builder.pop();
 
       builder.push("Limits");
-      maxNumberOfItemsPerType = builder.comment(
-          "Defines the max. number of items per type which are allowed to lay around in the world.")
-          .defineInRange("maxNumberOfItemsPerType", 32, 10, 100);
+      maxNumberOfItemsPerType = builder
+          .comment("Defines the max. number of items per type which are allowed to lay around in the world.")
+          .defineInRange("maxNumberOfItemsPerType", 16, 10, 100);
       maxNumberOfItems = builder
-          .comment("Defines the max. number of items which are allowed to lay around in the world.")
-          .defineInRange("maxNumberOfItems", 128, 10, 1000);
+          .comment("Defines the max. number of items which are allowed to lay around in a single world.")
+          .defineInRange("maxNumberOfItems", 64, 10, 1000);
       builder.pop();
 
-      builder.comment("View area optimization, should be only adjusted if really needed!")
-          .push("View Area");
-      viewAreaXFactor = builder.comment(
-          "Max. number of X blocks relative to the player position considered inside a chunk for the view area.")
+      builder.comment("View area optimization, should be only adjusted if really needed!").push("View Area");
+      viewAreaXFactor = builder
+          .comment(
+              "Max. number of X blocks relative to the player position considered inside a chunk for the view area.")
           .defineInRange("viewAreaXFactor", 16, 1, 16);
-      viewAreaYFactor = builder.comment(
-          "Max. number of Y blocks relative to the player position considered inside a chunk for the view area.")
+      viewAreaYFactor = builder
+          .comment(
+              "Max. number of Y blocks relative to the player position considered inside a chunk for the view area.")
           .defineInRange("viewAreaYFactor", 4, 1, 16);
-      viewAreaZFactor = builder.comment(
-          "Max. number of Z blocks relative to the player position considered inside a chunk for the view area.")
+      viewAreaZFactor = builder
+          .comment(
+              "Max. number of Z blocks relative to the player position considered inside a chunk for the view area.")
           .defineInRange("viewAreaZFactor", 16, 1, 16);
       viewAreaDistanceFactor = builder
-          .comment(
-              "Factor per view-distance which is used to calculated the view area of the player.")
+          .comment("Factor per view-distance which is used to calculated the view area of the player.")
           .defineInRange("viewAreaDistanceFactor", 0.75, 0.1, 1);
       builder.pop();
 
@@ -188,55 +189,48 @@ public final class CommonConfig {
       builder.pop();
 
       builder.push("Gamerule");
-      gameruleEnabled = builder.comment("Enable/Disable dynamic gamerule adjustments.")
-          .define("gameruleEnabled", true);
-      maxEntityCramming =
-          builder.comment("Defines the max. numbers of mob singularity on a single block.")
-              .defineInRange("maxEntityCramming", 24, 0, 64);
+      gameruleEnabled = builder.comment("Enable/Disable dynamic gamerule adjustments.").define("gameruleEnabled", true);
+      maxEntityCramming = builder.comment("Defines the max. numbers of mob singularity on a single block.")
+          .defineInRange("maxEntityCramming", 24, 0, 64);
       randomTickSpeed = builder.comment("Defines the speed of crops grow, leaf decay, redstone, ... per chunk")
           .defineInRange("randomTickSpeed", 3, 1, 256);
       builder.pop();
 
-      builder.comment(StringUtils.join(Arrays.asList("Spawn optimization",
-          "Playing with difficulty HARD could exceed the max number of hostile entity from the ",
-          "config file by 1.5x.",
-          "These settings affects all mobs which are not covered by other parts of this config"),
+      builder.comment(StringUtils.join(
+          Arrays.asList("Spawn optimization",
+              "Playing with difficulty HARD could exceed the max number of hostile entity from the ",
+              "config file by 1.5x.",
+              "These settings affects all mobs which are not covered by other parts of this config"),
           System.lineSeparator())).push("Spawn");
-      maxEntityPerPlayer =
-          builder.comment("Defines the max. number of a mobs per entity type within player radius.")
-              .defineInRange("maxEntityPerPlayer", 8, 1, 10);
-      maxEntityPerWorld =
-          builder.comment("Defines the max. number of mobs per entity type within a world.")
-              .defineInRange("maxEntityPerWorld", 40, 1, 100);
-      spawnAllowList = builder.comment(
-          "General allow list for spawn entities (e.g. minecraft:squid) which should be ignored for optimization.")
+      maxEntityPerPlayer = builder.comment("Defines the max. number of a mobs per entity type within player radius.")
+          .defineInRange("maxEntityPerPlayer", 8, 1, 10);
+      maxEntityPerWorld = builder.comment("Defines the max. number of mobs per entity type within a world.")
+          .defineInRange("maxEntityPerWorld", 40, 1, 100);
+      spawnAllowList = builder
+          .comment(
+              "General allow list for spawn entities (e.g. minecraft:squid) which should be ignored for optimization.")
           .define("allowList", new ArrayList<String>(Arrays.asList("")));
-      spawnDenyList = builder.comment(
-          "General deny list for spawn entities (e.g. minecraft:bat) to no longer spawn in all worlds.")
+      spawnDenyList = builder
+          .comment("General deny list for spawn entities (e.g. minecraft:bat) to no longer spawn in all worlds.")
           .define("denyList", new ArrayList<String>(Arrays.asList("")));
 
       builder.push("Minecraft");
       minecraftEnabled = builder.define("minecraftEnabled", true);
       minecraftMaxPassiveMobsPerPlayer = builder.comment("e.g. mostly bats")
           .defineInRange("minecraftMaxPassiveMobsPerPlayer", 1, 1, 10);
-      minecraftMaxPassiveMobsPerWorld =
-          builder.defineInRange("minecraftMaxPassiveMobsPerWorld", 6, 1, 100);
+      minecraftMaxPassiveMobsPerWorld = builder.defineInRange("minecraftMaxPassiveMobsPerWorld", 6, 1, 100);
       minecraftMaxNeutralMobsPerPlayer = builder.comment("e.g. sheep, pig, horse, fox, ...")
           .defineInRange("minecraftMaxNeutralMobsPerPlayer", 4, 1, 10);
-      minecraftMaxNeutralMobsPerWorld =
-          builder.defineInRange("minecraftMaxNeutralMobsPerWorld", 20, 1, 100);
+      minecraftMaxNeutralMobsPerWorld = builder.defineInRange("minecraftMaxNeutralMobsPerWorld", 20, 1, 100);
       minecraftMaxHostileMobsPerPlayer = builder.comment("e.g. slime, spider, zombie, ravager, ...")
           .defineInRange("minecraftMaxHostileMobsPerPlayer", 2, 1, 10);
-      minecraftMaxHostileMobsPerWorld =
-          builder.defineInRange("minecraftMaxHostileMobsPerWorld", 10, 1, 100);
+      minecraftMaxHostileMobsPerWorld = builder.defineInRange("minecraftMaxHostileMobsPerWorld", 10, 1, 100);
       minecraftMaxWaterPassiveMobsPerPlayer = builder.comment("e.g. mostly fish")
           .defineInRange("minecraftMaxWaterPassiveMobsPerPlayer", 1, 1, 10);
-      minecraftMaxWaterPassiveMobsPerWorld =
-          builder.defineInRange("minecraftMaxWaterPassiveMobsPerWorld", 10, 1, 100);
+      minecraftMaxWaterPassiveMobsPerWorld = builder.defineInRange("minecraftMaxWaterPassiveMobsPerWorld", 10, 1, 100);
       minecraftMaxWaterNeutralMobsPerPlayer = builder.comment("e.g. squid, dolphin, ...")
           .defineInRange("minecraftMaxWaterNeutralMobsPerPlayer", 2, 1, 10);
-      minecraftMaxWaterNeutralMobsPerWorld =
-          builder.defineInRange("minecraftMaxWaterNeutralMobsPerWorld", 10, 1, 100);
+      minecraftMaxWaterNeutralMobsPerWorld = builder.defineInRange("minecraftMaxWaterNeutralMobsPerWorld", 10, 1, 100);
       builder.pop();
 
       builder.pop();
@@ -260,81 +254,68 @@ public final class CommonConfig {
 
       builder.push("Aquaculture 2");
       modAquacultureEnabled = builder.define("modAquacultureEnabled", true);
-      modAquacultureMaxFishPerPlayer =
-          builder.defineInRange("modAquacultureMaxFishPerPlayer", 1, 1, 10);
-      modAquacultureMaxFishPerWorld =
-          builder.defineInRange("modAquacultureMaxFishPerWorld", 8, 1, 100);
+      modAquacultureMaxFishPerPlayer = builder.defineInRange("modAquacultureMaxFishPerPlayer", 1, 1, 10);
+      modAquacultureMaxFishPerWorld = builder.defineInRange("modAquacultureMaxFishPerWorld", 8, 1, 100);
+      builder.pop();
+
+      builder.push("Dungeons Mod");
+      modDungeonsmodEnabled = builder.define("modDungeonsmodEnabled", true);
+      modDungeonsmodMaxHostileMobsPerPlayer = builder.defineInRange("modDungeonsmodMaxHostileMobsPerPlayer", 4, 1, 10);
+      modDungeonsmodMaxHostileMobsPerWorld = builder.defineInRange("modDungeonsmodMaxHostileMobsPerWorld", 12, 1, 100);
+      modDungeonsmodMaxBossesPerPlayer = builder.defineInRange("modDungeonsmodMaxBossesPerPlayer", 2, 1, 10);
+      modDungeonsmodMaxBossesPerWorld = builder.defineInRange("modDungeonsmodMaxBossesPerWorld", 4, 1, 100);
       builder.pop();
 
       builder.push("Ice and Fire: Dragons");
       modIceandfireEnabled = builder.define("modIceandfireEnabled", true);
-      modIceandfireMaxPassiveMobsPerPlayer =
-          builder.defineInRange("modIceandfireMaxPassiveMobsPerPlayer", 2, 1, 10);
-      modIceandfireMaxPassiveMobsPerWorld =
-          builder.defineInRange("modIceandfireMaxPassiveMobsPerWorld", 10, 1, 100);
-      modIceandfireMaxNeutralMobsPerPlayer =
-          builder.defineInRange("modIceandfireMaxNeutralMobsPerPlayer", 1, 1, 10);
-      modIceandfireMaxNeutralMobsPerWorld =
-          builder.defineInRange("modIceandfireMaxNeutralMobsPerWorld", 10, 1, 100);
-      modIceandfireMaxHostileMobsPerPlayer =
-          builder.defineInRange("modIceandfireMaxHostileMobsPerPlayer", 2, 1, 10);
-      modIceandfireMaxHostileMobsPerWorld =
-          builder.defineInRange("modIceandfireMaxHostileMobsPerWorld", 10, 1, 100);
-      modIceandfireMaxBossesPerPlayer =
-          builder.defineInRange("modIceandfireMaxBossesPerPlayer", 4, 1, 10);
-      modIceandfireMaxBossesPerWorld =
-          builder.defineInRange("modIceandfireMaxBossesPerWorld", 20, 1, 100);
+      modIceandfireMaxPassiveMobsPerPlayer = builder.defineInRange("modIceandfireMaxPassiveMobsPerPlayer", 2, 1, 10);
+      modIceandfireMaxPassiveMobsPerWorld = builder.defineInRange("modIceandfireMaxPassiveMobsPerWorld", 10, 1, 100);
+      modIceandfireMaxNeutralMobsPerPlayer = builder.defineInRange("modIceandfireMaxNeutralMobsPerPlayer", 1, 1, 10);
+      modIceandfireMaxNeutralMobsPerWorld = builder.defineInRange("modIceandfireMaxNeutralMobsPerWorld", 10, 1, 100);
+      modIceandfireMaxHostileMobsPerPlayer = builder.defineInRange("modIceandfireMaxHostileMobsPerPlayer", 2, 1, 10);
+      modIceandfireMaxHostileMobsPerWorld = builder.defineInRange("modIceandfireMaxHostileMobsPerWorld", 10, 1, 100);
+      modIceandfireMaxBossesPerPlayer = builder.defineInRange("modIceandfireMaxBossesPerPlayer", 4, 1, 10);
+      modIceandfireMaxBossesPerWorld = builder.defineInRange("modIceandfireMaxBossesPerWorld", 20, 1, 100);
       builder.pop();
 
       builder.push("Mekanism Additions");
       modMekanismadditionsEnabled = builder.define("modMekanismadditionsEnabled", true);
-      modMekanismadditionsMaxHostileMobsPerPlayer =
-          builder.defineInRange("modMekanismadditionsMaxHostileMobsPerPlayer", 2, 1, 10);
-      modMekanismadditionsMaxHostileMobsPerWorld =
-          builder.defineInRange("modMekanismadditionsMaxHostileMobsPerWorld", 10, 1, 100);
+      modMekanismadditionsMaxHostileMobsPerPlayer = builder.defineInRange("modMekanismadditionsMaxHostileMobsPerPlayer",
+          2, 1, 10);
+      modMekanismadditionsMaxHostileMobsPerWorld = builder.defineInRange("modMekanismadditionsMaxHostileMobsPerWorld",
+          10, 1, 100);
       builder.pop();
 
       builder.push("Quark");
       modQuarkEnabled = builder.define("modQuarkEnabled", true);
-      modQuarkMaxPassiveMobsPerPlayer =
-          builder.defineInRange("modQuarkMaxPassiveMobsPerPlayer", 2, 1, 10);
-      modQuarkMaxPassiveMobsPerWorld =
-          builder.defineInRange("modQuarkMaxPassiveMobsPerWorld", 10, 1, 100);
-      modQuarkMaxNeutralMobsPerPlayer =
-          builder.defineInRange("modQuarkMaxNeutralMobsPerPlayer", 1, 1, 10);
-      modQuarkMaxNeutralMobsPerWorld =
-          builder.defineInRange("modQuarkMaxNeutralMobsPerWorld", 10, 1, 100);
-      modQuarkMaxHostileMobsPerPlayer =
-          builder.defineInRange("modQuarkMaxHostileMobsPerPlayer", 2, 1, 10);
-      modQuarkMaxHostileMobsPerWorld =
-          builder.defineInRange("modQuarkMaxHostileMobsPerWorld", 10, 1, 100);
+      modQuarkMaxPassiveMobsPerPlayer = builder.defineInRange("modQuarkMaxPassiveMobsPerPlayer", 2, 1, 10);
+      modQuarkMaxPassiveMobsPerWorld = builder.defineInRange("modQuarkMaxPassiveMobsPerWorld", 10, 1, 100);
+      modQuarkMaxNeutralMobsPerPlayer = builder.defineInRange("modQuarkMaxNeutralMobsPerPlayer", 1, 1, 10);
+      modQuarkMaxNeutralMobsPerWorld = builder.defineInRange("modQuarkMaxNeutralMobsPerWorld", 10, 1, 100);
+      modQuarkMaxHostileMobsPerPlayer = builder.defineInRange("modQuarkMaxHostileMobsPerPlayer", 2, 1, 10);
+      modQuarkMaxHostileMobsPerWorld = builder.defineInRange("modQuarkMaxHostileMobsPerWorld", 10, 1, 100);
       builder.pop();
 
       builder.push("Savage & Ravage");
       modSavageandravageEnabled = builder.define("modSavageandravageEnabled", true);
-      modSavageandravageMaxHostileMobsPerPlayer =
-          builder.defineInRange("modSavageandravageMaxHostileMobsPerPlayer", 4, 1, 10);
-      modSavageandravageMaxHostileMobsPerWorld =
-          builder.defineInRange("modSavageandravageMaxHostileMobsPerWorld", 10, 1, 100);
+      modSavageandravageMaxHostileMobsPerPlayer = builder.defineInRange("modSavageandravageMaxHostileMobsPerPlayer", 4,
+          1, 10);
+      modSavageandravageMaxHostileMobsPerWorld = builder.defineInRange("modSavageandravageMaxHostileMobsPerWorld", 10,
+          1, 100);
       builder.pop();
 
       builder.push("The Abyss: Chapter II");
       modTheabyssEnabled = builder.define("modTheabyssEnabled", true);
-      modTheabyssMaxPassiveMobsPerPlayer =
-          builder.defineInRange("modTheabyssMaxPassiveMobsPerPlayer", 2, 1, 10);
-      modTheabyssMaxPassiveMobsPerWorld =
-          builder.defineInRange("modTheabyssMaxPassiveMobsPerWorld", 10, 1, 100);
-      modTheabyssMaxHostileMobsPerPlayer =
-          builder.defineInRange("modTheabyssMaxHostileMobsPerPlayer", 4, 1, 10);
-      modTheabyssMaxHostileMobsPerWorld =
-          builder.defineInRange("modTheabyssMaxHostileMobsPerWorld", 10, 1, 100);
+      modTheabyssMaxPassiveMobsPerPlayer = builder.defineInRange("modTheabyssMaxPassiveMobsPerPlayer", 2, 1, 10);
+      modTheabyssMaxPassiveMobsPerWorld = builder.defineInRange("modTheabyssMaxPassiveMobsPerWorld", 10, 1, 100);
+      modTheabyssMaxHostileMobsPerPlayer = builder.defineInRange("modTheabyssMaxHostileMobsPerPlayer", 4, 1, 10);
+      modTheabyssMaxHostileMobsPerWorld = builder.defineInRange("modTheabyssMaxHostileMobsPerWorld", 10, 1, 100);
       builder.pop();
 
       builder.pop();
 
       builder.push("Debug");
-      logLevel = builder.comment("Changed the default log level to get more output.")
-          .define("logLevel", "info");
+      logLevel = builder.comment("Changed the default log level to get more output.").define("logLevel", "info");
       builder.pop();
     }
   }

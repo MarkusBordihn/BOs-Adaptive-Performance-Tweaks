@@ -116,7 +116,7 @@ public class GameRuleManager extends Manager {
       maxEntity = maxEntityCramming;
     }
     int currentMaxEntityCramming = gameRules.getInt(GameRules.MAX_ENTITY_CRAMMING);
-    if (currentMaxEntityCramming != maxEntityCramming) {
+    if (currentMaxEntityCramming != maxEntity) {
       log.debug("Changing maxEntityCramming from {} to {}", currentMaxEntityCramming,
       maxEntity);
       CommandManager

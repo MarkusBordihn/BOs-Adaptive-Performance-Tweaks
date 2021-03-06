@@ -32,6 +32,7 @@ import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.passive.WaterMobEntity;
+import net.minecraft.entity.projectile.DamagingProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.world.Difficulty;
 import net.minecraftforge.event.DifficultyChangeEvent;
@@ -128,6 +129,11 @@ public class SpawnManager extends Manager {
     // Entity instance checks to ignore specific and short living entities like projectiles.
     if (entity instanceof ProjectileEntity) {
       log.trace("Projectile {}", entity);
+      return;
+    }
+
+    if (entity instanceof DamagingProjectileEntity) {
+      log.trace("Damaging Projectile {}", entity);
       return;
     }
 
