@@ -36,22 +36,34 @@ public class CommandItems extends CustomCommand {
   private static final CommandItems command = new CommandItems();
 
   public static ArgumentBuilder<CommandSource, ?> register() {
-    return Commands.literal("items").requires(cs -> cs.hasPermissionLevel(2)).executes(command);
+    return Commands.literal("items").requires(cs -> cs.hasPermissionLevel(2)).executes(command)
+        .then(Commands.literal("optimize").executes(command::runOptimize));
   }
 
   @Override
   public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
-    Map<String, Set<ItemEntity>> itemEntityMap = ItemEntityManager.getItemEntityMap();
-    if (itemEntityMap.isEmpty()) {
+    Map<String, Set<ItemEntity>> itemTypeEntityMap = ItemEntityManager.getItemTypeEntityMap();
+    if (itemTypeEntityMap.isEmpty()) {
       sendFeedback(context, "Unable to find any items entity. World is not loaded or nor items dropped?");
     } else {
       sendFeedback(context, "Items Entity Overview\n===");
-      for (Map.Entry<String, Set<ItemEntity>> itemEntities : itemEntityMap.entrySet()) {
+      for (Map.Entry<String, Set<ItemEntity>> itemEntities : itemTypeEntityMap.entrySet()) {
         int numOfItems = itemEntities.getValue().size();
         if (numOfItems > 0) {
           sendFeedback(context, String.format("\u25CB %s %s", itemEntities.getKey(), numOfItems));
         }
       }
+    }
+    return 0;
+  }
+
+  public int runOptimize(CommandContext<CommandSource> context) {
+    sendFeedback(context, "Running manual Item Optimization ...");
+    int numberOfRemovedItems = ItemEntityManager.optimizeItems();
+    if (numberOfRemovedItems > 0) {
+      sendFeedback(context, String.format("Removed items %s from all worlds!", numberOfRemovedItems));
+    } else {
+      sendFeedback(context, "Optimization was not needed!");
     }
     return 0;
   }

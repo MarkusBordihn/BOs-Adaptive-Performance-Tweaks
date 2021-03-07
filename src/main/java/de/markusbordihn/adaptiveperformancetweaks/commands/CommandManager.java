@@ -64,6 +64,7 @@ public class CommandManager extends Manager {
     }
     log.debug("Execute Server Command: {}", command);
     Commands commands = minecraftServer.getCommandManager();
-    commands.handleCommand(minecraftServer.getCommandSource(), command);
+    CommandSource commandSource = minecraftServer.getCommandSource().withFeedbackDisabled();
+    commands.handleCommand(commandSource, command);
   }
 }

@@ -19,8 +19,9 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.server;
 
-import de.markusbordihn.adaptiveperformancetweaks.server.ServerLoad.ServerLoadLevel;
 import net.minecraftforge.eventbus.api.Event;
+
+import de.markusbordihn.adaptiveperformancetweaks.server.ServerLoad.ServerLoadLevel;
 
 public class ServerLoadEvent extends Event {
   private ServerLoadLevel serverLoadLevel = ServerLoadLevel.NORMAL;

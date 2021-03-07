@@ -19,12 +19,7 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.server;
 
-import java.util.List;
-
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.management.PlayerList;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -37,18 +32,16 @@ import de.markusbordihn.adaptiveperformancetweaks.Manager;
 public class ServerManager extends Manager {
 
   private static short ticks = 0;
-  private static final short SERVER_LOAD_TICK = 10;
-  private static final short WORLD_LOAD_TICK = 11 * 20;
-  private static final short OPTIMIZATION_TICK = 12 * 20;
+  private static final short SERVER_LOAD_TICK = 8;
+  private static final short WORLD_LOAD_TICK = 9 * 20;
+  private static final short OPTIMIZATION_TICK = 10 * 20;
 
   @SubscribeEvent
   public static void handleServerStartingEvent(FMLServerStartingEvent event) {
-    log.info("Game Difficulty {}",
+    log.info("Game Difficulty is set to {}",
         ServerLifecycleHooks.getCurrentServer().getServerConfiguration().getDifficulty());
-    ServerLoad.measureLoad();
-    ServerLoad.postServerLoadEvent();
-    ServerWorldLoad.measureLoad();
-    ServerWorldLoad.postServerWorldLoadEvent();
+    ServerLoad.measureLoadAndPost();
+    ServerWorldLoad.measureLoadAndPost();
   }
 
   @SubscribeEvent
@@ -59,34 +52,13 @@ public class ServerManager extends Manager {
     }
 
     if (ticks == SERVER_LOAD_TICK) {
-      ServerLoad.measureLoad();
+      ServerLoad.measureLoadAndPost();
     } else if (ticks == WORLD_LOAD_TICK) {
-      ServerWorldLoad.measureLoad();
+      ServerWorldLoad.measureLoadAndPost();
     } else if (ticks == OPTIMIZATION_TICK) {
-      ServerLoad.postServerLoadEvent();
-      ServerWorldLoad.postServerWorldLoadEvent();
+      MinecraftForge.EVENT_BUS.post(new OptimizationEvent());
       ticks = 0;
     }
-  }
-
-  public static MinecraftServer getCurrentServer() {
-    return ServerLifecycleHooks.getCurrentServer();
-  }
-
-  public static java.lang.Iterable<ServerWorld> getWorlds() {
-    return ServerLifecycleHooks.getCurrentServer().getWorlds();
-  }
-
-  public static PlayerList getPlayerList() {
-    return ServerLifecycleHooks.getCurrentServer().getPlayerList();
-  }
-
-  public static List<ServerPlayerEntity> getPlayers() {
-    return ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers();
-  }
-
-  public static ServerPlayerEntity getPlayerByUsername(String username) {
-    return ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByUsername(username);
   }
 
 }

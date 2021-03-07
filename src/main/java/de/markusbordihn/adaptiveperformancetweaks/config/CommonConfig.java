@@ -158,7 +158,7 @@ public final class CommonConfig {
       builder.push("Limits");
       maxNumberOfItemsPerType = builder
           .comment("Defines the max. number of items per type which are allowed to lay around in the world.")
-          .defineInRange("maxNumberOfItemsPerType", 16, 10, 100);
+          .defineInRange("maxNumberOfItemsPerType", 32, 10, 100);
       maxNumberOfItems = builder
           .comment("Defines the max. number of items which are allowed to lay around in a single world.")
           .defineInRange("maxNumberOfItems", 64, 10, 1000);

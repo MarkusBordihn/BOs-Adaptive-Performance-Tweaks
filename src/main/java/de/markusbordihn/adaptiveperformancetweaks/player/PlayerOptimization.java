@@ -22,23 +22,22 @@ package de.markusbordihn.adaptiveperformancetweaks.player;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import de.markusbordihn.adaptiveperformancetweaks.Optimization;
 import de.markusbordihn.adaptiveperformancetweaks.gamerules.GameRuleManager;
 import de.markusbordihn.adaptiveperformancetweaks.world.WorldViewManager;
 import de.markusbordihn.adaptiveperformancetweaks.server.ServerLoad;
-import de.markusbordihn.adaptiveperformancetweaks.server.ServerLoadEvent;
-import de.markusbordihn.adaptiveperformancetweaks.server.ServerManager;
 
-@Mod.EventBusSubscriber
+@EventBusSubscriber
 public class PlayerOptimization extends Optimization {
 
   @SubscribeEvent
   public static void handlePlayerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {
     String username = event.getPlayer().getName().getString();
     if (!username.isEmpty() && Boolean.TRUE.equals(COMMON.optimizePlayerLogin.get())) {
-      ServerPlayerEntity player = ServerManager.getPlayerByUsername(username);
+      ServerPlayerEntity player = ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByUsername(username);
       log.info("Optimize Player Login for {} {}", username, player);
 
       if (PlayerManager.getNumberOfPlayers() == 0
@@ -55,18 +54,6 @@ public class PlayerOptimization extends Optimization {
         // Decrease random ticks during the login process
         GameRuleManager.decreaseRandomTickSpeed();
       }
-    }
-  }
-
-  @SubscribeEvent
-  public static void handleServerLoadEvent(ServerLoadEvent event) {
-    if (!PlayerManager.hasPlayers()) {
-      return;
-    }
-
-    for (ServerPlayerEntity player : ServerManager.getPlayers()) {
-      String username = player.getName().getString();
-      log.debug("Optimizing player {}", username);
     }
   }
 

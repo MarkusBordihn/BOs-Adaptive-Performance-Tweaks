@@ -62,8 +62,7 @@ public class PlayerPosition {
   }
 
   public boolean update(String worldName) {
-    if (!this.worldName.equals(worldName)
-        || this.viewDistance != WorldViewManager.getViewDistance(worldName)
+    if (!this.worldName.equals(worldName) || this.viewDistance != WorldViewManager.getViewDistance(worldName)
         || this.posX != (int) this.player.getPosX() || this.posY != (int) this.player.getPosY()
         || this.posZ != (int) this.player.getPosZ()) {
       updateViewDistance(WorldViewManager.getViewDistance(worldName));
@@ -81,12 +80,9 @@ public class PlayerPosition {
   public void updateViewDistance(int viewDistance) {
     int viewDistanceFactor = (int) Math.round(this.viewDistance * this.viewAreaDistanceFactorBase);
     this.viewDistance = viewDistance;
-    this.viewAreaXFactor =
-        Math.max(this.viewAreaXFactorBase, this.viewAreaXFactorBase * viewDistanceFactor);
-    this.viewAreaYFactor =
-        Math.max(this.viewAreaYFactorBase, this.viewAreaYFactorBase * viewDistanceFactor);
-    this.viewAreaZFactor =
-        Math.max(this.viewAreaZFactorBase, this.viewAreaZFactorBase * viewDistanceFactor);
+    this.viewAreaXFactor = Math.max(this.viewAreaXFactorBase, this.viewAreaXFactorBase * viewDistanceFactor);
+    this.viewAreaYFactor = Math.max(this.viewAreaYFactorBase, this.viewAreaYFactorBase * viewDistanceFactor);
+    this.viewAreaZFactor = Math.max(this.viewAreaZFactorBase, this.viewAreaZFactorBase * viewDistanceFactor);
   }
 
   public boolean isInsidePlayerViewArea(String worldName, int x, int y, int z) {
@@ -94,8 +90,7 @@ public class PlayerPosition {
       return false;
     }
     calculateViewArea();
-    return ((this.viewAreaStartX < x && x < this.viewAreaStopX)
-        && (this.viewAreaStartY < y && y < this.viewAreaStopY)
+    return ((this.viewAreaStartX < x && x < this.viewAreaStopX) && (this.viewAreaStartY < y && y < this.viewAreaStopY)
         && (this.viewAreaStartZ < z && z < this.viewAreaStopZ));
   }
 
@@ -123,10 +118,9 @@ public class PlayerPosition {
   }
 
   public String toString() {
-    return String.format(
-        "PlayerPosition[Player{name: '%s', x:%s, y:%s, z:%s}, Range{x:%s to %s, y:%s to %s, z:%s to %s}]",
-        this.playerName, this.posX, this.posY, this.posZ, this.viewAreaStartX, this.viewAreaStopX,
-        this.viewAreaStartY, this.viewAreaStopY, this.viewAreaStartZ, this.viewAreaStopZ);
+    return "PlayerPosition[Player{name: '" + this.playerName + "', x:" + this.posX + ", y:" + this.posY + ", z:"
+        + this.posZ + "}, Range{x:" + this.viewAreaStartX + " to " + this.viewAreaStopX + ", y:" + this.viewAreaStartY
+        + " to " + this.viewAreaStopY + ", z:" + this.viewAreaStopY + " to " + this.viewAreaStopZ + "}]";
   }
 
 }

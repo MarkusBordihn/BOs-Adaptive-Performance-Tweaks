@@ -81,7 +81,8 @@ This is a list of the currently supported mods within the config file for indivi
 
 ### Items Usage
 
-`/aptweaks items` shows an overview about the number of currently loaded monsters.
+`/aptweaks items` shows an overview about the number of currently loaded items.
+`/aptweaks items optimize` runs manual Items Optimization, normally not needed.
 
 ### Monster Usage
 

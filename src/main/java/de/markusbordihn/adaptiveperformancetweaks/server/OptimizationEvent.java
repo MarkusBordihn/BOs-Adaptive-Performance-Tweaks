@@ -17,35 +17,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.adaptiveperformancetweaks.world;
+package de.markusbordihn.adaptiveperformancetweaks.server;
 
-import java.util.HashMap;
-import java.util.Map;
+import net.minecraftforge.eventbus.api.Event;
 
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
-
-import de.markusbordihn.adaptiveperformancetweaks.Manager;
-
-@EventBusSubscriber
-public class WorldManager extends Manager {
-
-  private static Map<String, ServerWorld> worlds = new HashMap<>();
-
-  @SubscribeEvent
-  public static void handleServerStartingEvent(FMLServerStartingEvent event) {
-    java.lang.Iterable<ServerWorld> serverWorlds = ServerLifecycleHooks.getCurrentServer().getWorlds();
-    for (ServerWorld serverWorld : serverWorlds) {
-      String worldName = serverWorld.getDimensionKey().getLocation().toString();
-      worlds.put(worldName, serverWorld);
-    }
-  }
-
-  public static ServerWorld getWorldByName(String worldName) {
-    return worlds.get(worldName);
-  }
+public class OptimizationEvent extends Event {
 
 }

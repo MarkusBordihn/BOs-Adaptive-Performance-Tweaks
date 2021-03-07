@@ -82,7 +82,7 @@ public class EntityManager extends Manager {
       }
 
       if (entity instanceof PlayerEntity) {
-        log.info("Player {} joined world.", entity);
+        log.debug("Player {} joined world.", entity);
         return;
       }
     }
@@ -118,7 +118,7 @@ public class EntityManager extends Manager {
     }
 
     if (entity instanceof PlayerEntity) {
-      log.info("Player {} leaved world.", entity);
+      log.debug("Player {} leaved world.", entity);
       return;
     }
 

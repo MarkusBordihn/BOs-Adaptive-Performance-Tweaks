@@ -30,9 +30,9 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
-import de.markusbordihn.adaptiveperformancetweaks.server.ServerManager;
 
 @Mod.EventBusSubscriber
 public class PlayerManager extends Manager {
@@ -46,7 +46,7 @@ public class PlayerManager extends Manager {
 
   @SubscribeEvent
   public static void handleServerStartingEvent(FMLServerStartingEvent event) {
-    for (ServerPlayerEntity player : ServerManager.getPlayers()) {
+    for (ServerPlayerEntity player : ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers()) {
       playerValidationList.add(new PlayerValidation(player));
     }
   }
@@ -55,8 +55,8 @@ public class PlayerManager extends Manager {
   public static void handlePlayerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {
     String username = event.getPlayer().getName().getString();
     if (!username.isEmpty()) {
-      log.info("Player {} {} logged in.", username, event.getEntity());
-      ServerPlayerEntity player = ServerManager.getPlayerByUsername(username);
+      log.debug("Player {} {} logged in.", username, event.getEntity());
+      ServerPlayerEntity player = ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByUsername(username);
 
       // Add protection during login process and give 1 heal
       if (Boolean.TRUE.equals(COMMON.optimizePlayerLogin.get())) {
@@ -72,7 +72,7 @@ public class PlayerManager extends Manager {
   public static void handlePlayerLoggedOutEvent(PlayerEvent.PlayerLoggedOutEvent event) {
     String username = event.getPlayer().getName().getString();
     if (!username.isEmpty()) {
-      log.info("Player {} logged out.", event.getEntity());
+      log.debug("Player {} logged out.", event.getEntity());
       removePlayer(username);
     }
   }
@@ -88,7 +88,7 @@ public class PlayerManager extends Manager {
       for (PlayerValidation playerValidation : playerValidationList) {
         String username = playerValidation.getUsername();
         if (playerValidation.hasPlayerMoved()) {
-          log.info("User {} was successful validated ...", username);
+          log.debug("User {} was successful validated ...", username);
           addPlayer(username);
         } else if (playerValidation.getValidationTimeElapsed() / 1000 >= validationTimeout) {
           log.warn("User validation for {} timed out after {} sec", username, validationTimeout);
@@ -100,7 +100,7 @@ public class PlayerManager extends Manager {
   }
 
   private static void addPlayer(String username) {
-    ServerPlayerEntity player = ServerManager.getPlayerByUsername(username);
+    ServerPlayerEntity player =ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByUsername(username);
     usernamePlayerMap.put(username, player);
     for (PlayerValidation playerValidation : playerValidationList) {
       if (username.equals(playerValidation.getUsername())) {
@@ -118,9 +118,9 @@ public class PlayerManager extends Manager {
       }
     }
     playerList.add(player);
-    playerCount = ServerManager.getCurrentServer().getCurrentPlayerCount();
+    playerCount = ServerLifecycleHooks.getCurrentServer().getCurrentPlayerCount();
     hasPlayers = true;
-    log.info("Added {} to PlayerMap: {}", username, usernamePlayerMap);
+    log.debug("Added {} to PlayerMap: {}", username, usernamePlayerMap);
   }
 
   private static void removePlayer(String username) {
@@ -130,13 +130,13 @@ public class PlayerManager extends Manager {
         playerValidationList.remove(playerValidation);
       }
     }
-    ServerPlayerEntity player = ServerManager.getPlayerByUsername(username);
+    ServerPlayerEntity player = ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByUsername(username);
     if (playerList.contains(player)) {
       playerList.remove(player);
     }
     playerCount--;
     hasPlayers = playerCount > 0;
-    log.info("Remove {} from PlayerMap: {}", username, usernamePlayerMap);
+    log.debug("Remove {} from PlayerMap: {}", username, usernamePlayerMap);
   }
 
 

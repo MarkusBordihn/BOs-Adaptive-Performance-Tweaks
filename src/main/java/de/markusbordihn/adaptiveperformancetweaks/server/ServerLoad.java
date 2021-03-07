@@ -40,7 +40,7 @@ public class ServerLoad {
     VERY_LOW, LOW, NORMAL, MEDIUM, HIGH, VERY_HIGH
   }
 
-  public static void measureLoad() {
+  public static void measureLoadAndPost() {
     MinecraftServer currentServer =  ServerLifecycleHooks.getCurrentServer();
     if (currentServer == null) {
       return;
@@ -56,6 +56,7 @@ public class ServerLoad {
       log.info("Server load changed from {} to {} (avg. {})", lastServerLoad, currentServerLoad,
           avgTickTime);
     }
+    MinecraftForge.EVENT_BUS.post(new ServerLoadEvent(currentServerLoad, lastServerLoad));
   }
 
   public static ServerLoadLevel getServerLoadLevelFromTickTime(double tickTime) {
@@ -99,9 +100,5 @@ public class ServerLoad {
 
   public static double getAvgTickTime() {
     return avgTickTime;
-  }
-
-  public static void postServerLoadEvent() {
-    MinecraftForge.EVENT_BUS.post(new ServerLoadEvent(currentServerLoad, lastServerLoad));
   }
 }

@@ -21,35 +21,35 @@ package de.markusbordihn.adaptiveperformancetweaks.entity;
 
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.ConcurrentModificationException;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
+import de.markusbordihn.adaptiveperformancetweaks.server.OptimizationEvent;
 import de.markusbordihn.adaptiveperformancetweaks.server.ServerLoadEvent;
 
 @EventBusSubscriber
 public class ItemEntityManager extends Manager {
 
-  private static Map<String, Set<ItemEntity>> itemEntityMap = new HashMap<>();
+  private static Map<String, Set<ItemEntity>> itemTypeEntityMap = new HashMap<>();
+  private static Map<String, Set<ItemEntity>> itemWorldEntityMap = new HashMap<>();
   private static Integer maxNumberOfItems = COMMON.maxNumberOfItems.get();
   private static Integer maxNumberOfItemsPerType = COMMON.maxNumberOfItemsPerType.get();
-  private static Integer itemCounter = 0;
   private static boolean hasHighServerLoad = false;
-  private static boolean optimizationIsRunning = false;
+  private static boolean needsOptimization = false;
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
@@ -67,6 +67,17 @@ public class ItemEntityManager extends Manager {
   @SubscribeEvent
   public static void handleServerLoadEvent(ServerLoadEvent event) {
     hasHighServerLoad = event.hasHighServerLoad();
+    if (hasHighServerLoad) {
+      needsOptimization = true;
+    }
+  }
+
+  @SubscribeEvent
+  public static void handleOptimizationEvent(OptimizationEvent event) {
+    if (needsOptimization) {
+      optimizeItems();
+      needsOptimization = false;
+    }
   }
 
   @SubscribeEvent(priority = EventPriority.HIGH)
@@ -84,34 +95,57 @@ public class ItemEntityManager extends Manager {
     if (itemName == null) {
       itemName = itemEntity.getEntityString();
     }
+
+    // Removed dropped air blocks because these are not used at all by the players.
+    if (itemName.equals("block.minecraft.air")) {
+      itemEntity.remove(false);
+      event.setResult(Event.Result.DENY);
+      return;
+    }
+
+    // Get world name and start processing of data
     String worldName = itemEntity.getEntityWorld().getDimensionKey().getLocation().toString();
-    Set<ItemEntity> itemEntities = itemEntityMap.get('[' + worldName + ']' + itemName);
-    if (itemEntities == null) {
-      itemEntities = new LinkedHashSet<>();
-      itemEntityMap.put('[' + worldName + ']' + itemName, itemEntities);
-    }
-    itemEntities.add(itemEntity);
-    int numberOfItemEntities = itemEntities.size();
-
     if (log.isDebugEnabled()) {
-      log.debug("Item {} {} ({}) joined {}.", itemName, itemEntity.getDisplayName().getString(), numberOfItemEntities,
-          worldName);
+      log.debug("Item {} {} joined {}.", itemName, itemEntity.getDisplayName().getString(), worldName);
     }
 
-    // Automatic cleanup if we a reaching the maxNumberOfItemsPerType.
+    // Handles items per world
+    Set<ItemEntity> itemWorldEntities = itemWorldEntityMap.get(worldName);
+    if (itemWorldEntities == null) {
+      itemWorldEntities = new LinkedHashSet<>();
+      itemWorldEntityMap.put(worldName, itemWorldEntities);
+    }
+    itemWorldEntities.add(itemEntity);
+
+    int numberOfItemWorldEntities = itemWorldEntities.size();
+    if (numberOfItemWorldEntities > maxNumberOfItems) {
+      ItemEntity firsItemWorldEntity = itemWorldEntities.iterator().next();
+      log.debug("[Item World Limit {}] Removing item {}", numberOfItemWorldEntities, firsItemWorldEntity);
+      firsItemWorldEntity.remove(false);
+      itemWorldEntities.remove(firsItemWorldEntity);
+      itemTypeEntityMap.getOrDefault('[' + worldName + ']' + itemName, new LinkedHashSet<>())
+          .remove(firsItemWorldEntity);
+    }
+
+    // Handles items per type and world
+    Set<ItemEntity> itemTypeEntities = itemTypeEntityMap.get('[' + worldName + ']' + itemName);
+    if (itemTypeEntities == null) {
+      itemTypeEntities = new LinkedHashSet<>();
+      itemTypeEntityMap.put('[' + worldName + ']' + itemName, itemTypeEntities);
+    }
+    itemTypeEntities.add(itemEntity);
+
+    int numberOfItemEntities = itemTypeEntities.size();
     if (numberOfItemEntities > maxNumberOfItemsPerType) {
-      ItemEntity firstItemEntity = itemEntities.iterator().next();
-      log.debug("Removing item {}", firstItemEntity);
+      ItemEntity firstItemEntity = itemTypeEntities.iterator().next();
+      log.debug("[Item Type Limit {}] Removing item {}", numberOfItemEntities, firstItemEntity);
       firstItemEntity.remove(false);
-      itemEntities.remove(firstItemEntity);
+      itemTypeEntities.remove(firstItemEntity);
+      itemWorldEntities.remove(firstItemEntity);
     }
 
-    // Global Item counter to handle global number of items.
-    if (itemCounter++ >= maxNumberOfItems) {
-      cleanupItems(worldName);
-    }
-
-    // Lower the lifespan by 0.6 of the item, if the server has high server load.
+    // Lower the lifespan by 0.6 of the item, if the item has any lifespan and
+    // server has high server load.
     if (hasHighServerLoad && itemEntity.lifespan > 1) {
       itemEntity.lifespan = (int) Math.round(itemEntity.lifespan * 0.6);
     }
@@ -130,62 +164,68 @@ public class ItemEntityManager extends Manager {
       itemName = itemEntity.getEntityString();
     }
     String worldName = itemEntity.getEntityWorld().getDimensionKey().getLocation().toString();
-    Set<ItemEntity> itemEntities = itemEntityMap.getOrDefault('[' + worldName + ']' + itemName, new LinkedHashSet<>());
-    itemEntities.remove(itemEntity);
-    if (itemCounter > 0) {
-      itemCounter--;
-    }
+
+    // Remove item from world map.
+    itemWorldEntityMap.getOrDefault(worldName, new LinkedHashSet<>()).remove(itemEntity);
+
+    // Remove item from world type map.
+    itemTypeEntityMap.getOrDefault('[' + worldName + ']' + itemName, new LinkedHashSet<>()).remove(itemEntity);
+
     if (log.isDebugEnabled()) {
-      log.debug("Item {} {} ({}) leaved {}.", itemName, itemEntity.getDisplayName().getString(), itemEntities.size(),
-          worldName);
+      log.debug("Item {} {} leaved {}.", itemName, itemEntity.getDisplayName().getString(), worldName);
     }
   }
 
-  public static void cleanupItems(String worldName) {
-    if (optimizationIsRunning) {
-      return;
-    }
-    optimizationIsRunning = true;
-    String worldNamePrefix = '[' + worldName + ']';
-    // 1. Get relevant items for the world.
-    Set<ItemEntity> relevantItems = new HashSet<>();
-    for (Map.Entry<String, Set<ItemEntity>> itemEntities : itemEntityMap.entrySet()) {
-      if (itemEntities.getKey().startsWith(worldNamePrefix)) {
-        try {
-          relevantItems.addAll(itemEntities.getValue());
-        } catch (ConcurrentModificationException e) {
-          // If several cleanup processes run in parallel it could be that they are
-          // overlapping.
-          // This is fine, because the next cleanup will pick up missing items.
-          optimizationIsRunning = false;
-          return;
+  public static int optimizeItems() {
+    log.debug("[Optimize Items] Received request to optimize items ...");
+    int numberOfRemovedItems = 0;
+
+    // Optimize Items by World
+    int maxNumberOfOptimizedWorldItems = (int) Math.round(maxNumberOfItems * 0.9);
+    for (Map.Entry<String, Set<ItemEntity>> itemWorldEntities : itemWorldEntityMap.entrySet()) {
+      Set<ItemEntity> itemWorldEntitiesValues = itemWorldEntities.getValue();
+      if (itemWorldEntitiesValues.size() > maxNumberOfOptimizedWorldItems) {
+        List<ItemEntity> sortedItemWorldEntitiesValues = itemWorldEntitiesValues.stream()
+            .sorted(Comparator.comparing(ItemEntity::getEntityId)).collect(Collectors.toList());
+        for (int i = 0; i < sortedItemWorldEntitiesValues.size() - maxNumberOfOptimizedWorldItems; i++) {
+          ItemEntity itemEntity = sortedItemWorldEntitiesValues.get(i);
+          if (itemEntity.isAddedToWorld()) {
+            itemEntity.remove(false);
+            numberOfRemovedItems++;
+          }
         }
       }
     }
-    // 2. Sort list by entityId in a sorted list.
-    List<ItemEntity> sortedEntityList = relevantItems.stream().sorted(Comparator.comparing(ItemEntity::getEntityId))
-        .collect(Collectors.toList());
-    // 3. Remove first added items.
-    for (int i = 0; i < sortedEntityList.size() - maxNumberOfItems; i++) {
-      ItemEntity itemEntity = sortedEntityList.get(i);
-      removeItem(itemEntity);
-    }
-    optimizationIsRunning = false;
-  }
 
-  public static void removeItem(ItemEntity itemEntity) {
-    if (itemEntity == null || !itemEntity.isAddedToWorld()) {
-      return;
+    // Optimize Items by Type and World
+    int maxNumberOfOptimizedTypeItems = (int) Math.round(maxNumberOfItemsPerType * 0.9);
+    for (Map.Entry<String, Set<ItemEntity>> itemTypeEntities : itemTypeEntityMap.entrySet()) {
+      Set<ItemEntity> itemTypeEntitiesValues = itemTypeEntities.getValue();
+      if (itemTypeEntitiesValues.size() > maxNumberOfOptimizedTypeItems) {
+        List<ItemEntity> sortedItemTypeEntitiesValues = itemTypeEntitiesValues.stream()
+            .sorted(Comparator.comparing(ItemEntity::getEntityId)).collect(Collectors.toList());
+        for (int i = 0; i < sortedItemTypeEntitiesValues.size() - maxNumberOfOptimizedTypeItems; i++) {
+          ItemEntity itemEntity = sortedItemTypeEntitiesValues.get(i);
+          if (itemEntity.isAddedToWorld()) {
+            itemEntity.remove(false);
+            numberOfRemovedItems++;
+          }
+        }
+      }
     }
-    itemEntity.remove(false);
-    log.debug("Removing item {}", itemEntity);
+    if (numberOfRemovedItems > 0) {
+      log.debug("[Optimized Items] Removed {} items from all worlds!", numberOfRemovedItems);
+    } else {
+      log.debug("[Optimized Items] Found no relevant items which should be removed!", numberOfRemovedItems);
+    }
+    return numberOfRemovedItems;
   }
 
   public static Integer getNumberOfItems(String worldName, String itemName) {
-    return itemEntityMap.getOrDefault('[' + worldName + ']' + itemName, new LinkedHashSet<>()).size();
+    return itemTypeEntityMap.getOrDefault('[' + worldName + ']' + itemName, new LinkedHashSet<>()).size();
   }
 
-  public static Map<String, Set<ItemEntity>> getItemEntityMap() {
-    return itemEntityMap;
+  public static Map<String, Set<ItemEntity>> getItemTypeEntityMap() {
+    return itemTypeEntityMap;
   }
 }

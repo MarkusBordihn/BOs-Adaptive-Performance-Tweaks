@@ -26,8 +26,10 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 
@@ -41,25 +43,26 @@ public class ServerWorldLoad {
     VERY_LOW, LOW, NORMAL, MEDIUM, HIGH, VERY_HIGH
   }
 
-  public static void measureLoad() {
-    java.lang.Iterable<ServerWorld> serverWorlds = ServerManager.getWorlds();
+  public static void measureLoadAndPost() {
+    MinecraftServer minecraftServer = ServerLifecycleHooks.getCurrentServer();
+    java.lang.Iterable<ServerWorld> serverWorlds =  minecraftServer.getWorlds();
     for (ServerWorld serverWorld : serverWorlds) {
-      long[] tickTimes =
-          ServerManager.getCurrentServer().getTickTime(serverWorld.getDimensionKey());
+      long[] tickTimes = minecraftServer.getTickTime(serverWorld.getDimensionKey());
       if (tickTimes == null) {
         return;
       }
       double avgTickTime = Arrays.stream(tickTimes).average().orElse(Double.NaN) / 1000000;
       ServerWorldLoadLevel loadLevel = getServerWorldLoadLevelFromTickTime(avgTickTime);
-      ServerWorldLoadLevel lastLoadLevel =
-          worldLoadLevel.getOrDefault(serverWorld, ServerWorldLoadLevel.NORMAL);
+      ServerWorldLoadLevel lastLoadLevel = worldLoadLevel.getOrDefault(serverWorld, ServerWorldLoadLevel.NORMAL);
       lastWorldLoadLevel.put(serverWorld, lastLoadLevel);
       worldLoad.put(serverWorld, avgTickTime);
       worldLoadLevel.put(serverWorld, loadLevel);
+
       if (loadLevel != lastLoadLevel) {
-        log.info("World load for {} changed from {} to {} (avg. {})",
-            serverWorld.getDimensionKey().getLocation(), lastLoadLevel, loadLevel, avgTickTime);
+        log.info("World load for {} changed from {} to {} (avg. {})", serverWorld.getDimensionKey().getLocation(),
+            lastLoadLevel, loadLevel, avgTickTime);
       }
+      MinecraftForge.EVENT_BUS.post(new ServerWorldLoadEvent(serverWorld, loadLevel, lastLoadLevel));
     }
   }
 
@@ -86,18 +89,6 @@ public class ServerWorldLoad {
 
   public static Map<ServerWorld, ServerWorldLoadLevel> getWorldLoadLevel() {
     return worldLoadLevel;
-  }
-
-  public static void postServerWorldLoadEvent() {
-    worldLoadLevel.forEach((ServerWorld serverWorld, ServerWorldLoadLevel serverWorldLoadLevel) -> {
-      if (serverWorld == null) {
-        return;
-      }
-      ServerWorldLoadLevel lastServerWorldLoadLevel =
-          lastWorldLoadLevel.getOrDefault(serverWorld, ServerWorldLoadLevel.NORMAL);
-      MinecraftForge.EVENT_BUS.post(
-          new ServerWorldLoadEvent(serverWorld, serverWorldLoadLevel, lastServerWorldLoadLevel));
-    });
   }
 
 }
