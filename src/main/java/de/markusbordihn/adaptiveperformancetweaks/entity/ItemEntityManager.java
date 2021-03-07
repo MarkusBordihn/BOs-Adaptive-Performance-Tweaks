@@ -96,10 +96,8 @@ public class ItemEntityManager extends Manager {
       itemName = itemEntity.getEntityString();
     }
 
-    // Removed dropped air blocks because these are not used at all by the players.
+    // Ignore dropped air blocks because these are not used at all by the players.
     if (itemName.equals("block.minecraft.air")) {
-      itemEntity.remove(false);
-      event.setResult(Event.Result.DENY);
       return;
     }
 
@@ -163,6 +161,14 @@ public class ItemEntityManager extends Manager {
     if (itemName == null) {
       itemName = itemEntity.getEntityString();
     }
+
+    // Ignore dropped air blocks because these are not used at all by the players.
+    // Warning: Removing the air block is a bad idea, because it's used to pre-reserve the space.
+    if (itemName.equals("block.minecraft.air")) {
+      return;
+    }
+
+    // Get world name and start processing of data
     String worldName = itemEntity.getEntityWorld().getDimensionKey().getLocation().toString();
 
     // Remove item from world map.
