@@ -139,6 +139,8 @@ public final class CommonConfig {
     public final ForgeConfigSpec.IntValue modTheabyssMaxHostileMobsPerPlayer;
     public final ForgeConfigSpec.IntValue modTheabyssMaxHostileMobsPerWorld;
 
+    public final ForgeConfigSpec.BooleanValue burnCreeperDuringDaylight;
+
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment("Adaptive Performance Tweaks (General configuration)");
 
@@ -313,6 +315,12 @@ public final class CommonConfig {
       builder.pop();
 
       builder.pop();
+
+      builder.push("Experimental");
+      burnCreeperDuringDaylight = builder.comment("Burn Crepper during day light.")
+          .define("burnCreeperDuringDaylight", false);
+      builder.pop();
+
 
       builder.push("Debug");
       logLevel = builder.comment("Changed the default log level to get more output.").define("logLevel", "info");

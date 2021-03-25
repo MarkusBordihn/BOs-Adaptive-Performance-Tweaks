@@ -31,6 +31,7 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
 import de.markusbordihn.adaptiveperformancetweaks.server.ServerLoadEvent;
@@ -40,6 +41,12 @@ public class MonsterEntityManager extends Manager {
 
   private static Map<String, Set<MonsterEntity>> monsterEntityMap = new HashMap<>();
   private static boolean hasHighServerLoad = false;
+  private static boolean burnCreeperDuringDaylight = COMMON.burnCreeperDuringDaylight.get();
+
+  @SubscribeEvent
+  public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+    burnCreeperDuringDaylight = COMMON.burnCreeperDuringDaylight.get();
+  }
 
   @SubscribeEvent
   public static void handleServerLoadEvent(ServerLoadEvent event) {
@@ -69,23 +76,23 @@ public class MonsterEntityManager extends Manager {
     String monsterName = monsterEntity.getEntityString();
     String monsterDisplayName = monsterEntity.getDisplayName().getString();
     String worldName = monsterEntity.getEntityWorld().getDimensionKey().getLocation().toString();
-    Set<MonsterEntity> monsterEntities =
-        monsterEntityMap.getOrDefault('[' + worldName + ']' + monsterName, new LinkedHashSet<>());
+    Set<MonsterEntity> monsterEntities = monsterEntityMap.getOrDefault('[' + worldName + ']' + monsterName,
+        new LinkedHashSet<>());
     monsterEntities.remove(monsterEntity);
     log.debug("Monster {} {} leaved {}.", monsterName, monsterDisplayName, worldName);
   }
 
   public static void cleanupMonster() {
+    if (!burnCreeperDuringDaylight) {
+      return;
+    }
     for (Map.Entry<String, Set<MonsterEntity>> monsterEntities : monsterEntityMap.entrySet()) {
       for (MonsterEntity monsterEntity : monsterEntities.getValue()) {
         World entityWorld = monsterEntity.getEntityWorld();
-        // Burn specific Monster during days to control population
-        if (entityWorld.isDaytime()) {
-          if (monsterEntity instanceof CreeperEntity) {
-            if (entityWorld.canSeeSky(monsterEntity.getPosition())) {
-              monsterEntity.setFire(60);
-            }
-          }
+        // Burn Crepper during days to control population
+        if (entityWorld.isDaytime() && monsterEntity instanceof CreeperEntity
+            && entityWorld.canSeeSky(monsterEntity.getPosition())) {
+          monsterEntity.setFire(60);
         }
       }
     }

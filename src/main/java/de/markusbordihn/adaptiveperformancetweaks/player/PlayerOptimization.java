@@ -53,6 +53,9 @@ public class PlayerOptimization extends Optimization {
 
         // Decrease random ticks during the login process
         GameRuleManager.decreaseRandomTickSpeed();
+
+        // Decrease entity cramming during the login process
+        GameRuleManager.decreaseMaxEntityCramming();
       }
     }
   }
