@@ -330,11 +330,11 @@ public final class CommonConfig {
 
   @SubscribeEvent
   public static void handleModConfigLoadEvent(ModConfig.Loading event) {
-    log.info("Loaded common config file {}", event.getConfig().getFileName());
+    log.info("Loaded common config file {} ...", event.getConfig().getFileName());
   }
 
   @SubscribeEvent
   public static void handleModConfigReloadEvent(ModConfig.Reloading event) {
-    log.info("Reloaded common config file {}", event.getConfig().getFileName());
+    log.info("Reloaded common config file {} ...", event.getConfig().getFileName());
   }
 }

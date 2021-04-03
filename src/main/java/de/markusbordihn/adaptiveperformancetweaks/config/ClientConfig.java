@@ -64,11 +64,11 @@ public class ClientConfig {
 
   @SubscribeEvent
   public static void handleModConfigLoadEvent(ModConfig.Loading event) {
-    log.info("Loading client config file {}", event.getConfig().getFileName());
+    log.info("Loading client config file {} ...", event.getConfig().getFileName());
   }
 
   @SubscribeEvent
   public static void handleModConfigReloadEvent(ModConfig.Reloading event) {
-    log.info("Reloading client config file {}", event.getConfig().getFileName());
+    log.info("Reloading client config file {} ...", event.getConfig().getFileName());
   }
 }
