@@ -181,7 +181,6 @@ But I still recommend this mod to make it easier to find lagging entities or to 
 - [RandomPatches (Forge)][random_patches] Collection of bug fixes and quality of life improvements for Minecraft
 - [Spark][spark] Performance profiling plugin/mod for Minecraft clients, servers and proxies.
 
-[logo]: logo.png
 [aquaculture]: https://www.curseforge.com/minecraft/mc-mods/aquaculture
 [clumps]: https://www.curseforge.com/minecraft/mc-mods/clumps
 [dungeons_mod]: https://www.curseforge.com/minecraft/mc-mods/dungeons-mod
@@ -195,3 +194,5 @@ But I still recommend this mod to make it easier to find lagging entities or to 
 [savageandravage]: https://www.curseforge.com/minecraft/mc-mods/savage-and-ravage
 [spark]: https://www.curseforge.com/minecraft/mc-mods/spark
 [theabyss]: https://www.curseforge.com/minecraft/mc-mods/the-abyss-chapter-ii
+
+[logo]: logo.png

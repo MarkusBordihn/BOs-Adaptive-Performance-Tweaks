@@ -28,4 +28,5 @@ public final class Constants {
   public static final String MOD_ID = "adaptive_performance_tweaks";
   public static final String MOD_NAME = "Adaptive Performance Tweaks";
   public static final String LOG_NAME = "APTweaks";
+  public static final String ISSUE_REPORT = "https://github.com/MarkusBordihn/adaptive_performance_tweaks/issues/";
 }
