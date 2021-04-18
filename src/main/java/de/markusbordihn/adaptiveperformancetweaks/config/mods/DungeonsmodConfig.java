@@ -21,19 +21,17 @@ package de.markusbordihn.adaptiveperformancetweaks.config.mods;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import net.minecraftforge.fml.ModList;
 
 public class DungeonsmodConfig extends SpawnConfigModSupport {
 
-  protected DungeonsmodConfig() {
-
-  }
+  private static final String NAME = "Dungeons Mod";
+  private static final String MOD_ID = "dungeonsmod";
 
   private static Set<String> hostileMobList = new HashSet<>(Arrays.asList(
-    // @formatter:off
+  // @formatter:off
     "dungeonsmod:anthermite",
     "dungeonsmod:crow",
     "dungeonsmod:deadhound",
@@ -57,7 +55,7 @@ public class DungeonsmodConfig extends SpawnConfigModSupport {
   ));
 
   private static Set<String> bossMobList = new HashSet<>(Arrays.asList(
-    // @formatter:off
+  // @formatter:off
     "dungeonsmod:crawler",
     "dungeonsmod:deserted",
     "dungeonsmod:ironslime",
@@ -67,20 +65,22 @@ public class DungeonsmodConfig extends SpawnConfigModSupport {
   // @formatter:on
   ));
 
-  public static void addSpawnRates(Map<String, Integer> spawnConfigPerPlayer,
-      Map<String, Integer> spawnConfigPerWorld) {
+  public static void addSpawnRates() {
     if (Boolean.FALSE.equals(COMMON.modDungeonsmodEnabled.get())
-        || !ModList.get().isLoaded("dungeonsmod")) {
+        || !ModList.get().isLoaded(MOD_ID)) {
       return;
     }
-    log.info("\u2713 Enable spawn rate control for Dungeons Mod");
-    for (String entity : hostileMobList) {
-      spawnConfigPerPlayer.put(entity, COMMON.modDungeonsmodMaxHostileMobsPerPlayer.get());
-      spawnConfigPerWorld.put(entity, COMMON.modDungeonsmodMaxHostileMobsPerWorld.get());
-    }
-    for (String entity : bossMobList) {
-      spawnConfigPerPlayer.put(entity, COMMON.modDungeonsmodMaxBossesPerPlayer.get());
-      spawnConfigPerWorld.put(entity, COMMON.modDungeonsmodMaxBossesPerWorld.get());
+    addSpawnRatesForHostileMobs(NAME, hostileMobList,
+        COMMON.modDungeonsmodMaxHostileMobsPerPlayer.get(),
+        COMMON.modDungeonsmodMaxHostileMobsPerWorld.get());
+    addSpawnRatesForBossMobs(NAME, bossMobList, COMMON.modDungeonsmodMaxBossesPerPlayer.get(),
+        COMMON.modDungeonsmodMaxBossesPerWorld.get());
+
+    // Only one rogue per player is enough.
+    addSpawnRateForMob("dungeonsmod:rogue", 1, 8);
+
+    if (Boolean.TRUE.equals(COMMON.modDungeonsmodOptimizeWhirlwind.get())) {
+      addSpawnRateForMob("dungeonsmod:whirlwind", 1, 2);
     }
   }
 

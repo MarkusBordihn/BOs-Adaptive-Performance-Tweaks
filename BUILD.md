@@ -2,27 +2,39 @@
 
 The mod was build in a [Visual Studio Code][visual_studio_code] environment, but you could technical use any other JAVA IDE as well.
 
-# Forge Docs
+## Forge Docs
 
 Please take a look at the [Forge Docs][forge_docs] to see an full overview of the Forge API.
 
-# Grandle
+## Grandle
 
 The build system is based on [gradle][gradle].
 
-# Testing
+## Testing
 
 For testing you basically only need the following gradlew commands.
 
-## Test with Client
+### Test with Client
 
-`gradlew.bat runClient`
+`.\gradlew.bat runClient`
 
-## Test with Server
+### Test with Server
 
-`gradlew.bat runServer`
+`.\gradlew.bat runServer`
 
 Note: Make sure to read and accept the eula.txt inside the run directory, otherwise the server will not start.
+
+## CurseGrandle
+
+A gradle plugin for publishing artifacts to CurseForge.
+
+### Add Token
+
+`.\gradlew.bat addCredentials --key curseforge_api_token --value ...`
+
+### Remove Token
+
+`.\gradlew.bat removeCredentials --key curseforge_api_token`
 
 [forge_docs]: https://mcforge.readthedocs.io/en/latest/
 [gradle]: https://docs.gradle.org/

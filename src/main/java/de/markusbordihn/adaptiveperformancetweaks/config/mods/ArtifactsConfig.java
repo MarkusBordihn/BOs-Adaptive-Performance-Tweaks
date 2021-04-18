@@ -17,28 +17,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.adaptiveperformancetweaks.system;
+package de.markusbordihn.adaptiveperformancetweaks.config.mods;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
-import de.markusbordihn.adaptiveperformancetweaks.Manager;
+import net.minecraftforge.fml.ModList;
 
-public class ThreadManager extends Manager {
+public class ArtifactsConfig extends SpawnConfigModSupport {
 
-  private static final int MAX_DEPTH = 5;
-  private static ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+  private static final String NAME = "Artifacts";
+  private static final String MOD_ID = "artifacts";
 
-  public static List<Thread> getThreadUsage() {
-    List<Thread> threads = new ArrayList<>();
-    for(Long threadID : threadMXBean.getAllThreadIds()) {
-      ThreadInfo threadInfo = threadMXBean.getThreadInfo(threadID, MAX_DEPTH);
-      threads.add(new Thread(threadInfo));
+  private static Set<String> hostileMobList = new HashSet<>(Arrays.asList(
+  // @formatter:off
+    "artifacts:mimic"
+  // @formatter:on
+  ));
+
+  public static void addSpawnRates() {
+    if (Boolean.FALSE.equals(COMMON.modArtifactsEnabled.get()) || !ModList.get().isLoaded(MOD_ID)) {
+      return;
     }
-    return threads;
+    addSpawnRatesForHostileMobs(NAME, hostileMobList,
+        COMMON.modArtifactsMaxHostileMobsPerPlayer.get(),
+        COMMON.modArtifactsMaxHostileMobsPerWorld.get());
   }
 
 }

@@ -19,10 +19,9 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.commands;
 
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 
@@ -31,14 +30,26 @@ public class CommandKill extends CustomCommand {
   private static final CommandKill command = new CommandKill();
 
   public static ArgumentBuilder<CommandSource, ?> register() {
-    return Commands.literal("kill").requires(cs -> cs.hasPermissionLevel(2))
-        .then(Commands.argument("enable", StringArgumentType.string()).executes(command));
+    return Commands.literal("kill").requires(cs -> cs.hasPermissionLevel(2)).executes(command)
+        .then(Commands.literal("entities").executes(command::killEntities))
+        .then(Commands.literal("items").executes(command::killItems));
   }
 
   @Override
-  public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
-    final String enable = StringArgumentType.getString(context, "enable");
-    sendFeedback(context, "kill: " + enable);
+  public int run(CommandContext<CommandSource> context) {
+    sendFeedback(context,
+        "kill entities: kill all entities except players\nkill items: kill items entities");
     return 0;
   }
+
+  public int killEntities(CommandContext<CommandSource> context) {
+    CommandManager.executeUserCommand("kill @e[type=!player]");
+    return 0;
+  }
+
+  public int killItems(CommandContext<CommandSource> context) {
+    CommandManager.executeUserCommand("kill @e[type=item]");
+    return 0;
+  }
+
 }

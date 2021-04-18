@@ -32,9 +32,9 @@ import de.markusbordihn.adaptiveperformancetweaks.config.mods.*;
 @Mod.EventBusSubscriber
 public class SpawnConfigManager extends Manager {
 
-  private static Map<String, Integer> spawnConfigPerPlayer = new HashMap<>();
-  private static Map<String, Integer> spawnConfigPerWorld = new HashMap<>();
-  private static Map<String, Integer> spawnConfigSpecial = new HashMap<>();
+  public static Map<String, Integer> spawnConfigPerPlayer = new HashMap<>();
+  public static Map<String, Integer> spawnConfigPerWorld = new HashMap<>();
+  public static Map<String, Integer> spawnConfigSpecial = new HashMap<>();
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
 
   @SubscribeEvent
@@ -44,17 +44,24 @@ public class SpawnConfigManager extends Manager {
 
   public static void calculateSpawnRates() {
     log.info("Pre-calculate entity spawns rates for Players and World");
-    AquacultureConfig.addSpawnRates(spawnConfigPerPlayer, spawnConfigPerWorld);
-    DungeonsmodConfig.addSpawnRates(spawnConfigPerPlayer, spawnConfigPerWorld);
-    IceAndFireConfig.addSpawnRates(spawnConfigPerPlayer, spawnConfigPerWorld);
-    MekanismAdditions.addSpawnRates(spawnConfigPerPlayer, spawnConfigPerWorld);
-    MinecraftConfig.addSpawnRates(spawnConfigPerPlayer, spawnConfigPerWorld, spawnConfigSpecial);
-    QuarkConfig.addSpawnRates(spawnConfigPerPlayer, spawnConfigPerWorld);
-    SavageAndRavage.addSpawnRates(spawnConfigPerPlayer, spawnConfigPerWorld);
-    TheAbyssConfig.addSpawnRates(spawnConfigPerPlayer, spawnConfigPerWorld);
+    AlexMobsConfig.addSpawnRates();
+    AquacultureConfig.addSpawnRates();
+    ArtifactsConfig.addSpawnRates();
+    DungeonsmodConfig.addSpawnRates();
+    IceAndFireConfig.addSpawnRates();
+    MekanismAdditions.addSpawnRates();
+    MinecraftConfig.addSpawnRates();
+    MowziesMobsConfig.addSpawnRates();
+    QuarkConfig.addSpawnRates();
+    RatsConfig.addSpawnRates();
+    SavageAndRavageConfig.addSpawnRates();
+    StatuesConfig.addSpawnRates();
+    SupplementariesConfig.addSpawnRates();
+    TheAbyssConfig.addSpawnRates();
+    TinkersConstructConfig.addSpawnRates();
 
-    log.info("Added {} player spawn rules and {} world spawn rules.", spawnConfigPerPlayer.size(),
-        spawnConfigPerWorld.size());
+    log.info("Added {} player spawn rules, {} world spawn rules and {} special spawn rules.",
+        spawnConfigPerPlayer.size(), spawnConfigPerWorld.size(), spawnConfigSpecial.size());
   }
 
   public static int getSpawnLimitPerPlayer(String entityName) {
@@ -67,6 +74,10 @@ public class SpawnConfigManager extends Manager {
 
   public static int getSpawnerListSpecial(String entityName) {
     return spawnConfigPerWorld.get(entityName);
+  }
+
+  public static boolean hasSpawnLimit(String entityName) {
+    return spawnConfigPerPlayer.containsKey(entityName) || spawnConfigPerWorld.containsKey(entityName);
   }
 
   public static Map<String, Integer> getSpawnConfigPerPlayer() {

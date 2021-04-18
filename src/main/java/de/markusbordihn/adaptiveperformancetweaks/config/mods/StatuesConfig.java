@@ -17,19 +17,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.adaptiveperformancetweaks.system;
+package de.markusbordihn.adaptiveperformancetweaks.config.mods;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
-import de.markusbordihn.adaptiveperformancetweaks.Manager;
+import net.minecraftforge.fml.ModList;
 
-public class MemoryManager extends Manager {
+public class StatuesConfig extends SpawnConfigModSupport {
 
-  private static MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
+  private static final String NAME = "Statues";
+  private static final String MOD_ID = "statues";
 
-  public static MemoryInfo getMemoryUsage() {
-    return new MemoryInfo(memoryMXBean);
+  private static Set<String> passiveMobList = new HashSet<>(Arrays.asList(
+  // @formatter:off
+    "statues:statue_bat"
+  // @formatter:on
+  ));
+
+  public static void addSpawnRates() {
+    if (Boolean.FALSE.equals(COMMON.modStatuesEnabled.get()) || !ModList.get().isLoaded(MOD_ID)) {
+      return;
+    }
+    addSpawnRatesForPassiveMobs(NAME, passiveMobList,
+        COMMON.modStatuesMaxPassiveMobsPerPlayer.get(),
+        COMMON.modStatuesMaxPassiveMobsPerWorld.get());
   }
 
 }

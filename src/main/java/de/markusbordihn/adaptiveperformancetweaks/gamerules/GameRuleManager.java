@@ -67,14 +67,12 @@ public class GameRuleManager extends Manager {
       return;
     }
     gameRules = ServerLifecycleHooks.getCurrentServer().getGameRules();
-
     if (event.hasVeryHighServerLoad()) {
       decreaseMaxEntityCramming();
-    }
-    if (event.hasHighServerLoad()) {
       decreaseRandomTickSpeed();
-    }
-    if (event.hasLowServerLoad()) {
+    } else if (event.hasHighServerLoad()) {
+      decreaseRandomTickSpeed();
+    } else if (event.hasLowServerLoad()) {
       increaseRandomTickSpeed();
       increaseMaxEntityCramming();
     }
@@ -117,8 +115,7 @@ public class GameRuleManager extends Manager {
     }
     int currentMaxEntityCramming = gameRules.getInt(GameRules.MAX_ENTITY_CRAMMING);
     if (currentMaxEntityCramming != maxEntity) {
-      log.debug("Changing maxEntityCramming from {} to {}", currentMaxEntityCramming,
-      maxEntity);
+      log.debug("Changing maxEntityCramming from {} to {}", currentMaxEntityCramming, maxEntity);
       CommandManager
           .executeServerCommand(String.format("gamerule maxEntityCramming %s", maxEntity));
     }

@@ -2,8 +2,8 @@
 
 ![Adaptive Performance Tweaks][logo]
 
-Adaptive Performance Tweaks is a Minecraft Forge Mod which automatically adjust specific settings on the server and client side to allow a balanced TPS/FPS.
-The goal of this mod is to allow a smooth experience on a server with several (=> 120) Mods.
+Adaptive Performance Tweaks is a Minecraft Forge Mod which automatically adjust specific settings on the server to allow a more balanced TPS/FPS.
+The goal of this mod is to allow a smoother experience on a server with several (=> 180) Mods.
 
 **⚠️Please make sure to create regular backup of your world in case something goes wrong.**
 
@@ -69,13 +69,26 @@ With the setting file you can disable / enable each of these individual features
 
 This is a list of the currently supported mods within the config file for individual settings.
 
-- [Aquaculture 2][aquaculture]
-- [Dungeons Mod][dungeons_mod]
-- [Ice and Fire: Dragons][iceandfire]
-- [Mekanism Additions][mekanismadditions]
-- [Quark][quark]
-- [Savage & Ravage][savageandravage]
-- [The Abyss: Chapter II][theabyss]
+- ✅ [Alex's Mobs][alexmobs]
+- ✅ [Aquaculture 2][aquaculture]
+- ✅ [Artifacts][artifacts]
+- ✅ [Dungeons Mod][dungeons_mod]
+- ✅ [Ice and Fire: Dragons][iceandfire]
+- ✅ [Mekanism Additions][mekanismadditions]
+- ✅ [Quark][quark]
+- ✅ [Mowzie's Mobs][mowziesmobs]
+- ✅ [Savage & Ravage][savageandravage]
+- ✅ [Statues][statues]
+- ✅ [Supplementaries][supplementaries]
+- ✅ [The Abyss: Chapter II][theabyss]
+- ✅ [Tinkers' Construct][tinkersconstruct]
+- ✅ [The Twilight Forest][twilightforest]
+
+### ⛔ Unsupported Mods
+
+The follow mods are currently unsupported because of using outdated and/or unexpected ways of spawning mobs:
+
+- ❌ [Rats][rats]
 
 ## 🎱Commands
 
@@ -92,18 +105,21 @@ This is a list of the currently supported mods within the config file for indivi
 
 `/aptweaks spawner` shows an overview about the number of currently loaded mob spawners.
 
+### 👁️‍🗨️Kill Command
+
+`/aptweaks kill entities` kill all entities except players.
+`/aptweaks kill items` kill all item entities.
+
+### 👁️‍🗨️Spawn rules
+
+`/aptweaks spawnRules` shows the pre-calculated spawn rules.
+
 ### 👁️‍🗨️Debug
+
+The debug is helpful to understand an unexpected behave like to many or to less spawned mobs.
 
 `/aptweaks debug true` enables the debugging which will logged into debug.log file.
 `/aptweaks debug false` disables the debugging.
-
-### 👁️‍🗨️Memory Usage
-
-`/aptweaks memory` shows the current memory usage
-
-### 👁️‍🗨️Threads Usage
-
-`/aptweaks threads` shows the current threads (cpu) usage.
 
 ## 🙋FAQ
 
@@ -127,6 +143,11 @@ This mod is only using the existing API functionality and is not modifying any c
 The spawn control will affect other mods, but for supported mods it should not be noticeable for the user.
 In some cases it could be needed to adjust the settings to your preferences but the default should be fine for most casual players.
 
+### Will it affect spawners❓
+
+Most of the optimization are happing for the natural spawn, which mean that spawners should not be affected by most of the optimization.
+I'm currently testing a way to better optimize the spawners as well, because they using most of the resources.
+
 ### What are the general performance gains❓
 
 In general this is hard to say, because it's depends on a lot of factors. In my case it helps me to run a server with about 170 mods.
@@ -134,7 +155,7 @@ The mod will not help so much for extensive red stone constructions, custom spaw
 
 ## Will it work with Performant, Dynamic view, FPS reducer, FerriteCore and Spark❓
 
-In general you should try to use as less as possible performance mods with overlapping features.
+You should try to use as less as possible performance mods with overlapping features.
 Depending on your mod pack it could be that one works better than the other.
 For this reason it's important to test different kind of combination for your specific case.
 These recommendations are based on my experience and my knowledge about other mods.
@@ -181,7 +202,9 @@ But I still recommend this mod to make it easier to find lagging entities or to 
 - [RandomPatches (Forge)][random_patches] Collection of bug fixes and quality of life improvements for Minecraft
 - [Spark][spark] Performance profiling plugin/mod for Minecraft clients, servers and proxies.
 
+[alexmobs]: https://www.curseforge.com/minecraft/mc-mods/alexs-mobs
 [aquaculture]: https://www.curseforge.com/minecraft/mc-mods/aquaculture
+[artifacts]: https://www.curseforge.com/minecraft/mc-mods/artifacts
 [clumps]: https://www.curseforge.com/minecraft/mc-mods/clumps
 [dungeons_mod]: https://www.curseforge.com/minecraft/mc-mods/dungeons-mod
 [ferrite_core]: https://www.curseforge.com/minecraft/mc-mods/ferritecore
@@ -189,10 +212,16 @@ But I still recommend this mod to make it easier to find lagging entities or to 
 [ftb_backups]: https://www.curseforge.com/minecraft/mc-mods/ftb-backups
 [iceandfire]: https://www.curseforge.com/minecraft/mc-mods/ice-and-fire-dragons
 [mekanismadditions]: https://www.curseforge.com/minecraft/mc-mods/mekanism-additions
+[mowziesmobs]: https://www.curseforge.com/minecraft/mc-mods/mowzies-mobs
 [quark]: https://www.curseforge.com/minecraft/mc-mods/quark
 [random_patches]: https://www.curseforge.com/minecraft/mc-mods/randompatches-forge
+[rats]: https://www.curseforge.com/minecraft/mc-mods/rats
 [savageandravage]: https://www.curseforge.com/minecraft/mc-mods/savage-and-ravage
 [spark]: https://www.curseforge.com/minecraft/mc-mods/spark
+[statues]: https://www.curseforge.com/minecraft/mc-mods/statues
+[supplementaries]: https://www.curseforge.com/minecraft/mc-mods/supplementaries
 [theabyss]: https://www.curseforge.com/minecraft/mc-mods/the-abyss-chapter-ii
+[tinkersconstruct]: https://www.curseforge.com/minecraft/mc-mods/tinkers-construct
+[twilightforest]: https://www.curseforge.com/minecraft/mc-mods/the-twilight-forest
 
 [logo]: logo.png

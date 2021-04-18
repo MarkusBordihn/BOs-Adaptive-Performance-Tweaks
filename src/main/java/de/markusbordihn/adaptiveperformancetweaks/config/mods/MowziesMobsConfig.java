@@ -22,45 +22,52 @@ package de.markusbordihn.adaptiveperformancetweaks.config.mods;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
 import net.minecraftforge.fml.ModList;
 
-public class QuarkConfig extends SpawnConfigModSupport {
+public class MowziesMobsConfig extends SpawnConfigModSupport {
 
-  private static final String NAME = "Quark";
-  private static final String MOD_ID = "quark";
-
-  private static Set<String> passiveMobList = new HashSet<>(Arrays.asList(
-  // @formatter:off
-    "quark:crab",
-    "quark:frog",
-    "quark:stoneling"
-  // @formatter:on
-  ));
+  private static final String NAME = "Mowzies Mobs";
+  private static final String MOD_ID = "mowziesmobs";
 
   private static Set<String> neutralMobList = new HashSet<>(Arrays.asList(
   // @formatter:off
-    "quark:toretoise"
+    "mowziesmobs:lantern"
   // @formatter:on
   ));
 
   private static Set<String> hostileMobList = new HashSet<>(Arrays.asList(
   // @formatter:off
-    "quark:forgotten",
-    "quark:foxhound",
-    "quark:wraith"
+    "mowziesmobs:baby_foliaath",
+    "mowziesmobs:barakoana",
+    "mowziesmobs:barakoaya",
+    "mowziesmobs:foliaath",
+    "mowziesmobs:grottol",
+    "mowziesmobs:naga"
+  // @formatter:on
+  ));
+
+  private static Set<String> bossMobList = new HashSet<>(Arrays.asList(
+  // @formatter:off
+    "mowziesmobs:barako",
+    "mowziesmobs:ferrous_wroughtnaut",
+    "mowziesmobs:frostmaw"
   // @formatter:on
   ));
 
   public static void addSpawnRates() {
-    if (Boolean.FALSE.equals(COMMON.modQuarkEnabled.get()) || !ModList.get().isLoaded(MOD_ID)) {
+    if (Boolean.FALSE.equals(COMMON.modMowziesMobsEnabled.get()) || !ModList.get().isLoaded(MOD_ID)) {
       return;
     }
-    addSpawnRatesForPassiveMobs(NAME, passiveMobList, COMMON.modQuarkMaxPassiveMobsPerPlayer.get(),
-        COMMON.modQuarkMaxPassiveMobsPerWorld.get());
-    addSpawnRatesForNeutralMobs(NAME, neutralMobList, COMMON.modQuarkMaxNeutralMobsPerPlayer.get(),
-        COMMON.modQuarkMaxNeutralMobsPerWorld.get());
-    addSpawnRatesForHostileMobs(NAME, hostileMobList, COMMON.modQuarkMaxHostileMobsPerPlayer.get(),
-        COMMON.modQuarkMaxHostileMobsPerWorld.get());
+    addSpawnRatesForNeutralMobs(NAME, neutralMobList,
+        COMMON.modMowziesMobsMaxNeutralMobsPerPlayer.get(),
+        COMMON.modMowziesMobsMaxNeutralMobsPerWorld.get());
+    addSpawnRatesForHostileMobs(NAME, hostileMobList,
+        COMMON.modMowziesMobsMaxHostileMobsPerPlayer.get(),
+        COMMON.modMowziesMobsMaxHostileMobsPerWorld.get());
+    addSpawnRatesForBossMobs(NAME, bossMobList,
+        COMMON.modMowziesMobsMaxBossesPerPlayer.get(),
+        COMMON.modMowziesMobsMaxBossesPerWorld.get());
   }
 
 }

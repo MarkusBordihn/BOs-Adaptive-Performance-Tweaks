@@ -24,6 +24,7 @@ import java.util.Set;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -41,14 +42,13 @@ public class CommandEntities extends CustomCommand {
   public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
     Set<ResourceLocation> entitiesKeys = ForgeRegistries.ENTITIES.getKeys();
     if (entitiesKeys.isEmpty()) {
-      sendFeedback(context,
-          "Unable to find any entities. Server / World is not loaded?");
-    } else {
-      sendFeedback(context, "Entity Overview,  please check info.log for the full output.\n===");
-      log.info("Entity overview: {}", entitiesKeys);
-      for (ResourceLocation entityKey : entitiesKeys) {
-        sendFeedback(context, String.format("\u25CB %s", entityKey));
-      }
+      sendFeedback(context, "Unable to find any entities. Server / World is not loaded?");
+      return 0;
+    }
+    sendFeedback(context, "Entity Overview,  please check info.log for the full output.\n===");
+    log.info("Entity overview: {}", entitiesKeys);
+    for (ResourceLocation entityKey : entitiesKeys) {
+      sendFeedback(context, String.format("\u25CB %s", entityKey));
     }
     return 0;
   }

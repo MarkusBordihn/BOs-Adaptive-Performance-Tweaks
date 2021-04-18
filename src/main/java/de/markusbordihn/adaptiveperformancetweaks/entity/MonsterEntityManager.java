@@ -40,18 +40,21 @@ import de.markusbordihn.adaptiveperformancetweaks.server.ServerLoadEvent;
 public class MonsterEntityManager extends Manager {
 
   private static Map<String, Set<MonsterEntity>> monsterEntityMap = new HashMap<>();
-  private static boolean hasHighServerLoad = false;
   private static boolean burnCreeperDuringDaylight = COMMON.burnCreeperDuringDaylight.get();
+  private static boolean modDungeonsmodOptimizeWhirlwind =
+      COMMON.modDungeonsmodOptimizeWhirlwind.get();
+  private static boolean runCleanup = false;
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
     burnCreeperDuringDaylight = COMMON.burnCreeperDuringDaylight.get();
+    modDungeonsmodOptimizeWhirlwind = COMMON.modDungeonsmodOptimizeWhirlwind.get();
+    runCleanup = burnCreeperDuringDaylight || modDungeonsmodOptimizeWhirlwind;
   }
 
   @SubscribeEvent
   public static void handleServerLoadEvent(ServerLoadEvent event) {
-    hasHighServerLoad = event.hasHighServerLoad();
-    if (hasHighServerLoad) {
+    if (event.hasHighServerLoad()) {
       cleanupMonster();
     }
   }
@@ -68,7 +71,6 @@ public class MonsterEntityManager extends Manager {
     }
     monsterEntities.add(monsterEntity);
     log.debug("Monster {} {} joined {}.", monsterName, monsterDisplayName, worldName);
-    cleanupMonster();
   }
 
   public static void handleMonsterEntityLeaveWorldEvent(EntityLeaveWorldEvent event) {
@@ -76,23 +78,32 @@ public class MonsterEntityManager extends Manager {
     String monsterName = monsterEntity.getEntityString();
     String monsterDisplayName = monsterEntity.getDisplayName().getString();
     String worldName = monsterEntity.getEntityWorld().getDimensionKey().getLocation().toString();
-    Set<MonsterEntity> monsterEntities = monsterEntityMap.getOrDefault('[' + worldName + ']' + monsterName,
-        new LinkedHashSet<>());
+    Set<MonsterEntity> monsterEntities =
+        monsterEntityMap.getOrDefault('[' + worldName + ']' + monsterName, new LinkedHashSet<>());
     monsterEntities.remove(monsterEntity);
     log.debug("Monster {} {} leaved {}.", monsterName, monsterDisplayName, worldName);
   }
 
   public static void cleanupMonster() {
-    if (!burnCreeperDuringDaylight) {
+    if (!runCleanup) {
       return;
     }
     for (Map.Entry<String, Set<MonsterEntity>> monsterEntities : monsterEntityMap.entrySet()) {
       for (MonsterEntity monsterEntity : monsterEntities.getValue()) {
         World entityWorld = monsterEntity.getEntityWorld();
-        // Burn Crepper during days to control population
-        if (entityWorld.isDaytime() && monsterEntity instanceof CreeperEntity
-            && entityWorld.canSeeSky(monsterEntity.getPosition())) {
-          monsterEntity.setFire(60);
+        String monsterName = monsterEntity.getEntityString();
+
+        // Cleanup specific Monsters during daytime
+        if (entityWorld.isDaytime()) {
+          // Burn Crepper during days to control population
+          if (burnCreeperDuringDaylight && monsterEntity instanceof CreeperEntity
+              && entityWorld.canSeeSky(monsterEntity.getPosition())) {
+            monsterEntity.setFire(60);
+          }
+          // Remove whirlwind during day
+          if (modDungeonsmodOptimizeWhirlwind && monsterName.equals("dungeonsmod:whirlwind")) {
+            monsterEntity.remove();
+          }
         }
       }
     }

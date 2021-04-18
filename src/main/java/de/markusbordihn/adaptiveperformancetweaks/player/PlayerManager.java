@@ -45,7 +45,7 @@ public class PlayerManager extends Manager {
   private static boolean hasPlayers = false;
   private static int playerCount = 0;
   private static short ticks = 0;
-  private static int validationTimeout = 60;
+  private static int validationTimeout = 90;
   private static boolean optimizePlayerLogin = COMMON.optimizePlayerLogin.get();
 
   @SubscribeEvent
@@ -93,15 +93,21 @@ public class PlayerManager extends Manager {
       return;
     }
 
-    if (ticks == 80) {
+    if (ticks == 75) {
       for (PlayerValidation playerValidation : playerValidationList) {
         String username = playerValidation.getUsername();
+        boolean foundPlayer = false;
         if (playerValidation.hasPlayerMoved()) {
           log.debug("User {} was successful validated ...", username);
           addPlayer(username);
+          foundPlayer = true;
         } else if (playerValidation.getValidationTimeElapsed() / 1000 >= validationTimeout) {
           log.warn("User validation for {} timed out after {} sec", username, validationTimeout);
           addPlayer(username);
+          foundPlayer = true;
+        }
+        if (foundPlayer) {
+          break;
         }
       }
       ticks = 0;

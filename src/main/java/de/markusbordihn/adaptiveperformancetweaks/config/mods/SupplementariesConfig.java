@@ -17,39 +17,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.adaptiveperformancetweaks.system;
+package de.markusbordihn.adaptiveperformancetweaks.config.mods;
 
-import java.lang.management.MemoryMXBean;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import net.minecraftforge.fml.ModList;
 
-public class MemoryInfo {
+public class SupplementariesConfig extends SpawnConfigModSupport {
 
-  private double init;
-  private double used;
-  private double max;
-  private double committed;
-  private static final int BYTES_TO_MEGABYTES = 1048576;
+  private static final String NAME = "Supplementaries";
+  private static final String MOD_ID = "supplementaries";
 
-  public MemoryInfo(MemoryMXBean memoryMXBean) {
-    this.init = memoryMXBean.getHeapMemoryUsage().getInit();
-    this.used = memoryMXBean.getHeapMemoryUsage().getUsed();
-    this.max = memoryMXBean.getHeapMemoryUsage().getMax();
-    this.committed = memoryMXBean.getHeapMemoryUsage().getCommitted();
+
+  private static Set<String> passiveMobList = new HashSet<>(Arrays.asList(
+  // @formatter:off
+      "supplementaries:firefly"
+    // @formatter:on
+  ));
+
+  public static void addSpawnRates() {
+    if (Boolean.FALSE.equals(COMMON.modSupplementariesEnabled.get())
+        || !ModList.get().isLoaded(MOD_ID)) {
+      return;
+    }
+    addSpawnRatesForPassiveMobs(NAME, passiveMobList,
+        COMMON.modSupplementariesMaxPassiveMobsPerPlayer.get(),
+        COMMON.modSupplementariesMaxPassiveMobsPerWorld.get());
   }
-
-  public double getInit() {
-    return this.init / BYTES_TO_MEGABYTES;
-  }
-
-  public double getUsed() {
-    return this.used / BYTES_TO_MEGABYTES;
-  }
-
-  public double getMax() {
-    return this.max / BYTES_TO_MEGABYTES;
-  }
-
-  public double getCommitted() {
-    return this.committed / BYTES_TO_MEGABYTES;
-  }
-
 }

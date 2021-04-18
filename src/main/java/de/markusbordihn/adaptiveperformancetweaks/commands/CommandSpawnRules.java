@@ -19,37 +19,47 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.commands;
 
+import java.util.Set;
+
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
+import net.minecraft.util.ResourceLocation;
 
-import de.markusbordihn.adaptiveperformancetweaks.system.MemoryInfo;
-import de.markusbordihn.adaptiveperformancetweaks.system.MemoryManager;
+import de.markusbordihn.adaptiveperformancetweaks.config.SpawnConfigManager;
 
-public class CommandMemory extends CustomCommand {
+public class CommandSpawnRules extends CustomCommand {
 
-  private static final CommandMemory command = new CommandMemory();
+  private static final CommandSpawnRules command = new CommandSpawnRules();
 
   public static ArgumentBuilder<CommandSource, ?> register() {
-    return Commands.literal("memory").requires(cs -> cs.hasPermissionLevel(2)).executes(command);
+    return Commands.literal("spawnRules").requires(cs -> cs.hasPermissionLevel(2))
+        .executes(command);
   }
 
   @Override
   public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
-    MemoryInfo memoryInfo = MemoryManager.getMemoryUsage();
-    StringBuilder memoryOverview = new StringBuilder(String.format("Memory Overview\n===\n"));
-    memoryOverview.append(String.format("\u25BA Initial memory: %.2f MB\n", memoryInfo.getInit()));
-    memoryOverview.append(String.format("\u25BA Used heap memory: %.2f MB\n", memoryInfo.getUsed()));
-    memoryOverview.append(String.format("\u25BA Max heap memory: %.2f MB\n", memoryInfo.getMax()));
-    memoryOverview
-        .append(String.format("\u25BA Committed memory: %.2f MB\n", memoryInfo.getCommitted()));
-    memoryOverview.append(
-        String.format("\u25BA Free memory: %.2f MB (%.2f%%)", memoryInfo.getMax() - memoryInfo.getUsed(),
-            100 - ((100 * memoryInfo.getUsed()) / memoryInfo.getMax())));
-    sendFeedback(context, memoryOverview.toString());
+    Set<ResourceLocation> entitiesKeys = ForgeRegistries.ENTITIES.getKeys();
+    if (entitiesKeys.isEmpty()) {
+      sendFeedback(context, "Unable to find any entities. Server / World is not loaded?");
+      return 0;
+    }
+    sendFeedback(context, "Spawn Rules, please check info.log for the full output.\n===\n");
+    sendFeedback(context, "Entity Name|perPlayer|perWorld");
+    for (ResourceLocation entityKey : entitiesKeys) {
+      String entityName = entityKey.toString();
+      if (SpawnConfigManager.hasSpawnLimit(entityName)) {
+        int spawnRatePerPlayer = SpawnConfigManager.getSpawnLimitPerPlayer(entityName);
+        int spawnRatePerWorld = SpawnConfigManager.getSpawnLimitPerWorld(entityName);
+        sendFeedback(context,
+            String.format("%s|%s|%s", entityName, spawnRatePerPlayer, spawnRatePerWorld));
+      }
+    }
     return 0;
   }
+
 }

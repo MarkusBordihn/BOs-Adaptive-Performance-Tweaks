@@ -29,6 +29,7 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
+
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
 
@@ -46,10 +47,9 @@ public class CommandManager extends Manager {
             .then(CommandEntities.register())
             .then(CommandItems.register())
             .then(CommandKill.register())
-            .then(CommandMemory.register())
             .then(CommandMonster.register())
             .then(CommandSpawner.register())
-            .then(CommandThreads.register())
+            .then(CommandSpawnRules.register())
             .then(CommandVersion.register())
             .then(CommandWorlds.register())
         // @formatter:on
@@ -65,6 +65,17 @@ public class CommandManager extends Manager {
     log.debug("Execute Server Command: {}", command);
     Commands commands = minecraftServer.getCommandManager();
     CommandSource commandSource = minecraftServer.getCommandSource().withFeedbackDisabled();
+    commands.handleCommand(commandSource, command);
+  }
+
+  public static void  executeUserCommand(String command) {
+    MinecraftServer minecraftServer = ServerLifecycleHooks.getCurrentServer();
+    if (minecraftServer == null) {
+      return;
+    }
+    log.debug("Execute User Command: {}", command);
+    Commands commands = minecraftServer.getCommandManager();
+    CommandSource commandSource = minecraftServer.getCommandSource();
     commands.handleCommand(commandSource, command);
   }
 }

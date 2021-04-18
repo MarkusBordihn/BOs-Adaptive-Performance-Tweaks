@@ -21,12 +21,14 @@ package de.markusbordihn.adaptiveperformancetweaks.config.mods;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import net.minecraftforge.fml.ModList;
 
 public class IceAndFireConfig extends SpawnConfigModSupport {
+
+  private static final String NAME = "Ice and Fire";
+  private static final String MOD_ID = "iceandfire";
 
   private static Set<String> passiveMobList = new HashSet<>(Arrays.asList(
   // @formatter:off
@@ -107,29 +109,21 @@ public class IceAndFireConfig extends SpawnConfigModSupport {
   // @formatter:on
   ));
 
-  public static void addSpawnRates(Map<String, Integer> spawnConfigPerPlayer,
-      Map<String, Integer> spawnConfigPerWorld) {
-    if (Boolean.FALSE.equals(COMMON.modIceandfireEnabled.get())
-        || !ModList.get().isLoaded("iceandfire")) {
+  public static void addSpawnRates() {
+    if (Boolean.FALSE.equals(COMMON.modIceandfireEnabled.get()) || !ModList.get().isLoaded(MOD_ID)) {
       return;
     }
-    log.info("\u2713 Enable spawn rate control for Iceandfire");
-    for (String entity : passiveMobList) {
-      spawnConfigPerPlayer.put(entity, COMMON.modIceandfireMaxPassiveMobsPerPlayer.get());
-      spawnConfigPerWorld.put(entity, COMMON.modIceandfireMaxPassiveMobsPerWorld.get());
-    }
-    for (String entity : neutralMobList) {
-      spawnConfigPerPlayer.put(entity, COMMON.modIceandfireMaxNeutralMobsPerPlayer.get());
-      spawnConfigPerWorld.put(entity, COMMON.modIceandfireMaxNeutralMobsPerWorld.get());
-    }
-    for (String entity : hostileMobList) {
-      spawnConfigPerPlayer.put(entity, COMMON.modIceandfireMaxHostileMobsPerPlayer.get());
-      spawnConfigPerWorld.put(entity, COMMON.modIceandfireMaxHostileMobsPerWorld.get());
-    }
-    for (String entity : bossMobList) {
-      spawnConfigPerPlayer.put(entity, COMMON.modIceandfireMaxBossesPerPlayer.get());
-      spawnConfigPerWorld.put(entity, COMMON.modIceandfireMaxBossesPerWorld.get());
-    }
+    addSpawnRatesForPassiveMobs(NAME, passiveMobList,
+        COMMON.modIceandfireMaxPassiveMobsPerPlayer.get(),
+        COMMON.modIceandfireMaxPassiveMobsPerWorld.get());
+    addSpawnRatesForNeutralMobs(NAME, neutralMobList,
+        COMMON.modIceandfireMaxNeutralMobsPerPlayer.get(),
+        COMMON.modIceandfireMaxNeutralMobsPerWorld.get());
+    addSpawnRatesForHostileMobs(NAME, hostileMobList,
+        COMMON.modIceandfireMaxHostileMobsPerPlayer.get(),
+        COMMON.modIceandfireMaxHostileMobsPerWorld.get());
+    addSpawnRatesForBossMobs(NAME, bossMobList, COMMON.modIceandfireMaxBossesPerPlayer.get(),
+        COMMON.modIceandfireMaxBossesPerWorld.get());
   }
 
 }

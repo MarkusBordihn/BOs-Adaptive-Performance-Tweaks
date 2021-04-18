@@ -24,43 +24,25 @@ import java.util.HashSet;
 import java.util.Set;
 import net.minecraftforge.fml.ModList;
 
-public class QuarkConfig extends SpawnConfigModSupport {
+public class TinkersConstructConfig extends SpawnConfigModSupport {
 
-  private static final String NAME = "Quark";
-  private static final String MOD_ID = "quark";
-
-  private static Set<String> passiveMobList = new HashSet<>(Arrays.asList(
-  // @formatter:off
-    "quark:crab",
-    "quark:frog",
-    "quark:stoneling"
-  // @formatter:on
-  ));
-
-  private static Set<String> neutralMobList = new HashSet<>(Arrays.asList(
-  // @formatter:off
-    "quark:toretoise"
-  // @formatter:on
-  ));
+  private static final String NAME = "Tinkers Construct";
+  private static final String MOD_ID = "tconstruct";
 
   private static Set<String> hostileMobList = new HashSet<>(Arrays.asList(
   // @formatter:off
-    "quark:forgotten",
-    "quark:foxhound",
-    "quark:wraith"
+    "tconstruct:sky_slime"
   // @formatter:on
   ));
 
   public static void addSpawnRates() {
-    if (Boolean.FALSE.equals(COMMON.modQuarkEnabled.get()) || !ModList.get().isLoaded(MOD_ID)) {
+    if (Boolean.FALSE.equals(COMMON.modTinkersconstructEnabled.get())
+        || !ModList.get().isLoaded(MOD_ID)) {
       return;
     }
-    addSpawnRatesForPassiveMobs(NAME, passiveMobList, COMMON.modQuarkMaxPassiveMobsPerPlayer.get(),
-        COMMON.modQuarkMaxPassiveMobsPerWorld.get());
-    addSpawnRatesForNeutralMobs(NAME, neutralMobList, COMMON.modQuarkMaxNeutralMobsPerPlayer.get(),
-        COMMON.modQuarkMaxNeutralMobsPerWorld.get());
-    addSpawnRatesForHostileMobs(NAME, hostileMobList, COMMON.modQuarkMaxHostileMobsPerPlayer.get(),
-        COMMON.modQuarkMaxHostileMobsPerWorld.get());
+    addSpawnRatesForHostileMobs(NAME, hostileMobList,
+        COMMON.modTinkersconstructMaxHostileMobsPerPlayer.get(),
+        COMMON.modTinkersconstructMaxHostileMobsPerWorld.get());
   }
 
 }

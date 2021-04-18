@@ -21,15 +21,14 @@ package de.markusbordihn.adaptiveperformancetweaks.config.mods;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import net.minecraftforge.fml.ModList;
 
 public class AquacultureConfig extends SpawnConfigModSupport {
 
-  private AquacultureConfig() {
-  }
+  private static final String NAME = "Aquaculture 2";
+  private static final String MOD_ID = "aquaculture";
 
   private static Set<String> passiveMobList = new HashSet<>(Arrays.asList(
   // @formatter:off
@@ -76,17 +75,13 @@ public class AquacultureConfig extends SpawnConfigModSupport {
   // @formatter:on
   ));
 
-  public static void addSpawnRates(Map<String, Integer> spawnConfigPerPlayer,
-      Map<String, Integer> spawnConfigPerWorld) {
+  public static void addSpawnRates() {
     if (Boolean.FALSE.equals(COMMON.modAquacultureEnabled.get())
-        || !ModList.get().isLoaded("aquaculture")) {
+        || !ModList.get().isLoaded(MOD_ID)) {
       return;
     }
-    log.info("\u2713 Enable spawn rate control for Aquaculture 2");
-    for (String mob : passiveMobList) {
-      spawnConfigPerPlayer.put(mob, COMMON.modAquacultureMaxFishPerPlayer.get());
-      spawnConfigPerWorld.put(mob, COMMON.modAquacultureMaxFishPerWorld.get());
-    }
+    addSpawnRatesForPassiveMobs(NAME, passiveMobList, COMMON.modAquacultureMaxFishPerPlayer.get(),
+        COMMON.modAquacultureMaxFishPerWorld.get());
   }
 
 }

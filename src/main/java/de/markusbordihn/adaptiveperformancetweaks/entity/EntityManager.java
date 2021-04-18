@@ -27,6 +27,7 @@ import java.util.Set;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.LightningBoltEntity;
+import net.minecraft.entity.item.FallingBlockEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -57,8 +58,9 @@ public class EntityManager extends Manager {
   public static void handleEntityJoinWorldEvent(EntityJoinWorldEvent event) {
     Entity entity = event.getEntity();
 
-    // Ignore entity which are handled by other instances.
-    if (entity instanceof ItemEntity || entity instanceof LightningBoltEntity) {
+    // Ignore entities which are handled by other instances or not relevant.
+    if (entity instanceof ItemEntity || entity instanceof LightningBoltEntity
+        || entity instanceof FallingBlockEntity) {
       return;
     }
 
@@ -78,7 +80,6 @@ public class EntityManager extends Manager {
     } else {
       if (entity instanceof MonsterEntity) {
         MonsterEntityManager.handleMonsterEntityJoinWorldEvent(event);
-        // ToDo: Adding MonsterEntityManager to allow cleanup of specific Monsters
       }
 
       if (entity instanceof PlayerEntity) {
@@ -103,18 +104,14 @@ public class EntityManager extends Manager {
   public static void handleEntityLeaveWorldEvent(EntityLeaveWorldEvent event) {
     Entity entity = event.getEntity();
 
-    // Ignore entity which are handled by other instances.
-    if (entity instanceof ItemEntity) {
-      return;
-    }
-
-    if (entity instanceof LightningBoltEntity) {
+    // Ignore entities which are handled by other instances or not relevant.
+    if (entity instanceof ItemEntity || entity instanceof LightningBoltEntity
+        || entity instanceof FallingBlockEntity) {
       return;
     }
 
     if (entity instanceof MonsterEntity) {
       MonsterEntityManager.handleMonsterEntityLeaveWorldEvent(event);
-      // ToDo: Adding MonsterEntityManager to allow cleanup of specific Monsters
     }
 
     if (entity instanceof PlayerEntity) {

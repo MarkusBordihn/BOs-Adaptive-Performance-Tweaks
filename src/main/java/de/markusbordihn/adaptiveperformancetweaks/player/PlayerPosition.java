@@ -50,6 +50,10 @@ public class PlayerPosition {
   private int viewAreaZFactorBase = CommonConfig.COMMON.viewAreaZFactor.get();
   private double viewAreaDistanceFactorBase = CommonConfig.COMMON.viewAreaDistanceFactor.get();
 
+  private static final int OVERGROUND_Y = 63;
+  private static final int OVERGROUND_Y_MIN_VIEW = OVERGROUND_Y - 12;
+  private static final int MAX_BUILD_HEIGHT = 320;
+
   public PlayerPosition(ServerPlayerEntity player, String worldName) {
     this.player = player;
     this.playerName = player.getName().getString();
@@ -62,7 +66,8 @@ public class PlayerPosition {
   }
 
   public boolean update(String worldName) {
-    if (!this.worldName.equals(worldName) || this.viewDistance != WorldViewManager.getViewDistance(worldName)
+    if (!this.worldName.equals(worldName)
+        || this.viewDistance != WorldViewManager.getViewDistance(worldName)
         || this.posX != (int) this.player.getPosX() || this.posY != (int) this.player.getPosY()
         || this.posZ != (int) this.player.getPosZ()) {
       updateViewDistance(WorldViewManager.getViewDistance(worldName));
@@ -80,9 +85,12 @@ public class PlayerPosition {
   public void updateViewDistance(int viewDistance) {
     int viewDistanceFactor = (int) Math.round(this.viewDistance * this.viewAreaDistanceFactorBase);
     this.viewDistance = viewDistance;
-    this.viewAreaXFactor = Math.max(this.viewAreaXFactorBase, this.viewAreaXFactorBase * viewDistanceFactor);
-    this.viewAreaYFactor = Math.max(this.viewAreaYFactorBase, this.viewAreaYFactorBase * viewDistanceFactor);
-    this.viewAreaZFactor = Math.max(this.viewAreaZFactorBase, this.viewAreaZFactorBase * viewDistanceFactor);
+    this.viewAreaXFactor =
+        Math.max(this.viewAreaXFactorBase, this.viewAreaXFactorBase * viewDistanceFactor);
+    this.viewAreaYFactor =
+        Math.max(this.viewAreaYFactorBase, this.viewAreaYFactorBase * viewDistanceFactor);
+    this.viewAreaZFactor =
+        Math.max(this.viewAreaZFactorBase, this.viewAreaZFactorBase * viewDistanceFactor);
   }
 
   public boolean isInsidePlayerViewArea(String worldName, int x, int y, int z) {
@@ -90,7 +98,8 @@ public class PlayerPosition {
       return false;
     }
     calculateViewArea();
-    return ((this.viewAreaStartX < x && x < this.viewAreaStopX) && (this.viewAreaStartY < y && y < this.viewAreaStopY)
+    return ((this.viewAreaStartX < x && x < this.viewAreaStopX)
+        && (this.viewAreaStartY < y && y < this.viewAreaStopY)
         && (this.viewAreaStartZ < z && z < this.viewAreaStopZ));
   }
 
@@ -102,25 +111,45 @@ public class PlayerPosition {
     if (this.viewAreaCalculated) {
       return;
     }
+
+    // Simple calculation for X and Z
     this.viewAreaStartX = this.posX - viewAreaXFactor;
     this.viewAreaStopX = this.posX + viewAreaXFactor;
-    this.viewAreaStartY = this.posY - viewAreaYFactor;
-
-    // Expand area with the player is able to see the sky
-    if (this.canSeeSky) {
-      this.viewAreaStopY = (int) Math.round(this.posY + viewAreaYFactor * 2.0);
-    } else {
-      this.viewAreaStopY = this.posY + viewAreaYFactor;
-    }
     this.viewAreaStartZ = this.posZ - viewAreaZFactor;
     this.viewAreaStopZ = this.posZ + viewAreaZFactor;
+
+    // Optimize Y based on the current position and other factors like if the player is able to
+    // see the sky, if the player is overground or underground ...
+    if (this.posY >= OVERGROUND_Y && this.canSeeSky) {
+      // Player is on overground and can see Sky
+      this.viewAreaStartY = OVERGROUND_Y_MIN_VIEW;
+      this.viewAreaStopY = MAX_BUILD_HEIGHT;
+    } else if (this.posY >= OVERGROUND_Y) {
+      // Player is on overground and can not see Sky
+      if (this.posY - viewAreaYFactor < OVERGROUND_Y_MIN_VIEW) {
+        this.viewAreaStartY = OVERGROUND_Y_MIN_VIEW;
+      } else {
+        this.viewAreaStartY = this.posY - viewAreaYFactor;
+      }
+      this.viewAreaStopY = this.posY + viewAreaYFactor;
+    } else if (this.canSeeSky) {
+      // Player is on underground and can see Sky
+      this.viewAreaStartY = this.posY - viewAreaYFactor;
+      this.viewAreaStopY = (int) Math.round(this.posY + viewAreaYFactor * 2.0);
+    } else {
+      // Player is on underground and can not see Sky
+      this.viewAreaStartY = this.posY - viewAreaYFactor;
+      this.viewAreaStopY = this.posY + viewAreaYFactor;
+    }
     this.viewAreaCalculated = true;
   }
 
   public String toString() {
-    return "PlayerPosition[Player{name: '" + this.playerName + "', x:" + this.posX + ", y:" + this.posY + ", z:"
-        + this.posZ + "}, Range{x:" + this.viewAreaStartX + " to " + this.viewAreaStopX + ", y:" + this.viewAreaStartY
-        + " to " + this.viewAreaStopY + ", z:" + this.viewAreaStopY + " to " + this.viewAreaStopZ + "}]";
+    return "PlayerPosition[Player{name: '" + this.playerName + "', x:" + this.posX + ", y:"
+        + this.posY + ", z:" + this.posZ + "}, Range{x:" + this.viewAreaStartX + " to "
+        + this.viewAreaStopX + ", y:" + this.viewAreaStartY + " to " + this.viewAreaStopY + ", z:"
+        + this.viewAreaStopZ + " to " + this.viewAreaStopZ + "}, Meta{canSeeSky: " + this.canSeeSky
+        + "}]";
   }
 
 }

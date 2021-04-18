@@ -5,6 +5,10 @@
         "naco-siren.gradle-language",
         "bungcip.better-toml",
         "spgoding.datapack-language-server",
-        "dotjoshjohnson.xml"
+        "dotjoshjohnson.xml",
+        "shd101wyy.markdown-preview-enhanced",
+        "davidanson.vscode-markdownlint",
+        "sonarsource.sonarlint-vscode",
+        "streetsidesoftware.code-spell-checker"
     ]
 }

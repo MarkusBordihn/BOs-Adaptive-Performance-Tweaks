@@ -87,8 +87,7 @@ public class ItemEntityManager extends Manager {
     }
 
     // All items has the entity minecraft.item, so we are using the translation key
-    // to better
-    // distinguish the different types of items and minecraft.item as backup.
+    // to better distinguish the different types of items and minecraft.item as backup.
     ItemEntity itemEntity = (ItemEntity) entity;
     String itemName = itemEntity.getItem().getTranslationKey();
     if (itemName == null) {
@@ -96,6 +95,7 @@ public class ItemEntityManager extends Manager {
     }
 
     // Ignore dropped air blocks because these are not used at all by the players.
+    // Warning: Removing the air block is a bad idea, because it's used to pre-reserve the space.
     if (itemName.equals("block.minecraft.air")) {
       return;
     }
@@ -221,7 +221,7 @@ public class ItemEntityManager extends Manager {
     if (numberOfRemovedItems > 0) {
       log.debug("[Optimized Items] Removed {} items from all worlds!", numberOfRemovedItems);
     } else {
-      log.debug("[Optimized Items] Found no relevant items which should be removed!", numberOfRemovedItems);
+      log.debug("[Optimized Items] Found no relevant items which should be removed!");
     }
     return numberOfRemovedItems;
   }

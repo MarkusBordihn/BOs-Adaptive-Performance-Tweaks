@@ -68,6 +68,9 @@ public class SpawnManager extends Manager {
   private static int maxEntityPerPlayer = COMMON.maxEntityPerPlayer.get();
   private static boolean optimizeHostileMobs = COMMON.optimizeHostileMobs.get();
   private static double difficultyFactor = 1;
+  private static String lastBlockedSpawnEntityByWorldLimit = "";
+  private static String lastBlockedSpawnEntityByPlayerLimit = "";
+  private static String lastBlockedSpawnEntityByViewArea = "";
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
@@ -164,6 +167,7 @@ public class SpawnManager extends Manager {
       log.trace("Creature {}", entity);
     }
 
+    // Get current players positions for later calculations
     List<PlayerPosition> playersPositionsInsideViewArea =
         PlayerPositionManager.getPlayerPositionsInsideViewArea(worldName, (int) event.getX(),
             (int) event.getY(), (int) event.getZ());
@@ -203,28 +207,39 @@ public class SpawnManager extends Manager {
     // Limit spawn based on world limits.
     int spawnLimitPerWorld = spawnConfigPerWorld.getOrDefault(entityName, maxEntityPerWorld);
     if (numberOfEntities >= spawnLimitPerWorld * spawnFactor) {
-      log.debug("[World limit] Blocked spawn event for {} ({} >= {} * {}) in {}", entityName,
-          numberOfEntities, spawnLimitPerWorld, spawnFactor, worldName);
+      if (!lastBlockedSpawnEntityByWorldLimit.equals(entityName)) {
+        lastBlockedSpawnEntityByWorldLimit = entityName;
+        log.debug("[World limit] Blocked spawn event for {} ({} >= {} * {}) in {}", entityName,
+            numberOfEntities, spawnLimitPerWorld, spawnFactor, worldName);
+      }
       event.setResult(Event.Result.DENY);
       return;
     }
 
-    // Cheap and fast calculation to limit spawn based on possible entities within player limits.
+    // Cheap and fast calculation to limit spawn based on possible entities within
+    // player limits.
     int spawnLimitPerPlayer = spawnConfigPerPlayer.getOrDefault(entityName, maxEntityPerPlayer);
     if (numberOfEntities >= spawnLimitPerPlayer * numOfPlayersInsideViewArea * spawnFactor) {
-      log.debug("[Player limit] Blocked spawn event for {} ({} >= {} * spawnFactor) in {}",
-          entityName, numberOfEntities, spawnLimitPerPlayer, spawnFactor, worldName);
+      if (!lastBlockedSpawnEntityByPlayerLimit.equals(entityName)) {
+        lastBlockedSpawnEntityByPlayerLimit = entityName;
+        log.debug("[Player limit] Blocked spawn event for {} ({} >= {} * {}) in {}", entityName,
+            numberOfEntities, spawnLimitPerPlayer, spawnFactor, worldName);
+      }
       event.setResult(Event.Result.DENY);
       return;
     }
 
-    // Expensive calculation to Limit spawn based on real entities within player position.
+    // Expensive calculation to Limit spawn based on real entities within player
+    // position.
     int numberOfEntitiesInsideViewArea = EntityManager.getNumberOfEntitiesInPlayerPositions(
         worldName, entityName, playersPositionsInsideViewArea);
     if (numberOfEntitiesInsideViewArea >= spawnLimitPerPlayer * numOfPlayersInsideViewArea
         * spawnFactor) {
-      log.debug("[View Area Limit] Blocked spawn event for {} ({} >= {} * {}) in {}", entityName,
-          numberOfEntities, spawnLimitPerPlayer, spawnFactor, worldName);
+      if (!lastBlockedSpawnEntityByViewArea.equals(entityName)) {
+        lastBlockedSpawnEntityByViewArea = entityName;
+        log.debug("[View Area Limit] Blocked spawn event for {} ({} >= {} * {}) in {}", entityName,
+            numberOfEntities, spawnLimitPerPlayer, spawnFactor, worldName);
+      }
       event.setResult(Event.Result.DENY);
       return;
     }
@@ -242,18 +257,18 @@ public class SpawnManager extends Manager {
     String worldName = entity.getEntityWorld().getDimensionKey().getLocation().toString();
 
     if (allowList.contains(entityName)) {
-      log.debug("[Allowed Entity] Allow spawn event for {} in {} ", entity, worldName);
+      log.debug("[Allowed Entity] Allow special spawn event for {} in {} ", entity, worldName);
       event.setResult(Event.Result.DEFAULT);
       return;
     }
 
     if (denyList.contains(entityName)) {
-      log.debug("[Denied Entity] Denied spawn event for {} in {}", entityName, worldName);
+      log.debug("[Denied Entity] Denied special spawn event for {} in {}", entityName, worldName);
       event.setResult(Event.Result.DENY);
       return;
     }
 
-    log.debug("[Special Spawn] Allow spawn Event {}", event.getEntity());
+    log.debug("[Special Spawn] Allow special spawn Event {}", event.getEntity());
   }
 
   public static void updateGameDifficulty(Difficulty difficulty) {
