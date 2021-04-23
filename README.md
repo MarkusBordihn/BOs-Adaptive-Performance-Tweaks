@@ -97,6 +97,11 @@ The follow mods are currently unsupported because of using outdated and/or unexp
 `/aptweaks items` shows an overview about the number of currently loaded items.
 `/aptweaks items optimize` runs manual Items Optimization, normally not needed.
 
+### 👁️‍🗨️Entity Usage
+
+`/aptweaks entity overview` shows an overview about the number of currently loaded entities (excluding monster and items).
+`/aptweaks entity registry` shows all know entities from the registry.
+
 ### 👁️‍🗨️Monster Usage
 
 `/aptweaks monster` shows an overview about the number of currently loaded monsters.

@@ -31,6 +31,7 @@ public class PlayerPosition {
   private String worldName = "";
   private boolean viewAreaCalculated = false;
   private boolean canSeeSky = false;
+  private boolean isSwimming = false;
   private int posX = 0;
   private int posY = 0;
   private int posZ = 0;
@@ -75,6 +76,7 @@ public class PlayerPosition {
       this.posY = (int) this.player.getPosY();
       this.posZ = (int) this.player.getPosZ();
       this.canSeeSky = this.player.getEntityWorld().canSeeSky(this.player.getPosition());
+      this.isSwimming = this.player.isSwimming();
       this.worldName = worldName;
       this.viewAreaCalculated = false;
       return true;

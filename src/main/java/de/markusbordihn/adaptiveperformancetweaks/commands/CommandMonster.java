@@ -47,7 +47,7 @@ public class CommandMonster extends CustomCommand {
       sendFeedback(context,
           "Unable to find any monster entity. World is not loaded or nor monster spawned?");
     } else {
-      sendFeedback(context, "Monster Entity Overview\n===");
+      sendFeedback(context, String.format("Monster Entity (%s types)\n===", monsterEntityMap.size()));
       for (Map.Entry<String, Set<MonsterEntity>> monsterEntities : monsterEntityMap.entrySet()) {
         int numOfMonster = monsterEntities.getValue().size();
         if (numOfMonster > 0) {

@@ -25,7 +25,6 @@ import java.util.Set;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.entity.item.ItemEntity;
@@ -47,7 +46,7 @@ public class CommandItems extends CustomCommand {
     if (itemTypeEntityMap.isEmpty()) {
       sendFeedback(context, "Unable to find any items entity. World is not loaded or nor items dropped?");
     } else {
-      sendFeedback(context, "Items Entity Overview\n===");
+      sendFeedback(context, String.format("Items Overview (%s types)\n===", itemTypeEntityMap.size()));
       for (Map.Entry<String, Set<ItemEntity>> itemEntities : itemTypeEntityMap.entrySet()) {
         int numOfItems = itemEntities.getValue().size();
         if (numOfItems > 0) {

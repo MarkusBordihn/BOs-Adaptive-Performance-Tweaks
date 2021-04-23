@@ -32,7 +32,7 @@ import de.markusbordihn.adaptiveperformancetweaks.Manager;
 public class ServerManager extends Manager {
 
   private static short ticks = 0;
-  private static final short SERVER_LOAD_TICK = 8;
+  private static final short SERVER_LOAD_TICK = 20;
   private static final short WORLD_LOAD_TICK = 9 * 20;
   private static final short OPTIMIZATION_TICK = 10 * 20;
 

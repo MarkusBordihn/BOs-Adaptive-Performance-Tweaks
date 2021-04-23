@@ -89,13 +89,13 @@ public class EntityManager extends Manager {
     }
 
     String worldName = entity.getEntityWorld().getDimensionKey().getLocation().toString();
-    Set<Entity> entities = entityMap.get(worldName + ':' + entityName);
+    Set<Entity> entities = entityMap.get('[' + worldName + ']' + entityName);
     if (entities != null) {
       entities.add(entity);
     } else {
       entities = new HashSet<>();
       entities.add(entity);
-      entityMap.put(worldName + ':' + entityName, entities);
+      entityMap.put('[' + worldName + ']' + entityName, entities);
     }
     log.debug("Entity {} ({}) {} joined.", entityName, entities.size(), entity);
   }
@@ -121,7 +121,7 @@ public class EntityManager extends Manager {
 
     String entityName = entity.getEntityString();
     String worldName = entity.getEntityWorld().getDimensionKey().getLocation().toString();
-    Set<Entity> entities = entityMap.get(worldName + ':' + entityName);
+    Set<Entity> entities = entityMap.get('[' + worldName + ']' + entityName);
     if (entities != null) {
       entities.remove(entity);
     } else {
@@ -130,8 +130,12 @@ public class EntityManager extends Manager {
     log.debug("Entity {} ({}) {} leaved.", entityName, entities.size(), entity);
   }
 
+  public static Map<String, Set<Entity>> getEntities() {
+    return entityMap;
+  }
+
   public static Integer getNumberOfEntities(String worldName, String entityName) {
-    Set<Entity> entities = entityMap.get(worldName + ':' + entityName);
+    Set<Entity> entities = entityMap.get('[' + worldName + ']' + entityName);
     if (entities == null) {
       return 0;
     }
@@ -140,7 +144,7 @@ public class EntityManager extends Manager {
 
   public static Integer getNumberOfEntitiesInPlayerPositions(String worldName, String entityName,
       List<PlayerPosition> playerPositions) {
-    Set<Entity> entities = entityMap.get(worldName + ':' + entityName);
+    Set<Entity> entities = entityMap.get('[' + worldName + ']' + entityName);
     if (entities == null) {
       return 0;
     }
