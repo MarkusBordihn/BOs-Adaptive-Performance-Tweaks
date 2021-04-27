@@ -95,11 +95,13 @@ The follow mods are currently unsupported because of using outdated and/or unexp
 ### 👁️‍🗨️Items Usage
 
 `/aptweaks items` shows an overview about the number of currently loaded items.
+
 `/aptweaks items optimize` runs manual Items Optimization, normally not needed.
 
 ### 👁️‍🗨️Entity Usage
 
-`/aptweaks entity overview` shows an overview about the number of currently loaded entities (excluding monster and items).
+`/aptweaks entity overview` shows an overview about the number of currently loaded entities.
+
 `/aptweaks entity registry` shows all know entities from the registry.
 
 ### 👁️‍🗨️Monster Usage
@@ -113,6 +115,7 @@ The follow mods are currently unsupported because of using outdated and/or unexp
 ### 👁️‍🗨️Kill Command
 
 `/aptweaks kill entities` kill all entities except players.
+
 `/aptweaks kill items` kill all item entities.
 
 ### 👁️‍🗨️Spawn rules
@@ -124,6 +127,7 @@ The follow mods are currently unsupported because of using outdated and/or unexp
 The debug is helpful to understand an unexpected behave like to many or to less spawned mobs.
 
 `/aptweaks debug true` enables the debugging which will logged into debug.log file.
+
 `/aptweaks debug false` disables the debugging.
 
 ## 🙋FAQ

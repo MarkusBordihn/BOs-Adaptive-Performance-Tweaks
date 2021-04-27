@@ -180,6 +180,15 @@ public class SpawnManager extends Manager {
       return;
     }
 
+    // Skip other checks if unknown entity name
+    if (entityName == null) {
+      log.warn(
+          "Unknown entity name for entity {}. Please report this issue under https://github.com/MarkusBordihn/adaptive_performance_tweaks/issues!",
+          entity);
+      event.setResult(Event.Result.DEFAULT);
+      return;
+    }
+
     // Defines the spawn factor based on difficulty setting and world load.
     double spawnFactor = (entity instanceof MonsterEntity)
         ? serverWorldLoadFactorMap.getOrDefault(worldName, 1.0) * difficultyFactor
@@ -268,7 +277,7 @@ public class SpawnManager extends Manager {
       return;
     }
 
-    log.debug("[Special Spawn] Allow special spawn Event {}", event.getEntity());
+    log.debug("[Special Spawn] Allow special spawn Event {}", entity);
   }
 
   public static void updateGameDifficulty(Difficulty difficulty) {

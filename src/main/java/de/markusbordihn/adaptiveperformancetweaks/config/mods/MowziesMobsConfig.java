@@ -39,6 +39,7 @@ public class MowziesMobsConfig extends SpawnConfigModSupport {
   private static Set<String> hostileMobList = new HashSet<>(Arrays.asList(
   // @formatter:off
     "mowziesmobs:baby_foliaath",
+    "mowziesmobs:barakoan_barakoana",
     "mowziesmobs:barakoana",
     "mowziesmobs:barakoaya",
     "mowziesmobs:foliaath",
@@ -56,7 +57,8 @@ public class MowziesMobsConfig extends SpawnConfigModSupport {
   ));
 
   public static void addSpawnRates() {
-    if (Boolean.FALSE.equals(COMMON.modMowziesMobsEnabled.get()) || !ModList.get().isLoaded(MOD_ID)) {
+    if (Boolean.FALSE.equals(COMMON.modMowziesMobsEnabled.get())
+        || !ModList.get().isLoaded(MOD_ID)) {
       return;
     }
     addSpawnRatesForNeutralMobs(NAME, neutralMobList,
@@ -65,8 +67,7 @@ public class MowziesMobsConfig extends SpawnConfigModSupport {
     addSpawnRatesForHostileMobs(NAME, hostileMobList,
         COMMON.modMowziesMobsMaxHostileMobsPerPlayer.get(),
         COMMON.modMowziesMobsMaxHostileMobsPerWorld.get());
-    addSpawnRatesForBossMobs(NAME, bossMobList,
-        COMMON.modMowziesMobsMaxBossesPerPlayer.get(),
+    addSpawnRatesForBossMobs(NAME, bossMobList, COMMON.modMowziesMobsMaxBossesPerPlayer.get(),
         COMMON.modMowziesMobsMaxBossesPerWorld.get());
   }
 
