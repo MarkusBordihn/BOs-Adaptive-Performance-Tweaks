@@ -108,8 +108,8 @@ public class GameRuleManager extends Manager {
   }
 
   public static void setMaxEntityCramming(int maxEntity) {
-    if (maxEntity < 1) {
-      maxEntity = 1;
+    if (maxEntity < 3) {
+      maxEntity = 3;
     } else if (maxEntity > maxEntityCramming) {
       maxEntity = maxEntityCramming;
     }
