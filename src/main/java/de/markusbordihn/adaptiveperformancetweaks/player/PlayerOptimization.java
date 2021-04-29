@@ -51,11 +51,13 @@ public class PlayerOptimization extends Optimization {
           WorldViewManager.decreaseViewDistance(player.getServerWorld());
         }
 
-        // Decrease random ticks during the login process
-        GameRuleManager.decreaseRandomTickSpeed();
+        if(Boolean.TRUE.equals(COMMON.gameruleEnabled.get())) {
+          // Decrease random ticks during the login process
+          GameRuleManager.decreaseRandomTickSpeed();
 
-        // Decrease entity cramming during the login process
-        GameRuleManager.decreaseMaxEntityCramming();
+          // Decrease entity cramming during the login process
+          GameRuleManager.decreaseMaxEntityCramming();
+        }
       }
     }
   }
