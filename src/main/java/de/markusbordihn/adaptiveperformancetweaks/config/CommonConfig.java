@@ -253,7 +253,7 @@ public final class CommonConfig {
           .define("gameruleEnabled", true);
       maxEntityCramming =
           builder.comment("Defines the max. numbers of mob singularity on a single block.")
-              .defineInRange("maxEntityCramming", 24, 0, 64);
+              .defineInRange("maxEntityCramming", 24, 3, 64);
       randomTickSpeed =
           builder.comment("Defines the speed of crops grow, leaf decay, redstone, ... per chunk")
               .defineInRange("randomTickSpeed", 3, 1, 256);
