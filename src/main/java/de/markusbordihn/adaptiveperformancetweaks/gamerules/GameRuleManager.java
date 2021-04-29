@@ -52,7 +52,7 @@ public class GameRuleManager extends Manager {
       return;
     }
     log.info("Random Tick Speed will be optimized between {} and {}", 1, randomTickSpeed);
-    log.info("Max Entity Cramming will be optimized between {} and {}", 1, maxEntityCramming);
+    log.info("Max Entity Cramming will be optimized between {} and {}", 3, maxEntityCramming);
     if (gameRules.getInt(GameRules.RANDOM_TICK_SPEED) != randomTickSpeed) {
       setRandomTickSpeed(randomTickSpeed);
     }
