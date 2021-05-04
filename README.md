@@ -77,6 +77,7 @@ This is a list of the currently supported mods within the config file for indivi
 - ✅ [Mekanism Additions][mekanismadditions]
 - ✅ [Quark][quark]
 - ✅ [Mowzie's Mobs][mowziesmobs]
+- ✅ [Mutant Beasts][mutantbeasts]
 - ✅ [Savage & Ravage][savageandravage]
 - ✅ [Statues][statues]
 - ✅ [Supplementaries][supplementaries]
@@ -222,6 +223,7 @@ But I still recommend this mod to make it easier to find lagging entities or to 
 [iceandfire]: https://www.curseforge.com/minecraft/mc-mods/ice-and-fire-dragons
 [mekanismadditions]: https://www.curseforge.com/minecraft/mc-mods/mekanism-additions
 [mowziesmobs]: https://www.curseforge.com/minecraft/mc-mods/mowzies-mobs
+[mutantbeasts]: https://www.curseforge.com/minecraft/mc-mods/mutant-beasts
 [quark]: https://www.curseforge.com/minecraft/mc-mods/quark
 [random_patches]: https://www.curseforge.com/minecraft/mc-mods/randompatches-forge
 [rats]: https://www.curseforge.com/minecraft/mc-mods/rats

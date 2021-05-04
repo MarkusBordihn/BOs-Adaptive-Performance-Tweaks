@@ -22,12 +22,15 @@ package de.markusbordihn.adaptiveperformancetweaks.config.mods;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
 import net.minecraftforge.fml.ModList;
+
+import de.markusbordihn.adaptiveperformancetweaks.Constants;
 
 public class TinkersConstructConfig extends SpawnConfigModSupport {
 
-  private static final String NAME = "Tinkers Construct";
-  private static final String MOD_ID = "tconstruct";
+  private static final String NAME = Constants.TCONSTRUCT_NAME;
+  private static final String MOD_ID = Constants.TCONSTRUCT_MOD;
 
   private static Set<String> hostileMobList = new HashSet<>(Arrays.asList(
   // @formatter:off

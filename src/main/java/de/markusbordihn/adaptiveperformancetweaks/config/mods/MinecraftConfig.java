@@ -23,15 +23,18 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import de.markusbordihn.adaptiveperformancetweaks.Constants;
+
 public class MinecraftConfig extends SpawnConfigModSupport {
 
-  private static final String NAME = "Minecraft";
-  private static final String MOD_ID = "minecraft";
+  private static final String NAME = Constants.MINECRAFT_NAME;
+  private static final String MOD_ID = Constants.MINECRAFT_MOD;
 
   private static Set<String> passiveMobList = new HashSet<>();
 

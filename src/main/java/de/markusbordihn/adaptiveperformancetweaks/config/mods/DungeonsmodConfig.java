@@ -23,12 +23,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import net.minecraftforge.fml.ModList;
 
 public class DungeonsmodConfig extends SpawnConfigModSupport {
 
-  private static final String NAME = "Dungeons Mod";
-  private static final String MOD_ID = "dungeonsmod";
+  private static final String NAME = Constants.ICEANDFIRE_NAME;
+  private static final String MOD_ID = Constants.ICEANDFIRE_MOD;
 
   private static Set<String> hostileMobList = new HashSet<>(Arrays.asList(
   // @formatter:off

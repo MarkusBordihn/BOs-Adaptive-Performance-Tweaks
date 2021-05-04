@@ -25,10 +25,12 @@ import java.util.Set;
 
 import net.minecraftforge.fml.ModList;
 
+import de.markusbordihn.adaptiveperformancetweaks.Constants;
+
 public class SavageAndRavageConfig extends SpawnConfigModSupport {
 
-  private static final String NAME = "Savage and Ravage";
-  private static final String MOD_ID = "savageandravage";
+  private static final String NAME = Constants.SAVAGEANDRAVAGE_NAME;
+  private static final String MOD_ID = Constants.SAVAGEANDRAVAGE_MOD;
 
   private static Set<String> hostileMobList = new HashSet<>(Arrays.asList(
   // @formatter:off

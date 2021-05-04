@@ -25,10 +25,12 @@ import java.util.Set;
 
 import net.minecraftforge.fml.ModList;
 
+import de.markusbordihn.adaptiveperformancetweaks.Constants;
+
 public class StatuesConfig extends SpawnConfigModSupport {
 
-  private static final String NAME = "Statues";
-  private static final String MOD_ID = "statues";
+  private static final String NAME = Constants.STATUES_NAME;
+  private static final String MOD_ID = Constants.STATUES_MOD;
 
   private static Set<String> passiveMobList = new HashSet<>(Arrays.asList(
   // @formatter:off

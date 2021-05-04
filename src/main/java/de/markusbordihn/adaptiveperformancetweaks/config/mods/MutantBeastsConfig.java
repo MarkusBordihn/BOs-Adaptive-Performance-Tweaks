@@ -27,50 +27,28 @@ import net.minecraftforge.fml.ModList;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 
-public class MowziesMobsConfig extends SpawnConfigModSupport {
+public class MutantBeastsConfig extends SpawnConfigModSupport {
 
-  private static final String NAME = Constants.MOWZIESMOBS_NAME;
-  private static final String MOD_ID = Constants.MOWZIESMOBS_MOD;
-
-  private static Set<String> neutralMobList = new HashSet<>(Arrays.asList(
-  // @formatter:off
-    "mowziesmobs:lantern"
-  // @formatter:on
-  ));
+  private static final String NAME = Constants.MUTANTBEASTS_NAME;
+  private static final String MOD_ID = Constants.MUTANTBEASTS_MOD;
 
   private static Set<String> hostileMobList = new HashSet<>(Arrays.asList(
   // @formatter:off
-    "mowziesmobs:baby_foliaath",
-    "mowziesmobs:barakoan_barakoana",
-    "mowziesmobs:barakoana",
-    "mowziesmobs:barakoaya",
-    "mowziesmobs:foliaath",
-    "mowziesmobs:grottol",
-    "mowziesmobs:naga"
-  // @formatter:on
-  ));
-
-  private static Set<String> bossMobList = new HashSet<>(Arrays.asList(
-  // @formatter:off
-    "mowziesmobs:barako",
-    "mowziesmobs:ferrous_wroughtnaut",
-    "mowziesmobs:frostmaw"
+    "mutantbeasts:mutant_skeleton",
+    "mutantbeasts:creeper_minion",
+    "mutantbeasts:mutant_creeper",
+    "mutantbeasts:mutant_enderman",
+    "mutantbeasts:mutant_snow_golem",
+    "mutantbeasts:mutant_zombie"
   // @formatter:on
   ));
 
   public static void addSpawnRates() {
-    if (Boolean.FALSE.equals(COMMON.modMowziesMobsEnabled.get())
-        || !ModList.get().isLoaded(MOD_ID)) {
+    if (Boolean.FALSE.equals(COMMON.modMutantBeastsEnabled.get()) || !ModList.get().isLoaded(MOD_ID)) {
       return;
     }
-    addSpawnRatesForNeutralMobs(NAME, neutralMobList,
-        COMMON.modMowziesMobsMaxNeutralMobsPerPlayer.get(),
-        COMMON.modMowziesMobsMaxNeutralMobsPerWorld.get());
-    addSpawnRatesForHostileMobs(NAME, hostileMobList,
-        COMMON.modMowziesMobsMaxHostileMobsPerPlayer.get(),
-        COMMON.modMowziesMobsMaxHostileMobsPerWorld.get());
-    addSpawnRatesForBossMobs(NAME, bossMobList, COMMON.modMowziesMobsMaxBossesPerPlayer.get(),
-        COMMON.modMowziesMobsMaxBossesPerWorld.get());
+    addSpawnRatesForHostileMobs(NAME, hostileMobList, COMMON.modMutantBeastsMaxHostileMobsPerPlayer.get(),
+        COMMON.modMutantBeastsMaxHostileMobsPerWorld.get());
   }
 
 }

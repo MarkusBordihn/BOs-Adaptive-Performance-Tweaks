@@ -19,11 +19,12 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.entity;
 
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.LightningBoltEntity;
@@ -44,7 +45,7 @@ import de.markusbordihn.adaptiveperformancetweaks.player.PlayerPosition;
 @EventBusSubscriber
 public class EntityManager extends Manager {
 
-  private static Map<String, Set<Entity>> entityMap = new HashMap<>();
+  private static ConcurrentHashMap<String, Set<Entity>> entityMap = new ConcurrentHashMap<>();
   private static Set<String> allowList = new HashSet<>(COMMON.spawnAllowList.get());
   private static Set<String> denyList = new HashSet<>(COMMON.spawnDenyList.get());
 
@@ -149,7 +150,9 @@ public class EntityManager extends Manager {
       return 0;
     }
     int counter = 0;
-    for (Entity entity : entities) {
+    Iterator<Entity> entityIterator = entities.iterator();
+    while (entityIterator.hasNext()) {
+      Entity entity = entityIterator.next();
       int x = (int) entity.getPosX();
       int y = (int) entity.getPosY();
       int z = (int) entity.getPosZ();

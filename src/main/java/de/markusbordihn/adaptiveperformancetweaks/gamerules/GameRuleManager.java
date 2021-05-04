@@ -25,7 +25,9 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
+import net.minecraftforge.fml.ModList;
 
+import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
 import de.markusbordihn.adaptiveperformancetweaks.commands.CommandManager;
 import de.markusbordihn.adaptiveperformancetweaks.server.ServerLoadEvent;
@@ -34,6 +36,7 @@ import de.markusbordihn.adaptiveperformancetweaks.server.ServerLoadEvent;
 public class GameRuleManager extends Manager {
 
   private static GameRules gameRules;
+  private static int minEntityCramming = COMMON.maxEntityCramming.get();
   private static int maxEntityCramming = COMMON.maxEntityCramming.get();
   private static int randomTickSpeed = COMMON.randomTickSpeed.get();
   private static boolean gameruleEnabled = COMMON.gameruleEnabled.get();
@@ -42,7 +45,15 @@ public class GameRuleManager extends Manager {
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
     gameruleEnabled = COMMON.gameruleEnabled.get();
     maxEntityCramming = COMMON.maxEntityCramming.get();
+    minEntityCramming = COMMON.minEntityCramming.get();
     randomTickSpeed = COMMON.randomTickSpeed.get();
+    if (minEntityCramming >= maxEntityCramming) {
+      minEntityCramming = maxEntityCramming - 1;
+    }
+    if (ModList.get().isLoaded(Constants.MINECOLONIES_MOD) && minEntityCramming < 5) {
+      log.warn("The recommended value for minEntityCramming with {} is 5 instead of {}!", Constants.MINECOLONIES_NAME,
+          minEntityCramming);
+    }
   }
 
   @SubscribeEvent
@@ -52,7 +63,7 @@ public class GameRuleManager extends Manager {
       return;
     }
     log.info("Random Tick Speed will be optimized between {} and {}", 1, randomTickSpeed);
-    log.info("Max Entity Cramming will be optimized between {} and {}", 3, maxEntityCramming);
+    log.info("Max Entity Cramming will be optimized between {} and {}", minEntityCramming, maxEntityCramming);
     if (gameRules.getInt(GameRules.RANDOM_TICK_SPEED) != randomTickSpeed) {
       setRandomTickSpeed(randomTickSpeed);
     }
@@ -108,16 +119,15 @@ public class GameRuleManager extends Manager {
   }
 
   public static void setMaxEntityCramming(int maxEntity) {
-    if (maxEntity < 3) {
-      maxEntity = 3;
+    if (maxEntity < minEntityCramming) {
+      maxEntity = minEntityCramming;
     } else if (maxEntity > maxEntityCramming) {
       maxEntity = maxEntityCramming;
     }
     int currentMaxEntityCramming = gameRules.getInt(GameRules.MAX_ENTITY_CRAMMING);
     if (currentMaxEntityCramming != maxEntity) {
       log.debug("Changing maxEntityCramming from {} to {}", currentMaxEntityCramming, maxEntity);
-      CommandManager
-          .executeServerCommand(String.format("gamerule maxEntityCramming %s", maxEntity));
+      CommandManager.executeServerCommand(String.format("gamerule maxEntityCramming %s", maxEntity));
     }
   }
 }

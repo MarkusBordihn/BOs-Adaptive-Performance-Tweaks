@@ -25,10 +25,12 @@ import java.util.Set;
 
 import net.minecraftforge.fml.ModList;
 
+import de.markusbordihn.adaptiveperformancetweaks.Constants;
+
 public class AquacultureConfig extends SpawnConfigModSupport {
 
-  private static final String NAME = "Aquaculture 2";
-  private static final String MOD_ID = "aquaculture";
+  private static final String NAME = Constants.AQUACULTURE_NAME;
+  private static final String MOD_ID = Constants.AQUACULTURE_MOD;
 
   private static Set<String> passiveMobList = new HashSet<>(Arrays.asList(
   // @formatter:off
@@ -76,8 +78,7 @@ public class AquacultureConfig extends SpawnConfigModSupport {
   ));
 
   public static void addSpawnRates() {
-    if (Boolean.FALSE.equals(COMMON.modAquacultureEnabled.get())
-        || !ModList.get().isLoaded(MOD_ID)) {
+    if (Boolean.FALSE.equals(COMMON.modAquacultureEnabled.get()) || !ModList.get().isLoaded(MOD_ID)) {
       return;
     }
     addSpawnRatesForPassiveMobs(NAME, passiveMobList, COMMON.modAquacultureMaxFishPerPlayer.get(),

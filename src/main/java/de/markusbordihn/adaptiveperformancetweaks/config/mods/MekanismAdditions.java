@@ -25,10 +25,12 @@ import java.util.Set;
 
 import net.minecraftforge.fml.ModList;
 
+import de.markusbordihn.adaptiveperformancetweaks.Constants;
+
 public class MekanismAdditions extends SpawnConfigModSupport {
 
-  private static final String NAME = "Mekanism Additions";
-  private static final String MOD_ID = "mekanismadditions";
+  private static final String NAME = Constants.MEKANISMADDITIONS_NAME;
+  private static final String MOD_ID = Constants.MEKANISMADDITIONS_MOD;
 
   private static Set<String> hostileMobList = new HashSet<>(Arrays.asList(
   // @formatter:off

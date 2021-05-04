@@ -52,6 +52,7 @@ public class SpawnConfigManager extends Manager {
     MekanismAdditions.addSpawnRates();
     MinecraftConfig.addSpawnRates();
     MowziesMobsConfig.addSpawnRates();
+    MutantBeastsConfig.addSpawnRates();
     QuarkConfig.addSpawnRates();
     RatsConfig.addSpawnRates();
     SavageAndRavageConfig.addSpawnRates();

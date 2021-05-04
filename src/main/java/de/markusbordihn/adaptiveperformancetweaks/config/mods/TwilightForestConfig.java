@@ -25,10 +25,12 @@ import java.util.Set;
 
 import net.minecraftforge.fml.ModList;
 
+import de.markusbordihn.adaptiveperformancetweaks.Constants;
+
 public class TwilightForestConfig extends SpawnConfigModSupport {
 
-  private static final String NAME = "The Twilight Forest";
-  private static final String MOD_ID = "twilightforest";
+  private static final String NAME = Constants.TWILIGHTFOREST_NAME;
+  private static final String MOD_ID = Constants.TWILIGHTFOREST_MOD;
 
   private static Set<String> passiveMobList = new HashSet<>(Arrays.asList(
   // @formatter:off

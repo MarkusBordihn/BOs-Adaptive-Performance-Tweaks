@@ -25,10 +25,12 @@ import java.util.Set;
 
 import net.minecraftforge.fml.ModList;
 
+import de.markusbordihn.adaptiveperformancetweaks.Constants;
+
 public class TheAbyssConfig extends SpawnConfigModSupport {
 
-  private static final String NAME = "The Abyss";
-  private static final String MOD_ID = "theabyss";
+  private static final String NAME = Constants.THEABYSS_NAME;
+  private static final String MOD_ID = Constants.THEABYSS_MOD;
 
   private static Set<String> passiveMobList = new HashSet<>(Arrays.asList(
   // @formatter:off
