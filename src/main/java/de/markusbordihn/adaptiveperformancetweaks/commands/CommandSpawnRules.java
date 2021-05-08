@@ -52,7 +52,7 @@ public class CommandSpawnRules extends CustomCommand {
     sendFeedback(context, "Entity Name|perPlayer|perWorld");
     for (ResourceLocation entityKey : entitiesKeys) {
       String entityName = entityKey.toString();
-      if (SpawnConfigManager.hasSpawnLimit(entityName)) {
+      if (entityName != null && SpawnConfigManager.hasSpawnLimit(entityName)) {
         int spawnRatePerPlayer = SpawnConfigManager.getSpawnLimitPerPlayer(entityName);
         int spawnRatePerWorld = SpawnConfigManager.getSpawnLimitPerWorld(entityName);
         sendFeedback(context,

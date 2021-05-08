@@ -101,7 +101,7 @@ public class MonsterEntityManager extends Manager {
             monsterEntity.setFire(60);
           }
           // Remove whirlwind during day
-          if (modDungeonsmodOptimizeWhirlwind && monsterName.equals("dungeonsmod:whirlwind")) {
+          if (modDungeonsmodOptimizeWhirlwind && "dungeonsmod:whirlwind".equals(monsterName)) {
             monsterEntity.remove();
           }
         }

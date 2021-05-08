@@ -37,7 +37,8 @@ public class PlayerOptimization extends Optimization {
   public static void handlePlayerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {
     String username = event.getPlayer().getName().getString();
     if (!username.isEmpty() && Boolean.TRUE.equals(COMMON.optimizePlayerLogin.get())) {
-      ServerPlayerEntity player = ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByUsername(username);
+      ServerPlayerEntity player =
+          ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByUsername(username);
       log.info("Optimize Player Login for {} {}", username, player);
 
       if (PlayerManager.getNumberOfPlayers() == 0
@@ -51,12 +52,17 @@ public class PlayerOptimization extends Optimization {
           WorldViewManager.decreaseViewDistance(player.getServerWorld());
         }
 
-        if(Boolean.TRUE.equals(COMMON.gameruleEnabled.get())) {
+        if (Boolean.TRUE.equals(COMMON.gameruleEnabled.get())) {
+
           // Decrease random ticks during the login process
-          GameRuleManager.decreaseRandomTickSpeed();
+          if (Boolean.TRUE.equals(COMMON.randomTickSpeedEnabled.get())) {
+            GameRuleManager.decreaseRandomTickSpeed();
+          }
 
           // Decrease entity cramming during the login process
-          GameRuleManager.decreaseMaxEntityCramming();
+          if (Boolean.TRUE.equals(COMMON.entityCrammingEnabled.get())) {
+            GameRuleManager.decreaseMaxEntityCramming();
+          }
         }
       }
     }

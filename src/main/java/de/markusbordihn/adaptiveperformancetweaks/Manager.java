@@ -19,12 +19,10 @@
 
 package de.markusbordihn.adaptiveperformancetweaks;
 
-import java.util.Map;
-import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import de.markusbordihn.adaptiveperformancetweaks.config.CommonConfig;
-import net.minecraft.entity.Entity;
 
 public abstract class Manager {
 
@@ -33,38 +31,5 @@ public abstract class Manager {
   public static final CommonConfig.Config COMMON = CommonConfig.COMMON;
 
   public static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-
-  public static void incrementCounter(Map<String, MutableInt> counterMap, String name) {
-    MutableInt counter = counterMap.get(name);
-    if (counter == null) {
-      counterMap.put(name, new MutableInt());
-    } else {
-      counter.increment();
-    }
-  }
-
-  public static void decrementCounter(Map<String, MutableInt> counterMap, Entity entity) {
-    String entityName = entity.getEntityString();
-    decrementCounter(counterMap, entityName);
-  }
-
-  public static void decrementCounter(Map<String, MutableInt> counterMap, String name) {
-    MutableInt counter = counterMap.get(name);
-    if (counter == null) {
-      counterMap.put(name, new MutableInt());
-    } else if (counter.getValue() > 0) {
-      counter.decrement();
-    } else {
-      counter.setValue(0);
-    }
-  }
-
-  public static Integer getCounter(Map<String, MutableInt> counterMap, String name) {
-    MutableInt counter = counterMap.get(name);
-    if (counter == null) {
-      return 0;
-    }
-    return counter.getValue();
-  }
 
 }

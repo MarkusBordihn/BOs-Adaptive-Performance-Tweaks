@@ -45,6 +45,7 @@ import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 
+import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
 import de.markusbordihn.adaptiveperformancetweaks.config.SpawnConfigManager;
 import de.markusbordihn.adaptiveperformancetweaks.entity.EntityManager;
@@ -107,6 +108,14 @@ public class SpawnManager extends Manager {
     Entity entity = event.getEntity();
     String entityName = entity.getEntityString();
     String worldName = entity.getEntityWorld().getDimensionKey().getLocation().toString();
+
+    // Skip other checks if unknown entity name
+    if (entityName == null) {
+      log.warn("Unknown entity name for entity {} in {}. Please report this issue under {}]!",
+          entity, worldName, Constants.ISSUE_REPORT);
+      event.setResult(Event.Result.DEFAULT);
+      return;
+    }
 
     // Pre-checks for allowed and defined to avoid expensive calculations
     if (allowList.contains(entityName)) {
@@ -177,15 +186,6 @@ public class SpawnManager extends Manager {
     if (numOfPlayersInsideViewArea == 0) {
       log.debug("[View Area Visibility] Blocked spawn event for {} in {}.", entity, worldName);
       event.setResult(Event.Result.DENY);
-      return;
-    }
-
-    // Skip other checks if unknown entity name
-    if (entityName == null) {
-      log.warn(
-          "Unknown entity name for entity {}. Please report this issue under https://github.com/MarkusBordihn/adaptive_performance_tweaks/issues!",
-          entity);
-      event.setResult(Event.Result.DEFAULT);
       return;
     }
 
@@ -264,6 +264,14 @@ public class SpawnManager extends Manager {
     Entity entity = event.getEntity();
     String entityName = entity.getEntityString();
     String worldName = entity.getEntityWorld().getDimensionKey().getLocation().toString();
+
+    // Skip other checks if unknown entity name
+    if (entityName == null) {
+      log.warn("Unknown entity name for entity {} in {}. Please report this issue under {}]!",
+          entity, worldName, Constants.ISSUE_REPORT);
+      event.setResult(Event.Result.DEFAULT);
+      return;
+    }
 
     if (allowList.contains(entityName)) {
       log.debug("[Allowed Entity] Allow special spawn event for {} in {} ", entity, worldName);

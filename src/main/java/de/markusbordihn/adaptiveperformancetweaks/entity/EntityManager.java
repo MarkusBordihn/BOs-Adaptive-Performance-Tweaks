@@ -39,6 +39,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 
+import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
 import de.markusbordihn.adaptiveperformancetweaks.player.PlayerPosition;
 
@@ -63,9 +64,21 @@ public class EntityManager extends Manager {
     if (entity instanceof ItemEntity || entity instanceof LightningBoltEntity
         || entity instanceof FallingBlockEntity) {
       return;
+    } else if (entity instanceof PlayerEntity) {
+      log.debug("Player {} joined world.", entity);
+      return;
     }
 
     String entityName = entity.getEntityString();
+    String worldName = entity.getEntityWorld().getDimensionKey().getLocation().toString();
+
+    // Skip other checks if unknown entity name
+    if (entityName == null) {
+      log.warn("Unknown entity name for entity {} in {}. Please report this issue under {}]!",
+          entity, worldName, Constants.ISSUE_REPORT);
+      return;
+    }
+
     if (denyList.contains(entityName)) {
       log.debug("Removing denied entity {}", entityName);
       entity.remove();
@@ -78,18 +91,10 @@ public class EntityManager extends Manager {
     } else if (entity.hasCustomName()) {
       log.debug("Ignore custom entity {} with name {}", entityName,
           entity.getCustomName().getString());
-    } else {
-      if (entity instanceof MonsterEntity) {
-        MonsterEntityManager.handleMonsterEntityJoinWorldEvent(event);
-      }
-
-      if (entity instanceof PlayerEntity) {
-        log.debug("Player {} joined world.", entity);
-        return;
-      }
+    } else if (entity instanceof MonsterEntity) {
+      MonsterEntityManager.handleMonsterEntityJoinWorldEvent(event);
     }
 
-    String worldName = entity.getEntityWorld().getDimensionKey().getLocation().toString();
     Set<Entity> entities = entityMap.get('[' + worldName + ']' + entityName);
     if (entities != null) {
       entities.add(entity);
@@ -109,18 +114,21 @@ public class EntityManager extends Manager {
     if (entity instanceof ItemEntity || entity instanceof LightningBoltEntity
         || entity instanceof FallingBlockEntity) {
       return;
+    } else if (entity instanceof PlayerEntity) {
+      log.debug("Player {} leaved world.", entity);
+      return;
+    }
+
+    // Skip other checks if unknown entity name
+    String entityName = entity.getEntityString();
+    if (entityName == null) {
+      return;
     }
 
     if (entity instanceof MonsterEntity) {
       MonsterEntityManager.handleMonsterEntityLeaveWorldEvent(event);
     }
 
-    if (entity instanceof PlayerEntity) {
-      log.debug("Player {} leaved world.", entity);
-      return;
-    }
-
-    String entityName = entity.getEntityString();
     String worldName = entity.getEntityWorld().getDimensionKey().getLocation().toString();
     Set<Entity> entities = entityMap.get('[' + worldName + ']' + entityName);
     if (entities != null) {
