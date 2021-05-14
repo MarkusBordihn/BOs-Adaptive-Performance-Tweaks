@@ -26,5 +26,7 @@ If applicable, add screenshots to help explain your problem.
 **Debugging**
 Before reporting a issue please use `/aptweaks debug true` to enable debugging and check if there is anything relevant in the debug.log file.
 
+**Is the issue happening in combination with other mods? (If yes, please provide a full list)**
+
 **Additional context**
 Add any other context about the problem here.
