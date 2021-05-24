@@ -97,11 +97,14 @@ public class AlexMobsConfig extends SpawnConfigModSupport {
     if (Boolean.FALSE.equals(COMMON.modAlexmobsEnabled.get()) || !ModList.get().isLoaded(MOD_ID)) {
       return;
     }
-    addSpawnRatesForPassiveMobs(NAME, passiveMobList, COMMON.modAlexmobsMaxPassiveMobsPerPlayer.get(),
+    addSpawnRatesForPassiveMobs(NAME, passiveMobList,
+        COMMON.modAlexmobsMaxPassiveMobsPerPlayer.get(),
         COMMON.modAlexmobsMaxPassiveMobsPerWorld.get());
-    addSpawnRatesForNeutralMobs(NAME, neutralMobList, COMMON.modAlexmobsMaxNeutralMobsPerPlayer.get(),
+    addSpawnRatesForNeutralMobs(NAME, neutralMobList,
+        COMMON.modAlexmobsMaxNeutralMobsPerPlayer.get(),
         COMMON.modAlexmobsMaxNeutralMobsPerWorld.get());
-    addSpawnRatesForHostileMobs(NAME, hostileMobList, COMMON.modAlexmobsMaxHostileMobsPerPlayer.get(),
+    addSpawnRatesForHostileMobs(NAME, hostileMobList,
+        COMMON.modAlexmobsMaxHostileMobsPerPlayer.get(),
         COMMON.modAlexmobsMaxHostileMobsPerWorld.get());
 
     // Limiting resource intensive mobs

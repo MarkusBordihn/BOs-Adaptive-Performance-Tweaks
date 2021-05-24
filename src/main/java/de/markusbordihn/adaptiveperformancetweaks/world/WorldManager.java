@@ -37,9 +37,10 @@ public class WorldManager extends Manager {
 
   @SubscribeEvent
   public static void handleServerStartingEvent(FMLServerStartingEvent event) {
-    java.lang.Iterable<ServerWorld> serverWorlds = ServerLifecycleHooks.getCurrentServer().getWorlds();
+    java.lang.Iterable<ServerWorld> serverWorlds =
+        ServerLifecycleHooks.getCurrentServer().getAllLevels();
     for (ServerWorld serverWorld : serverWorlds) {
-      String worldName = serverWorld.getDimensionKey().getLocation().toString();
+      String worldName = serverWorld.getLevel().dimension().location().toString();
       worlds.put(worldName, serverWorld);
     }
   }

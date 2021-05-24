@@ -39,7 +39,9 @@ public class ServerManager extends Manager {
   @SubscribeEvent
   public static void handleServerStartingEvent(FMLServerStartingEvent event) {
     log.info("Game Difficulty is set to {}",
-        ServerLifecycleHooks.getCurrentServer().getServerConfiguration().getDifficulty());
+        ServerLifecycleHooks.getCurrentServer().getWorldData().getDifficulty());
+    log.info("Max number of players is set to {}",
+        ServerLifecycleHooks.getCurrentServer().getPlayerList().getMaxPlayers());
     ServerLoad.measureLoadAndPost();
     ServerWorldLoad.measureLoadAndPost();
   }

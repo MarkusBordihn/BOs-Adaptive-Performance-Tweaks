@@ -37,7 +37,7 @@ public class WorldOptimization extends Optimization {
   @SubscribeEvent
   public static void handleServerWorldLoadEvent(ServerWorldLoadEvent event) {
     ServerWorld serverWorld = event.getServerWorld();
-    java.util.List<ServerPlayerEntity> players = serverWorld.getPlayers();
+    java.util.List<ServerPlayerEntity> players = serverWorld.players();
 
     if (Boolean.FALSE.equals(COMMON.optimizeViewDistance.get())) {
       return;

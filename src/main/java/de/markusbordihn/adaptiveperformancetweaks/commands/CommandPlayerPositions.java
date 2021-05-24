@@ -20,7 +20,6 @@
 package de.markusbordihn.adaptiveperformancetweaks.commands;
 
 import java.util.Map;
-import java.util.Set;
 
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -28,33 +27,31 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
-import net.minecraft.entity.monster.MonsterEntity;
 
-import de.markusbordihn.adaptiveperformancetweaks.entity.MonsterEntityManager;
+import de.markusbordihn.adaptiveperformancetweaks.player.PlayerPosition;
+import de.markusbordihn.adaptiveperformancetweaks.player.PlayerPositionManager;
 
-public class CommandMonster extends CustomCommand {
+public class CommandPlayerPositions extends CustomCommand {
 
-  private static final CommandMonster command = new CommandMonster();
+  private static final CommandPlayerPositions command = new CommandPlayerPositions();
 
   public static ArgumentBuilder<CommandSource, ?> register() {
-    return Commands.literal("monster").requires(cs -> cs.hasPermission(2)).executes(command);
+    return Commands.literal("playerPositions").requires(cs -> cs.hasPermission(2))
+        .executes(command);
   }
 
   @Override
   public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
-    Map<String, Set<MonsterEntity>> monsterEntityMap = MonsterEntityManager.getMonsterEntityMap();
-    if (monsterEntityMap.isEmpty()) {
-      sendFeedback(context,
-          "Unable to find any monster entity. World is not loaded or nor monster spawned?");
+    Map<String, PlayerPosition> playerPositionMap = PlayerPositionManager.getPlayerPositionMap();
+    if (playerPositionMap.isEmpty()) {
+      sendFeedback(context, "Unable to find any player position!?");
     } else {
       sendFeedback(context,
-          String.format("Monster Entity (%s types)\n===", monsterEntityMap.size()));
-      for (Map.Entry<String, Set<MonsterEntity>> monsterEntities : monsterEntityMap.entrySet()) {
-        int numOfMonster = monsterEntities.getValue().size();
-        if (numOfMonster > 0) {
-          sendFeedback(context,
-              String.format("\u221F %s %s", monsterEntities.getKey(), numOfMonster));
-        }
+          String.format("Player Positions (%s online)\n===", playerPositionMap.size()));
+      for (Map.Entry<String, PlayerPosition> player : playerPositionMap.entrySet()) {
+        String playerName = player.getKey();
+        PlayerPosition playerPosition = player.getValue();
+        sendFeedback(context, String.format("\u221F %s %s", playerName, playerPosition));
       }
     }
     return 0;

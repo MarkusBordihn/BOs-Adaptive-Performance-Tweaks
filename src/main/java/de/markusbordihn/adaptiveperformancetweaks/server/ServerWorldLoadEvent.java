@@ -34,9 +34,9 @@ public class ServerWorldLoadEvent extends Event {
   public ServerWorldLoadEvent(ServerWorld serverWorld, ServerWorldLoadLevel serverWorldLoadLevel,
       ServerWorldLoadLevel lastServerWorldLoadLevel) {
     super();
-    this.playerCount = serverWorld.getPlayers().size();
+    this.playerCount = serverWorld.players().size();
     this.serverWorld = serverWorld;
-    this.serverWorldName = serverWorld.getDimensionKey().getLocation().toString();
+    this.serverWorldName = serverWorld.getLevel().dimension().location().toString();
     this.lastServerWorldLoadLevel = lastServerWorldLoadLevel;
     this.serverWorldLoadLevel = serverWorldLoadLevel;
   }
@@ -65,10 +65,12 @@ public class ServerWorldLoadEvent extends Event {
   }
 
   public double calculateServerWorldLoadLevelFactor() {
-    if (this.serverWorldLoadLevel == ServerWorldLoadLevel.NORMAL
-        && (this.lastServerWorldLoadLevel == ServerWorldLoadLevel.NORMAL
-            || this.lastServerWorldLoadLevel == ServerWorldLoadLevel.VERY_LOW
-            || this.lastServerWorldLoadLevel == ServerWorldLoadLevel.LOW)) {
+    if ((this.serverWorldLoadLevel == ServerWorldLoadLevel.VERY_LOW
+        || this.serverWorldLoadLevel == ServerWorldLoadLevel.LOW
+        || this.serverWorldLoadLevel == ServerWorldLoadLevel.NORMAL)
+        && (this.lastServerWorldLoadLevel == ServerWorldLoadLevel.VERY_LOW
+            || this.lastServerWorldLoadLevel == ServerWorldLoadLevel.LOW
+            || this.lastServerWorldLoadLevel == ServerWorldLoadLevel.NORMAL)) {
       return 1.0;
     }
     if (this.serverWorldLoadLevel == ServerWorldLoadLevel.NORMAL
@@ -92,22 +94,20 @@ public class ServerWorldLoadEvent extends Event {
             || this.lastServerWorldLoadLevel == ServerWorldLoadLevel.VERY_HIGH)) {
       return 0.6;
     }
-    if (this.serverWorldLoadLevel == ServerWorldLoadLevel.HIGH) {
+    if (this.serverWorldLoadLevel == ServerWorldLoadLevel.HIGH
+        && this.lastServerWorldLoadLevel != ServerWorldLoadLevel.HIGH
+        && this.lastServerWorldLoadLevel != ServerWorldLoadLevel.VERY_HIGH) {
       return 0.5;
     }
-    if (this.serverWorldLoadLevel == ServerWorldLoadLevel.VERY_HIGH) {
+    if (this.serverWorldLoadLevel == ServerWorldLoadLevel.HIGH) {
       return 0.4;
     }
-    return 1.0;
-  }
-
-  public double getServerLoadMultiplier() {
-    if (hasHighServerWorldLoad()) {
-      return 0.5;
-    } else if (hasNormalServerWorldLoad()) {
-      return 1.0;
-    } else if (hasLowServerWorldLoad()) {
-      return 1.5;
+    if (this.serverWorldLoadLevel == ServerWorldLoadLevel.VERY_HIGH
+        && this.lastServerWorldLoadLevel != ServerWorldLoadLevel.VERY_HIGH) {
+      return 0.3;
+    }
+    if (this.serverWorldLoadLevel == ServerWorldLoadLevel.VERY_HIGH) {
+      return 0.2;
     }
     return 1.0;
   }
@@ -115,16 +115,23 @@ public class ServerWorldLoadEvent extends Event {
   public boolean hasHighServerWorldLoad() {
     return (this.serverWorldLoadLevel == ServerWorldLoadLevel.MEDIUM
         || this.serverWorldLoadLevel == ServerWorldLoadLevel.HIGH
-        || this.serverWorldLoadLevel == ServerWorldLoadLevel.VERY_HIGH);
+        || this.serverWorldLoadLevel == ServerWorldLoadLevel.VERY_HIGH
+        || this.lastServerWorldLoadLevel == ServerWorldLoadLevel.HIGH
+        || this.lastServerWorldLoadLevel == ServerWorldLoadLevel.VERY_HIGH);
   }
 
   public boolean hasNormalServerWorldLoad() {
-    return (this.serverWorldLoadLevel == ServerWorldLoadLevel.NORMAL);
+    return (this.serverWorldLoadLevel == ServerWorldLoadLevel.NORMAL)
+        && (this.lastServerWorldLoadLevel == ServerWorldLoadLevel.VERY_LOW
+            || this.lastServerWorldLoadLevel == ServerWorldLoadLevel.LOW
+            || this.lastServerWorldLoadLevel == ServerWorldLoadLevel.NORMAL);
   }
 
   public boolean hasLowServerWorldLoad() {
     return (this.serverWorldLoadLevel == ServerWorldLoadLevel.VERY_LOW
-        || this.serverWorldLoadLevel == ServerWorldLoadLevel.LOW);
+        || this.serverWorldLoadLevel == ServerWorldLoadLevel.LOW
+            && (this.lastServerWorldLoadLevel == ServerWorldLoadLevel.VERY_LOW
+                || this.lastServerWorldLoadLevel == ServerWorldLoadLevel.LOW));
   }
 
   public boolean hasChanged() {

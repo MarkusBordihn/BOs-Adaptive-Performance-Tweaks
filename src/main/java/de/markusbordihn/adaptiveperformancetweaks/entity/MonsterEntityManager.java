@@ -61,27 +61,29 @@ public class MonsterEntityManager extends Manager {
 
   public static void handleMonsterEntityJoinWorldEvent(EntityJoinWorldEvent event) {
     MonsterEntity monsterEntity = (MonsterEntity) event.getEntity();
-    String monsterName = monsterEntity.getEntityString();
+    String monsterName = monsterEntity.getEncodeId();
     String monsterDisplayName = monsterEntity.getDisplayName().getString();
-    String worldName = monsterEntity.getEntityWorld().getDimensionKey().getLocation().toString();
-    Set<MonsterEntity> monsterEntities = monsterEntityMap.get('[' + worldName + ']' + monsterName);
-    if (monsterEntities == null) {
-      monsterEntities = new LinkedHashSet<>();
-      monsterEntityMap.put('[' + worldName + ']' + monsterName, monsterEntities);
-    }
+    String worldName = monsterEntity.level.dimension().location().toString();
+    String monsterEntityMapKey = '[' + worldName + ']' + monsterName;
+    monsterEntityMap.computeIfAbsent(monsterEntityMapKey, k -> new LinkedHashSet<>());
+    Set<MonsterEntity> monsterEntities = monsterEntityMap.get(monsterEntityMapKey);
     monsterEntities.add(monsterEntity);
     log.debug("Monster {} {} joined {}.", monsterName, monsterDisplayName, worldName);
   }
 
   public static void handleMonsterEntityLeaveWorldEvent(EntityLeaveWorldEvent event) {
     MonsterEntity monsterEntity = (MonsterEntity) event.getEntity();
-    String monsterName = monsterEntity.getEntityString();
+    String monsterName = monsterEntity.getEncodeId();
     String monsterDisplayName = monsterEntity.getDisplayName().getString();
-    String worldName = monsterEntity.getEntityWorld().getDimensionKey().getLocation().toString();
-    Set<MonsterEntity> monsterEntities =
-        monsterEntityMap.getOrDefault('[' + worldName + ']' + monsterName, new LinkedHashSet<>());
-    monsterEntities.remove(monsterEntity);
-    log.debug("Monster {} {} leaved {}.", monsterName, monsterDisplayName, worldName);
+    String worldName = monsterEntity.level.dimension().location().toString();
+    Set<MonsterEntity> monsterEntities = monsterEntityMap.get('[' + worldName + ']' + monsterName);
+    if (monsterEntities != null) {
+      monsterEntities.remove(monsterEntity);
+      log.debug("Monster {} {} leaved {}.", monsterName, monsterDisplayName, worldName);
+    } else {
+      log.warn("Monster {} {} in {} was not tracked by monster entity manager!", monsterName,
+          monsterDisplayName, worldName);
+    }
   }
 
   public static void cleanupMonster() {
@@ -90,15 +92,16 @@ public class MonsterEntityManager extends Manager {
     }
     for (Map.Entry<String, Set<MonsterEntity>> monsterEntities : monsterEntityMap.entrySet()) {
       for (MonsterEntity monsterEntity : monsterEntities.getValue()) {
-        World entityWorld = monsterEntity.getEntityWorld();
-        String monsterName = monsterEntity.getEntityString();
+        World entityWorld = monsterEntity.level;
+        String monsterName = monsterEntity.getEncodeId();;
 
         // Cleanup specific Monsters during daytime
-        if (entityWorld.isDaytime()) {
+        if (entityWorld.isDay()) {
           // Burn Crepper during days to control population
           if (burnCreeperDuringDaylight && monsterEntity instanceof CreeperEntity
-              && entityWorld.canSeeSky(monsterEntity.getPosition())) {
-            monsterEntity.setFire(60);
+              && entityWorld.canSeeSky(monsterEntity.blockPosition())) {
+            // monsterEntity.setFire(60);
+            // ToDo (mbordihn): Look how this is done in 16.5.x
           }
           // Remove whirlwind during day
           if (modDungeonsmodOptimizeWhirlwind && "dungeonsmod:whirlwind".equals(monsterName)) {

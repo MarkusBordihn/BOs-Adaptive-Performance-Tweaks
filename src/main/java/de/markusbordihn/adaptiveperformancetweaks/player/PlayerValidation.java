@@ -22,34 +22,27 @@ package de.markusbordihn.adaptiveperformancetweaks.player;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.math.vector.Vector3d;
 
 public class PlayerValidation {
 
   private String username;
-  private double posX = 0;
-  private double posY = 0;
-  private double posZ = 0;
   private double rotationYawHead;
   private long lastValidationTime = System.currentTimeMillis();
+  private Vector3d position;
   private ServerPlayerEntity player;
 
   PlayerValidation(ServerPlayerEntity player) {
     this.player = player;
     this.username = player.getName().getString();
-    this.posX = player.getPosX();
-    this.posY = player.getPosY();
-    this.posZ = player.getPosZ();
-    this.rotationYawHead = player.getRotationYawHead();
+    this.position = player.position();
+    this.rotationYawHead = player.getYHeadRot();
   }
 
   public boolean hasPlayerMoved() {
-    return (
-      !this.username.equals(this.player.getName().getString()) ||
-      this.posX != this.player.getPosX() ||
-      this.posY != this.player.getPosY() ||
-      this.posZ != this.player.getPosZ() ||
-      this.rotationYawHead != this.player.getRotationYawHead()
-    );
+    return (!this.username.equals(this.player.getName().getString())
+        || !this.position.equals(this.player.position())
+        || this.rotationYawHead != this.player.getYHeadRot());
   }
 
   public ServerPlayerEntity getPlayer() {

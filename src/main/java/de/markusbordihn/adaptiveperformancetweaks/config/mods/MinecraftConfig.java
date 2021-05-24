@@ -54,8 +54,8 @@ public class MinecraftConfig extends SpawnConfigModSupport {
     specialMobList.put("minecraft:the_nether:minecraft:piglin", 20);
     specialMobList.put("minecraft:the_nether:minecraft:piglin_brute", 20);
     specialMobList.put("minecraft:the_nether:minecraft:skeleton", 20);
-    specialMobList.put("minecraft:the_nether:wither_skeleton", 10);
-    specialMobList.put("minecraft:the_nether:zombified_piglin", 20);
+    specialMobList.put("minecraft:the_nether:minecraft:wither_skeleton", 10);
+    specialMobList.put("minecraft:the_nether:minecraft:zombified_piglin", 20);
   }
 
   public static void addSpawnRates() {
@@ -70,7 +70,7 @@ public class MinecraftConfig extends SpawnConfigModSupport {
     for (ResourceLocation registryName : ForgeRegistries.ENTITIES.getKeys()) {
       if (registryName.toString().startsWith("minecraft:")) {
         EntityType<?> entityType = ForgeRegistries.ENTITIES.getValue(registryName);
-        EntityClassification entityClassification = entityType.getClassification();
+        EntityClassification entityClassification = entityType.getCategory();
         if (entityClassification == EntityClassification.AMBIENT) {
           passiveMobList.add(registryName.toString());
         } else if (entityClassification == EntityClassification.CREATURE) {

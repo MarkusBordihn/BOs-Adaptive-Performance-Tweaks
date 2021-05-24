@@ -30,7 +30,7 @@ public class CommandKill extends CustomCommand {
   private static final CommandKill command = new CommandKill();
 
   public static ArgumentBuilder<CommandSource, ?> register() {
-    return Commands.literal("kill").requires(cs -> cs.hasPermissionLevel(2)).executes(command)
+    return Commands.literal("kill").requires(cs -> cs.hasPermission(2)).executes(command)
         .then(Commands.literal("entities").executes(command::killEntities))
         .then(Commands.literal("items").executes(command::killItems));
   }

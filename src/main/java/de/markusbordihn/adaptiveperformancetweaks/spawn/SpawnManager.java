@@ -35,6 +35,8 @@ import net.minecraft.entity.passive.WaterMobEntity;
 import net.minecraft.entity.projectile.DamagingProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.World;
+import net.minecraft.world.spawner.AbstractSpawner;
 import net.minecraftforge.event.DifficultyChangeEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.eventbus.api.Event;
@@ -56,6 +58,7 @@ import de.markusbordihn.adaptiveperformancetweaks.server.ServerWorldLoadEvent;
 @EventBusSubscriber
 public class SpawnManager extends Manager {
 
+  private static Map<String, Boolean> serverWorldLoadMap = new HashMap<>();
   private static Map<String, Double> serverWorldLoadFactorMap = new HashMap<>();
   private static Map<String, Integer> spawnConfigPerPlayer =
       SpawnConfigManager.getSpawnConfigPerPlayer();
@@ -65,36 +68,35 @@ public class SpawnManager extends Manager {
       SpawnConfigManager.getSpawnConfigSpecial();
   private static Set<String> allowList = new HashSet<>(COMMON.spawnAllowList.get());
   private static Set<String> denyList = new HashSet<>(COMMON.spawnDenyList.get());
-  private static int maxEntityPerWorld = COMMON.maxEntityPerWorld.get();
-  private static int maxEntityPerPlayer = COMMON.maxEntityPerPlayer.get();
-  private static boolean optimizeHostileMobs = COMMON.optimizeHostileMobs.get();
-  private static double difficultyFactor = 1;
-  private static String lastBlockedSpawnEntityByWorldLimit = "";
+  private static Set<String> spawnConfigEntity = SpawnConfigManager.getSpawnConfigEntity();
   private static String lastBlockedSpawnEntityByPlayerLimit = "";
   private static String lastBlockedSpawnEntityByViewArea = "";
+  private static String lastBlockedSpawnEntityByWorldLimit = "";
+  private static double difficultyFactor = 1;
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
     allowList = new HashSet<>(COMMON.spawnAllowList.get());
     denyList = new HashSet<>(COMMON.spawnDenyList.get());
-    optimizeHostileMobs = COMMON.optimizeHostileMobs.get();
-    maxEntityPerWorld = COMMON.maxEntityPerWorld.get();
-    maxEntityPerPlayer = COMMON.maxEntityPerPlayer.get();
   }
 
   @SubscribeEvent
   public static void handleServerStarting(FMLServerStartingEvent event) {
-    updateGameDifficulty(
-        ServerLifecycleHooks.getCurrentServer().getServerConfiguration().getDifficulty());
-    log.info("Allow List: {}", allowList);
-    log.info("Deny List: {}", denyList);
+    updateGameDifficulty(ServerLifecycleHooks.getCurrentServer().getWorldData().getDifficulty());
+    if (!allowList.isEmpty()) {
+      log.info("Allow List: {}", allowList);
+    }
+    if (!denyList.isEmpty()) {
+      log.info("Deny List: {}", denyList);
+    }
   }
 
   @SubscribeEvent
   public static void handleServerWorldLoadEvent(ServerWorldLoadEvent event) {
     if (event.hasChanged()) {
-      serverWorldLoadFactorMap.put(event.getServerWorldName(),
-          event.getServerWorldLoadLevelFactor());
+      String worldName = event.getServerWorldName();
+      serverWorldLoadFactorMap.put(worldName, event.getServerWorldLoadLevelFactor());
+      serverWorldLoadMap.put(worldName, event.hasLowServerWorldLoad());
     }
   }
 
@@ -106,8 +108,9 @@ public class SpawnManager extends Manager {
   @SubscribeEvent(priority = EventPriority.HIGH)
   public static void handleLivingCheckSpawnEvent(LivingSpawnEvent.CheckSpawn event) {
     Entity entity = event.getEntity();
-    String entityName = entity.getEntityString();
-    String worldName = entity.getEntityWorld().getDimensionKey().getLocation().toString();
+    String entityName = entity.getEncodeId();
+    World world = entity.level;
+    String worldName = world.dimension().location().toString();
 
     // Skip other checks if unknown entity name
     if (entityName == null) {
@@ -117,22 +120,22 @@ public class SpawnManager extends Manager {
       return;
     }
 
-    // Pre-checks for allowed and defined to avoid expensive calculations
+    // Pre-check for allowed entities to avoid expensive calculations
     if (allowList.contains(entityName)) {
       log.debug("[Allowed Entity] Allow spawn event for {} in {} ", entity, worldName);
       event.setResult(Event.Result.DEFAULT);
       return;
     }
 
+    // Pre-check for denied entities to avoid expensive calculations
     if (denyList.contains(entityName)) {
       log.debug("[Denied Entity] Denied spawn event for {} in {} ", entity, worldName);
       event.setResult(Event.Result.DENY);
       return;
     }
 
-    // Ignore Animals with custom name (e.g. name tags)
-    if ((entity instanceof AnimalEntity || entity instanceof TameableEntity)
-        && entity.hasCustomName()) {
+    // Ignore entities with custom name (e.g. name tags) regardless of type
+    if (entity.hasCustomName()) {
       log.debug("[Custom Entity] Skip spawn event for {} in {} ", entity, worldName);
       event.setResult(Event.Result.DEFAULT);
       return;
@@ -150,9 +153,6 @@ public class SpawnManager extends Manager {
     }
 
     if (entity instanceof MonsterEntity) {
-      if (!optimizeHostileMobs) {
-        return;
-      }
       log.trace("Monster {}", entity);
     }
 
@@ -189,10 +189,29 @@ public class SpawnManager extends Manager {
       return;
     }
 
+    // Check if entity should be optimized otherwise ignore entity.
+    if (!spawnConfigEntity.contains(entityName)
+        && !spawnConfigEntity.contains(worldName + ':' + entityName)) {
+      log.debug("[Untracked Entity] Skip spawn event for {} in {}", entityName, worldName);
+      event.setResult(Event.Result.DEFAULT);
+      return;
+    }
+
+    // Get current world server load for later calculation.
+    boolean hasLowWorldLoad = serverWorldLoadMap.getOrDefault(worldName, false);
+
+    // Check if entity is from spawner ignore these as long the server load is low.
+    AbstractSpawner spawner = event.getSpawner();
+    if (spawner != null && hasLowWorldLoad) {
+      log.debug("[Spawner Entity] Ignore spawn event for {} in {}", entityName, worldName);
+      return;
+    }
+
     // Defines the spawn factor based on difficulty setting and world load.
-    double spawnFactor = (entity instanceof MonsterEntity)
-        ? serverWorldLoadFactorMap.getOrDefault(worldName, 1.0) * difficultyFactor
-        : serverWorldLoadFactorMap.getOrDefault(worldName, 1.0);
+    double serverWorldLoadFactor = serverWorldLoadFactorMap.getOrDefault(worldName, 1.0);
+    double spawnFactor =
+        (entity instanceof MonsterEntity) ? serverWorldLoadFactor * difficultyFactor
+            : serverWorldLoadFactor;
 
     // Get the number of current entities for this world.
     int numberOfEntities = EntityManager.getNumberOfEntities(worldName, entityName);
@@ -214,8 +233,8 @@ public class SpawnManager extends Manager {
     }
 
     // Limit spawn based on world limits.
-    int spawnLimitPerWorld = spawnConfigPerWorld.getOrDefault(entityName, maxEntityPerWorld);
-    if (numberOfEntities >= spawnLimitPerWorld * spawnFactor) {
+    int spawnLimitPerWorld = spawnConfigPerWorld.getOrDefault(entityName, -1);
+    if (spawnLimitPerWorld >= 0 && numberOfEntities >= spawnLimitPerWorld * spawnFactor) {
       if (!lastBlockedSpawnEntityByWorldLimit.equals(entityName)) {
         lastBlockedSpawnEntityByWorldLimit = entityName;
         log.debug("[World limit] Blocked spawn event for {} ({} >= {} * {}) in {}", entityName,
@@ -227,8 +246,9 @@ public class SpawnManager extends Manager {
 
     // Cheap and fast calculation to limit spawn based on possible entities within
     // player limits.
-    int spawnLimitPerPlayer = spawnConfigPerPlayer.getOrDefault(entityName, maxEntityPerPlayer);
-    if (numberOfEntities >= spawnLimitPerPlayer * numOfPlayersInsideViewArea * spawnFactor) {
+    int spawnLimitPerPlayer = spawnConfigPerPlayer.getOrDefault(entityName, -1);
+    if (spawnLimitPerPlayer >= 0
+        && numberOfEntities >= spawnLimitPerPlayer * numOfPlayersInsideViewArea * spawnFactor) {
       if (!lastBlockedSpawnEntityByPlayerLimit.equals(entityName)) {
         lastBlockedSpawnEntityByPlayerLimit = entityName;
         log.debug("[Player limit] Blocked spawn event for {} ({} >= {} * {}) in {}", entityName,
@@ -247,23 +267,26 @@ public class SpawnManager extends Manager {
       if (!lastBlockedSpawnEntityByViewArea.equals(entityName)) {
         lastBlockedSpawnEntityByViewArea = entityName;
         log.debug("[View Area Limit] Blocked spawn event for {} ({} >= {} * {}) in {}", entityName,
-            numberOfEntities, spawnLimitPerPlayer, spawnFactor, worldName);
+            numberOfEntitiesInsideViewArea, spawnLimitPerPlayer, spawnFactor, worldName);
       }
       event.setResult(Event.Result.DENY);
       return;
     }
 
-    // Allow spawn is no rule is matching.
-    log.debug("[Allow Spawn] For {} ({} * {}) in {}", entityName, numberOfEntitiesInsideViewArea,
-        spawnFactor, worldName);
-    event.setResult(Event.Result.DEFAULT);
+    // Allow spawn is no rule is matching and entity is not from spawner
+    if (spawner == null) {
+      log.debug("[Allow Spawn] For {} in {} with {} in view and {} in world", entityName, worldName,
+          numberOfEntitiesInsideViewArea, numberOfEntities);
+      event.setResult(Event.Result.DEFAULT);
+    }
   }
 
   @SubscribeEvent
   public static void handleLivingSpecialSpawnEvent(LivingSpawnEvent.SpecialSpawn event) {
     Entity entity = event.getEntity();
-    String entityName = entity.getEntityString();
-    String worldName = entity.getEntityWorld().getDimensionKey().getLocation().toString();
+    String entityName = entity.getEncodeId();
+    World world = entity.level;
+    String worldName = world.dimension().location().toString();
 
     // Skip other checks if unknown entity name
     if (entityName == null) {
@@ -285,7 +308,7 @@ public class SpawnManager extends Manager {
       return;
     }
 
-    log.debug("[Special Spawn] Allow special spawn Event {}", entity);
+    log.debug("[Special Spawn Event] Allow special spawn Event {}", entity);
   }
 
   public static void updateGameDifficulty(Difficulty difficulty) {

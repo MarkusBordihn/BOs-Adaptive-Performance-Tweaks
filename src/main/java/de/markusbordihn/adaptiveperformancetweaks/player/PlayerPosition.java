@@ -20,18 +20,19 @@
 package de.markusbordihn.adaptiveperformancetweaks.player;
 
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.math.vector.Vector3d;
 
 import de.markusbordihn.adaptiveperformancetweaks.config.CommonConfig;
 import de.markusbordihn.adaptiveperformancetweaks.world.WorldViewManager;
 
 public class PlayerPosition {
-
   private ServerPlayerEntity player;
   private String playerName = "";
   private String worldName = "";
-  private boolean viewAreaCalculated = false;
+  private Vector3d position;
   private boolean canSeeSky = false;
   private boolean isSwimming = false;
+  private boolean viewAreaCalculated = false;
   private int posX = 0;
   private int posY = 0;
   private int posZ = 0;
@@ -41,10 +42,10 @@ public class PlayerPosition {
   private int viewAreaStopX = 0;
   private int viewAreaStopY = 0;
   private int viewAreaStopZ = 0;
-  private int viewDistance = 8;
   private int viewAreaXFactor = 32;
   private int viewAreaYFactor = 16;
   private int viewAreaZFactor = 32;
+  private int viewDistance = 8;
 
   private int viewAreaXFactorBase = CommonConfig.COMMON.viewAreaXFactor.get();
   private int viewAreaYFactorBase = CommonConfig.COMMON.viewAreaYFactor.get();
@@ -58,30 +59,32 @@ public class PlayerPosition {
   public PlayerPosition(ServerPlayerEntity player, String worldName) {
     this.player = player;
     this.playerName = player.getName().getString();
-    this.posX = (int) player.getPosX();
-    this.posY = (int) player.getPosX();
-    this.posZ = (int) player.getPosX();
-    this.viewDistance = WorldViewManager.getViewDistance(worldName);
-    this.worldName = worldName;
+    this.updatePosition(worldName);
     this.calculateViewArea();
   }
 
   public boolean update(String worldName) {
     if (!this.worldName.equals(worldName)
         || this.viewDistance != WorldViewManager.getViewDistance(worldName)
-        || this.posX != (int) this.player.getPosX() || this.posY != (int) this.player.getPosY()
-        || this.posZ != (int) this.player.getPosZ()) {
-      updateViewDistance(WorldViewManager.getViewDistance(worldName));
-      this.posX = (int) this.player.getPosX();
-      this.posY = (int) this.player.getPosY();
-      this.posZ = (int) this.player.getPosZ();
-      this.canSeeSky = this.player.getEntityWorld().canSeeSky(this.player.getPosition());
-      this.isSwimming = this.player.isSwimming();
-      this.worldName = worldName;
-      this.viewAreaCalculated = false;
+        || hasChangedPosition()) {
+      this.updatePosition(worldName);
       return true;
     }
     return false;
+  }
+
+  public void updatePosition(String worldName) {
+    this.position = player.position();
+    this.posX = (int) this.position.x;
+    this.posY = (int) this.position.y;
+    this.posZ = (int) this.position.z;
+    this.canSeeSky = this.player.getLevel().canSeeSky(this.player.blockPosition());
+    this.isSwimming = this.player.isSwimming();
+    if (!this.worldName.equals(worldName)) {
+      this.worldName = worldName;
+    }
+    updateViewDistance(WorldViewManager.getViewDistance(worldName));
+    this.viewAreaCalculated = false;
   }
 
   public void updateViewDistance(int viewDistance) {
@@ -109,6 +112,13 @@ public class PlayerPosition {
     return this.playerName;
   }
 
+  public boolean hasChangedPosition() {
+    Vector3d currentPosition = this.player.position();
+    return Double.compare(this.position.x, currentPosition.x) != 0
+        || Double.compare(this.position.y, currentPosition.y) != 0
+        || Double.compare(this.position.z, currentPosition.z) != 0;
+  }
+
   private void calculateViewArea() {
     if (this.viewAreaCalculated) {
       return;
@@ -119,39 +129,39 @@ public class PlayerPosition {
     this.viewAreaStopX = this.posX + viewAreaXFactor;
     this.viewAreaStartZ = this.posZ - viewAreaZFactor;
     this.viewAreaStopZ = this.posZ + viewAreaZFactor;
+    this.viewAreaStartY = this.posY - viewAreaYFactor;
+    this.viewAreaStopY = this.posY + viewAreaYFactor;
 
-    // Optimize Y based on the current position and other factors like if the player is able to
-    // see the sky, if the player is overground or underground ...
-    if (this.posY >= OVERGROUND_Y && this.canSeeSky) {
-      // Player is on overground and can see Sky
-      this.viewAreaStartY = OVERGROUND_Y_MIN_VIEW;
-      this.viewAreaStopY = MAX_BUILD_HEIGHT;
-    } else if (this.posY >= OVERGROUND_Y) {
-      // Player is on overground and can not see Sky
-      if (this.posY - viewAreaYFactor < OVERGROUND_Y_MIN_VIEW) {
+    // Optimize Y in the overworld based on the current position and other factors like if the
+    // player is able to see the sky, if the player is overground or underground ...
+    if ("minecraft:overworld".equals(this.worldName)) {
+      if (this.posY >= OVERGROUND_Y && this.canSeeSky) {
+        // Player is on overground and can see Sky
         this.viewAreaStartY = OVERGROUND_Y_MIN_VIEW;
-      } else {
+        this.viewAreaStopY = MAX_BUILD_HEIGHT;
+      } else if (this.posY >= OVERGROUND_Y) {
+        // Player is on overground and can not see Sky
+        if (this.posY - viewAreaYFactor < OVERGROUND_Y_MIN_VIEW) {
+          this.viewAreaStartY = OVERGROUND_Y_MIN_VIEW;
+        } else {
+          this.viewAreaStartY = this.posY - viewAreaYFactor;
+        }
+        this.viewAreaStopY = this.posY + viewAreaYFactor;
+      } else if (this.canSeeSky) {
+        // Player is on underground and can see Sky
         this.viewAreaStartY = this.posY - viewAreaYFactor;
+        this.viewAreaStopY = (int) Math.round(this.posY + viewAreaYFactor * 2.0);
       }
-      this.viewAreaStopY = this.posY + viewAreaYFactor;
-    } else if (this.canSeeSky) {
-      // Player is on underground and can see Sky
-      this.viewAreaStartY = this.posY - viewAreaYFactor;
-      this.viewAreaStopY = (int) Math.round(this.posY + viewAreaYFactor * 2.0);
-    } else {
-      // Player is on underground and can not see Sky
-      this.viewAreaStartY = this.posY - viewAreaYFactor;
-      this.viewAreaStopY = this.posY + viewAreaYFactor;
     }
     this.viewAreaCalculated = true;
   }
 
   public String toString() {
-    return "PlayerPosition[Player{name: '" + this.playerName + "', x:" + this.posX + ", y:"
-        + this.posY + ", z:" + this.posZ + "}, Range{x:" + this.viewAreaStartX + " to "
-        + this.viewAreaStopX + ", y:" + this.viewAreaStartY + " to " + this.viewAreaStopY + ", z:"
-        + this.viewAreaStopZ + " to " + this.viewAreaStopZ + "}, Meta{canSeeSky: " + this.canSeeSky
-        + "}]";
+    return "PlayerPosition[Player{name: '" + this.playerName + "', world: '" + this.worldName
+        + "', x:" + this.posX + ", y:" + this.posY + ", z:" + this.posZ + "}, Range{x:"
+        + this.viewAreaStartX + " to " + this.viewAreaStopX + ", y:" + this.viewAreaStartY + " to "
+        + this.viewAreaStopY + ", z:" + this.viewAreaStartZ + " to " + this.viewAreaStopZ
+        + "}, Meta{canSeeSky: " + this.canSeeSky + "}]";
   }
 
 }

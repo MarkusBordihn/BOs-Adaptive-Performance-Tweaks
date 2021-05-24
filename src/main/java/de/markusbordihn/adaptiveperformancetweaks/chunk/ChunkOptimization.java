@@ -19,42 +19,56 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.chunk;
 
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.AbstractChunkProvider;
 import net.minecraft.world.chunk.Chunk;
-
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import de.markusbordihn.adaptiveperformancetweaks.Optimization;
+import de.markusbordihn.adaptiveperformancetweaks.server.OptimizationEvent;
 
+@EventBusSubscriber
 public class ChunkOptimization extends Optimization {
 
-  private static Integer maxNumberOfChunks = 1000;
   private static Set<Chunk> chunkList = new LinkedHashSet<>();
+  private static boolean needsOptimization = false;
 
-  public static void addChunk(Chunk chunk) {
-    log.trace("Add chunk {}", chunk);
-    chunkList.add(chunk);
+  @SubscribeEvent
+  public static void handleOptimizationEvent(OptimizationEvent event) {
+    if (needsOptimization) {
+      cleanupChunks();
+      needsOptimization = false;
+    }
   }
 
-  public static void removeChunk(Chunk chunk) {
-    log.trace("Remove chunk {}", chunk);
-    chunkList.remove(chunk);
+  public static boolean isNeedsOptimization() {
+    return needsOptimization;
+  }
+
+  public static void setNeedsOptimization(boolean needsOptimization) {
+    ChunkOptimization.needsOptimization = needsOptimization;
   }
 
   public static void cleanupChunks() {
-    // Not working ...
     if (chunkList.isEmpty()) {
       return;
     }
     Integer currentNumberOfChunks = chunkList.size();
-    for (Chunk chunk : chunkList) {
-      if (currentNumberOfChunks > maxNumberOfChunks) {
-        AbstractChunkProvider chunkProvider = chunk.getWorld().getChunkProvider();
+    log.debug("Cleanup chunks because {} exceeds limit of {} ...", currentNumberOfChunks,
+        ChunkManager.maxNumberOfChunks);
+    Iterator<Chunk> chunkIterator = chunkList.iterator();
+    while (chunkIterator.hasNext()) {
+      Chunk chunk = chunkIterator.next();
+      if (currentNumberOfChunks > ChunkManager.maxNumberOfChunks) {
+        AbstractChunkProvider chunkProvider = chunk.getLevel().getChunkSource();
         ChunkPos chunkPosition = chunk.getPos();
-        if (chunkProvider.isChunkLoaded(chunkPosition)) {
-          log.info("Cleanup chunk {} at {}", chunk, chunkPosition);
-          chunkProvider.forceChunk(chunkPosition, false);
+        if (chunkProvider.isEntityTickingChunk(chunkPosition)) {
+          log.debug("Cleanup chunk {} at {} with status {}", chunk, chunkPosition,
+              chunk.getStatus());
+          chunkProvider.updateChunkForced(chunkPosition, false);
           currentNumberOfChunks--;
         }
       }

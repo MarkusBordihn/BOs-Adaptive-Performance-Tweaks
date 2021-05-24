@@ -30,13 +30,12 @@ import de.markusbordihn.adaptiveperformancetweaks.Constants;
 
 public abstract class CustomCommand implements Command<CommandSource> {
 
-  protected CustomCommand() {
-  }
+  protected CustomCommand() {}
 
   public static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   public static void sendFeedback(CommandContext<CommandSource> context, String feedback) {
     CommandSource commandSource = context.getSource();
-    commandSource.sendFeedback(new StringTextComponent(feedback), false);
+    commandSource.sendSuccess(new StringTextComponent(feedback), false);
   }
 }

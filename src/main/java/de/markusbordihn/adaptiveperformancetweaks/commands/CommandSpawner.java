@@ -34,13 +34,12 @@ import net.minecraft.tileentity.MobSpawnerTileEntity;
 
 import de.markusbordihn.adaptiveperformancetweaks.spawn.SpawnerManager;
 
-
 public class CommandSpawner extends CustomCommand {
 
   private static final CommandSpawner command = new CommandSpawner();
 
   public static ArgumentBuilder<CommandSource, ?> register() {
-    return Commands.literal("spawner").requires(cs -> cs.hasPermissionLevel(2)).executes(command);
+    return Commands.literal("spawner").requires(cs -> cs.hasPermission(2)).executes(command);
   }
 
   @Override
@@ -54,10 +53,10 @@ public class CommandSpawner extends CustomCommand {
           "Spawner Overview (please check latest.log for full output with positions)\n===");
       Map<String, Integer> spawnerCounter = new HashMap<>();
       for (MobSpawnerTileEntity spawner : spawnerList) {
-        String worldName = spawner.getWorld().getDimensionKey().getLocation().toString();
+        String worldName = spawner.getLevel().dimension().location().toString();
         CompoundNBT spawnerData = spawner.serializeNBT();
         String spawnEntityId = spawnerData.getCompound("SpawnData").getString("id");
-        log.info("[Mob Spawner] {} at {} in {} with {}", spawnEntityId, spawner.getPos(),
+        log.info("[Mob Spawner] {} at {} in {} with {}", spawnEntityId, spawner.getBlockPos(),
             worldName, spawnerData);
         spawnerCounter.put(spawnEntityId, spawnerCounter.getOrDefault(spawnEntityId, 0) + 1);
       }

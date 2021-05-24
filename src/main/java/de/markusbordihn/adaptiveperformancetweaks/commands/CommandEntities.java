@@ -39,7 +39,7 @@ public class CommandEntities extends CustomCommand {
   private static final CommandEntities command = new CommandEntities();
 
   public static ArgumentBuilder<CommandSource, ?> register() {
-    return Commands.literal("entities").requires(cs -> cs.hasPermissionLevel(2)).executes(command)
+    return Commands.literal("entities").requires(cs -> cs.hasPermission(2)).executes(command)
         .then(Commands.literal("overview").executes(command::overview))
         .then(Commands.literal("registry").executes(command::registry));
   }

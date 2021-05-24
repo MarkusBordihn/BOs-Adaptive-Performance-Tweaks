@@ -55,7 +55,8 @@ public class PlayerManager extends Manager {
 
   @SubscribeEvent
   public static void handleServerStartingEvent(FMLServerStartingEvent event) {
-    for (ServerPlayerEntity player : ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers()) {
+    for (ServerPlayerEntity player : ServerLifecycleHooks.getCurrentServer().getPlayerList()
+        .getPlayers()) {
       playerValidationList.add(new PlayerValidation(player));
     }
   }
@@ -65,7 +66,8 @@ public class PlayerManager extends Manager {
     String username = event.getPlayer().getName().getString();
     if (!username.isEmpty()) {
       log.debug("Player {} {} logged in.", username, event.getEntity());
-      ServerPlayerEntity player = ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByUsername(username);
+      ServerPlayerEntity player =
+          ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
 
       // Add protection during login process and give 1 heal
       if (optimizePlayerLogin) {
@@ -115,7 +117,8 @@ public class PlayerManager extends Manager {
   }
 
   private static void addPlayer(String username) {
-    ServerPlayerEntity player = ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByUsername(username);
+    ServerPlayerEntity player =
+        ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
     usernamePlayerMap.put(username, player);
     try {
       for (PlayerValidation playerValidation : playerValidationList) {
@@ -135,10 +138,12 @@ public class PlayerManager extends Manager {
         }
       }
     } catch (ConcurrentModificationException error) {
-      log.error("Unexpected error during adding player. Please report the following error under {} .\n{}", Constants.ISSUE_REPORT, error);
+      log.error(
+          "Unexpected error during adding player. Please report the following error under {} .\n{}",
+          Constants.ISSUE_REPORT, error);
     }
     playerList.add(player);
-    playerCount = ServerLifecycleHooks.getCurrentServer().getCurrentPlayerCount();
+    playerCount = ServerLifecycleHooks.getCurrentServer().getPlayerCount();
     hasPlayers = true;
     log.debug("Added {} to PlayerMap: {}", username, usernamePlayerMap);
   }
@@ -153,9 +158,12 @@ public class PlayerManager extends Manager {
         }
       }
     } catch (ConcurrentModificationException error) {
-      log.error("Unexpected error during removing player. Please report the following error under {} .\n{}", Constants.ISSUE_REPORT, error);
+      log.error(
+          "Unexpected error during removing player. Please report the following error under {} .\n{}",
+          Constants.ISSUE_REPORT, error);
     }
-    ServerPlayerEntity player = ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByUsername(username);
+    ServerPlayerEntity player =
+        ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
     if (playerList.contains(player)) {
       playerList.remove(player);
     }

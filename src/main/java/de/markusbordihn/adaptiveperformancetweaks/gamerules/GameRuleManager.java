@@ -69,7 +69,7 @@ public class GameRuleManager extends Manager {
     }
     if (randomTickSpeedEnabled) {
       log.info("Random Tick Speed will be optimized between {} and {}", 1, randomTickSpeed);
-      if (gameRules.getInt(GameRules.RANDOM_TICK_SPEED) != randomTickSpeed) {
+      if (gameRules.getInt(GameRules.RULE_RANDOMTICKING) != randomTickSpeed) {
         setRandomTickSpeed(randomTickSpeed);
       }
     }
@@ -77,7 +77,7 @@ public class GameRuleManager extends Manager {
     if (entityCrammingEnabled) {
       log.info("Max Entity Cramming will be optimized between {} and {}", minEntityCramming,
           maxEntityCramming);
-      if (gameRules.getInt(GameRules.MAX_ENTITY_CRAMMING) != maxEntityCramming) {
+      if (gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING) != maxEntityCramming) {
         setMaxEntityCramming(maxEntityCramming);
       }
     }
@@ -111,15 +111,15 @@ public class GameRuleManager extends Manager {
   }
 
   public static void decreaseRandomTickSpeed() {
-    setRandomTickSpeed(gameRules.getInt(GameRules.RANDOM_TICK_SPEED) - 1);
+    setRandomTickSpeed(gameRules.getInt(GameRules.RULE_RANDOMTICKING) - 1);
   }
 
   public static void increaseRandomTickSpeed() {
-    setRandomTickSpeed(gameRules.getInt(GameRules.RANDOM_TICK_SPEED) + 1);
+    setRandomTickSpeed(gameRules.getInt(GameRules.RULE_RANDOMTICKING) + 1);
   }
 
   public static void setRandomTickSpeed(int tickSpeed) {
-    int currentTickSpeed = gameRules.getInt(GameRules.RANDOM_TICK_SPEED);
+    int currentTickSpeed = gameRules.getInt(GameRules.RULE_RANDOMTICKING);
     if (tickSpeed < 1) {
       tickSpeed = 1;
     } else if (tickSpeed > randomTickSpeed) {
@@ -132,11 +132,11 @@ public class GameRuleManager extends Manager {
   }
 
   public static void decreaseMaxEntityCramming() {
-    setMaxEntityCramming(gameRules.getInt(GameRules.MAX_ENTITY_CRAMMING) - 1);
+    setMaxEntityCramming(gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING) - 1);
   }
 
   public static void increaseMaxEntityCramming() {
-    setMaxEntityCramming(gameRules.getInt(GameRules.MAX_ENTITY_CRAMMING) + 1);
+    setMaxEntityCramming(gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING) + 1);
   }
 
   public static void setMaxEntityCramming(int maxEntity) {
@@ -145,7 +145,7 @@ public class GameRuleManager extends Manager {
     } else if (maxEntity > maxEntityCramming) {
       maxEntity = maxEntityCramming;
     }
-    int currentMaxEntityCramming = gameRules.getInt(GameRules.MAX_ENTITY_CRAMMING);
+    int currentMaxEntityCramming = gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
     if (currentMaxEntityCramming != maxEntity) {
       log.debug("Changing maxEntityCramming from {} to {}", currentMaxEntityCramming, maxEntity);
       CommandManager

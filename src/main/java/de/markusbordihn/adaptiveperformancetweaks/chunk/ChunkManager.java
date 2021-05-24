@@ -19,8 +19,9 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.chunk;
 
+import java.util.LinkedHashSet;
 import java.util.Map;
-
+import java.util.Set;
 import net.minecraft.tileentity.MobSpawnerTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -35,29 +36,63 @@ import de.markusbordihn.adaptiveperformancetweaks.spawn.SpawnerManager;
 @EventBusSubscriber
 public class ChunkManager extends Manager {
 
+  private static Set<Chunk> chunkList = new LinkedHashSet<>();
+  public static Integer maxNumberOfChunks = 1000;
+
   @SubscribeEvent
   public static void handleChunkLoadEvent(ChunkEvent.Load event) {
+    if (event.getWorld().isClientSide()) {
+      return;
+    }
     Chunk chunk = (Chunk) event.getChunk();
-    ChunkOptimization.addChunk(chunk);
-    Map<BlockPos, TileEntity> tileEntityMap = chunk.getTileEntityMap();
-    for (Map.Entry<BlockPos, TileEntity> tileEntityEntry : tileEntityMap.entrySet()) {
-      TileEntity tileEntity = tileEntityEntry.getValue();
-      if (tileEntity instanceof MobSpawnerTileEntity) {
-        SpawnerManager.addSpawner((MobSpawnerTileEntity) tileEntity);
+
+    // Check every block if the chunk is not known yet.
+    if (!hasChunk(chunk)) {
+      addChunk(chunk);
+      Map<BlockPos, TileEntity> tileEntityMap = chunk.getBlockEntities();
+      for (Map.Entry<BlockPos, TileEntity> tileEntityEntry : tileEntityMap.entrySet()) {
+        TileEntity tileEntity = tileEntityEntry.getValue();
+        if (tileEntity instanceof MobSpawnerTileEntity) {
+          SpawnerManager.addSpawner((MobSpawnerTileEntity) tileEntity);
+        }
       }
     }
   }
 
   @SubscribeEvent
   public static void handleChunkUnloadEvent(ChunkEvent.Unload event) {
+    if (event.getWorld().isClientSide()) {
+      return;
+    }
     Chunk chunk = (Chunk) event.getChunk();
-    ChunkOptimization.removeChunk(chunk);
-    Map<BlockPos, TileEntity> tileEntityMap = chunk.getTileEntityMap();
-    for (Map.Entry<BlockPos, TileEntity> tileEntityEntry : tileEntityMap.entrySet()) {
-      TileEntity tileEntity = tileEntityEntry.getValue();
-      if (tileEntity instanceof MobSpawnerTileEntity) {
-        SpawnerManager.removeSpawner((MobSpawnerTileEntity) tileEntity);
+
+    // Skip additional checks if the chunk is unknown.
+    if (hasChunk(chunk)) {
+      removeChunk(chunk);
+      Map<BlockPos, TileEntity> tileEntityMap = chunk.getBlockEntities();
+      for (Map.Entry<BlockPos, TileEntity> tileEntityEntry : tileEntityMap.entrySet()) {
+        TileEntity tileEntity = tileEntityEntry.getValue();
+        if (tileEntity instanceof MobSpawnerTileEntity) {
+          SpawnerManager.removeSpawner((MobSpawnerTileEntity) tileEntity);
+        }
       }
     }
+  }
+
+  public static void addChunk(Chunk chunk) {
+    log.trace("Add chunk {} at {}", chunk, chunk.getPos());
+    chunkList.add(chunk);
+    if (chunkList.size() > maxNumberOfChunks) {
+      ChunkOptimization.setNeedsOptimization(true);
+    }
+  }
+
+  public static void removeChunk(Chunk chunk) {
+    log.trace("Remove chunk {} at {}", chunk, chunk.getPos());
+    chunkList.remove(chunk);
+  }
+
+  public static boolean hasChunk(Chunk chunk) {
+    return chunkList.contains(chunk);
   }
 }

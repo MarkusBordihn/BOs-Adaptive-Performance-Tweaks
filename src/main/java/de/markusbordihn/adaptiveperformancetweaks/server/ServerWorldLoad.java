@@ -29,40 +29,54 @@ import org.apache.logging.log4j.Logger;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
+import de.markusbordihn.adaptiveperformancetweaks.config.CommonConfig;
 
+@EventBusSubscriber
 public class ServerWorldLoad {
   public static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+
+  private static boolean logServerLoad = CommonConfig.COMMON.logServerLoad.get();
   private static final Map<ServerWorld, Double> worldLoad = new HashMap<>();
-  private static final Map<ServerWorld, ServerWorldLoadLevel> worldLoadLevel = new HashMap<>();
   private static final Map<ServerWorld, ServerWorldLoadLevel> lastWorldLoadLevel = new HashMap<>();
+  private static final Map<ServerWorld, ServerWorldLoadLevel> worldLoadLevel = new HashMap<>();
 
   public enum ServerWorldLoadLevel {
     VERY_LOW, LOW, NORMAL, MEDIUM, HIGH, VERY_HIGH
   }
 
+  @SubscribeEvent
+  public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+    logServerLoad = CommonConfig.COMMON.logServerLoad.get();
+  }
+
   public static void measureLoadAndPost() {
     MinecraftServer minecraftServer = ServerLifecycleHooks.getCurrentServer();
-    java.lang.Iterable<ServerWorld> serverWorlds =  minecraftServer.getWorlds();
+    java.lang.Iterable<ServerWorld> serverWorlds = minecraftServer.getAllLevels();
     for (ServerWorld serverWorld : serverWorlds) {
-      long[] tickTimes = minecraftServer.getTickTime(serverWorld.getDimensionKey());
+      long[] tickTimes = minecraftServer.getTickTime(serverWorld.dimension());
       if (tickTimes == null) {
         return;
       }
       double avgTickTime = Arrays.stream(tickTimes).average().orElse(Double.NaN) / 1000000;
       ServerWorldLoadLevel loadLevel = getServerWorldLoadLevelFromTickTime(avgTickTime);
-      ServerWorldLoadLevel lastLoadLevel = worldLoadLevel.getOrDefault(serverWorld, ServerWorldLoadLevel.NORMAL);
+      ServerWorldLoadLevel lastLoadLevel =
+          worldLoadLevel.getOrDefault(serverWorld, ServerWorldLoadLevel.NORMAL);
       lastWorldLoadLevel.put(serverWorld, lastLoadLevel);
       worldLoad.put(serverWorld, avgTickTime);
       worldLoadLevel.put(serverWorld, loadLevel);
 
-      if (loadLevel != lastLoadLevel) {
-        log.info("World load for {} changed from {} to {} (avg. {})", serverWorld.getDimensionKey().getLocation(),
-            lastLoadLevel, loadLevel, avgTickTime);
+      if (loadLevel != lastLoadLevel && logServerLoad) {
+        log.info("World load for {} changed from {} to {} (avg. {})",
+            serverWorld.dimension().location(), lastLoadLevel, loadLevel, avgTickTime);
       }
-      MinecraftForge.EVENT_BUS.post(new ServerWorldLoadEvent(serverWorld, loadLevel, lastLoadLevel));
+      MinecraftForge.EVENT_BUS
+          .post(new ServerWorldLoadEvent(serverWorld, loadLevel, lastLoadLevel));
     }
   }
 

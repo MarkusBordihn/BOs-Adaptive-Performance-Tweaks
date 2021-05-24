@@ -37,8 +37,7 @@ public class CommandSpawnRules extends CustomCommand {
   private static final CommandSpawnRules command = new CommandSpawnRules();
 
   public static ArgumentBuilder<CommandSource, ?> register() {
-    return Commands.literal("spawnRules").requires(cs -> cs.hasPermissionLevel(2))
-        .executes(command);
+    return Commands.literal("spawnRules").requires(cs -> cs.hasPermission(2)).executes(command);
   }
 
   @Override
@@ -48,7 +47,7 @@ public class CommandSpawnRules extends CustomCommand {
       sendFeedback(context, "Unable to find any entities. Server / World is not loaded?");
       return 0;
     }
-    sendFeedback(context, "Spawn Rules, please check info.log for the full output.\n===\n");
+    sendFeedback(context, "Spawn Rules, please check info.log for the full output.\n===");
     sendFeedback(context, "Entity Name|perPlayer|perWorld");
     for (ResourceLocation entityKey : entitiesKeys) {
       String entityName = entityKey.toString();

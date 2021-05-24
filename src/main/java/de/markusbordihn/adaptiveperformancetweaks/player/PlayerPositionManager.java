@@ -82,9 +82,13 @@ public class PlayerPositionManager extends Manager {
     return false;
   }
 
+  public static Map<String, PlayerPosition> getPlayerPositionMap() {
+    return playerPositionMap;
+  }
+
   private static void updatePlayerPosition(ServerPlayerEntity player) {
     String username = PlayerManager.getUserName(player);
-    String worldName = player.getServerWorld().getDimensionKey().getLocation().toString();
+    String worldName = player.getLevel().dimension().location().toString();
     PlayerPosition playerPosition = playerPositionMap.get(username);
     if (playerPosition == null) {
       playerPosition = new PlayerPosition(player, worldName);

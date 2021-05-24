@@ -32,6 +32,8 @@ import net.minecraft.entity.item.FallingBlockEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.World;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -47,6 +49,8 @@ import de.markusbordihn.adaptiveperformancetweaks.player.PlayerPosition;
 public class EntityManager extends Manager {
 
   private static ConcurrentHashMap<String, Set<Entity>> entityMap = new ConcurrentHashMap<>();
+  private static ConcurrentHashMap<String, Set<Entity>> entityMapPerWorld =
+      new ConcurrentHashMap<>();
   private static Set<String> allowList = new HashSet<>(COMMON.spawnAllowList.get());
   private static Set<String> denyList = new HashSet<>(COMMON.spawnDenyList.get());
 
@@ -58,9 +62,14 @@ public class EntityManager extends Manager {
 
   @SubscribeEvent(priority = EventPriority.HIGH)
   public static void handleEntityJoinWorldEvent(EntityJoinWorldEvent event) {
-    Entity entity = event.getEntity();
+    // Ignore client side world.
+    World world = event.getWorld();
+    if (world.isClientSide) {
+      return;
+    }
 
     // Ignore entities which are handled by other instances or not relevant.
+    Entity entity = event.getEntity();
     if (entity instanceof ItemEntity || entity instanceof LightningBoltEntity
         || entity instanceof FallingBlockEntity) {
       return;
@@ -68,9 +77,8 @@ public class EntityManager extends Manager {
       log.debug("Player {} joined world.", entity);
       return;
     }
-
-    String entityName = entity.getEntityString();
-    String worldName = entity.getEntityWorld().getDimensionKey().getLocation().toString();
+    String entityName = entity.getEncodeId();
+    String worldName = world.dimension().location().toString();
 
     // Skip other checks if unknown entity name
     if (entityName == null) {
@@ -95,22 +103,21 @@ public class EntityManager extends Manager {
       MonsterEntityManager.handleMonsterEntityJoinWorldEvent(event);
     }
 
-    Set<Entity> entities = entityMap.get('[' + worldName + ']' + entityName);
-    if (entities != null) {
-      entities.add(entity);
-    } else {
-      entities = new HashSet<>();
-      entities.add(entity);
-      entityMap.put('[' + worldName + ']' + entityName, entities);
-    }
-    log.debug("Entity {} ({}) {} joined.", entityName, entities.size(), entity);
+    addEntity(entity, world);
+
+    log.debug("Entity {} ({}) joined {}.", entityName, entity, worldName);
   }
 
   @SubscribeEvent
   public static void handleEntityLeaveWorldEvent(EntityLeaveWorldEvent event) {
-    Entity entity = event.getEntity();
+    // Ignore client side world.
+    World world = event.getWorld();
+    if (world.isClientSide) {
+      return;
+    }
 
     // Ignore entities which are handled by other instances or not relevant.
+    Entity entity = event.getEntity();
     if (entity instanceof ItemEntity || entity instanceof LightningBoltEntity
         || entity instanceof FallingBlockEntity) {
       return;
@@ -120,7 +127,7 @@ public class EntityManager extends Manager {
     }
 
     // Skip other checks if unknown entity name
-    String entityName = entity.getEntityString();
+    String entityName = entity.getEncodeId();
     if (entityName == null) {
       return;
     }
@@ -129,14 +136,43 @@ public class EntityManager extends Manager {
       MonsterEntityManager.handleMonsterEntityLeaveWorldEvent(event);
     }
 
-    String worldName = entity.getEntityWorld().getDimensionKey().getLocation().toString();
+    removeEntity(entity, world);
+
+    String worldName = world.dimension().location().toString();
+    log.debug("Entity {} ({}) leaved {}.", entityName, entity, worldName);
+  }
+
+  public static void addEntity(Entity entity, World world) {
+    String entityName = entity.getEncodeId();
+    String worldName = world.dimension().location().toString();
+
+    // Store entities per type and world.
+    String entityMapKey = '[' + worldName + ']' + entityName;
+    entityMap.computeIfAbsent(entityMapKey, k -> new HashSet<>());
+    Set<Entity> entities = entityMap.get(entityMapKey);
+    entities.add(entity);
+
+    // Store entities per world.
+    entityMapPerWorld.computeIfAbsent(worldName, k -> new HashSet<>());
+    Set<Entity> entitiesPerWorld = entityMapPerWorld.get(worldName);
+    entitiesPerWorld.add(entity);
+  }
+
+  public static void removeEntity(Entity entity, World world) {
+    String entityName = entity.getEncodeId();
+    String worldName = world.dimension().location().toString();
+
+    // Remove entity from per type and world map.
     Set<Entity> entities = entityMap.get('[' + worldName + ']' + entityName);
     if (entities != null) {
       entities.remove(entity);
-    } else {
-      entities = new HashSet<>();
     }
-    log.debug("Entity {} ({}) {} leaved.", entityName, entities.size(), entity);
+
+    // Remove entity from per world map
+    Set<Entity> entitiesPerWorld = entityMapPerWorld.get(worldName);
+    if (entitiesPerWorld != null) {
+      entitiesPerWorld.remove(entity);
+    }
   }
 
   public static Map<String, Set<Entity>> getEntities() {
@@ -151,21 +187,53 @@ public class EntityManager extends Manager {
     return entities.size();
   }
 
-  public static Integer getNumberOfEntitiesInPlayerPositions(String worldName, String entityName,
-      List<PlayerPosition> playerPositions) {
-    Set<Entity> entities = entityMap.get('[' + worldName + ']' + entityName);
+  public static Integer getNumberOfEntitiesPerWorld(String worldName) {
+    Set<Entity> entities = entityMapPerWorld.get(worldName);
     if (entities == null) {
       return 0;
     }
+    return entities.size();
+  }
+
+  public static Integer getNumberOfEntitiesInPlayerPositions(String worldName, String entityName,
+      List<PlayerPosition> playerPositions) {
+    if (!entityMap.contains('[' + worldName + ']' + entityName)) {
+      return 0;
+    }
     int counter = 0;
+    Set<Entity> entities = new HashSet<>(entityMap.get('[' + worldName + ']' + entityName));
     Iterator<Entity> entityIterator = entities.iterator();
     while (entityIterator.hasNext()) {
       Entity entity = entityIterator.next();
-      int x = (int) entity.getPosX();
-      int y = (int) entity.getPosY();
-      int z = (int) entity.getPosZ();
-      for (PlayerPosition playerPosition : playerPositions) {
-        if (playerPosition.isInsidePlayerViewArea(worldName, x, y, z)) {
+      if (entity != null) {
+        int x = (int) entity.getX();
+        int y = (int) entity.getY();
+        int z = (int) entity.getZ();
+        for (PlayerPosition playerPosition : playerPositions) {
+          if (playerPosition.isInsidePlayerViewArea(worldName, x, y, z)) {
+            counter++;
+          }
+        }
+      }
+    }
+    return counter;
+  }
+
+  public static Integer getNumberOfEntitiesInChunkPosition(String worldName, Vector3d position) {
+    if (!entityMap.contains(worldName)) {
+      return 0;
+    }
+    int counter = 0;
+    int chunkX = (int) position.x >> 4;
+    int chunkZ = (int) position.z >> 4;
+    Set<Entity> entities = new HashSet<>(entityMapPerWorld.get(worldName));
+    Iterator<Entity> entityIterator = entities.iterator();
+    while (entityIterator.hasNext()) {
+      Entity entity = entityIterator.next();
+      if (entity != null) {
+        int entityChunkX = entity.xChunk;
+        int entityChunkZ = entity.zChunk;
+        if (chunkX == entityChunkX && chunkZ == entityChunkZ) {
           counter++;
         }
       }

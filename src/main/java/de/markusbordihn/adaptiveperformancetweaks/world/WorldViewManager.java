@@ -58,21 +58,21 @@ public class WorldViewManager extends Manager {
     } else if (viewDistance < viewDistanceMin) {
       viewDistance = viewDistanceMin;
     }
-    String serverWorldName = serverWorld.getDimensionKey().getLocation().toString();
+    String serverWorldName = serverWorld.getLevel().dimension().location().toString();
     Integer currentViewDistance = viewDistancePerWorld.get(serverWorldName);
     if (currentViewDistance != null && currentViewDistance.equals(viewDistance)) {
       return;
     }
     log.info("Changing world view distance for {} from {} to {}", serverWorldName,
         currentViewDistance, viewDistance);
-    java.util.List<ServerPlayerEntity> players = serverWorld.getPlayers();
+    java.util.List<ServerPlayerEntity> players = serverWorld.players();
     if (!players.isEmpty()) {
       SUpdateViewDistancePacket viewDistancePacket = new SUpdateViewDistancePacket(viewDistance);
       for (ServerPlayerEntity player : players) {
-        player.connection.sendPacket(viewDistancePacket);
+        player.connection.send(viewDistancePacket);
       }
     }
-    serverWorld.getChunkProvider().setViewDistance(viewDistance);
+    serverWorld.getChunkSource().setViewDistance(viewDistance);
     viewDistancePerWorld.put(serverWorldName, viewDistance);
   }
 
@@ -95,7 +95,7 @@ public class WorldViewManager extends Manager {
   }
 
   public static int getViewDistance(ServerWorld serverWorld) {
-    String serverWorldName = serverWorld.getDimensionKey().getLocation().toString();
+    String serverWorldName = serverWorld.getLevel().dimension().location().toString();
     return getViewDistance(serverWorldName);
   }
 

@@ -38,18 +38,18 @@ public class PlayerOptimization extends Optimization {
     String username = event.getPlayer().getName().getString();
     if (!username.isEmpty() && Boolean.TRUE.equals(COMMON.optimizePlayerLogin.get())) {
       ServerPlayerEntity player =
-          ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByUsername(username);
+          ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
       log.info("Optimize Player Login for {} {}", username, player);
 
       if (PlayerManager.getNumberOfPlayers() == 0
           && (ServerLoad.hasLowServerLoad() || ServerLoad.hasNormalServerLoad())) {
-        WorldViewManager.setAvgViewDistance(player.getServerWorld());
+        WorldViewManager.setAvgViewDistance(player.getLevel());
       } else {
 
         // Decrease initial view distance to for a faster login process.
         // This will be increased with the next view distance optimization after 10-20secs.
         if (Boolean.TRUE.equals(COMMON.optimizeViewDistance.get())) {
-          WorldViewManager.decreaseViewDistance(player.getServerWorld());
+          WorldViewManager.decreaseViewDistance(player.getLevel());
         }
 
         if (Boolean.TRUE.equals(COMMON.gameruleEnabled.get())) {

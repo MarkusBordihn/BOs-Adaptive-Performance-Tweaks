@@ -19,40 +19,45 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.server;
 
-import java.util.Arrays;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
+import de.markusbordihn.adaptiveperformancetweaks.config.CommonConfig;
 
+@EventBusSubscriber
 public class ServerLoad {
   public static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static ServerLoadLevel currentServerLoad = ServerLoadLevel.NORMAL;
   private static ServerLoadLevel lastServerLoad = ServerLoadLevel.NORMAL;
+  private static boolean logServerLoad = CommonConfig.COMMON.logServerLoad.get();
   private static double avgTickTime;
 
   public enum ServerLoadLevel {
     VERY_LOW, LOW, NORMAL, MEDIUM, HIGH, VERY_HIGH
   }
 
+  @SubscribeEvent
+  public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+    logServerLoad = CommonConfig.COMMON.logServerLoad.get();
+  }
+
   public static void measureLoadAndPost() {
-    MinecraftServer currentServer =  ServerLifecycleHooks.getCurrentServer();
+    MinecraftServer currentServer = ServerLifecycleHooks.getCurrentServer();
     if (currentServer == null) {
       return;
     }
-    long[] tickTimes = currentServer.tickTimeArray;
-    if (tickTimes == null) {
-      return;
-    }
-    avgTickTime = Arrays.stream(tickTimes).average().orElse(Double.NaN) / 1000000;
+    avgTickTime = currentServer.getAverageTickTime();
     lastServerLoad = currentServerLoad;
     currentServerLoad = getServerLoadLevelFromTickTime(avgTickTime);
-    if (currentServerLoad != lastServerLoad) {
+    if (currentServerLoad != lastServerLoad && logServerLoad) {
       log.info("Server load changed from {} to {} (avg. {})", lastServerLoad, currentServerLoad,
           avgTickTime);
     }
@@ -78,6 +83,10 @@ public class ServerLoad {
 
   public static ServerLoadLevel getServerLoad() {
     return currentServerLoad;
+  }
+
+  public static ServerLoadLevel getLastServerLoad() {
+    return lastServerLoad;
   }
 
   public static boolean hasVeryHighServerLoad() {

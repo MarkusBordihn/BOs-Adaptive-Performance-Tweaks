@@ -20,7 +20,6 @@
 package de.markusbordihn.adaptiveperformancetweaks.commands;
 
 import java.util.Map;
-import java.util.Set;
 
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -28,35 +27,40 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
-import net.minecraft.entity.monster.MonsterEntity;
 
-import de.markusbordihn.adaptiveperformancetweaks.entity.MonsterEntityManager;
+import de.markusbordihn.adaptiveperformancetweaks.config.SpawnConfigManager;
 
-public class CommandMonster extends CustomCommand {
+public class CommandSpecialSpawnRules extends CustomCommand {
 
-  private static final CommandMonster command = new CommandMonster();
+  private static final CommandSpecialSpawnRules command = new CommandSpecialSpawnRules();
 
   public static ArgumentBuilder<CommandSource, ?> register() {
-    return Commands.literal("monster").requires(cs -> cs.hasPermission(2)).executes(command);
+    return Commands.literal("specialSpawnRules").requires(cs -> cs.hasPermission(2))
+        .executes(command);
   }
 
   @Override
   public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
-    Map<String, Set<MonsterEntity>> monsterEntityMap = MonsterEntityManager.getMonsterEntityMap();
-    if (monsterEntityMap.isEmpty()) {
-      sendFeedback(context,
-          "Unable to find any monster entity. World is not loaded or nor monster spawned?");
-    } else {
-      sendFeedback(context,
-          String.format("Monster Entity (%s types)\n===", monsterEntityMap.size()));
-      for (Map.Entry<String, Set<MonsterEntity>> monsterEntities : monsterEntityMap.entrySet()) {
-        int numOfMonster = monsterEntities.getValue().size();
-        if (numOfMonster > 0) {
-          sendFeedback(context,
-              String.format("\u221F %s %s", monsterEntities.getKey(), numOfMonster));
-        }
+    Map<String, Integer> spawnConfigSpecial = SpawnConfigManager.getSpawnConfigSpecial();
+
+    if (spawnConfigSpecial.isEmpty()) {
+      sendFeedback(context, "Unable to find any special spawn config!");
+      return 0;
+    }
+    sendFeedback(context, "Special Spawn Rules, please check info.log for the full output.\n===");
+    sendFeedback(context, "World|entityName|perWorld");
+    for (Map.Entry<String, Integer> entry : spawnConfigSpecial.entrySet()) {
+      String[] worldEntityEntry = entry.getKey().split(":");
+      if (worldEntityEntry.length == 4) {
+        String entityName = worldEntityEntry[2] + ":" + worldEntityEntry[3];
+        String worldName = worldEntityEntry[0] + ":" + worldEntityEntry[1];
+        int spawnRatePerWorld = entry.getValue();
+        sendFeedback(context, String.format("%s|%s|%s", worldName, entityName, spawnRatePerWorld));
+      } else {
+        log.error("Invalid Special Spawn entry: {}", entry);
       }
     }
     return 0;
   }
+
 }

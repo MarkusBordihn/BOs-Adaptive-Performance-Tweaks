@@ -39,7 +39,7 @@ public class CommandDebug extends CustomCommand {
   private static final CommandDebug command = new CommandDebug();
 
   public static ArgumentBuilder<CommandSource, ?> register() {
-    return Commands.literal("debug").requires(cs -> cs.hasPermissionLevel(2))
+    return Commands.literal("debug").requires(cs -> cs.hasPermission(2))
         .then(Commands.argument("enable", BoolArgumentType.bool()).executes(command));
   }
 
@@ -47,11 +47,12 @@ public class CommandDebug extends CustomCommand {
   public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
     final boolean enable = BoolArgumentType.getBool(context, "enable");
     if (enable) {
-      sendFeedback(context, "\u25BA Enable debug output, please check debug.log for the full output.");
+      sendFeedback(context,
+          "\u25BA Enable debug output, please check debug.log for the full output.");
       sendFeedback(context, "Use '/aptweaks debug false' to disable debug output!");
     } else {
-      sendFeedback(context,"\u25A0 Disable debug output!");
-      sendFeedback(context,"Please check the debug.log for the full output.");
+      sendFeedback(context, "\u25A0 Disable debug output!");
+      sendFeedback(context, "Please check the debug.log for the full output.");
     }
     Configurator.setAllLevels(LogManager.getLogger(Constants.LOG_NAME).getName(),
         enable ? Level.DEBUG : Level.INFO);

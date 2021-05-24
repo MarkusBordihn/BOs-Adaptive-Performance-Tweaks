@@ -20,7 +20,9 @@
 package de.markusbordihn.adaptiveperformancetweaks.config;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -32,13 +34,19 @@ import de.markusbordihn.adaptiveperformancetweaks.config.mods.*;
 @Mod.EventBusSubscriber
 public class SpawnConfigManager extends Manager {
 
+  private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
+
   public static Map<String, Integer> spawnConfigPerPlayer = new HashMap<>();
   public static Map<String, Integer> spawnConfigPerWorld = new HashMap<>();
   public static Map<String, Integer> spawnConfigSpecial = new HashMap<>();
-  private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
+  public static Set<String> spawnConfigEntity = new HashSet<>();
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+    log.info("Optimize Passive Mobs: {}", Boolean.TRUE.equals(COMMON.optimizePassiveMobs.get()));
+    log.info("Optimize Neutral Mobs: {}", Boolean.TRUE.equals(COMMON.optimizeNeutralMobs.get()));
+    log.info("Optimize Hostile Mobs: {}", Boolean.TRUE.equals(COMMON.optimizeHostileMobs.get()));
+    log.info("Optimize Boss Mobs: {}", Boolean.TRUE.equals(COMMON.optimizeBossMobs.get()));
     calculateSpawnRates();
   }
 
@@ -66,11 +74,11 @@ public class SpawnConfigManager extends Manager {
   }
 
   public static int getSpawnLimitPerPlayer(String entityName) {
-    return spawnConfigPerPlayer.getOrDefault(entityName, COMMON.maxEntityPerPlayer.get());
+    return spawnConfigPerPlayer.get(entityName);
   }
 
   public static int getSpawnLimitPerWorld(String entityName) {
-    return spawnConfigPerWorld.getOrDefault(entityName, COMMON.maxEntityPerWorld.get());
+    return spawnConfigPerWorld.get(entityName);
   }
 
   public static int getSpawnerListSpecial(String entityName) {
@@ -78,7 +86,7 @@ public class SpawnConfigManager extends Manager {
   }
 
   public static boolean hasSpawnLimit(String entityName) {
-    return spawnConfigPerPlayer.containsKey(entityName) || spawnConfigPerWorld.containsKey(entityName);
+    return spawnConfigEntity.contains(entityName);
   }
 
   public static Map<String, Integer> getSpawnConfigPerPlayer() {
@@ -91,6 +99,10 @@ public class SpawnConfigManager extends Manager {
 
   public static Map<String, Integer> getSpawnConfigSpecial() {
     return spawnConfigSpecial;
+  }
+
+  public static Set<String> getSpawnConfigEntity() {
+    return spawnConfigEntity;
   }
 
 }

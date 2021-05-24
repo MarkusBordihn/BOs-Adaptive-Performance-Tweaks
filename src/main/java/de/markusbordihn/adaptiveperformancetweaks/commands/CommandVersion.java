@@ -31,12 +31,12 @@ public class CommandVersion extends CustomCommand {
   private static final CommandVersion command = new CommandVersion();
 
   public static ArgumentBuilder<CommandSource, ?> register() {
-    return Commands.literal("version").requires(cs -> cs.hasPermissionLevel(0)).executes(command);
+    return Commands.literal("version").requires(cs -> cs.hasPermission(0)).executes(command);
   }
 
   @Override
   public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
-    sendFeedback(context, "Version: Release Version 0.4.1! \u2665");
+    sendFeedback(context, "Version: Release Version 1.0.0! \u2665");
     return 0;
   }
 }

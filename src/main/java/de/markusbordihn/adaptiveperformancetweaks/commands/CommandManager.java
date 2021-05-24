@@ -48,8 +48,10 @@ public class CommandManager extends Manager {
             .then(CommandItems.register())
             .then(CommandKill.register())
             .then(CommandMonster.register())
-            .then(CommandSpawner.register())
+            .then(CommandPlayerPositions.register())
             .then(CommandSpawnRules.register())
+            .then(CommandSpawner.register())
+            .then(CommandSpecialSpawnRules.register())
             .then(CommandVersion.register())
             .then(CommandWorlds.register())
         // @formatter:on
@@ -57,25 +59,25 @@ public class CommandManager extends Manager {
     commandDispatcher.register(Commands.literal("ctrl").redirect(commands));
   }
 
-  public static void  executeServerCommand(String command) {
+  public static void executeServerCommand(String command) {
     MinecraftServer minecraftServer = ServerLifecycleHooks.getCurrentServer();
     if (minecraftServer == null) {
       return;
     }
     log.debug("Execute Server Command: {}", command);
-    Commands commands = minecraftServer.getCommandManager();
-    CommandSource commandSource = minecraftServer.getCommandSource().withFeedbackDisabled();
-    commands.handleCommand(commandSource, command);
+    Commands commands = minecraftServer.getCommands();
+    CommandSource commandSource = minecraftServer.createCommandSourceStack().withSuppressedOutput();
+    commands.performCommand(commandSource, command);
   }
 
-  public static void  executeUserCommand(String command) {
+  public static void executeUserCommand(String command) {
     MinecraftServer minecraftServer = ServerLifecycleHooks.getCurrentServer();
     if (minecraftServer == null) {
       return;
     }
     log.debug("Execute User Command: {}", command);
-    Commands commands = minecraftServer.getCommandManager();
-    CommandSource commandSource = minecraftServer.getCommandSource();
-    commands.handleCommand(commandSource, command);
+    Commands commands = minecraftServer.getCommands();
+    CommandSource commandSource = minecraftServer.createCommandSourceStack();
+    commands.performCommand(commandSource, command);
   }
 }

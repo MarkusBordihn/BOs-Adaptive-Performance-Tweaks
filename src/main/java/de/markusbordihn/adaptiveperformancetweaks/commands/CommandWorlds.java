@@ -35,20 +35,19 @@ public class CommandWorlds extends CustomCommand {
   private static final CommandWorlds command = new CommandWorlds();
 
   public static ArgumentBuilder<CommandSource, ?> register() {
-    return Commands.literal("worlds").requires(cs -> cs.hasPermissionLevel(2)).executes(command);
+    return Commands.literal("worlds").requires(cs -> cs.hasPermission(2)).executes(command);
   }
 
   @Override
   public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
     Map<ServerWorld, Double> serverWorldLoad = ServerWorldLoad.getWorldLoad();
     if (serverWorldLoad.isEmpty()) {
-      sendFeedback(context,
-          "Unable to find any worlds. Server / World is not loaded?");
+      sendFeedback(context, "Unable to find any worlds. Server / World is not loaded?");
     } else {
       sendFeedback(context, "World Overview\n===");
       for (Map.Entry<ServerWorld, Double> worldEntry : serverWorldLoad.entrySet()) {
         ServerWorld serverWorld = worldEntry.getKey();
-        String worldName = serverWorld.getDimensionKey().getLocation().toString();
+        String worldName = serverWorld.getLevel().dimension().location().toString();
         Double avgTickTime = worldEntry.getValue();
         sendFeedback(context, String.format("\u25CB %s %sms", worldName, avgTickTime));
       }

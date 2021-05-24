@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.world.World;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -90,6 +91,13 @@ public class ItemEntityManager extends Manager {
 
   @SubscribeEvent(priority = EventPriority.HIGH)
   public static void handleItemEntityJoinWorldEvent(EntityJoinWorldEvent event) {
+    // Ignore client side world.
+    World world = event.getWorld();
+    if (world.isClientSide) {
+      return;
+    }
+
+    // Ignore everything else besides Items
     Entity entity = event.getEntity();
     if (!(entity instanceof ItemEntity)) {
       return;
@@ -98,30 +106,27 @@ public class ItemEntityManager extends Manager {
     // All items has the entity minecraft.item, so we are using the translation key
     // to better distinguish the different types of items and minecraft.item as backup.
     ItemEntity itemEntity = (ItemEntity) entity;
-    String itemName = itemEntity.getItem().getTranslationKey();
+    String itemName = itemEntity.getItem().getItem().getRegistryName().toString();
     if (itemName == null) {
-      itemName = itemEntity.getEntityString();
+      itemName = itemEntity.getEncodeId();
     }
 
     // Ignore dropped air blocks because these are not used at all by the players.
     // Warning: Removing the air block is a bad idea, because it's used to pre-reserve the space.
-    if (itemName.equals("block.minecraft.air")) {
+    if (itemName.equals("block.minecraft.air") || itemName.equals("minecraft:air")) {
       return;
     }
 
     // Get world name and start processing of data
-    String worldName = itemEntity.getEntityWorld().getDimensionKey().getLocation().toString();
+    String worldName = world.dimension().location().toString();
     if (log.isDebugEnabled()) {
       log.debug("Item {} {} joined {}.", itemName, itemEntity.getDisplayName().getString(),
           worldName);
     }
 
     // Storing items per world regardless of type
+    itemWorldEntityMap.computeIfAbsent(worldName, k -> new LinkedHashSet<>());
     Set<ItemEntity> itemWorldEntities = itemWorldEntityMap.get(worldName);
-    if (itemWorldEntities == null) {
-      itemWorldEntities = new LinkedHashSet<>();
-      itemWorldEntityMap.put(worldName, itemWorldEntities);
-    }
     itemWorldEntities.add(itemEntity);
 
     // Optimized items per world regardless of type if they exceeding maxNumberOfItems limit.
@@ -133,17 +138,17 @@ public class ItemEntityManager extends Manager {
             firsItemWorldEntity);
         firsItemWorldEntity.remove(false);
         itemWorldEntities.remove(firsItemWorldEntity);
-        itemTypeEntityMap.getOrDefault('[' + worldName + ']' + itemName, new LinkedHashSet<>())
-            .remove(firsItemWorldEntity);
+        Set<ItemEntity> itemEntities = itemTypeEntityMap.get('[' + worldName + ']' + itemName);
+        if (itemEntities != null) {
+          itemEntities.remove(firsItemWorldEntity);
+        }
       }
     }
 
     // Storing items per type and world
-    Set<ItemEntity> itemTypeEntities = itemTypeEntityMap.get('[' + worldName + ']' + itemName);
-    if (itemTypeEntities == null) {
-      itemTypeEntities = new LinkedHashSet<>();
-      itemTypeEntityMap.put('[' + worldName + ']' + itemName, itemTypeEntities);
-    }
+    String itemTypeEntityMapKey = '[' + worldName + ']' + itemName;
+    itemTypeEntityMap.computeIfAbsent(itemTypeEntityMapKey, k -> new LinkedHashSet<>());
+    Set<ItemEntity> itemTypeEntities = itemTypeEntityMap.get(itemTypeEntityMapKey);
     itemTypeEntities.add(itemEntity);
 
     // Optimized items per type and world if exceeding numberOfItemsPerType limit.
@@ -167,36 +172,49 @@ public class ItemEntityManager extends Manager {
 
   @SubscribeEvent
   public static void handleItemEntityLeaveWorldEvent(EntityLeaveWorldEvent event) {
+    // Ignore client side world.
+    World world = event.getWorld();
+    if (world.isClientSide) {
+      return;
+    }
+
     Entity entity = event.getEntity();
     if (!(entity instanceof ItemEntity)) {
       return;
     }
 
     ItemEntity itemEntity = (ItemEntity) entity;
-    String itemName = itemEntity.getItem().getTranslationKey();
+    String itemName = itemEntity.getItem().getItem().getRegistryName().toString();
     if (itemName == null) {
-      itemName = itemEntity.getEntityString();
+      itemName = itemEntity.getEncodeId();
     }
 
     // Ignore dropped air blocks because these are not used at all by the players.
     // Warning: Removing the air block is a bad idea, because it's used to pre-reserve the space.
-    if (itemName.equals("block.minecraft.air")) {
+    if (itemName.equals("block.minecraft.air") || itemName.equals("minecraft:air")) {
       return;
     }
 
     // Get world name and start processing of data
-    String worldName = itemEntity.getEntityWorld().getDimensionKey().getLocation().toString();
+    String worldName = world.dimension().location().toString();
 
     // Remove item from world map.
-    itemWorldEntityMap.getOrDefault(worldName, new LinkedHashSet<>()).remove(itemEntity);
+    Set<ItemEntity> itemWorldEntities = itemWorldEntityMap.get(worldName);
+    if (itemWorldEntities != null) {
+      itemWorldEntities.remove(itemEntity);
+    }
 
     // Remove item from world type map.
-    itemTypeEntityMap.getOrDefault('[' + worldName + ']' + itemName, new LinkedHashSet<>())
-        .remove(itemEntity);
-
-    if (log.isDebugEnabled()) {
-      log.debug("Item {} {} leaved {}.", itemName, itemEntity.getDisplayName().getString(),
-          worldName);
+    Set<ItemEntity> itemTypeEntities = itemTypeEntityMap.get('[' + worldName + ']' + itemName);
+    if (itemTypeEntities != null) {
+      itemTypeEntities.remove(itemEntity);
+      if (log.isDebugEnabled()) {
+        log.debug("Item {} {} leaved {}.", itemName, itemEntity.getDisplayName().getString(),
+            worldName);
+      }
+    } else {
+      log.warn("Item {} {} in {} was not tracked by item entity manager!", itemName,
+          itemEntity.getDisplayName().getString(), worldName);
     }
   }
 
@@ -210,7 +228,7 @@ public class ItemEntityManager extends Manager {
       Set<ItemEntity> itemWorldEntitiesValues = itemWorldEntities.getValue();
       if (itemWorldEntitiesValues.size() > maxNumberOfOptimizedWorldItems) {
         List<ItemEntity> sortedItemWorldEntitiesValues = itemWorldEntitiesValues.stream()
-            .sorted(Comparator.comparing(ItemEntity::getEntityId)).collect(Collectors.toList());
+            .sorted(Comparator.comparing(ItemEntity::getId)).collect(Collectors.toList());
         for (int i = 0; i < sortedItemWorldEntitiesValues.size()
             - maxNumberOfOptimizedWorldItems; i++) {
           ItemEntity itemEntity = sortedItemWorldEntitiesValues.get(i);
@@ -228,7 +246,7 @@ public class ItemEntityManager extends Manager {
       Set<ItemEntity> itemTypeEntitiesValues = itemTypeEntities.getValue();
       if (itemTypeEntitiesValues.size() > maxNumberOfOptimizedTypeItems) {
         List<ItemEntity> sortedItemTypeEntitiesValues = itemTypeEntitiesValues.stream()
-            .sorted(Comparator.comparing(ItemEntity::getEntityId)).collect(Collectors.toList());
+            .sorted(Comparator.comparing(ItemEntity::getId)).collect(Collectors.toList());
         for (int i = 0; i < sortedItemTypeEntitiesValues.size()
             - maxNumberOfOptimizedTypeItems; i++) {
           ItemEntity itemEntity = sortedItemTypeEntitiesValues.get(i);
@@ -248,8 +266,11 @@ public class ItemEntityManager extends Manager {
   }
 
   public static Integer getNumberOfItems(String worldName, String itemName) {
-    return itemTypeEntityMap.getOrDefault('[' + worldName + ']' + itemName, new LinkedHashSet<>())
-        .size();
+    Set<ItemEntity> itemEntities = itemTypeEntityMap.get('[' + worldName + ']' + itemName);
+    if (itemEntities == null) {
+      return 0;
+    }
+    return itemEntities.size();
   }
 
   public static Map<String, Set<ItemEntity>> getItemTypeEntityMap() {
