@@ -2,7 +2,7 @@
 
 ![Adaptive Performance Tweaks][logo]
 
-Adaptive Performance Tweaks is a Minecraft Forge Mod which automatically adjust specific settings on the server to allow a more balanced TPS/FPS.
+Adaptive Performance Tweaks is a Minecraft Forge server-side Mod which automatically adjust specific settings on the server to allow a more balanced TPS/FPS.
 The goal of this mod is to allow a smoother experience on a server with several (=> 180) Mods.
 
 **⚠️Please make sure to create regular backup of your world in case something goes wrong.**
@@ -57,6 +57,12 @@ This helps dramatically to allow greater TNT explosions because most of the tras
 
 You could also get an overview of all current items over `/aptweaks items`.
 
+### ✨Experience Orbs clustering
+
+Experience Orbs could cause a lag from bigger monster farms or if they are not picked up.
+The mod automatically cluster experience orbs in a specific range and combine the experience values.
+This optimization happens on the server side without introducing any new custom items.
+
 ### 🔀randomTickSpeed and maxEntityCramming Optimization
 
 Automatically adjust the randomTickSpeed and maxEntityCramming based on the current server load.
@@ -84,6 +90,7 @@ This is a list of the currently supported mods within the config file for indivi
 - ✅ [The Abyss: Chapter II][theabyss]
 - ✅ [Tinkers' Construct][tinkersconstruct]
 - ✅ [The Twilight Forest][twilightforest]
+- ✅ [Whisperwoods][whisperwoods]
 
 ### ⛔ Unsupported Mods
 
@@ -123,6 +130,14 @@ The follow mods are currently unsupported because of using outdated and/or unexp
 
 `/aptweaks spawnRules` shows the pre-calculated spawn rules.
 
+### 👁️‍🗨️Special Spawn rules
+
+`/aptweaks specialSpawnRules` shows the pre-calculated special spawn rules.
+
+### 👁️‍🗨️Player Positions
+
+`/aptweaks playerPositions` shows the current player position and meta data.
+
 ### 👁️‍🗨️Debug
 
 The debug is helpful to understand an unexpected behave like to many or to less spawned mobs.
@@ -135,7 +150,7 @@ The debug is helpful to understand an unexpected behave like to many or to less 
 
 ### Is this a server side / client side mod❓
 
-At the moment most of the optimization are server side, so you don't need it on the client side.
+The optimization are happening directly on the server side, so you don't need it on the client side.
 At a later stage I will add additional client side modifications.
 
 ### Do you plan to support 12.x, 13.x, 14.x, 15.x or a Fabric/Rift version❓
@@ -163,7 +178,7 @@ I'm currently testing a way to better optimize the spawners as well, because the
 In general this is hard to say, because it's depends on a lot of factors. In my case it helps me to run a server with about 170 mods.
 The mod will not help so much for extensive red stone constructions, custom spawner or other tasks which requires several ticks for the calculation.
 
-## Will it work with Performant, Dynamic view, FPS reducer, FerriteCore and Spark❓
+## Will it work with Performant, Clumps, Dynamic view, FPS reducer, FerriteCore and Spark❓
 
 You should try to use as less as possible performance mods with overlapping features.
 Depending on your mod pack it could be that one works better than the other.
@@ -178,6 +193,11 @@ Technically they should work together because they are performing different kind
 But I'm not recommending using both because the combined optimization overhead is too much.
 
 Because core mods modifying the underlying integration it could be that they are producing crashes which could be only fixed from the core mod author itself and not my side.
+
+### ⚠️Clumps
+
+**Clumps** groups XP orbs together into a new single entity. The cluster feature of this mod whoever do this on the server side without introducing new entities or items.
+I recommend not using both mods together, however if you prefer Clumps, please disable the experience orb feature over the config file.
 
 ### ⚠️Dynamic View
 
@@ -199,7 +219,6 @@ But I still recommend this mod to make it easier to find lagging entities or to 
 
 ## ⭐Recommended Server Mods
 
-- [Clumps][clumps] groups XP orbs together into a single entity.
 - [FTB Backups][ftb_backups] for regular automated backups.
 - [FerriteCore][ferrite_core] This mod reduces the memory usage of Minecraft in a few different ways.
 - [RandomPatches (Forge)][random_patches] Collection of bug fixes and quality of life improvements for Minecraft
@@ -215,7 +234,6 @@ But I still recommend this mod to make it easier to find lagging entities or to 
 [alexmobs]: https://www.curseforge.com/minecraft/mc-mods/alexs-mobs
 [aquaculture]: https://www.curseforge.com/minecraft/mc-mods/aquaculture
 [artifacts]: https://www.curseforge.com/minecraft/mc-mods/artifacts
-[clumps]: https://www.curseforge.com/minecraft/mc-mods/clumps
 [dungeons_mod]: https://www.curseforge.com/minecraft/mc-mods/dungeons-mod
 [ferrite_core]: https://www.curseforge.com/minecraft/mc-mods/ferritecore
 [fps_reducer]: https://www.curseforge.com/minecraft/mc-mods/fps-reducer
@@ -234,5 +252,5 @@ But I still recommend this mod to make it easier to find lagging entities or to 
 [theabyss]: https://www.curseforge.com/minecraft/mc-mods/the-abyss-chapter-ii
 [tinkersconstruct]: https://www.curseforge.com/minecraft/mc-mods/tinkers-construct
 [twilightforest]: https://www.curseforge.com/minecraft/mc-mods/the-twilight-forest
-
+[whisperwoods]: https://www.curseforge.com/minecraft/mc-mods/whisperwoods
 [logo]: logo.png

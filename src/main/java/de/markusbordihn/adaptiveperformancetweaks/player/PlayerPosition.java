@@ -161,7 +161,7 @@ public class PlayerPosition {
         + "', x:" + this.posX + ", y:" + this.posY + ", z:" + this.posZ + "}, Range{x:"
         + this.viewAreaStartX + " to " + this.viewAreaStopX + ", y:" + this.viewAreaStartY + " to "
         + this.viewAreaStopY + ", z:" + this.viewAreaStartZ + " to " + this.viewAreaStopZ
-        + "}, Meta{canSeeSky: " + this.canSeeSky + "}]";
+        + "}, Meta{canSeeSky: " + this.canSeeSky + ", isSwimming: " + isSwimming + "}]";
   }
 
 }

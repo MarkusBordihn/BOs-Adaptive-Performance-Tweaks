@@ -69,6 +69,9 @@ public final class CommonConfig {
     public final ForgeConfigSpec.IntValue maxNumberOfItems;
     public final ForgeConfigSpec.IntValue maxNumberOfItemsPerType;
 
+    public final ForgeConfigSpec.BooleanValue optimizeExperienceOrbs;
+    public final ForgeConfigSpec.IntValue experienceOrbsClusterRange;
+
     public final ForgeConfigSpec.ConfigValue<String> logLevel;
     public final ForgeConfigSpec.BooleanValue logServerLoad;
 
@@ -202,6 +205,14 @@ public final class CommonConfig {
     public final ForgeConfigSpec.IntValue modTwilightForestMaxBossesPerPlayer;
     public final ForgeConfigSpec.IntValue modTwilightForestMaxBossesPerWorld;
 
+    public final ForgeConfigSpec.BooleanValue modWhisperwoodsEnabled;
+    public final ForgeConfigSpec.IntValue modWhisperwoodsMaxPassiveMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue modWhisperwoodsMaxPassiveMobsPerWorld;
+    public final ForgeConfigSpec.IntValue modWhisperwoodsMaxHostileMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue modWhisperwoodsMaxHostileMobsPerWorld;
+    public final ForgeConfigSpec.IntValue modWhisperwoodsMaxBossesPerPlayer;
+    public final ForgeConfigSpec.IntValue modWhisperwoodsMaxBossesPerWorld;
+
     public final ForgeConfigSpec.BooleanValue burnCreeperDuringDaylight;
 
     Config(ForgeConfigSpec.Builder builder) {
@@ -238,6 +249,14 @@ public final class CommonConfig {
           .comment(
               "Defines the max. number of items which are allowed to lay around in a single world.")
           .defineInRange("maxNumberOfItems", 64, 10, 1000);
+      builder.pop();
+
+      builder.push("Experience Orbs");
+      optimizeExperienceOrbs = builder.comment("Enable/Disable experience orbs optimization.")
+          .define("optimizeExperienceOrbs", true);
+      experienceOrbsClusterRange =
+          builder.comment("Defines the radius in which experience orbs will be clustered together.")
+              .defineInRange("experienceOrbsClusterRange", 4, 1, 16);
       builder.pop();
 
       builder.comment("View area optimization, should be only adjusted if really needed!")
@@ -543,6 +562,22 @@ public final class CommonConfig {
           builder.defineInRange("modTwilightForestMaxBossesPerPlayer", 2, 1, PER_PLAYER_MAX);
       modTwilightForestMaxBossesPerWorld =
           builder.defineInRange("modTwilightForestMaxBossesPerWorld", 8, 1, PER_WORLD_MAX);
+      builder.pop();
+
+      builder.push("Whisperwoods");
+      modWhisperwoodsEnabled = builder.define("modWhisperwoodsEnabled", true);
+      modWhisperwoodsMaxPassiveMobsPerPlayer =
+          builder.defineInRange("modWhisperwoodsMaxPassiveMobsPerPlayer", 2, 1, PER_PLAYER_MAX);
+      modWhisperwoodsMaxPassiveMobsPerWorld =
+          builder.defineInRange("modWhisperwoodsMaxPassiveMobsPerWorld", 16, 1, PER_WORLD_MAX);
+      modWhisperwoodsMaxHostileMobsPerPlayer =
+          builder.defineInRange("modWhisperwoodsMaxHostileMobsPerPlayer", 2, 1, PER_PLAYER_MAX);
+      modWhisperwoodsMaxHostileMobsPerWorld =
+          builder.defineInRange("modWhisperwoodsMaxHostileMobsPerWorld", 16, 1, PER_WORLD_MAX);
+      modWhisperwoodsMaxBossesPerPlayer =
+          builder.defineInRange("modWhisperwoodsMaxBossesPerPlayer", 1, 1, PER_PLAYER_MAX);
+      modWhisperwoodsMaxBossesPerWorld =
+          builder.defineInRange("modWhisperwoodsMaxBossesPerWorld", 4, 1, PER_WORLD_MAX);
       builder.pop();
 
       builder.pop();

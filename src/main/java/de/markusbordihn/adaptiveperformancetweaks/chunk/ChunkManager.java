@@ -83,7 +83,7 @@ public class ChunkManager extends Manager {
     log.trace("Add chunk {} at {}", chunk, chunk.getPos());
     chunkList.add(chunk);
     if (chunkList.size() > maxNumberOfChunks) {
-      ChunkOptimization.setNeedsOptimization(true);
+      log.debug("Should optimize chunks because {} exceeding limit of {}...", chunkList.size(), maxNumberOfChunks);
     }
   }
 

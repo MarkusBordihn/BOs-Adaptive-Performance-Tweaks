@@ -92,36 +92,36 @@ public abstract class SpawnConfigModSupport {
   public static void addSpawnRatesForPassiveMobs(Set<String> passiveMobList,
       int maxPassiveMobsPerPlayer, int maxPassiveMobsPerWorld) {
     for (String entity : passiveMobList) {
-      SpawnConfigManager.spawnConfigPerPlayer.put(entity, maxPassiveMobsPerPlayer);
-      SpawnConfigManager.spawnConfigPerWorld.put(entity, maxPassiveMobsPerWorld);
-      SpawnConfigManager.spawnConfigEntity.add(entity);
+      SpawnConfigManager.addSpawnConfigPerPlayer(entity, maxPassiveMobsPerPlayer);
+      SpawnConfigManager.addSpawnConfigPerWorld(entity, maxPassiveMobsPerWorld);
+      SpawnConfigManager.addSpawnConfigEntity(entity);
     }
   }
 
   public static void addSpawnRatesForNeutralMobs(Set<String> neutralMobList,
       int maxNeutralMobsPerPlayer, int maxNeutralMobsPerWorld) {
     for (String entity : neutralMobList) {
-      SpawnConfigManager.spawnConfigPerPlayer.put(entity, maxNeutralMobsPerPlayer);
-      SpawnConfigManager.spawnConfigPerWorld.put(entity, maxNeutralMobsPerWorld);
-      SpawnConfigManager.spawnConfigEntity.add(entity);
+      SpawnConfigManager.addSpawnConfigPerPlayer(entity, maxNeutralMobsPerPlayer);
+      SpawnConfigManager.addSpawnConfigPerWorld(entity, maxNeutralMobsPerWorld);
+      SpawnConfigManager.addSpawnConfigEntity(entity);
     }
   }
 
   public static void addSpawnRatesForHostileMobs(Set<String> hostileMobList,
       int maxHostileMobsPerPlayer, int maxHostileMobsPerWorld) {
     for (String entity : hostileMobList) {
-      SpawnConfigManager.spawnConfigPerPlayer.put(entity, maxHostileMobsPerPlayer);
-      SpawnConfigManager.spawnConfigPerWorld.put(entity, maxHostileMobsPerWorld);
-      SpawnConfigManager.spawnConfigEntity.add(entity);
+      SpawnConfigManager.addSpawnConfigPerPlayer(entity, maxHostileMobsPerPlayer);
+      SpawnConfigManager.addSpawnConfigPerWorld(entity, maxHostileMobsPerWorld);
+      SpawnConfigManager.addSpawnConfigEntity(entity);
     }
   }
 
   public static void addSpawnRatesForBossMobs(Set<String> bossMobList, int maxBossMobsPerPlayer,
       int maxBossMobsPerWorld) {
     for (String entity : bossMobList) {
-      SpawnConfigManager.spawnConfigPerPlayer.put(entity, maxBossMobsPerPlayer);
-      SpawnConfigManager.spawnConfigPerWorld.put(entity, maxBossMobsPerWorld);
-      SpawnConfigManager.spawnConfigEntity.add(entity);
+      SpawnConfigManager.addSpawnConfigPerPlayer(entity, maxBossMobsPerPlayer);
+      SpawnConfigManager.addSpawnConfigPerWorld(entity, maxBossMobsPerWorld);
+      SpawnConfigManager.addSpawnConfigEntity(entity);
     }
   }
 
@@ -129,15 +129,15 @@ public abstract class SpawnConfigModSupport {
     for (Map.Entry<String, Integer> entry : specialMobList.entrySet()) {
       String entity = entry.getKey();
       int maxSpecialMobsPerWorld = entry.getValue();
-      SpawnConfigManager.spawnConfigSpecial.put(entity, maxSpecialMobsPerWorld);
-      SpawnConfigManager.spawnConfigEntity.add(entity);
+      SpawnConfigManager.addSpawnConfigSpecial(entity, maxSpecialMobsPerWorld);
+      SpawnConfigManager.addSpawnConfigEntity(entity);
     }
   }
 
   public static void addSpawnRateForMob(String entity, int maxMobsPerPlayer, int maxMobsPerWorld) {
-    SpawnConfigManager.spawnConfigPerPlayer.put(entity, maxMobsPerPlayer);
-    SpawnConfigManager.spawnConfigPerWorld.put(entity, maxMobsPerWorld);
-    SpawnConfigManager.spawnConfigEntity.add(entity);
+    SpawnConfigManager.addSpawnConfigPerPlayer(entity, maxMobsPerPlayer);
+    SpawnConfigManager.addSpawnConfigPerWorld(entity, maxMobsPerWorld);
+    SpawnConfigManager.addSpawnConfigEntity(entity);
   }
 
 }

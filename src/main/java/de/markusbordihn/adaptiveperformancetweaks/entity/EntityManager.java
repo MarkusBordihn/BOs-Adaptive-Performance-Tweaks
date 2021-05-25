@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.LightningBoltEntity;
+import net.minecraft.entity.item.ExperienceOrbEntity;
 import net.minecraft.entity.item.FallingBlockEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.monster.MonsterEntity;
@@ -70,8 +71,8 @@ public class EntityManager extends Manager {
 
     // Ignore entities which are handled by other instances or not relevant.
     Entity entity = event.getEntity();
-    if (entity instanceof ItemEntity || entity instanceof LightningBoltEntity
-        || entity instanceof FallingBlockEntity) {
+    if (entity instanceof ExperienceOrbEntity || entity instanceof ItemEntity
+        || entity instanceof LightningBoltEntity || entity instanceof FallingBlockEntity) {
       return;
     } else if (entity instanceof PlayerEntity) {
       log.debug("Player {} joined world.", entity);
@@ -118,8 +119,8 @@ public class EntityManager extends Manager {
 
     // Ignore entities which are handled by other instances or not relevant.
     Entity entity = event.getEntity();
-    if (entity instanceof ItemEntity || entity instanceof LightningBoltEntity
-        || entity instanceof FallingBlockEntity) {
+    if (entity instanceof ExperienceOrbEntity || entity instanceof ItemEntity
+        || entity instanceof LightningBoltEntity || entity instanceof FallingBlockEntity) {
       return;
     } else if (entity instanceof PlayerEntity) {
       log.debug("Player {} leaved world.", entity);
@@ -132,7 +133,10 @@ public class EntityManager extends Manager {
       return;
     }
 
-    if (entity instanceof MonsterEntity) {
+    if (entity.hasCustomName()) {
+      log.debug("Ignore custom entity {} with name {}", entityName,
+          entity.getCustomName().getString());
+    } else if (entity instanceof MonsterEntity) {
       MonsterEntityManager.handleMonsterEntityLeaveWorldEvent(event);
     }
 

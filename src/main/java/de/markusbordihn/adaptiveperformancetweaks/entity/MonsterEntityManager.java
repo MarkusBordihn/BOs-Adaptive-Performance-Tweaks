@@ -93,15 +93,15 @@ public class MonsterEntityManager extends Manager {
     for (Map.Entry<String, Set<MonsterEntity>> monsterEntities : monsterEntityMap.entrySet()) {
       for (MonsterEntity monsterEntity : monsterEntities.getValue()) {
         World entityWorld = monsterEntity.level;
-        String monsterName = monsterEntity.getEncodeId();;
+        String monsterName = monsterEntity.getEncodeId();
 
         // Cleanup specific Monsters during daytime
         if (entityWorld.isDay()) {
           // Burn Crepper during days to control population
           if (burnCreeperDuringDaylight && monsterEntity instanceof CreeperEntity
               && entityWorld.canSeeSky(monsterEntity.blockPosition())) {
-            // monsterEntity.setFire(60);
-            // ToDo (mbordihn): Look how this is done in 16.5.x
+            CreeperEntity creeperEntity = (CreeperEntity) monsterEntities;
+            creeperEntity.ignite();
           }
           // Remove whirlwind during day
           if (modDungeonsmodOptimizeWhirlwind && "dungeonsmod:whirlwind".equals(monsterName)) {

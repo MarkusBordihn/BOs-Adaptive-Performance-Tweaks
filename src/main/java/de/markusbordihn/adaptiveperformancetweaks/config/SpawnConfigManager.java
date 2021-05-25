@@ -25,9 +25,11 @@ import java.util.Map;
 import java.util.Set;
 
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 
+import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
 import de.markusbordihn.adaptiveperformancetweaks.config.mods.*;
 
@@ -36,18 +38,45 @@ public class SpawnConfigManager extends Manager {
 
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
 
-  public static Map<String, Integer> spawnConfigPerPlayer = new HashMap<>();
-  public static Map<String, Integer> spawnConfigPerWorld = new HashMap<>();
-  public static Map<String, Integer> spawnConfigSpecial = new HashMap<>();
-  public static Set<String> spawnConfigEntity = new HashSet<>();
+  private static Map<String, Integer> spawnConfigPerPlayer = new HashMap<>();
+  private static Map<String, Integer> spawnConfigPerWorld = new HashMap<>();
+  private static Map<String, Integer> spawnConfigSpecial = new HashMap<>();
+  private static Set<String> spawnConfigEntity = new HashSet<>();
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+    checkForBadCombinationOfMods();
     log.info("Optimize Passive Mobs: {}", Boolean.TRUE.equals(COMMON.optimizePassiveMobs.get()));
     log.info("Optimize Neutral Mobs: {}", Boolean.TRUE.equals(COMMON.optimizeNeutralMobs.get()));
     log.info("Optimize Hostile Mobs: {}", Boolean.TRUE.equals(COMMON.optimizeHostileMobs.get()));
     log.info("Optimize Boss Mobs: {}", Boolean.TRUE.equals(COMMON.optimizeBossMobs.get()));
     calculateSpawnRates();
+  }
+
+  public static void checkForBadCombinationOfMods() {
+    if (ModList.get().isLoaded(Constants.PERFORMANT_MOD)) {
+      log.error(getCoreModWarning(Constants.PERFORMANT_NAME));
+    }
+
+    if (ModList.get().isLoaded(Constants.LAZYDFU_MOD)) {
+      log.warn(getCoreModWarning(Constants.LAZYDFU_NAME));
+    }
+
+    if (ModList.get().isLoaded(Constants.DYNVIEW_MOD)) {
+      log.error("Dynamic View optimizing the view distance in a similar way like this mod. Don't use both optimizations together!");
+    }
+
+    if (ModList.get().isLoaded(Constants.INCONTROL_MOD)) {
+      log.error("InControl controls the mob spawns and entity spawns, which could conflict with this spawn control of this mod. Don't use both optimizations together!");
+    }
+
+    if (ModList.get().isLoaded(Constants.RATS_MOD)) {
+      log.warn("There are known issue with the rats mod and spawn control, see https://github.com/MarkusBordihn/adaptive_performance_tweaks/issues/4 !");
+    }
+  }
+
+  public static String getCoreModWarning(String modName) {
+    return String.format("The mod %s use core modifications which could conflicting with this none-core mod. Do not report any issues with both mods enabled.", modName);
   }
 
   public static void calculateSpawnRates() {
@@ -68,9 +97,26 @@ public class SpawnConfigManager extends Manager {
     SupplementariesConfig.addSpawnRates();
     TheAbyssConfig.addSpawnRates();
     TinkersConstructConfig.addSpawnRates();
+    Whisperwoods.addSpawnRates();
 
     log.info("Added {} player spawn rules, {} world spawn rules and {} special spawn rules.",
         spawnConfigPerPlayer.size(), spawnConfigPerWorld.size(), spawnConfigSpecial.size());
+  }
+
+  public static void addSpawnConfigPerPlayer(String entityName, int maxNumberOfEntities) {
+    spawnConfigPerPlayer.put(entityName, maxNumberOfEntities);
+  }
+
+  public static void addSpawnConfigPerWorld(String entityName, int maxNumberOfEntities) {
+    spawnConfigPerWorld.put(entityName, maxNumberOfEntities);
+  }
+
+  public static void addSpawnConfigSpecial(String entityName, int maxNumberOfEntities) {
+    spawnConfigSpecial.put(entityName, maxNumberOfEntities);
+  }
+
+  public static void addSpawnConfigEntity(String entityName) {
+    spawnConfigEntity.add(entityName);
   }
 
   public static int getSpawnLimitPerPlayer(String entityName) {
