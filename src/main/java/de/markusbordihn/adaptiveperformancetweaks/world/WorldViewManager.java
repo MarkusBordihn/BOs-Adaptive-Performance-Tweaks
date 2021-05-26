@@ -19,8 +19,8 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.world;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.play.server.SUpdateViewDistancePacket;
@@ -34,7 +34,7 @@ import de.markusbordihn.adaptiveperformancetweaks.Manager;
 
 @EventBusSubscriber
 public class WorldViewManager extends Manager {
-  private static Map<String, Integer> viewDistancePerWorld = new HashMap<>();
+  private static Map<String, Integer> viewDistancePerWorld = new ConcurrentHashMap<>();
   private static int viewDistanceMin = COMMON.viewDistanceMin.get();
   private static int viewDistanceMax = COMMON.viewDistanceMax.get();
   private static int viewDistanceDefault = COMMON.viewDistanceDefault.get();

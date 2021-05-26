@@ -25,6 +25,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ExperienceOrbEntity;
 import net.minecraft.world.World;
@@ -35,6 +36,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
+
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
 
@@ -51,7 +53,7 @@ public class ExperienceOrbEntityManager extends Manager {
     optimizeExperienceOrbs = COMMON.optimizeExperienceOrbs.get();
     experienceOrbsClusterRange = COMMON.experienceOrbsClusterRange.get();
     if (optimizeExperienceOrbs) {
-      log.info("Optimize Cluster Experience Orbs with a radius of {} blocks.", experienceOrbsClusterRange);
+      log.info("Enable clustering of Experience Orbs with a radius of {} blocks.", experienceOrbsClusterRange);
       if (ModList.get().isLoaded(Constants.CLUMPS_MOD)) {
         log.error(
             "Clumps groups XP orbs together into a new single entity, which will conflict with the XP Orb feature of this mod. Don't use both optimizations together!");

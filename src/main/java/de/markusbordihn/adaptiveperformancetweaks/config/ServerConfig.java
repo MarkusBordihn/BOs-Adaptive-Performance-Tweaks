@@ -65,11 +65,19 @@ public class ServerConfig {
 
   @SubscribeEvent
   public static void handleModConfigLoadEvent(final ModConfig.Loading event) {
-    log.info("Loading server config file {} ...", event.getConfig().getFileName());
+    ModConfig config = event.getConfig();
+    if (config.getSpec() != serverSpec) {
+        return;
+    }
+    log.info("Loading server config file {} ...", config.getFileName());
   }
 
   @SubscribeEvent
   public static void handleModConfigReloadEvent(final ModConfig.Reloading event) {
-    log.info("Reloading server config file {} ...", event.getConfig().getFileName());
+    ModConfig config = event.getConfig();
+    if (config.getSpec() != serverSpec) {
+        return;
+    }
+    log.info("Reloading server config file {} ...", config.getFileName());
   }
 }

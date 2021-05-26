@@ -28,6 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -68,6 +69,7 @@ public final class CommonConfig {
     public final ForgeConfigSpec.BooleanValue optimizeItems;
     public final ForgeConfigSpec.IntValue maxNumberOfItems;
     public final ForgeConfigSpec.IntValue maxNumberOfItemsPerType;
+    public final ForgeConfigSpec.IntValue itemsClusterRange;
 
     public final ForgeConfigSpec.BooleanValue optimizeExperienceOrbs;
     public final ForgeConfigSpec.IntValue experienceOrbsClusterRange;
@@ -249,7 +251,11 @@ public final class CommonConfig {
           .comment(
               "Defines the max. number of items which are allowed to lay around in a single world.")
           .defineInRange("maxNumberOfItems", 64, 10, 1000);
+      itemsClusterRange =
+          builder.comment("Defines the radius in which items will be clustered together.")
+              .defineInRange("itemsClusterRange", 4, 1, 16);
       builder.pop();
+
 
       builder.push("Experience Orbs");
       optimizeExperienceOrbs = builder.comment("Enable/Disable experience orbs optimization.")
@@ -598,11 +604,22 @@ public final class CommonConfig {
 
   @SubscribeEvent
   public static void handleModConfigLoadEvent(ModConfig.Loading event) {
-    log.info("Loaded common config file {} ...", event.getConfig().getFileName());
+    ModConfig config = event.getConfig();
+    if (config.getSpec() != commonSpec) {
+      return;
+    }
+    log.info("Loaded common config file {} ...", config.getFileName());
   }
 
   @SubscribeEvent
   public static void handleModConfigReloadEvent(ModConfig.Reloading event) {
-    log.info("Reloaded common config file {} ...", event.getConfig().getFileName());
+    ModConfig config = event.getConfig();
+    if (config.getSpec() != commonSpec) {
+      return;
+    }
+    log.info("Reload common config file {} ...", config.getFileName());
+    log.warn("Changed values are not considered until the next server restart!");
+    MinecraftForge.EVENT_BUS.post(new CommonConfigReloadEvent(CommonConfig.COMMON));
   }
+
 }

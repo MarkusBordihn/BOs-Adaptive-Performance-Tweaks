@@ -17,36 +17,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.adaptiveperformancetweaks.world;
+package de.markusbordihn.adaptiveperformancetweaks.config;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import net.minecraftforge.eventbus.api.Event;
 
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
+public class CommonConfigReloadEvent extends Event {
 
-import de.markusbordihn.adaptiveperformancetweaks.Manager;
+  private CommonConfig.Config config;
 
-@EventBusSubscriber
-public class WorldManager extends Manager {
-
-  private static Map<String, ServerWorld> worlds = new ConcurrentHashMap<>();
-
-  @SubscribeEvent
-  public static void handleServerStartingEvent(FMLServerStartingEvent event) {
-    java.lang.Iterable<ServerWorld> serverWorlds =
-        ServerLifecycleHooks.getCurrentServer().getAllLevels();
-    for (ServerWorld serverWorld : serverWorlds) {
-      String worldName = serverWorld.getLevel().dimension().location().toString();
-      worlds.put(worldName, serverWorld);
-    }
+  public CommonConfigReloadEvent(CommonConfig.Config config) {
+    super();
+    this.config = config;
   }
 
-  public static ServerWorld getWorldByName(String worldName) {
-    return worlds.get(worldName);
+  public CommonConfig.Config getConfig() {
+    return this.config;
   }
 
 }

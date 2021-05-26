@@ -19,11 +19,10 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.entity;
 
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.entity.monster.CreeperEntity;
 import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.world.World;
@@ -39,7 +38,7 @@ import de.markusbordihn.adaptiveperformancetweaks.server.ServerLoadEvent;
 @EventBusSubscriber
 public class MonsterEntityManager extends Manager {
 
-  private static Map<String, Set<MonsterEntity>> monsterEntityMap = new HashMap<>();
+  private static Map<String, Set<MonsterEntity>> monsterEntityMap = new ConcurrentHashMap<>();
   private static boolean burnCreeperDuringDaylight = COMMON.burnCreeperDuringDaylight.get();
   private static boolean modDungeonsmodOptimizeWhirlwind =
       COMMON.modDungeonsmodOptimizeWhirlwind.get();

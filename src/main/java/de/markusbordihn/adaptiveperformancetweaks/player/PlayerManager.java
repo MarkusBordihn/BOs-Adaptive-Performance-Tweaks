@@ -20,10 +20,10 @@
 package de.markusbordihn.adaptiveperformancetweaks.player;
 
 import java.util.ConcurrentModificationException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraftforge.event.TickEvent;
@@ -39,7 +39,7 @@ import de.markusbordihn.adaptiveperformancetweaks.Manager;
 
 @Mod.EventBusSubscriber
 public class PlayerManager extends Manager {
-  private static Map<String, ServerPlayerEntity> usernamePlayerMap = new HashMap<>();
+  private static Map<String, ServerPlayerEntity> usernamePlayerMap = new ConcurrentHashMap<>();
   private static Set<ServerPlayerEntity> playerList = new HashSet<>();
   private static Set<PlayerValidation> playerValidationList = new HashSet<>();
   private static boolean hasPlayers = false;

@@ -20,15 +20,18 @@
 package de.markusbordihn.adaptiveperformancetweaks.entity;
 
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
@@ -46,14 +49,16 @@ public class ItemEntityManager extends Manager {
 
   private static Integer maxNumberOfItems = COMMON.maxNumberOfItems.get();
   private static Integer maxNumberOfItemsPerType = COMMON.maxNumberOfItemsPerType.get();
-  private static Map<String, Set<ItemEntity>> itemTypeEntityMap = new HashMap<>();
-  private static Map<String, Set<ItemEntity>> itemWorldEntityMap = new HashMap<>();
+  private static Map<String, Set<ItemEntity>> itemTypeEntityMap = new ConcurrentHashMap<>();
+  private static Map<String, Set<ItemEntity>> itemWorldEntityMap = new ConcurrentHashMap<>();
   private static boolean hasHighServerLoad = false;
   private static boolean needsOptimization = false;
   private static boolean optimizeItems = COMMON.optimizeItems.get();
+  private static int itemClusterRange = COMMON.itemsClusterRange.get();
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+    itemClusterRange = COMMON.itemsClusterRange.get();
     maxNumberOfItems = COMMON.maxNumberOfItems.get();
     maxNumberOfItemsPerType = COMMON.maxNumberOfItemsPerType.get();
     optimizeItems = COMMON.optimizeItems.get();
@@ -66,6 +71,7 @@ public class ItemEntityManager extends Manager {
     if (optimizeItems) {
       log.info("Max number of Items allowed per world: {} / per type: {}", maxNumberOfItems,
           maxNumberOfItemsPerType);
+      log.info("Enable clustering of items with a radius of {} blocks.", itemClusterRange);
     } else {
       log.info("Item Optimization is disabled!");
     }
@@ -124,6 +130,52 @@ public class ItemEntityManager extends Manager {
           worldName);
     }
 
+    // Check if items could be merged with other items
+    String itemTypeEntityMapKey = '[' + worldName + ']' + itemName;
+    itemTypeEntityMap.computeIfAbsent(itemTypeEntityMapKey, k -> new LinkedHashSet<>());
+    Set<ItemEntity> itemTypeEntities = itemTypeEntityMap.get(itemTypeEntityMapKey);
+    if (optimizeItems) {
+      ItemStack itemStack = itemEntity.getItem();
+      if (itemStack != null && itemStack.isStackable()
+          && itemStack.getCount() < itemStack.getMaxStackSize()
+          && itemStack.getMaxStackSize() > 1) {
+        Set<ItemEntity> itemEntities = new HashSet<>(itemTypeEntities);
+        Iterator<ItemEntity> itemEntitiesIterator = itemEntities.iterator();
+        int x = (int) itemEntity.getX();
+        int y = (int) itemEntity.getY();
+        int z = (int) itemEntity.getZ();
+        int xStart = x - itemClusterRange;
+        int yStart = y - itemClusterRange;
+        int zStart = z - itemClusterRange;
+        int xEnd = x + itemClusterRange;
+        int yEnd = y + itemClusterRange;
+        int zEnd = z + itemClusterRange;
+        boolean itemCanSeeSky = world.canSeeSky(itemEntity.blockPosition());
+        while (itemEntitiesIterator.hasNext()) {
+          ItemEntity existingItemEntity = itemEntitiesIterator.next();
+          int xSub = (int) existingItemEntity.getX();
+          int ySub = (int) existingItemEntity.getY();
+          int zSub = (int) existingItemEntity.getZ();
+          boolean existingItemCanSeeSky = world.canSeeSky(existingItemEntity.blockPosition());
+          ItemStack existingItemStack = existingItemEntity.getItem();
+
+          // Check if they are in an equal position, if both could see the sky, ignore the y values.
+          if (itemEntity.getId() != existingItemEntity.getId() && existingItemEntity.isAlive()
+              && ItemEntity.areMergable(itemStack, existingItemStack)
+              && (xStart < xSub && xSub < xEnd)
+              && ((itemCanSeeSky && existingItemCanSeeSky) || (yStart < ySub && ySub < yEnd))
+              && (zStart < zSub && zSub < zEnd)) {
+            int newItemCount = existingItemStack.getCount() + itemStack.getCount();
+            log.debug("Merge item {} with {} and {} items", itemEntity, existingItemEntity,
+                newItemCount);
+            ItemStack combinedItemStack = ItemEntity.merge(existingItemStack, itemStack, 64);
+            existingItemEntity.setItem(combinedItemStack);
+            return;
+          }
+        }
+      }
+    }
+
     // Storing items per world regardless of type
     itemWorldEntityMap.computeIfAbsent(worldName, k -> new LinkedHashSet<>());
     Set<ItemEntity> itemWorldEntities = itemWorldEntityMap.get(worldName);
@@ -146,9 +198,6 @@ public class ItemEntityManager extends Manager {
     }
 
     // Storing items per type and world
-    String itemTypeEntityMapKey = '[' + worldName + ']' + itemName;
-    itemTypeEntityMap.computeIfAbsent(itemTypeEntityMapKey, k -> new LinkedHashSet<>());
-    Set<ItemEntity> itemTypeEntities = itemTypeEntityMap.get(itemTypeEntityMapKey);
     itemTypeEntities.add(itemEntity);
 
     // Optimized items per type and world if exceeding numberOfItemsPerType limit.

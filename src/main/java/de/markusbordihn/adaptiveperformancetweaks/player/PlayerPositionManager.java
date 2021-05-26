@@ -20,9 +20,9 @@
 package de.markusbordihn.adaptiveperformancetweaks.player;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraftforge.event.TickEvent;
@@ -36,7 +36,7 @@ import de.markusbordihn.adaptiveperformancetweaks.Manager;
 @Mod.EventBusSubscriber
 public class PlayerPositionManager extends Manager {
 
-  private static Map<String, PlayerPosition> playerPositionMap = new HashMap<>();
+  private static Map<String, PlayerPosition> playerPositionMap = new ConcurrentHashMap<>();
   private static int ticks = 0;
 
   @SubscribeEvent

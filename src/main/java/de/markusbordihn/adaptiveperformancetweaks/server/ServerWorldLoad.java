@@ -20,8 +20,8 @@
 package de.markusbordihn.adaptiveperformancetweaks.server;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -42,9 +42,9 @@ public class ServerWorldLoad {
   public static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static boolean logServerLoad = CommonConfig.COMMON.logServerLoad.get();
-  private static final Map<ServerWorld, Double> worldLoad = new HashMap<>();
-  private static final Map<ServerWorld, ServerWorldLoadLevel> lastWorldLoadLevel = new HashMap<>();
-  private static final Map<ServerWorld, ServerWorldLoadLevel> worldLoadLevel = new HashMap<>();
+  private static final Map<ServerWorld, Double> worldLoad = new ConcurrentHashMap<>();
+  private static final Map<ServerWorld, ServerWorldLoadLevel> lastWorldLoadLevel = new ConcurrentHashMap<>();
+  private static final Map<ServerWorld, ServerWorldLoadLevel> worldLoadLevel = new ConcurrentHashMap<>();
 
   public enum ServerWorldLoadLevel {
     VERY_LOW, LOW, NORMAL, MEDIUM, HIGH, VERY_HIGH

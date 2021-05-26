@@ -39,7 +39,7 @@ public class PlayerOptimization extends Optimization {
     if (!username.isEmpty() && Boolean.TRUE.equals(COMMON.optimizePlayerLogin.get())) {
       ServerPlayerEntity player =
           ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
-      log.info("Optimize Player Login for {} {}", username, player);
+      log.debug("Optimize Player Login for {} {}", username, player);
 
       if (PlayerManager.getNumberOfPlayers() == 0
           && (ServerLoad.hasLowServerLoad() || ServerLoad.hasNormalServerLoad())) {

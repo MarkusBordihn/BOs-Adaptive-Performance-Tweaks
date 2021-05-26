@@ -46,10 +46,13 @@ public class SpawnConfigManager extends Manager {
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
     checkForBadCombinationOfMods();
-    log.info("Optimize Passive Mobs: {}", Boolean.TRUE.equals(COMMON.optimizePassiveMobs.get()));
-    log.info("Optimize Neutral Mobs: {}", Boolean.TRUE.equals(COMMON.optimizeNeutralMobs.get()));
-    log.info("Optimize Hostile Mobs: {}", Boolean.TRUE.equals(COMMON.optimizeHostileMobs.get()));
-    log.info("Optimize Boss Mobs: {}", Boolean.TRUE.equals(COMMON.optimizeBossMobs.get()));
+    clearSpawnRates();
+    calculateSpawnRates();
+  }
+
+  @SubscribeEvent
+  public static void handleCommonConfigReloadEvent(CommonConfigReloadEvent event) {
+    clearSpawnRates();
     calculateSpawnRates();
   }
 
@@ -63,31 +66,51 @@ public class SpawnConfigManager extends Manager {
     }
 
     if (ModList.get().isLoaded(Constants.DYNVIEW_MOD)) {
-      log.error("Dynamic View optimizing the view distance in a similar way like this mod. Don't use both optimizations together!");
+      log.error(
+          "Dynamic View optimizing the view distance in a similar way like this mod. Don't use both optimizations together!");
     }
 
     if (ModList.get().isLoaded(Constants.INCONTROL_MOD)) {
-      log.error("InControl controls the mob spawns and entity spawns, which could conflict with this spawn control of this mod. Don't use both optimizations together!");
+      log.error(
+          "InControl controls the mob spawns and entity spawns, which could conflict with this spawn control of this mod. Don't use both optimizations together!");
     }
 
     if (ModList.get().isLoaded(Constants.RATS_MOD)) {
-      log.warn("There are known issue with the rats mod and spawn control, see https://github.com/MarkusBordihn/adaptive_performance_tweaks/issues/4 !");
+      log.warn(
+          "There are known issue with the rats mod and spawn control, see https://github.com/MarkusBordihn/adaptive_performance_tweaks/issues/4 !");
     }
   }
 
   public static String getCoreModWarning(String modName) {
-    return String.format("The mod %s use core modifications which could conflicting with this none-core mod. Do not report any issues with both mods enabled.", modName);
+    return String.format(
+        "The mod %s use core modifications which could conflicting with this none-core mod. Do not report any issues with both mods enabled.",
+        modName);
   }
 
   public static void calculateSpawnRates() {
-    log.info("Pre-calculate entity spawns rates for Players and World");
+    if (Boolean.FALSE.equals(COMMON.optimizePassiveMobs.get())
+        && Boolean.FALSE.equals(COMMON.optimizeNeutralMobs.get())
+        && Boolean.FALSE.equals(COMMON.optimizeHostileMobs.get())
+        && Boolean.FALSE.equals(COMMON.optimizeBossMobs.get())) {
+      log.info("Disable entity spawn rates for Players and World!");
+      return;
+    }
+    log.info("Enable pre-calculate entity spawn rates for Players and World");
+    log.info("Optimize Passive Mobs: {}", Boolean.TRUE.equals(COMMON.optimizePassiveMobs.get()));
+    log.info("Optimize Neutral Mobs: {}", Boolean.TRUE.equals(COMMON.optimizeNeutralMobs.get()));
+    log.info("Optimize Hostile Mobs: {}", Boolean.TRUE.equals(COMMON.optimizeHostileMobs.get()));
+    log.info("Optimize Boss Mobs: {}", Boolean.TRUE.equals(COMMON.optimizeBossMobs.get()));
+
+    // Add pre-defined spawn rates for minecraft, if enabled.
+    MinecraftConfig.addSpawnRates();
+
+    // Add pre-defined spawn rates for supported Mods, if installed and enabled.
     AlexMobsConfig.addSpawnRates();
     AquacultureConfig.addSpawnRates();
     ArtifactsConfig.addSpawnRates();
     DungeonsmodConfig.addSpawnRates();
     IceAndFireConfig.addSpawnRates();
     MekanismAdditions.addSpawnRates();
-    MinecraftConfig.addSpawnRates();
     MowziesMobsConfig.addSpawnRates();
     MutantBeastsConfig.addSpawnRates();
     QuarkConfig.addSpawnRates();
@@ -101,6 +124,15 @@ public class SpawnConfigManager extends Manager {
 
     log.info("Added {} player spawn rules, {} world spawn rules and {} special spawn rules.",
         spawnConfigPerPlayer.size(), spawnConfigPerWorld.size(), spawnConfigSpecial.size());
+  }
+
+  public static void clearSpawnRates() {
+    log.info("Clearing spawn rates calculation ...");
+    spawnConfigPerPlayer.clear();
+    spawnConfigPerPlayer.clear();
+    spawnConfigPerWorld.clear();
+    spawnConfigSpecial.clear();
+    spawnConfigEntity.clear();
   }
 
   public static void addSpawnConfigPerPlayer(String entityName, int maxNumberOfEntities) {
