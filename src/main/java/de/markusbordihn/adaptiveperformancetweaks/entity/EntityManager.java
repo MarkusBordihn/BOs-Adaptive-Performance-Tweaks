@@ -83,8 +83,12 @@ public class EntityManager extends Manager {
 
     // Skip other checks if unknown entity name
     if (entityName == null) {
-      log.warn("Unknown entity name for entity {} in {}. Please report this issue under {}]!",
-          entity, worldName, Constants.ISSUE_REPORT);
+      if (entity.isMultipartEntity() || entity.getType().toString().contains("body_part")) {
+        log.debug("Ignore multipart entity {} in {}.", entity, worldName);
+      } else {
+        log.warn("Unknown entity name for entity {} ({}) in {}. Please report this issue under {}!",
+            entity, entity.getType(), worldName, Constants.ISSUE_REPORT);
+      }
       return;
     }
 

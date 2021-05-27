@@ -125,15 +125,18 @@ public class SpawnerManager extends Manager {
     // Check if we are reaching world limit of entities
     int entitiesPerWorld = EntityManager.getNumberOfEntitiesPerWorld(worldName);
     if (entitiesPerWorld * serverWorldLoadFactor >= spawnerMaxEntityPerWorld) {
-      log.debug("[Spawner World Limit] Denied spawn event for {} from {} in {}!", entity, spawner, worldName);
+      log.debug("[Spawner World Limit] Denied spawn event for {} from {} in {}!", entity, spawner,
+          worldName);
       event.setResult(Event.Result.DENY);
       return;
     }
 
     // Check if we are reaching chunk limit of entities
-    int entitiesInChunk = EntityManager.getNumberOfEntitiesInChunkPosition(worldName, entity.position());
+    int entitiesInChunk =
+        EntityManager.getNumberOfEntitiesInChunkPosition(worldName, entity.position());
     if (entitiesInChunk * serverWorldLoadFactor >= spawnerMaxEntityPerChunk) {
-      log.debug("[Spawner Chunk Limit] Denied spawn event for {} from {} in {}!", entity, spawner, worldName);
+      log.debug("[Spawner Chunk Limit] Denied spawn event for {} from {} in {}!", entity, spawner,
+          worldName);
       event.setResult(Event.Result.DENY);
       return;
     }

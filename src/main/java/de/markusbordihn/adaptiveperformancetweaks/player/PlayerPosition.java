@@ -31,8 +31,9 @@ public class PlayerPosition {
   private String worldName = "";
   private Vector3d position;
   private boolean canSeeSky = false;
-  private boolean isSwimming = false;
+  private boolean isUnderWater = false;
   private boolean viewAreaCalculated = false;
+  private long lastActionTime = 0;
   private int posX = 0;
   private int posY = 0;
   private int posZ = 0;
@@ -65,8 +66,8 @@ public class PlayerPosition {
 
   public boolean update(String worldName) {
     if (!this.worldName.equals(worldName)
-        || this.viewDistance != WorldViewManager.getViewDistance(worldName)
-        || hasChangedPosition()) {
+        || this.viewDistance != WorldViewManager.getViewDistance(worldName) || hasChangedPosition()
+        || this.lastActionTime != this.player.getLastActionTime()) {
       this.updatePosition(worldName);
       return true;
     }
@@ -74,12 +75,13 @@ public class PlayerPosition {
   }
 
   public void updatePosition(String worldName) {
+    this.lastActionTime = player.getLastActionTime();
     this.position = player.position();
     this.posX = (int) this.position.x;
     this.posY = (int) this.position.y;
     this.posZ = (int) this.position.z;
     this.canSeeSky = this.player.getLevel().canSeeSky(this.player.blockPosition());
-    this.isSwimming = this.player.isSwimming();
+    this.isUnderWater = this.player.isUnderWater();
     if (!this.worldName.equals(worldName)) {
       this.worldName = worldName;
     }
@@ -114,9 +116,9 @@ public class PlayerPosition {
 
   public boolean hasChangedPosition() {
     Vector3d currentPosition = this.player.position();
-    return Double.compare(this.position.x, currentPosition.x) != 0
-        || Double.compare(this.position.y, currentPosition.y) != 0
-        || Double.compare(this.position.z, currentPosition.z) != 0;
+    return Integer.compare(this.posX, (int) currentPosition.x) != 0
+        || Integer.compare(this.posY, (int) currentPosition.y) != 0
+        || Integer.compare(this.posZ, (int) currentPosition.z) != 0;
   }
 
   private void calculateViewArea() {
@@ -161,7 +163,7 @@ public class PlayerPosition {
         + "', x:" + this.posX + ", y:" + this.posY + ", z:" + this.posZ + "}, Range{x:"
         + this.viewAreaStartX + " to " + this.viewAreaStopX + ", y:" + this.viewAreaStartY + " to "
         + this.viewAreaStopY + ", z:" + this.viewAreaStartZ + " to " + this.viewAreaStopZ
-        + "}, Meta{canSeeSky: " + this.canSeeSky + ", isSwimming: " + isSwimming + "}]";
+        + "}, Meta{canSeeSky: " + this.canSeeSky + ", isUnderWater: " + this.isUnderWater + "}]";
   }
 
 }

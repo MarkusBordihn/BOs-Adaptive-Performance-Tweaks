@@ -43,9 +43,9 @@ import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
@@ -114,8 +114,13 @@ public class SpawnManager extends Manager {
 
     // Skip other checks if unknown entity name
     if (entityName == null) {
-      log.warn("Unknown entity name for entity {} in {}. Please report this issue under {}]!",
-          entity, worldName, Constants.ISSUE_REPORT);
+      if (entity.isMultipartEntity() || entity.getType().toString().contains("body_part")) {
+        log.debug("[Multipart Entity] Allow spawn event for {} in {}", entity, worldName);
+      } else {
+        log.warn(
+            "Unknown entity name for spawn entity {} ({}) in {}. Please report this issue under {}]!",
+            entity, entity.getType(), worldName, Constants.ISSUE_REPORT);
+      }
       event.setResult(Event.Result.DEFAULT);
       return;
     }
@@ -290,8 +295,13 @@ public class SpawnManager extends Manager {
 
     // Skip other checks if unknown entity name
     if (entityName == null) {
-      log.warn("Unknown entity name for entity {} in {}. Please report this issue under {}]!",
-          entity, worldName, Constants.ISSUE_REPORT);
+      if (entity.isMultipartEntity() || entity.getType().toString().contains("body_part")) {
+        log.debug("[Multipart Entity] Allow special spawn event for {} in {}", entity, worldName);
+      } else {
+        log.warn(
+            "Unknown entity name for special spawn entity {} ({}) in {}. Please report this issue under {}]!",
+            entity, entity.getType(), worldName, Constants.ISSUE_REPORT);
+      }
       event.setResult(Event.Result.DEFAULT);
       return;
     }
