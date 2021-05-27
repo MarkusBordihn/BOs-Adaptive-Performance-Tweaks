@@ -22,6 +22,7 @@ package de.markusbordihn.adaptiveperformancetweaks.chunk;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+
 import net.minecraft.tileentity.MobSpawnerTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -29,6 +30,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
 import de.markusbordihn.adaptiveperformancetweaks.spawn.SpawnerManager;
@@ -38,6 +40,11 @@ public class ChunkManager extends Manager {
 
   private static Set<Chunk> chunkList = new LinkedHashSet<>();
   public static Integer maxNumberOfChunks = 1000;
+
+  @SubscribeEvent
+  public static void onServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+    chunkList = new LinkedHashSet<>();
+  }
 
   @SubscribeEvent
   public static void handleChunkLoadEvent(ChunkEvent.Load event) {
@@ -82,8 +89,9 @@ public class ChunkManager extends Manager {
   public static void addChunk(Chunk chunk) {
     log.trace("Add chunk {} at {}", chunk, chunk.getPos());
     chunkList.add(chunk);
-    if (chunkList.size() > maxNumberOfChunks) {
-      log.debug("Should optimize chunks because {} exceeding limit of {}...", chunkList.size(), maxNumberOfChunks);
+    if (chunkList.size() > maxNumberOfChunks && log.isTraceEnabled()) {
+      log.trace("Should optimize chunks because {} exceeding limit of {}...", chunkList.size(),
+          maxNumberOfChunks);
     }
   }
 

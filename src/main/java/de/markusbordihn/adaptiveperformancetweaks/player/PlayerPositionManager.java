@@ -28,6 +28,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 
 import de.markusbordihn.adaptiveperformancetweaks.config.CommonConfig;
@@ -38,6 +39,11 @@ public class PlayerPositionManager extends Manager {
 
   private static Map<String, PlayerPosition> playerPositionMap = new ConcurrentHashMap<>();
   private static int ticks = 0;
+
+  @SubscribeEvent
+  public static void onServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+    playerPositionMap = new ConcurrentHashMap<>();
+  }
 
   @SubscribeEvent
   public static void handleServerStartingEvent(FMLServerStartingEvent event) {

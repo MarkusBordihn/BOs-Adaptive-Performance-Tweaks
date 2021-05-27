@@ -104,7 +104,9 @@ public class PlayerPosition {
     if (!this.worldName.equals(worldName)) {
       return false;
     }
-    calculateViewArea();
+    if (!this.viewAreaCalculated) {
+      calculateViewArea();
+    }
     return ((this.viewAreaStartX < x && x < this.viewAreaStopX)
         && (this.viewAreaStartY < y && y < this.viewAreaStopY)
         && (this.viewAreaStartZ < z && z < this.viewAreaStopZ));
@@ -122,10 +124,6 @@ public class PlayerPosition {
   }
 
   private void calculateViewArea() {
-    if (this.viewAreaCalculated) {
-      return;
-    }
-
     // Simple calculation for X and Z
     this.viewAreaStartX = this.posX - viewAreaXFactor;
     this.viewAreaStopX = this.posX + viewAreaXFactor;

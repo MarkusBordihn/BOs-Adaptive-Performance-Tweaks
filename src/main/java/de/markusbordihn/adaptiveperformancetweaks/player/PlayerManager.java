@@ -50,6 +50,11 @@ public class PlayerManager extends Manager {
 
   @SubscribeEvent
   public static void onServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+    usernamePlayerMap = new ConcurrentHashMap<>();
+    playerList = new HashSet<>();
+    playerValidationList = new HashSet<>();
+    hasPlayers = false;
+    playerCount = 0;
     optimizePlayerLogin = COMMON.optimizePlayerLogin.get();
   }
 

@@ -50,6 +50,7 @@ public class ExperienceOrbEntityManager extends Manager {
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+    experienceOrbEntityMap = new ConcurrentHashMap<>();
     optimizeExperienceOrbs = COMMON.optimizeExperienceOrbs.get();
     experienceOrbsClusterRange = COMMON.experienceOrbsClusterRange.get();
     if (optimizeExperienceOrbs) {

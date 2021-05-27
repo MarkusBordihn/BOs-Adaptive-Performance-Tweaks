@@ -55,6 +55,8 @@ public class SpawnerManager extends Manager {
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+    serverWorldLoadFactorMap = new HashMap<>();
+    spawnerList = new HashSet<>();
     spawnerEnabled = CommonConfig.COMMON.spawnerEnabled.get();
     spawnerMaxEntityPerWorld = CommonConfig.COMMON.spawnerMaxEntityPerWorld.get();
     spawnerMaxEntityPerChunk = CommonConfig.COMMON.spawnerMaxEntityPerChunk.get();

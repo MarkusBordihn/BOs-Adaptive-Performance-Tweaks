@@ -32,9 +32,10 @@ import de.markusbordihn.adaptiveperformancetweaks.Manager;
 public class ServerManager extends Manager {
 
   private static short ticks = 0;
-  private static final short SERVER_LOAD_TICK = 20;
-  private static final short WORLD_LOAD_TICK = 9 * 20;
-  private static final short OPTIMIZATION_TICK = 10 * 20;
+  private static final short SERVER_LOAD_TICK = (short) 0.5 * 20;
+  private static final short WORLD_LOAD_TICK = 2 * 20;
+  private static final short OPTIMIZATION_TICK = 3 * 20;
+  private static final short RESET_TICK = 6 * 20;
 
   @SubscribeEvent
   public static void handleServerStartingEvent(FMLServerStartingEvent event) {
@@ -59,6 +60,7 @@ public class ServerManager extends Manager {
       ServerWorldLoad.measureLoadAndPost();
     } else if (ticks == OPTIMIZATION_TICK) {
       MinecraftForge.EVENT_BUS.post(new OptimizationEvent());
+    } else if (ticks >= RESET_TICK) {
       ticks = 0;
     }
   }

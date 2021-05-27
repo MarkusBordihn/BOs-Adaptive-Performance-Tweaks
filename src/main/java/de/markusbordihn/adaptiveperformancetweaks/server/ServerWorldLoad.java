@@ -42,9 +42,9 @@ public class ServerWorldLoad {
   public static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static boolean logServerLoad = CommonConfig.COMMON.logServerLoad.get();
-  private static final Map<ServerWorld, Double> worldLoad = new ConcurrentHashMap<>();
-  private static final Map<ServerWorld, ServerWorldLoadLevel> lastWorldLoadLevel = new ConcurrentHashMap<>();
-  private static final Map<ServerWorld, ServerWorldLoadLevel> worldLoadLevel = new ConcurrentHashMap<>();
+  private static Map<ServerWorld, Double> worldLoad = new ConcurrentHashMap<>();
+  private static Map<ServerWorld, ServerWorldLoadLevel> lastWorldLoadLevel = new ConcurrentHashMap<>();
+  private static Map<ServerWorld, ServerWorldLoadLevel> worldLoadLevel = new ConcurrentHashMap<>();
 
   public enum ServerWorldLoadLevel {
     VERY_LOW, LOW, NORMAL, MEDIUM, HIGH, VERY_HIGH
@@ -52,6 +52,9 @@ public class ServerWorldLoad {
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+    worldLoad = new ConcurrentHashMap<>();
+    lastWorldLoadLevel = new ConcurrentHashMap<>();
+    worldLoadLevel = new ConcurrentHashMap<>();
     logServerLoad = CommonConfig.COMMON.logServerLoad.get();
   }
 

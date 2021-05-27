@@ -41,6 +41,7 @@ public class WorldViewManager extends Manager {
 
   @SubscribeEvent
   public static void onServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+    viewDistancePerWorld = new ConcurrentHashMap<>();
     viewDistanceMin = COMMON.viewDistanceMin.get();
     viewDistanceMax = COMMON.viewDistanceMax.get();
     viewDistanceDefault = COMMON.viewDistanceDefault.get();

@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
@@ -34,6 +35,11 @@ import de.markusbordihn.adaptiveperformancetweaks.Manager;
 public class WorldManager extends Manager {
 
   private static Map<String, ServerWorld> worlds = new ConcurrentHashMap<>();
+
+  @SubscribeEvent
+  public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+    worlds = new ConcurrentHashMap<>();
+  }
 
   @SubscribeEvent
   public static void handleServerStartingEvent(FMLServerStartingEvent event) {

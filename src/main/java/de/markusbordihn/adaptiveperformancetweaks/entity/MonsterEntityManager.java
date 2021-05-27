@@ -46,6 +46,7 @@ public class MonsterEntityManager extends Manager {
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+    monsterEntityMap = new ConcurrentHashMap<>();
     burnCreeperDuringDaylight = COMMON.burnCreeperDuringDaylight.get();
     modDungeonsmodOptimizeWhirlwind = COMMON.modDungeonsmodOptimizeWhirlwind.get();
     runCleanup = burnCreeperDuringDaylight || modDungeonsmodOptimizeWhirlwind;

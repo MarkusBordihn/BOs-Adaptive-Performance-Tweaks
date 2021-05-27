@@ -58,6 +58,8 @@ public class ItemEntityManager extends Manager {
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+    itemTypeEntityMap = new ConcurrentHashMap<>();
+    itemWorldEntityMap = new ConcurrentHashMap<>();
     itemClusterRange = COMMON.itemsClusterRange.get();
     maxNumberOfItems = COMMON.maxNumberOfItems.get();
     maxNumberOfItemsPerType = COMMON.maxNumberOfItemsPerType.get();

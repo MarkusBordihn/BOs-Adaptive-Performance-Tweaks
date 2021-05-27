@@ -50,6 +50,9 @@ public class WorldOptimization extends Optimization {
       WorldViewManager.decreaseViewDistance(serverWorld);
     } else if (ServerLoad.hasVeryHighServerLoad() && event.hasNormalServerWorldLoad()) {
       WorldViewManager.decreaseViewDistance(serverWorld);
+    } else if (ServerLoad.hasNormalServerLoad() && event.hasLowServerWorldLoad()
+        && PlayerManager.getNumberOfPlayers() == 1) {
+      WorldViewManager.increaseViewDistance(serverWorld);
     } else if (ServerLoad.hasLowServerLoad() && event.hasLowServerWorldLoad()
         && PlayerManager.getNumberOfPlayers() > 0) {
       WorldViewManager.increaseViewDistance(serverWorld);

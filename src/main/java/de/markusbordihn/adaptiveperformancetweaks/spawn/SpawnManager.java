@@ -76,6 +76,8 @@ public class SpawnManager extends Manager {
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+    serverWorldLoadMap = new HashMap<>();
+    serverWorldLoadFactorMap = new HashMap<>();
     allowList = new HashSet<>(COMMON.spawnAllowList.get());
     denyList = new HashSet<>(COMMON.spawnDenyList.get());
   }

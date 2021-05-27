@@ -57,6 +57,8 @@ public class EntityManager extends Manager {
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
+    entityMap = new ConcurrentHashMap<>();
+    entityMapPerWorld = new ConcurrentHashMap<>();
     allowList = new HashSet<>(COMMON.spawnAllowList.get());
     denyList = new HashSet<>(COMMON.spawnDenyList.get());
   }
