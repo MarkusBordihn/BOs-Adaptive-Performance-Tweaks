@@ -19,6 +19,8 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.server;
 
+import org.apache.logging.log4j.Logger;
+
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -36,6 +38,7 @@ public class ServerManager extends Manager {
   private static final short WORLD_LOAD_TICK = 2 * 20;
   private static final short OPTIMIZATION_TICK = 3 * 20;
   private static final short RESET_TICK = 6 * 20;
+  private static final Logger log = getLogger(ServerManager.class.getSimpleName());
 
   @SubscribeEvent
   public static void handleServerStartingEvent(FMLServerStartingEvent event) {

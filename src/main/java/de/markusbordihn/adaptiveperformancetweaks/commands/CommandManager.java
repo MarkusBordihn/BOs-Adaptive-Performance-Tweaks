@@ -21,6 +21,7 @@ package de.markusbordihn.adaptiveperformancetweaks.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import org.apache.logging.log4j.Logger;
 
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
@@ -35,6 +36,8 @@ import de.markusbordihn.adaptiveperformancetweaks.Manager;
 
 @EventBusSubscriber
 public class CommandManager extends Manager {
+
+  private static final Logger log = getLogger(CommandManager.class.getSimpleName());
 
   @SubscribeEvent
   public static void handleRegisterCommandsEvent(RegisterCommandsEvent event) {

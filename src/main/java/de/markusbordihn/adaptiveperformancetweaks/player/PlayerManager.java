@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.logging.log4j.Logger;
 
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraftforge.event.TickEvent;
@@ -47,6 +48,7 @@ public class PlayerManager extends Manager {
   private static short ticks = 0;
   private static int validationTimeout = 90;
   private static boolean optimizePlayerLogin = COMMON.optimizePlayerLogin.get();
+  private static final Logger log = getLogger(PlayerManager.class.getSimpleName());
 
   @SubscribeEvent
   public static void onServerAboutToStartEvent(FMLServerAboutToStartEvent event) {

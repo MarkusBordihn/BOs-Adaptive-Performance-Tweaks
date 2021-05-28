@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.logging.log4j.Logger;
 
 import net.minecraft.entity.CreatureEntity;
 import net.minecraft.entity.Entity;
@@ -73,6 +74,7 @@ public class SpawnManager extends Manager {
   private static String lastBlockedSpawnEntityByViewArea = "";
   private static String lastBlockedSpawnEntityByWorldLimit = "";
   private static double difficultyFactor = 1;
+  private static final Logger log = getLogger(SpawnManager.class.getSimpleName());
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {

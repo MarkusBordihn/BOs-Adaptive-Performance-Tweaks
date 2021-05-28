@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import org.apache.logging.log4j.Logger;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
@@ -55,6 +56,7 @@ public class ItemEntityManager extends Manager {
   private static boolean needsOptimization = false;
   private static boolean optimizeItems = COMMON.optimizeItems.get();
   private static int itemClusterRange = COMMON.itemsClusterRange.get();
+  private static final Logger log = getLogger(ItemEntityManager.class.getSimpleName());
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {

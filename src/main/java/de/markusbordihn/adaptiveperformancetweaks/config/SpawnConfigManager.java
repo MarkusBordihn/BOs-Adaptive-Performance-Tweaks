@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.apache.logging.log4j.Logger;
 
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
@@ -42,6 +43,7 @@ public class SpawnConfigManager extends Manager {
   private static Map<String, Integer> spawnConfigPerWorld = new HashMap<>();
   private static Map<String, Integer> spawnConfigSpecial = new HashMap<>();
   private static Set<String> spawnConfigEntity = new HashSet<>();
+  private static final Logger log = getLogger(SpawnConfigManager.class.getSimpleName());
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {

@@ -19,6 +19,8 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.gamerules;
 
+import org.apache.logging.log4j.Logger;
+
 import net.minecraft.world.GameRules;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -42,6 +44,7 @@ public class GameRuleManager extends Manager {
   private static int maxEntityCramming = COMMON.maxEntityCramming.get();
   private static int minEntityCramming = COMMON.maxEntityCramming.get();
   private static int randomTickSpeed = COMMON.randomTickSpeed.get();
+  private static final Logger log = getLogger(GameRuleManager.class.getSimpleName());
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {

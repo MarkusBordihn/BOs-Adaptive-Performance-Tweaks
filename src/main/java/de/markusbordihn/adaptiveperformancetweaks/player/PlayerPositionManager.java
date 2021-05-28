@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.logging.log4j.Logger;
 
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraftforge.event.TickEvent;
@@ -39,6 +40,7 @@ public class PlayerPositionManager extends Manager {
 
   private static Map<String, PlayerPosition> playerPositionMap = new ConcurrentHashMap<>();
   private static int ticks = 0;
+  private static final Logger log = getLogger(PlayerPositionManager.class.getSimpleName());
 
   @SubscribeEvent
   public static void onServerAboutToStartEvent(FMLServerAboutToStartEvent event) {

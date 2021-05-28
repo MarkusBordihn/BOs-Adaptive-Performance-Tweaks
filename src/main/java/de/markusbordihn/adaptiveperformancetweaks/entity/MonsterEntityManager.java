@@ -23,6 +23,8 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.logging.log4j.Logger;
+
 import net.minecraft.entity.monster.CreeperEntity;
 import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.world.World;
@@ -43,6 +45,7 @@ public class MonsterEntityManager extends Manager {
   private static boolean modDungeonsmodOptimizeWhirlwind =
       COMMON.modDungeonsmodOptimizeWhirlwind.get();
   private static boolean runCleanup = false;
+  private static final Logger log = getLogger(MonsterEntityManager.class.getSimpleName());
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {

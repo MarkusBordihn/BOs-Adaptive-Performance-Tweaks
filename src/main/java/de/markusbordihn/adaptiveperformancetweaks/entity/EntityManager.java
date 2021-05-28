@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.logging.log4j.Logger;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.LightningBoltEntity;
@@ -33,6 +34,7 @@ import net.minecraft.entity.item.FallingBlockEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -54,6 +56,7 @@ public class EntityManager extends Manager {
       new ConcurrentHashMap<>();
   private static Set<String> allowList = new HashSet<>(COMMON.spawnAllowList.get());
   private static Set<String> denyList = new HashSet<>(COMMON.spawnDenyList.get());
+  private static final Logger log = getLogger(EntityManager.class.getSimpleName());
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
@@ -74,7 +77,8 @@ public class EntityManager extends Manager {
     // Ignore entities which are handled by other instances or not relevant.
     Entity entity = event.getEntity();
     if (entity instanceof ExperienceOrbEntity || entity instanceof ItemEntity
-        || entity instanceof LightningBoltEntity || entity instanceof FallingBlockEntity) {
+        || entity instanceof LightningBoltEntity || entity instanceof FallingBlockEntity
+        || entity instanceof ProjectileEntity) {
       return;
     } else if (entity instanceof PlayerEntity) {
       log.debug("Player {} joined world.", entity);
@@ -87,6 +91,9 @@ public class EntityManager extends Manager {
     if (entityName == null) {
       if (entity.isMultipartEntity() || entity.getType().toString().contains("body_part")) {
         log.debug("Ignore multipart entity {} in {}.", entity, worldName);
+      } else if (entity.hasCustomName()) {
+        log.debug("Unknown entity name for entity {} ({}) with custom name {} in {}.", entity,
+            entity.getType(), entity.getCustomName().getString(), worldName);
       } else {
         log.warn("Unknown entity name for entity {} ({}) in {}. Please report this issue under {}!",
             entity, entity.getType(), worldName, Constants.ISSUE_REPORT);
@@ -95,24 +102,24 @@ public class EntityManager extends Manager {
     }
 
     if (denyList.contains(entityName)) {
-      log.debug("Removing denied entity {}", entityName);
+      log.debug("Removing denied entity {} in {}", entityName, worldName);
       entity.remove();
       event.setCanceled(true);
       return;
     }
 
     if (allowList.contains(entityName)) {
-      log.debug("Ignore allowed entity {}", entityName);
+      log.debug("Ignore allowed entity {} in {}", entityName, worldName);
+      return;
     } else if (entity.hasCustomName()) {
-      log.debug("Ignore custom entity {} with name {}", entityName,
-          entity.getCustomName().getString());
+      log.debug("Ignore custom entity {} with name {} in {}", entityName,
+          entity.getCustomName().getString(), worldName);
+      return;
     } else if (entity instanceof MonsterEntity) {
       MonsterEntityManager.handleMonsterEntityJoinWorldEvent(event);
     }
 
     addEntity(entity, world);
-
-    log.debug("Entity {} ({}) joined {}.", entityName, entity, worldName);
   }
 
   @SubscribeEvent
@@ -126,7 +133,8 @@ public class EntityManager extends Manager {
     // Ignore entities which are handled by other instances or not relevant.
     Entity entity = event.getEntity();
     if (entity instanceof ExperienceOrbEntity || entity instanceof ItemEntity
-        || entity instanceof LightningBoltEntity || entity instanceof FallingBlockEntity) {
+        || entity instanceof LightningBoltEntity || entity instanceof FallingBlockEntity
+        || entity instanceof ProjectileEntity) {
       return;
     } else if (entity instanceof PlayerEntity) {
       log.debug("Player {} leaved world.", entity);
@@ -135,21 +143,19 @@ public class EntityManager extends Manager {
 
     // Skip other checks if unknown entity name
     String entityName = entity.getEncodeId();
+    String worldName = world.dimension().location().toString();
     if (entityName == null) {
       return;
     }
 
     if (entity.hasCustomName()) {
-      log.debug("Ignore custom entity {} with name {}", entityName,
-          entity.getCustomName().getString());
+      log.debug("Ignore custom entity {} with name {} in {}", entityName,
+          entity.getCustomName().getString(), worldName);
     } else if (entity instanceof MonsterEntity) {
       MonsterEntityManager.handleMonsterEntityLeaveWorldEvent(event);
     }
 
     removeEntity(entity, world);
-
-    String worldName = world.dimension().location().toString();
-    log.debug("Entity {} ({}) leaved {}.", entityName, entity, worldName);
   }
 
   public static void addEntity(Entity entity, World world) {
@@ -166,6 +172,8 @@ public class EntityManager extends Manager {
     entityMapPerWorld.computeIfAbsent(worldName, k -> new HashSet<>());
     Set<Entity> entitiesPerWorld = entityMapPerWorld.get(worldName);
     entitiesPerWorld.add(entity);
+
+    log.debug("Entity {} ({}) joined {}.", entityName, entity, worldName);
   }
 
   public static void removeEntity(Entity entity, World world) {
@@ -183,6 +191,8 @@ public class EntityManager extends Manager {
     if (entitiesPerWorld != null) {
       entitiesPerWorld.remove(entity);
     }
+
+    log.debug("Entity {} ({}) leaved {}.", entityName, entity, worldName);
   }
 
   public static Map<String, Set<Entity>> getEntities() {

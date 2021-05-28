@@ -21,6 +21,7 @@ package de.markusbordihn.adaptiveperformancetweaks.debug;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -33,6 +34,8 @@ import de.markusbordihn.adaptiveperformancetweaks.config.CommonConfig;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public class DebugManager extends Manager {
+
+  private static final Logger log = getLogger(DebugManager.class.getSimpleName());
 
   @SubscribeEvent
   public static void handleModConfigLoadEvent(ModConfig.Loading event) {

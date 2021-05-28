@@ -22,6 +22,7 @@ package de.markusbordihn.adaptiveperformancetweaks.chunk;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import org.apache.logging.log4j.Logger;
 
 import net.minecraft.tileentity.MobSpawnerTileEntity;
 import net.minecraft.tileentity.TileEntity;
@@ -40,6 +41,7 @@ public class ChunkManager extends Manager {
 
   private static Set<Chunk> chunkList = new LinkedHashSet<>();
   public static Integer maxNumberOfChunks = 1000;
+  private static final Logger log = getLogger(ChunkManager.class.getSimpleName());
 
   @SubscribeEvent
   public static void onServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
