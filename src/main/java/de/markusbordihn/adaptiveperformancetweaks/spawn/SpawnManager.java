@@ -43,6 +43,7 @@ import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
@@ -59,6 +60,8 @@ import de.markusbordihn.adaptiveperformancetweaks.server.ServerWorldLoadEvent;
 @EventBusSubscriber
 public class SpawnManager extends Manager {
 
+  private static Boolean isUntamedWildModLoaded =
+      ModList.get().isLoaded(Constants.UNTAMEDWILDS_MOD);
   private static Map<String, Boolean> serverWorldLoadMap = new HashMap<>();
   private static Map<String, Double> serverWorldLoadFactorMap = new HashMap<>();
   private static Map<String, Integer> spawnConfigPerPlayer =
@@ -74,6 +77,7 @@ public class SpawnManager extends Manager {
   private static String lastBlockedSpawnEntityByViewArea = "";
   private static String lastBlockedSpawnEntityByWorldLimit = "";
   private static double difficultyFactor = 1;
+
   private static final Logger log = getLogger(SpawnManager.class.getSimpleName());
 
   @SubscribeEvent
@@ -190,7 +194,7 @@ public class SpawnManager extends Manager {
         PlayerPositionManager.getPlayerPositionsInsideViewArea(worldName, (int) event.getX(),
             (int) event.getY(), (int) event.getZ());
 
-    // Limit spawns to optimized players view area.
+    // Limit spawns to optimized players view area for supported mods.
     Integer numOfPlayersInsideViewArea = playersPositionsInsideViewArea.size();
     if (numOfPlayersInsideViewArea == 0) {
       log.debug("[View Area Visibility] Blocked spawn event for {} in {}.", entity, worldName);
@@ -267,12 +271,19 @@ public class SpawnManager extends Manager {
       return;
     }
 
+    // Check if we should perform an expensive view area check, not all mods supporting a limited
+    // view area and so we need to exclude some specific mods.
+    boolean runViewAreaCheck = true;
+    if (Boolean.TRUE.equals(isUntamedWildModLoaded) && entityName.startsWith("untamedwilds:")) {
+      runViewAreaCheck = false;
+    }
+
     // Expensive calculation to Limit spawn based on real entities within player
     // position.
     int numberOfEntitiesInsideViewArea = EntityManager.getNumberOfEntitiesInPlayerPositions(
         worldName, entityName, playersPositionsInsideViewArea);
-    if (numberOfEntitiesInsideViewArea >= spawnLimitPerPlayer * numOfPlayersInsideViewArea
-        * spawnFactor) {
+    if (runViewAreaCheck && numberOfEntitiesInsideViewArea >= spawnLimitPerPlayer
+        * numOfPlayersInsideViewArea * spawnFactor) {
       if (!lastBlockedSpawnEntityByViewArea.equals(entityName)) {
         lastBlockedSpawnEntityByViewArea = entityName;
         log.debug("[View Area Limit] Blocked spawn event for {} ({} >= {} * {}) in {}", entityName,

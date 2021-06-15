@@ -20,7 +20,6 @@
 package de.markusbordihn.adaptiveperformancetweaks.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.tree.LiteralCommandNode;
 import org.apache.logging.log4j.Logger;
 
 import net.minecraft.command.CommandSource;
@@ -43,23 +42,21 @@ public class CommandManager extends Manager {
   public static void handleRegisterCommandsEvent(RegisterCommandsEvent event) {
     log.info("Registering /aptweaks commands ...");
     CommandDispatcher<CommandSource> commandDispatcher = event.getDispatcher();
-    LiteralCommandNode<CommandSource> commands =
-        commandDispatcher.register(Commands.literal(Constants.MOD_COMMAND)
-        // @formatter:off
-            .then(CommandDebug.register())
-            .then(CommandEntities.register())
-            .then(CommandItems.register())
-            .then(CommandKill.register())
-            .then(CommandMonster.register())
-            .then(CommandPlayerPositions.register())
-            .then(CommandSpawnRules.register())
-            .then(CommandSpawner.register())
-            .then(CommandSpecialSpawnRules.register())
-            .then(CommandVersion.register())
-            .then(CommandWorlds.register())
-        // @formatter:on
-        );
-    commandDispatcher.register(Commands.literal("ctrl").redirect(commands));
+    commandDispatcher.register(Commands.literal(Constants.MOD_COMMAND)
+      // @formatter:off
+        .then(CommandDebug.register())
+        .then(CommandEntities.register())
+        .then(CommandItems.register())
+        .then(CommandKill.register())
+        .then(CommandMonster.register())
+        .then(CommandPlayerPositions.register())
+        .then(CommandSpawnRules.register())
+        .then(CommandSpawner.register())
+        .then(CommandSpecialSpawnRules.register())
+        .then(CommandVersion.register())
+        .then(CommandWorlds.register())
+      // @formatter:on
+    );
   }
 
   public static void executeServerCommand(String command) {

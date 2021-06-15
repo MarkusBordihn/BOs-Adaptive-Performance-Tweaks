@@ -207,6 +207,14 @@ public final class CommonConfig {
     public final ForgeConfigSpec.IntValue modTwilightForestMaxBossesPerPlayer;
     public final ForgeConfigSpec.IntValue modTwilightForestMaxBossesPerWorld;
 
+    public final ForgeConfigSpec.BooleanValue modUntamedWildsEnabled;
+    public final ForgeConfigSpec.IntValue modUntamedWildsMaxPassiveMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue modUntamedWildsMaxPassiveMobsPerWorld;
+    public final ForgeConfigSpec.IntValue modUntamedWildsMaxNeutralMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue modUntamedWildsMaxNeutralMobsPerWorld;
+    public final ForgeConfigSpec.IntValue modUntamedWildsMaxHostileMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue modUntamedWildsMaxHostileMobsPerWorld;
+
     public final ForgeConfigSpec.BooleanValue modWhisperwoodsEnabled;
     public final ForgeConfigSpec.IntValue modWhisperwoodsMaxPassiveMobsPerPlayer;
     public final ForgeConfigSpec.IntValue modWhisperwoodsMaxPassiveMobsPerWorld;
@@ -568,6 +576,22 @@ public final class CommonConfig {
           builder.defineInRange("modTwilightForestMaxBossesPerPlayer", 2, 1, PER_PLAYER_MAX);
       modTwilightForestMaxBossesPerWorld =
           builder.defineInRange("modTwilightForestMaxBossesPerWorld", 8, 1, PER_WORLD_MAX);
+      builder.pop();
+
+      builder.push("Untamed Wilds");
+      modUntamedWildsEnabled = builder.define("modUntamedWildsEnabled", false);
+      modUntamedWildsMaxPassiveMobsPerPlayer =
+          builder.defineInRange("modUntamedWildsMaxPassiveMobsPerPlayer", 4, 1, PER_PLAYER_MAX);
+      modUntamedWildsMaxPassiveMobsPerWorld =
+          builder.defineInRange("modUntamedWildsMaxPassiveMobsPerWorld", 16, 1, PER_WORLD_MAX);
+      modUntamedWildsMaxNeutralMobsPerPlayer =
+          builder.defineInRange("modUntamedWildsMaxNeutralMobsPerPlayer", 4, 1, PER_PLAYER_MAX);
+      modUntamedWildsMaxNeutralMobsPerWorld =
+          builder.defineInRange("modUntamedWildsMaxNeutralMobsPerWorld", 16, 1, PER_WORLD_MAX);
+      modUntamedWildsMaxHostileMobsPerPlayer =
+          builder.defineInRange("modUntamedWildsMaxHostileMobsPerPlayer", 4, 1, PER_PLAYER_MAX);
+      modUntamedWildsMaxHostileMobsPerWorld =
+          builder.defineInRange("modUntamedWildsMaxHostileMobsPerWorld", 16, 1, PER_WORLD_MAX);
       builder.pop();
 
       builder.push("Whisperwoods");

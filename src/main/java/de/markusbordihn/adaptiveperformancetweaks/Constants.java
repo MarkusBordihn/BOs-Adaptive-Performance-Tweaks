@@ -40,8 +40,6 @@ public final class Constants {
   public static final String ARTIFACTS_NAME = "Artifacts";
   public static final String CLUMPS_MOD = "clumps";
   public static final String CLUMPS_NAME = "Clumps";
-  public static final String WHISPERWOODS_MOD = "whisperwoods";
-  public static final String WHISPERWOODS_NAME = "Whisperwoods";
   public static final String DUNGEONSMOD_MOD = "dungeonsmod";
   public static final String DUNGEONSMOD_NAME = "Dungeons Mod";
   public static final String DYNVIEW_MOD = "dynview";
@@ -67,6 +65,8 @@ public final class Constants {
   public static final String QUARK_NAME = "Quark";
   public static final String RATS_MOD = "rats";
   public static final String RATS_NAME = "Rats";
+  public static final String SODIUM_MOD = "sodium";
+  public static final String SODIUM_NAME = "Sodium";
   public static final String SAVAGEANDRAVAGE_MOD = "savageandravage";
   public static final String SAVAGEANDRAVAGE_NAME = "Savage and Ravage";
   public static final String STATUES_MOD = "statues";
@@ -79,4 +79,8 @@ public final class Constants {
   public static final String THEABYSS_NAME = "The Abyss";
   public static final String TWILIGHTFOREST_MOD = "twilightforest";
   public static final String TWILIGHTFOREST_NAME = "The Twilight Forest";
+  public static final String UNTAMEDWILDS_MOD = "untamedwilds";
+  public static final String UNTAMEDWILDS_NAME = "Untamed Wilds";
+  public static final String WHISPERWOODS_MOD = "whisperwoods";
+  public static final String WHISPERWOODS_NAME = "Whisperwoods";
 }

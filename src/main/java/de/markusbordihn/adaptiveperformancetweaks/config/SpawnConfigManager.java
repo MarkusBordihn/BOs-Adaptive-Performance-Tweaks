@@ -67,6 +67,10 @@ public class SpawnConfigManager extends Manager {
       log.warn(getCoreModWarning(Constants.LAZYDFU_NAME));
     }
 
+    if (ModList.get().isLoaded(Constants.SODIUM_MOD)) {
+      log.warn(getCoreModWarning(Constants.SODIUM_NAME));
+    }
+
     if (ModList.get().isLoaded(Constants.DYNVIEW_MOD)) {
       log.error(
           "Dynamic View optimizing the view distance in a similar way like this mod. Don't use both optimizations together!");
@@ -122,6 +126,7 @@ public class SpawnConfigManager extends Manager {
     SupplementariesConfig.addSpawnRates();
     TheAbyssConfig.addSpawnRates();
     TinkersConstructConfig.addSpawnRates();
+    UntamedWildsConfig.addSpawnRates();
     Whisperwoods.addSpawnRates();
 
     log.info("Added {} player spawn rules, {} world spawn rules and {} special spawn rules.",

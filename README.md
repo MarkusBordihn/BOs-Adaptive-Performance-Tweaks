@@ -81,15 +81,16 @@ This is a list of the currently supported mods within the config file for indivi
 - ✅ [Dungeons Mod][dungeons_mod]
 - ✅ [Ice and Fire: Dragons][iceandfire]
 - ✅ [Mekanism Additions][mekanismadditions]
-- ✅ [Quark][quark]
 - ✅ [Mowzie's Mobs][mowziesmobs]
 - ✅ [Mutant Beasts][mutantbeasts]
+- ✅ [Quark][quark]
 - ✅ [Savage & Ravage][savageandravage]
 - ✅ [Statues][statues]
 - ✅ [Supplementaries][supplementaries]
 - ✅ [The Abyss: Chapter II][theabyss]
-- ✅ [Tinkers' Construct][tinkersconstruct]
 - ✅ [The Twilight Forest][twilightforest]
+- ✅ [Tinkers' Construct][tinkersconstruct]
+- ✅ [Untamed Wilds][untamedwilds]
 - ✅ [Whisperwoods][whisperwoods]
 
 ### ⛔ Unsupported Mods
@@ -252,5 +253,6 @@ But I still recommend this mod to make it easier to find lagging entities or to 
 [theabyss]: https://www.curseforge.com/minecraft/mc-mods/the-abyss-chapter-ii
 [tinkersconstruct]: https://www.curseforge.com/minecraft/mc-mods/tinkers-construct
 [twilightforest]: https://www.curseforge.com/minecraft/mc-mods/the-twilight-forest
+[untamedwilds]: https://www.curseforge.com/minecraft/mc-mods/untamedwilds
 [whisperwoods]: https://www.curseforge.com/minecraft/mc-mods/whisperwoods
 [logo]: logo.png

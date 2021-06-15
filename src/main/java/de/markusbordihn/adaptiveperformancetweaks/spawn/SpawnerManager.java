@@ -50,6 +50,7 @@ public class SpawnerManager extends Manager {
 
   private static Map<String, Double> serverWorldLoadFactorMap = new HashMap<>();
   private static Set<MobSpawnerTileEntity> spawnerList = new HashSet<>();
+  private static Set<TileEntity> unknownSpawnerList = new HashSet<>();
   private static boolean spawnerEnabled = CommonConfig.COMMON.spawnerEnabled.get();
   private static int spawnerMaxEntityPerChunk = CommonConfig.COMMON.spawnerMaxEntityPerChunk.get();
   private static int spawnerMaxEntityPerWorld = CommonConfig.COMMON.spawnerMaxEntityPerWorld.get();
@@ -84,7 +85,7 @@ public class SpawnerManager extends Manager {
     }
     TileEntity tileEntity = event.getWorld().getBlockEntity(event.getPos());
     if (tileEntity != null) {
-      addSpawner((MobSpawnerTileEntity) tileEntity);
+      addSpawner(tileEntity);
     }
   }
 
@@ -96,7 +97,7 @@ public class SpawnerManager extends Manager {
     }
     TileEntity tileEntity = event.getWorld().getBlockEntity(event.getPos());
     if (tileEntity != null) {
-      removeSpawner((MobSpawnerTileEntity) tileEntity);
+      removeSpawner(tileEntity);
     }
   }
 
@@ -110,7 +111,7 @@ public class SpawnerManager extends Manager {
     // Get spawner location and added to the spawner list
     TileEntity tileEntity = event.getWorld().getBlockEntity(spawner.getPos());
     if (tileEntity != null) {
-      addSpawner((MobSpawnerTileEntity) tileEntity);
+      addSpawner(tileEntity);
     }
 
     // Skip the following if spawner optimization is not enabled
@@ -149,9 +150,21 @@ public class SpawnerManager extends Manager {
     event.setResult(Event.Result.DEFAULT);
   }
 
+  public static void addSpawner(TileEntity tileEntity) {
+    if (tileEntity instanceof MobSpawnerTileEntity) {
+      addSpawner((MobSpawnerTileEntity) tileEntity);
+    } else if (!unknownSpawnerList.contains(tileEntity)) {
+      String worldName = tileEntity.getLevel().dimension().location().toString();
+      log.debug(
+          "[Unknown Custom Spawner] Found unsupported spawner {} at {} in {} which is not from type net.minecraft.tileentity.MobSpawnerTileEntity!",
+          tileEntity, tileEntity.getBlockPos(), worldName);
+      unknownSpawnerList.add(tileEntity);
+    }
+  }
+
   public static void addSpawner(AbstractSpawner spawner) {
     TileEntity tileEntity = spawner.getLevel().getBlockEntity(spawner.getPos());
-    addSpawner((MobSpawnerTileEntity) tileEntity);
+    addSpawner(tileEntity);
   }
 
   public static void addSpawner(MobSpawnerTileEntity mobSpawnerTileEntity) {
@@ -166,9 +179,15 @@ public class SpawnerManager extends Manager {
     spawnerList.add(mobSpawnerTileEntity);
   }
 
+  public static void removeSpawner(TileEntity tileEntity) {
+    if (tileEntity instanceof MobSpawnerTileEntity) {
+      removeSpawner((MobSpawnerTileEntity) tileEntity);
+    }
+  }
+
   public static void removeSpawner(AbstractSpawner spawner) {
     TileEntity tileEntity = spawner.getLevel().getBlockEntity(spawner.getPos());
-    removeSpawner((MobSpawnerTileEntity) tileEntity);
+    removeSpawner(tileEntity);
   }
 
   public static void removeSpawner(MobSpawnerTileEntity mobSpawnerTileEntity) {
