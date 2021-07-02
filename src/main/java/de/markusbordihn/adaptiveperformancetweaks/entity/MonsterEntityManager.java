@@ -45,7 +45,9 @@ public class MonsterEntityManager extends Manager {
   private static boolean modDungeonsmodOptimizeWhirlwind =
       COMMON.modDungeonsmodOptimizeWhirlwind.get();
   private static boolean runCleanup = false;
-  private static final Logger log = getLogger(MonsterEntityManager.class.getSimpleName());
+
+  public static final String LOG_NAME = MonsterEntityManager.class.getSimpleName();
+  private static final Logger log = getLogger(LOG_NAME);
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {

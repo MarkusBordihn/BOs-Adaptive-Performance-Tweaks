@@ -26,13 +26,8 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
-import net.minecraft.entity.CreatureEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraft.entity.monster.MonsterEntity;
-import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.passive.TameableEntity;
-import net.minecraft.entity.passive.WaterMobEntity;
 import net.minecraft.entity.projectile.DamagingProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.world.Difficulty;
@@ -78,7 +73,8 @@ public class SpawnManager extends Manager {
   private static String lastBlockedSpawnEntityByWorldLimit = "";
   private static double difficultyFactor = 1;
 
-  private static final Logger log = getLogger(SpawnManager.class.getSimpleName());
+  public static final String LOG_NAME = SpawnManager.class.getSimpleName();
+  private static final Logger log = getLogger(LOG_NAME);
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
@@ -155,38 +151,8 @@ public class SpawnManager extends Manager {
     }
 
     // Entity instance checks to ignore specific and short living entities like projectiles.
-    if (entity instanceof ProjectileEntity) {
-      log.trace("Projectile {}", entity);
+    if (entity instanceof ProjectileEntity || entity instanceof DamagingProjectileEntity) {
       return;
-    }
-
-    if (entity instanceof DamagingProjectileEntity) {
-      log.trace("Damaging Projectile {}", entity);
-      return;
-    }
-
-    if (entity instanceof MonsterEntity) {
-      log.trace("Monster {}", entity);
-    }
-
-    if (entity instanceof AnimalEntity) {
-      log.trace("Animal {}", entity);
-    }
-
-    if (entity instanceof TameableEntity) {
-      log.trace("Tameable {}", entity);
-    }
-
-    if (entity instanceof WaterMobEntity) {
-      log.trace("Water Mob {}", entity);
-    }
-
-    if (entity instanceof VillagerEntity) {
-      log.trace("Villager {}", entity);
-    }
-
-    if (entity instanceof CreatureEntity) {
-      log.trace("Creature {}", entity);
     }
 
     // Get current players positions for later calculations

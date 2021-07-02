@@ -40,7 +40,9 @@ public class PlayerPositionManager extends Manager {
 
   private static Map<String, PlayerPosition> playerPositionMap = new ConcurrentHashMap<>();
   private static int ticks = 0;
-  private static final Logger log = getLogger(PlayerPositionManager.class.getSimpleName());
+
+  public static final String LOG_NAME = PlayerPositionManager.class.getSimpleName();
+  private static final Logger log = getLogger(LOG_NAME);
 
   @SubscribeEvent
   public static void onServerAboutToStartEvent(FMLServerAboutToStartEvent event) {

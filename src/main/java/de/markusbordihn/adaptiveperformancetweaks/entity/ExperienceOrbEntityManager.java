@@ -48,7 +48,9 @@ public class ExperienceOrbEntityManager extends Manager {
       new ConcurrentHashMap<>();
   private static boolean optimizeExperienceOrbs = COMMON.optimizeExperienceOrbs.get();
   private static int experienceOrbsClusterRange = COMMON.experienceOrbsClusterRange.get();
-  private static final Logger log = getLogger(ExperienceOrbEntityManager.class.getSimpleName());
+
+  public static final String LOG_NAME = ExperienceOrbEntityManager.class.getSimpleName();
+  private static final Logger log = getLogger(LOG_NAME);
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {

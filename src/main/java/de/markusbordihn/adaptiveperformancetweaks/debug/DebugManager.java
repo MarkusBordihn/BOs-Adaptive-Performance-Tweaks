@@ -31,11 +31,20 @@ import net.minecraftforge.fml.config.ModConfig;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
 import de.markusbordihn.adaptiveperformancetweaks.config.CommonConfig;
+import de.markusbordihn.adaptiveperformancetweaks.entity.EntityManager;
+import de.markusbordihn.adaptiveperformancetweaks.entity.ExperienceOrbEntityManager;
+import de.markusbordihn.adaptiveperformancetweaks.entity.ItemEntityManager;
+import de.markusbordihn.adaptiveperformancetweaks.entity.MonsterEntityManager;
+import de.markusbordihn.adaptiveperformancetweaks.player.PlayerPositionManager;
+import de.markusbordihn.adaptiveperformancetweaks.spawn.SpawnManager;
+import de.markusbordihn.adaptiveperformancetweaks.spawn.SpawnerManager;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public class DebugManager extends Manager {
 
-  private static final Logger log = getLogger(DebugManager.class.getSimpleName());
+  private static final String LOG_NAME = DebugManager.class.getSimpleName();
+  private static final Logger log = getLogger(LOG_NAME);
+  private static Level logLevel = Level.INFO;
 
   @SubscribeEvent
   public static void handleModConfigLoadEvent(ModConfig.Loading event) {
@@ -44,28 +53,46 @@ public class DebugManager extends Manager {
 
   public static void adjustLogLevel(String logLevel) {
     log.info("Try to change log level to {}", logLevel);
+    Level newLogLevel = Level.INFO;
     switch (logLevel) {
       case "info":
-        Configurator.setAllLevels(LogManager.getLogger(Constants.LOG_NAME).getName(), Level.INFO);
         break;
       case "trace":
-        Configurator.setAllLevels(LogManager.getLogger(Constants.LOG_NAME).getName(), Level.TRACE);
+        newLogLevel = Level.TRACE;
         break;
       case "debug":
-        Configurator.setAllLevels(LogManager.getLogger(Constants.LOG_NAME).getName(), Level.DEBUG);
+        newLogLevel = Level.DEBUG;
         break;
       case "warn":
-        Configurator.setAllLevels(LogManager.getLogger(Constants.LOG_NAME).getName(), Level.WARN);
+        newLogLevel = Level.WARN;
         break;
       case "error":
-        Configurator.setAllLevels(LogManager.getLogger(Constants.LOG_NAME).getName(), Level.ERROR);
+        newLogLevel = Level.ERROR;
         break;
       case "fatal":
-        Configurator.setAllLevels(LogManager.getLogger(Constants.LOG_NAME).getName(), Level.FATAL);
+        newLogLevel = Level.FATAL;
         break;
       default:
         log.error("Got invalid log level {} from config file!", CommonConfig.COMMON.logLevel.get());
-        Configurator.setAllLevels(LogManager.getLogger(Constants.LOG_NAME).getName(), Level.INFO);
     }
+
+    Configurator.setAllLevels(LogManager.getLogger(Constants.LOG_NAME).getName(), newLogLevel);
+    Configurator.setAllLevels(LogManager.getLogger(getLoggerName(EntityManager.LOG_NAME)).getName(),
+        newLogLevel);
+    Configurator.setAllLevels(
+        LogManager.getLogger(getLoggerName(ExperienceOrbEntityManager.LOG_NAME)).getName(),
+        newLogLevel);
+    Configurator.setAllLevels(
+        LogManager.getLogger(getLoggerName(ItemEntityManager.LOG_NAME)).getName(), newLogLevel);
+    Configurator.setAllLevels(
+        LogManager.getLogger(getLoggerName(MonsterEntityManager.LOG_NAME)).getName(), newLogLevel);
+    Configurator.setAllLevels(
+        LogManager.getLogger(getLoggerName(PlayerPositionManager.LOG_NAME)).getName(), newLogLevel);
+    Configurator.setAllLevels(LogManager.getLogger(getLoggerName(SpawnManager.LOG_NAME)).getName(),
+        newLogLevel);
+    Configurator.setAllLevels(
+        LogManager.getLogger(getLoggerName(SpawnerManager.LOG_NAME)).getName(), newLogLevel);
+    log.info("Change log level from {} to {}", DebugManager.logLevel, newLogLevel);
+    DebugManager.logLevel = newLogLevel;
   }
 }

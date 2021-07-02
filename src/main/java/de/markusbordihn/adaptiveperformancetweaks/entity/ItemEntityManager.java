@@ -56,7 +56,9 @@ public class ItemEntityManager extends Manager {
   private static boolean needsOptimization = false;
   private static boolean optimizeItems = COMMON.optimizeItems.get();
   private static int itemClusterRange = COMMON.itemsClusterRange.get();
-  private static final Logger log = getLogger(ItemEntityManager.class.getSimpleName());
+
+  public static final String LOG_NAME = ItemEntityManager.class.getSimpleName();
+  private static final Logger log = getLogger(LOG_NAME);
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {

@@ -54,7 +54,9 @@ public class SpawnerManager extends Manager {
   private static boolean spawnerEnabled = CommonConfig.COMMON.spawnerEnabled.get();
   private static int spawnerMaxEntityPerChunk = CommonConfig.COMMON.spawnerMaxEntityPerChunk.get();
   private static int spawnerMaxEntityPerWorld = CommonConfig.COMMON.spawnerMaxEntityPerWorld.get();
-  private static final Logger log = getLogger(SpawnerManager.class.getSimpleName());
+
+  public static final String LOG_NAME = SpawnerManager.class.getSimpleName();
+  private static final Logger log = getLogger(LOG_NAME);
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {

@@ -56,7 +56,9 @@ public class EntityManager extends Manager {
       new ConcurrentHashMap<>();
   private static Set<String> allowList = new HashSet<>(COMMON.spawnAllowList.get());
   private static Set<String> denyList = new HashSet<>(COMMON.spawnDenyList.get());
-  private static final Logger log = getLogger(EntityManager.class.getSimpleName());
+
+  public static final String LOG_NAME = EntityManager.class.getSimpleName();
+  private static final Logger log = getLogger(LOG_NAME);
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {

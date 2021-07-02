@@ -31,7 +31,11 @@ public abstract class Manager {
   public static final CommonConfig.Config COMMON = CommonConfig.COMMON;
 
   public static Logger getLogger(String name) {
-    return LogManager.getLogger(String.format("%s:%s", Constants.LOG_NAME, name));
+    return LogManager.getLogger(getLoggerName(name));
+  }
+
+  public static String getLoggerName(String name) {
+    return String.format("%s:%s", Constants.LOG_NAME, name);
   }
 
 }
