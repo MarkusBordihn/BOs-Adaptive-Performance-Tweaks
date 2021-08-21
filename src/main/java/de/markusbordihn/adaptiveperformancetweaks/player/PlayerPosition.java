@@ -73,6 +73,10 @@ public class PlayerPosition {
     }
     return false;
   }
+  
+  public boolean isSamePlayer(ServerPlayerEntity player) {
+    return this.player == player;
+  }
 
   public void updatePosition(String worldName) {
     this.lastActionTime = player.getLastActionTime();
