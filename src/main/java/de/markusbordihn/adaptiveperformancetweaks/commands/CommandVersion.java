@@ -36,7 +36,7 @@ public class CommandVersion extends CustomCommand {
 
   @Override
   public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
-    sendFeedback(context, "Version: Release Version 1.0.0! \u2665");
+    sendFeedback(context, "Version: Release Version 1.1.2! \u2665");
     return 0;
   }
 }

@@ -29,7 +29,6 @@ public class PlayerPosition {
   private ServerPlayerEntity player;
   private String playerName = "";
   private String worldName = "";
-  private Vector3d position;
   private boolean canSeeSky = false;
   private boolean isUnderWater = false;
   private boolean viewAreaCalculated = false;
@@ -57,11 +56,18 @@ public class PlayerPosition {
   private static final int OVERGROUND_Y_MIN_VIEW = OVERGROUND_Y - 12;
   private static final int MAX_BUILD_HEIGHT = 320;
 
-  public PlayerPosition(ServerPlayerEntity player, String worldName) {
+  public PlayerPosition(ServerPlayerEntity player) {
     this.player = player;
     this.playerName = player.getName().getString();
-    this.updatePosition(worldName);
+    this.updatePosition(player.getLevel().dimension().location().toString());
     this.calculateViewArea();
+  }
+
+  public boolean update(ServerPlayerEntity player) {
+    if (!this.player.equals(player)) {
+      this.player = player;
+    }
+    return update(player.getLevel().dimension().location().toString());
   }
 
   public boolean update(String worldName) {
@@ -73,17 +79,13 @@ public class PlayerPosition {
     }
     return false;
   }
-  
-  public boolean isSamePlayer(ServerPlayerEntity player) {
-    return this.player == player;
-  }
 
   public void updatePosition(String worldName) {
     this.lastActionTime = player.getLastActionTime();
-    this.position = player.position();
-    this.posX = (int) this.position.x;
-    this.posY = (int) this.position.y;
-    this.posZ = (int) this.position.z;
+    Vector3d position = player.position();
+    this.posX = (int) position.x;
+    this.posY = (int) position.y;
+    this.posZ = (int) position.z;
     this.canSeeSky = this.player.getLevel().canSeeSky(this.player.blockPosition());
     this.isUnderWater = this.player.isUnderWater();
     if (!this.worldName.equals(worldName)) {

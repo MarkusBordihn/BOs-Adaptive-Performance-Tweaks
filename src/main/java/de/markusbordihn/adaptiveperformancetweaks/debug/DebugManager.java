@@ -35,6 +35,7 @@ import de.markusbordihn.adaptiveperformancetweaks.entity.EntityManager;
 import de.markusbordihn.adaptiveperformancetweaks.entity.ExperienceOrbEntityManager;
 import de.markusbordihn.adaptiveperformancetweaks.entity.ItemEntityManager;
 import de.markusbordihn.adaptiveperformancetweaks.entity.MonsterEntityManager;
+import de.markusbordihn.adaptiveperformancetweaks.player.PlayerManager;
 import de.markusbordihn.adaptiveperformancetweaks.player.PlayerPositionManager;
 import de.markusbordihn.adaptiveperformancetweaks.spawn.SpawnManager;
 import de.markusbordihn.adaptiveperformancetweaks.spawn.SpawnerManager;
@@ -86,6 +87,8 @@ public class DebugManager extends Manager {
         LogManager.getLogger(getLoggerName(ItemEntityManager.LOG_NAME)).getName(), newLogLevel);
     Configurator.setAllLevels(
         LogManager.getLogger(getLoggerName(MonsterEntityManager.LOG_NAME)).getName(), newLogLevel);
+    Configurator.setAllLevels(LogManager.getLogger(getLoggerName(PlayerManager.LOG_NAME)).getName(),
+        newLogLevel);
     Configurator.setAllLevels(
         LogManager.getLogger(getLoggerName(PlayerPositionManager.LOG_NAME)).getName(), newLogLevel);
     Configurator.setAllLevels(LogManager.getLogger(getLoggerName(SpawnManager.LOG_NAME)).getName(),

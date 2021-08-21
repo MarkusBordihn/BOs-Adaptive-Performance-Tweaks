@@ -36,6 +36,10 @@ A gradle plugin for publishing artifacts to CurseForge.
 
 `.\gradlew.bat removeCredentials --key curseforge_api_token`
 
+### Push to CurseForge
+
+`.\gradlew.bat curseforge`
+
 [forge_docs]: https://mcforge.readthedocs.io/en/latest/
 [gradle]: https://docs.gradle.org/
 [visual_studio_code]: https://code.visualstudio.com/

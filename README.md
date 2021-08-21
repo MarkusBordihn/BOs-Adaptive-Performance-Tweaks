@@ -205,6 +205,11 @@ I recommend not using both mods together, however if you prefer Clumps, please d
 **Dynamic view** adjusts the view distance for all worlds to the same value. The view distance feature of this mod adjusts the view distance per world instead and current load instead.
 I recommend not using both mods together, however if you prefer Dynamic view, please disable the view distances feature over the config file.
 
+### ⚠️InControl
+
+**InControl** controls the mob spawns and entity spawns, which could conflict with this spawn control of this mod.
+Don't use both optimizations together.
+
 ### ✅FPS reducer
 
 **FPS reducer** is a great client side mod and I'm not planning to implement any overlapping features, so you should definitely use it.

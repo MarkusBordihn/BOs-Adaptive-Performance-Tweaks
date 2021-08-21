@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
@@ -59,6 +60,15 @@ public class PlayerPositionManager extends Manager {
   }
 
   @SubscribeEvent
+  public static void handlePlayerLoggedOutEvent(PlayerEvent.PlayerLoggedOutEvent event) {
+    String username = event.getPlayer().getName().getString();
+    if (!username.isEmpty()) {
+      log.debug("Removing player {} from tracking.", event.getEntity());
+      playerPositionMap.remove(username);
+    }
+  }
+
+  @SubscribeEvent
   public static void handleServerTickEvent(TickEvent.ServerTickEvent event) {
     if (event.phase == TickEvent.Phase.END) {
       ticks++;
@@ -66,7 +76,9 @@ public class PlayerPositionManager extends Manager {
     }
     if (ticks == 50) {
       for (ServerPlayerEntity player : PlayerManager.getPlayers()) {
-        updatePlayerPosition(player);
+        if (player.isAlive()) {
+          updatePlayerPosition(player);
+        }
       }
       ticks = 0;
     }
@@ -98,15 +110,10 @@ public class PlayerPositionManager extends Manager {
 
   private static void updatePlayerPosition(ServerPlayerEntity player) {
     String username = PlayerManager.getUserName(player);
-    String worldName = player.getLevel().dimension().location().toString();
-    playerPositionMap.computeIfAbsent(username, k -> new PlayerPosition(player, worldName));
+    playerPositionMap.computeIfAbsent(username, k -> new PlayerPosition(player));
     PlayerPosition playerPosition = playerPositionMap.get(username);
-    if(playerPosition.isSamePlayer(player)) {
-      if (playerPosition.update(worldName)) {
-        log.debug("[Player Position] Update {} : {}", username, playerPosition);
-      }
-    } else {
-      playerPositionMap.put(username, new PlayerPosition(player, worldName));
+    if (playerPosition.update(player)) {
+      log.debug("Update position for {} with {}", username, playerPosition);
     }
   }
 }

@@ -48,7 +48,9 @@ public class PlayerManager extends Manager {
   private static short ticks = 0;
   private static int validationTimeout = 90;
   private static boolean optimizePlayerLogin = COMMON.optimizePlayerLogin.get();
-  private static final Logger log = getLogger(PlayerManager.class.getSimpleName());
+
+  public static final String LOG_NAME = PlayerPositionManager.class.getSimpleName();
+  private static final Logger log = getLogger(LOG_NAME);
 
   @SubscribeEvent
   public static void onServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
