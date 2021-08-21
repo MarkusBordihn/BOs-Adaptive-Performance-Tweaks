@@ -101,8 +101,12 @@ public class PlayerPositionManager extends Manager {
     String worldName = player.getLevel().dimension().location().toString();
     playerPositionMap.computeIfAbsent(username, k -> new PlayerPosition(player, worldName));
     PlayerPosition playerPosition = playerPositionMap.get(username);
-    if (playerPosition.update(worldName)) {
-      log.debug("[Player Position] Update {} : {}", username, playerPosition);
+    if(playerPosition.isSamePlayer(player)) {
+      if (playerPosition.update(worldName)) {
+        log.debug("[Player Position] Update {} : {}", username, playerPosition);
+      }
+    } else {
+      playerPositionMap.put(username, new PlayerPosition(player, worldName));
     }
   }
 }
