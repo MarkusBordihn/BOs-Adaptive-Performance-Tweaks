@@ -40,8 +40,6 @@ import de.markusbordihn.adaptiveperformancetweaks.Manager;
 
 @Mod.EventBusSubscriber
 public class PlayerManager extends Manager {
-  private static Map<String, ServerPlayerEntity> usernamePlayerMap = new ConcurrentHashMap<>();
-  private static Set<ServerPlayerEntity> playerList = new HashSet<>();
   private static Set<PlayerValidation> playerValidationList = new HashSet<>();
   private static boolean hasPlayers = false;
   private static int playerCount = 0;
@@ -54,8 +52,6 @@ public class PlayerManager extends Manager {
 
   @SubscribeEvent
   public static void onServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
-    usernamePlayerMap = new ConcurrentHashMap<>();
-    playerList = new HashSet<>();
     playerValidationList = new HashSet<>();
     hasPlayers = false;
     playerCount = 0;
@@ -128,7 +124,6 @@ public class PlayerManager extends Manager {
   private static void addPlayer(String username) {
     ServerPlayerEntity player =
         ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
-    usernamePlayerMap.put(username, player);
     try {
       for (PlayerValidation playerValidation : playerValidationList) {
         if (username.equals(playerValidation.getUsername())) {
@@ -151,14 +146,12 @@ public class PlayerManager extends Manager {
           "Unexpected error during adding player. Please report the following error under {} .\n{}",
           Constants.ISSUE_REPORT, error);
     }
-    playerList.add(player);
     playerCount = ServerLifecycleHooks.getCurrentServer().getPlayerCount();
     hasPlayers = true;
-    log.debug("Added {} to PlayerMap: {}", username, usernamePlayerMap);
+    log.debug("Added {}", username);
   }
 
   private static void removePlayer(String username) {
-    usernamePlayerMap.remove(username);
     try {
       for (PlayerValidation playerValidation : playerValidationList) {
         if (username.equals(playerValidation.getUsername())) {
@@ -171,26 +164,13 @@ public class PlayerManager extends Manager {
           "Unexpected error during removing player. Please report the following error under {} .\n{}",
           Constants.ISSUE_REPORT, error);
     }
-    ServerPlayerEntity player =
-        ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
-    if (playerList.contains(player)) {
-      playerList.remove(player);
-    }
     playerCount--;
     hasPlayers = playerCount > 0;
-    log.debug("Remove {} from PlayerMap: {}", username, usernamePlayerMap);
-  }
-
-  public static Set<ServerPlayerEntity> getPlayers() {
-    return playerList;
+    log.debug("Remove {} from PlayerMap: {}", username);
   }
 
   public static Set<PlayerValidation> getPlayerValidationList() {
     return playerValidationList;
-  }
-
-  public static String getUserName(ServerPlayerEntity player) {
-    return player.getName().getString();
   }
 
   public static boolean hasPlayers() {

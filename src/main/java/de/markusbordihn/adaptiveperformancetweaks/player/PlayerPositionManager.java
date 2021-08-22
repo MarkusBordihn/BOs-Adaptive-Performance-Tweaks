@@ -32,6 +32,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import de.markusbordihn.adaptiveperformancetweaks.config.CommonConfig;
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
@@ -75,8 +76,9 @@ public class PlayerPositionManager extends Manager {
       return;
     }
     if (ticks == 50) {
-      for (ServerPlayerEntity player : PlayerManager.getPlayers()) {
-        if (player.isAlive()) {
+      for (ServerPlayerEntity player : ServerLifecycleHooks.getCurrentServer().getPlayerList()
+          .getPlayers()) {
+        if (player.isAlive() && !player.hasDisconnected()) {
           updatePlayerPosition(player);
         }
       }
@@ -109,11 +111,11 @@ public class PlayerPositionManager extends Manager {
   }
 
   private static void updatePlayerPosition(ServerPlayerEntity player) {
-    String username = PlayerManager.getUserName(player);
+    String username = player.getName().getString();
     playerPositionMap.computeIfAbsent(username, k -> new PlayerPosition(player));
     PlayerPosition playerPosition = playerPositionMap.get(username);
     if (playerPosition.update(player)) {
-      log.debug("Update position for {} with {}", username, playerPosition);
+      log.debug("Update player position for {} with {}", username, playerPosition);
     }
   }
 }

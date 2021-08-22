@@ -64,9 +64,6 @@ public class PlayerPosition {
   }
 
   public boolean update(ServerPlayerEntity player) {
-    if (!this.player.equals(player)) {
-      this.player = player;
-    }
     return update(player.getLevel().dimension().location().toString());
   }
 
