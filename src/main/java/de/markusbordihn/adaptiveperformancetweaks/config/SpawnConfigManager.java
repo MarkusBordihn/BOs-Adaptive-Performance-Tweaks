@@ -125,6 +125,7 @@ public class SpawnConfigManager extends Manager {
     StatuesConfig.addSpawnRates();
     SupplementariesConfig.addSpawnRates();
     TheAbyssConfig.addSpawnRates();
+    TheFarlandersConfig.addSpawnRates();
     TinkersConstructConfig.addSpawnRates();
     UntamedWildsConfig.addSpawnRates();
     Whisperwoods.addSpawnRates();

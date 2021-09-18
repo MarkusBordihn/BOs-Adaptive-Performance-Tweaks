@@ -88,6 +88,7 @@ This is a list of the currently supported mods within the config file for indivi
 - ✅ [Statues][statues]
 - ✅ [Supplementaries][supplementaries]
 - ✅ [The Abyss: Chapter II][theabyss]
+- ✅ [The Farlanders][thefarlanders]
 - ✅ [The Twilight Forest][twilightforest]
 - ✅ [Tinkers' Construct][tinkersconstruct]
 - ✅ [Untamed Wilds][untamedwilds]
@@ -220,7 +221,7 @@ Don't use both optimizations together.
 
 ### ✅Spark
 
-**Spark** is a great performance profiling mod and is not performing any optimization on it on.
+**Spark** is a great performance profiling mod and is not performing any optimization on it own.
 But I still recommend this mod to make it easier to find lagging entities or to identify general performance issues.
 
 ## ⭐Recommended Server Mods
@@ -256,6 +257,7 @@ But I still recommend this mod to make it easier to find lagging entities or to 
 [statues]: https://www.curseforge.com/minecraft/mc-mods/statues
 [supplementaries]: https://www.curseforge.com/minecraft/mc-mods/supplementaries
 [theabyss]: https://www.curseforge.com/minecraft/mc-mods/the-abyss-chapter-ii
+[thefarlanders]: https://www.curseforge.com/minecraft/mc-mods/farlanders
 [tinkersconstruct]: https://www.curseforge.com/minecraft/mc-mods/tinkers-construct
 [twilightforest]: https://www.curseforge.com/minecraft/mc-mods/the-twilight-forest
 [untamedwilds]: https://www.curseforge.com/minecraft/mc-mods/untamedwilds

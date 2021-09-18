@@ -20,62 +20,67 @@
 package de.markusbordihn.adaptiveperformancetweaks.config.mods;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import net.minecraftforge.fml.ModList;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 
-public class _ExampleConfig extends SpawnConfigModSupport {
+public class TheFarlandersConfig extends SpawnConfigModSupport {
 
-  private static final String NAME = Constants._EXAMPLE_NAME;
-  private static final String MOD_ID = Constants._EXAMPLE_MOD;
+  private static final String NAME = Constants.THEFARLANDERS_NAME;
+  private static final String MOD_ID = Constants.THEFARLANDERS_MOD;
 
   private static Set<String> passiveMobList = new HashSet<>(Arrays.asList(
   // @formatter:off
-
+    "farlanders:farlander",
+    "farlanders:elder_farlander",
+    "farlanders:wanderer",
+    "farlanders:classic_enderman"
   // @formatter:on
   ));
 
   private static Set<String> neutralMobList = new HashSet<>(Arrays.asList(
   // @formatter:off
-
+    "farlanders:mystic_enderminion",
+    "farlanders:mystic_enderman",
+    "farlanders:enderminion"
   // @formatter:on
   ));
 
   private static Set<String> hostileMobList = new HashSet<>(Arrays.asList(
   // @formatter:off
-
+    "farlanders:ender_guardian",
+    "farlanders:fanmade_enderman",
+    "farlanders:looter",
+    "farlanders:rebel",
+    "farlanders:ender_golem"
   // @formatter:on
   ));
 
   private static Set<String> bossMobList = new HashSet<>(Arrays.asList(
   // @formatter:off
-
+    "farlanders:titan"
   // @formatter:on
   ));
 
-  private static Map<String, Integer>  specialMobList = new HashMap<>();
-
   public static void addSpawnRates() {
-    if (Boolean.FALSE.equals(COMMON.mod_ExampleEnabled.get()) || !ModList.get().isLoaded(MOD_ID)) {
+    if (Boolean.FALSE.equals(COMMON.modTheFarlandersEnabled.get())
+        || !ModList.get().isLoaded(MOD_ID)) {
       return;
     }
     addSpawnRatesForPassiveMobs(NAME, passiveMobList,
-        COMMON.mod_ExampleMaxPassiveMobsPerPlayer.get(),
-        COMMON.mod_ExampleMaxPassiveMobsPerWorld.get());
+        COMMON.modTheFarlandersMaxPassiveMobsPerPlayer.get(),
+        COMMON.modTheFarlandersMaxPassiveMobsPerWorld.get());
     addSpawnRatesForNeutralMobs(NAME, neutralMobList,
-        COMMON.mod_ExampleMaxNeutralMobsPerPlayer.get(),
-        COMMON.mod_ExampleMaxNeutralMobsPerWorld.get());
+        COMMON.modTheFarlandersMaxNeutralMobsPerPlayer.get(),
+        COMMON.modTheFarlandersMaxNeutralMobsPerWorld.get());
     addSpawnRatesForHostileMobs(NAME, hostileMobList,
-        COMMON.mod_ExampleMaxHostileMobsPerPlayer.get(),
-        COMMON.mod_ExampleMaxHostileMobsPerWorld.get());
-    addSpawnRatesForBossMobs(NAME, bossMobList,
-        COMMON.mod_ExampleMaxBossesPerPlayer.get(),
-        COMMON.mod_ExampleMaxBossesPerWorld.get());
+        COMMON.modTheFarlandersMaxHostileMobsPerPlayer.get(),
+        COMMON.modTheFarlandersMaxHostileMobsPerWorld.get());
+    addSpawnRatesForBossMobs(NAME, bossMobList, COMMON.modTheFarlandersMaxBossesPerPlayer.get(),
+        COMMON.modTheFarlandersMaxBossesPerWorld.get());
   }
 
 }

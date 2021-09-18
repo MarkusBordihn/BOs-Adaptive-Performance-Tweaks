@@ -195,6 +195,16 @@ public final class CommonConfig {
     public final ForgeConfigSpec.IntValue modTheabyssMaxHostileMobsPerPlayer;
     public final ForgeConfigSpec.IntValue modTheabyssMaxHostileMobsPerWorld;
 
+    public final ForgeConfigSpec.BooleanValue modTheFarlandersEnabled;
+    public final ForgeConfigSpec.IntValue modTheFarlandersMaxPassiveMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue modTheFarlandersMaxPassiveMobsPerWorld;
+    public final ForgeConfigSpec.IntValue modTheFarlandersMaxNeutralMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue modTheFarlandersMaxNeutralMobsPerWorld;
+    public final ForgeConfigSpec.IntValue modTheFarlandersMaxHostileMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue modTheFarlandersMaxHostileMobsPerWorld;
+    public final ForgeConfigSpec.IntValue modTheFarlandersMaxBossesPerPlayer;
+    public final ForgeConfigSpec.IntValue modTheFarlandersMaxBossesPerWorld;
+
     public final ForgeConfigSpec.BooleanValue modTinkersconstructEnabled;
     public final ForgeConfigSpec.IntValue modTinkersconstructMaxHostileMobsPerPlayer;
     public final ForgeConfigSpec.IntValue modTinkersconstructMaxHostileMobsPerWorld;
@@ -552,6 +562,26 @@ public final class CommonConfig {
           builder.defineInRange("modTheabyssMaxHostileMobsPerPlayer", 4, 1, PER_PLAYER_MAX);
       modTheabyssMaxHostileMobsPerWorld =
           builder.defineInRange("modTheabyssMaxHostileMobsPerWorld", 16, 1, PER_WORLD_MAX);
+      builder.pop();
+
+      builder.push("The Farlanders");
+      modTheFarlandersEnabled = builder.define("modTheFarlandersEnabled", true);
+      modTheFarlandersMaxPassiveMobsPerPlayer =
+          builder.defineInRange("modTheFarlandersMaxPassiveMobsPerPlayer", 4, 1, PER_PLAYER_MAX);
+      modTheFarlandersMaxPassiveMobsPerWorld =
+          builder.defineInRange("modTheFarlandersMaxPassiveMobsPerWorld", 16, 1, PER_WORLD_MAX);
+      modTheFarlandersMaxNeutralMobsPerPlayer =
+          builder.defineInRange("modTheFarlandersMaxNeutralMobsPerPlayer", 2, 1, PER_PLAYER_MAX);
+      modTheFarlandersMaxNeutralMobsPerWorld =
+          builder.defineInRange("modTheFarlandersMaxNeutralMobsPerWorld", 16, 1, PER_WORLD_MAX);
+      modTheFarlandersMaxHostileMobsPerPlayer =
+          builder.defineInRange("modTheFarlandersMaxHostileMobsPerPlayer", 2, 1, PER_PLAYER_MAX);
+      modTheFarlandersMaxHostileMobsPerWorld =
+          builder.defineInRange("modTheFarlandersMaxHostileMobsPerWorld", 16, 1, PER_WORLD_MAX);
+      modTheFarlandersMaxBossesPerPlayer =
+          builder.defineInRange("modTheFarlandersMaxBossesPerPlayer", 2, 1, PER_PLAYER_MAX);
+      modTheFarlandersMaxBossesPerWorld =
+          builder.defineInRange("modTheFarlandersMaxBossesPerWorld", 4, 1, PER_WORLD_MAX);
       builder.pop();
 
       builder.push("Tinkers Construct");

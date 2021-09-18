@@ -21,9 +21,7 @@ package de.markusbordihn.adaptiveperformancetweaks.player;
 
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import org.apache.logging.log4j.Logger;
 
 import net.minecraft.entity.player.ServerPlayerEntity;

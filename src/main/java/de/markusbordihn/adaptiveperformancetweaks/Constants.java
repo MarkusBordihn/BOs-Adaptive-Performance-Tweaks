@@ -65,10 +65,10 @@ public final class Constants {
   public static final String QUARK_NAME = "Quark";
   public static final String RATS_MOD = "rats";
   public static final String RATS_NAME = "Rats";
-  public static final String SODIUM_MOD = "sodium";
-  public static final String SODIUM_NAME = "Sodium";
   public static final String SAVAGEANDRAVAGE_MOD = "savageandravage";
   public static final String SAVAGEANDRAVAGE_NAME = "Savage and Ravage";
+  public static final String SODIUM_MOD = "sodium";
+  public static final String SODIUM_NAME = "Sodium";
   public static final String STATUES_MOD = "statues";
   public static final String STATUES_NAME = "Statues";
   public static final String SUPPLEMENTARIES_MOD = "supplementaries";
@@ -77,6 +77,8 @@ public final class Constants {
   public static final String TCONSTRUCT_NAME = "Tinkers Construct";
   public static final String THEABYSS_MOD = "theabyss";
   public static final String THEABYSS_NAME = "The Abyss";
+  public static final String THEFARLANDERS_MOD = "farlanders";
+  public static final String THEFARLANDERS_NAME = "The Farlanders";
   public static final String TWILIGHTFOREST_MOD = "twilightforest";
   public static final String TWILIGHTFOREST_NAME = "The Twilight Forest";
   public static final String UNTAMEDWILDS_MOD = "untamedwilds";
