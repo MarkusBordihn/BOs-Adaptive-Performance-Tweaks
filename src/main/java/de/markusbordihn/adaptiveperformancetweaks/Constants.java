@@ -81,6 +81,8 @@ public final class Constants {
   public static final String THEFARLANDERS_NAME = "The Farlanders";
   public static final String TWILIGHTFOREST_MOD = "twilightforest";
   public static final String TWILIGHTFOREST_NAME = "The Twilight Forest";
+  public static final String TWIST_MOD = "twist";
+  public static final String TWIST_NAME = "Twist";
   public static final String UNTAMEDWILDS_MOD = "untamedwilds";
   public static final String UNTAMEDWILDS_NAME = "Untamed Wilds";
   public static final String WHISPERWOODS_MOD = "whisperwoods";

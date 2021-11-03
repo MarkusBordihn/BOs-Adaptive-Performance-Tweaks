@@ -217,6 +217,14 @@ public final class CommonConfig {
     public final ForgeConfigSpec.IntValue modTwilightForestMaxBossesPerPlayer;
     public final ForgeConfigSpec.IntValue modTwilightForestMaxBossesPerWorld;
 
+    public final ForgeConfigSpec.BooleanValue modTwistEnabled;
+    public final ForgeConfigSpec.IntValue modTwistMaxPassiveMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue modTwistMaxPassiveMobsPerWorld;
+    public final ForgeConfigSpec.IntValue modTwistMaxNeutralMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue modTwistMaxNeutralMobsPerWorld;
+    public final ForgeConfigSpec.IntValue modTwistMaxHostileMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue modTwistMaxHostileMobsPerWorld;
+
     public final ForgeConfigSpec.BooleanValue modUntamedWildsEnabled;
     public final ForgeConfigSpec.IntValue modUntamedWildsMaxPassiveMobsPerPlayer;
     public final ForgeConfigSpec.IntValue modUntamedWildsMaxPassiveMobsPerWorld;
@@ -606,6 +614,22 @@ public final class CommonConfig {
           builder.defineInRange("modTwilightForestMaxBossesPerPlayer", 2, 1, PER_PLAYER_MAX);
       modTwilightForestMaxBossesPerWorld =
           builder.defineInRange("modTwilightForestMaxBossesPerWorld", 8, 1, PER_WORLD_MAX);
+      builder.pop();
+
+      builder.push("Twist");
+      modTwistEnabled = builder.define("modTwistEnabled", true);
+      modTwistMaxPassiveMobsPerPlayer =
+          builder.defineInRange("modTwistMaxPassiveMobsPerPlayer", 2, 1, PER_PLAYER_MAX);
+      modTwistMaxPassiveMobsPerWorld =
+          builder.defineInRange("modTwistMaxPassiveMobsPerWorld", 16, 1, PER_WORLD_MAX);
+      modTwistMaxNeutralMobsPerPlayer =
+          builder.defineInRange("modTwistMaxNeutralMobsPerPlayer", 2, 1, PER_PLAYER_MAX);
+      modTwistMaxNeutralMobsPerWorld =
+          builder.defineInRange("modTwistMaxNeutralMobsPerWorld", 16, 1, PER_WORLD_MAX);
+      modTwistMaxHostileMobsPerPlayer =
+          builder.defineInRange("modTwistMaxHostileMobsPerPlayer", 2, 1, PER_PLAYER_MAX);
+      modTwistMaxHostileMobsPerWorld =
+          builder.defineInRange("modTwistMaxHostileMobsPerWorld", 16, 1, PER_WORLD_MAX);
       builder.pop();
 
       builder.push("Untamed Wilds");
