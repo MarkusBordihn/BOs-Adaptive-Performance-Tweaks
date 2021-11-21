@@ -61,6 +61,7 @@ public final class CommonConfig {
   public static class Config {
     public final ForgeConfigSpec.BooleanValue optimizePlayerLogin;
     public final ForgeConfigSpec.BooleanValue optimizeViewDistance;
+    public final ForgeConfigSpec.BooleanValue optimizeGeneralMobs;
     public final ForgeConfigSpec.BooleanValue optimizePassiveMobs;
     public final ForgeConfigSpec.BooleanValue optimizeNeutralMobs;
     public final ForgeConfigSpec.BooleanValue optimizeHostileMobs;
@@ -253,6 +254,9 @@ public final class CommonConfig {
       optimizeViewDistance =
           builder.comment("Enable/Disable view distance optimization depending on the server load.")
               .define("optimizeViewDistance", true);
+      optimizeGeneralMobs = builder
+              .comment("Enable/Disable general mobs optimization depending on the server load.")
+              .define("optimizeGeneralMobs", true);
       optimizePassiveMobs =
           builder.comment("Enable/Disable passive mobs optimization depending on the server load.")
               .define("optimizePassiveMobs", true);
@@ -521,7 +525,7 @@ public final class CommonConfig {
       builder.pop();
 
       builder.push("Rats");
-      modRatsEnabled = builder.define(" modRatsEnabled", true);
+      modRatsEnabled = builder.define("modRatsEnabled", true);
       modRatsMaxPassiveMobsPerPlayer =
           builder.defineInRange("modRatsMaxPassiveMobsPerPlayer", 4, 1, PER_PLAYER_MAX);
       modRatsMaxPassiveMobsPerWorld =

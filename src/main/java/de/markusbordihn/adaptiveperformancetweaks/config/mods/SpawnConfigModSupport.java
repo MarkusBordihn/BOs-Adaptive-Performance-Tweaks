@@ -36,6 +36,17 @@ public abstract class SpawnConfigModSupport {
 
   public static final CommonConfig.Config COMMON = CommonConfig.COMMON;
 
+  public static void addSpawnRatesForGeneralMobs(String name, Set<String> generalMobList,
+      int maxGeneralMobsPerPlayer, int maxGeneralMobsPerWorld) {
+    if (Boolean.FALSE.equals(COMMON.optimizeGeneralMobs.get()) || generalMobList.isEmpty()) {
+      return;
+    }
+    log.info(
+        "\u2713 Enable general mobs spawn rate control for {} and {} mobs with maxPerPlayer:{} and maxPerWorld:{} ...",
+        name, generalMobList.size(), maxGeneralMobsPerPlayer, maxGeneralMobsPerWorld);
+    addSpawnRatesForGeneralMobs(generalMobList, maxGeneralMobsPerPlayer, maxGeneralMobsPerWorld);
+  }
+
   public static void addSpawnRatesForPassiveMobs(String name, Set<String> passiveMobList,
       int maxPassiveMobsPerPlayer, int maxPassiveMobsPerWorld) {
     if (Boolean.FALSE.equals(COMMON.optimizePassiveMobs.get()) || passiveMobList.isEmpty()) {
@@ -87,6 +98,15 @@ public abstract class SpawnConfigModSupport {
     log.info("\u2713 Enable special mobs spawn rate control for {} and {} mobs with: {}", name,
         specialMobList.size(), specialMobList);
     addSpecialSpawnRates(specialMobList);
+  }
+
+  public static void addSpawnRatesForGeneralMobs(Set<String> generalMobList,
+      int maxGeneralMobsPerPlayer, int maxGeneralMobsPerWorld) {
+    for (String entity : generalMobList) {
+      SpawnConfigManager.addSpawnConfigPerPlayer(entity, maxGeneralMobsPerPlayer);
+      SpawnConfigManager.addSpawnConfigPerWorld(entity, maxGeneralMobsPerWorld);
+      SpawnConfigManager.addSpawnConfigEntity(entity);
+    }
   }
 
   public static void addSpawnRatesForPassiveMobs(Set<String> passiveMobList,

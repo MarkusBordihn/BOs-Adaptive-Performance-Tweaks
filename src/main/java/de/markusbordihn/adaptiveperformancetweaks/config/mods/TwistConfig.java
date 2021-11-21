@@ -20,9 +20,7 @@
 package de.markusbordihn.adaptiveperformancetweaks.config.mods;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import net.minecraftforge.fml.ModList;
@@ -63,8 +61,6 @@ public class TwistConfig extends SpawnConfigModSupport {
   "twist:charger"
   // @formatter:on
   ));
-
-  private static Map<String, Integer>  specialMobList = new HashMap<>();
 
   public static void addSpawnRates() {
     if (Boolean.FALSE.equals(COMMON.modTwistEnabled.get()) || !ModList.get().isLoaded(MOD_ID)) {

@@ -96,9 +96,14 @@ This is a list of the currently supported mods within the config file for indivi
 
 ### ⛔ Unsupported Mods
 
-The follow mods are currently unsupported because of using outdated and/or unexpected ways of spawning mobs:
+The following mods are currently unsupported because of using outdated and/or unexpected ways (mixin) of spawning mobs:
 
+- ❌ [BetterEnd (Forge)][betterend-forge-port]
+- ❌ [Environmental][environmental]
+- ❌ [Project: Vibrant Journeys][project-vibrant-journeys]
 - ❌ [Rats][rats]
+- ❌ [The Endergetic Expansion][endergetic]
+- ❌ [Upgrade Aquatic][upgrade-aquatic]
 
 ## 🎱Commands
 
@@ -241,7 +246,10 @@ But I still recommend this mod to make it easier to find lagging entities or to 
 [alexmobs]: https://www.curseforge.com/minecraft/mc-mods/alexs-mobs
 [aquaculture]: https://www.curseforge.com/minecraft/mc-mods/aquaculture
 [artifacts]: https://www.curseforge.com/minecraft/mc-mods/artifacts
+[betterend-forge-port]: https://www.curseforge.com/minecraft/mc-mods/betterend-forge-port
 [dungeons_mod]: https://www.curseforge.com/minecraft/mc-mods/dungeons-mod
+[endergetic]: https://www.curseforge.com/minecraft/mc-mods/endergetic
+[environmental]: https://www.curseforge.com/minecraft/mc-mods/environmental
 [ferrite_core]: https://www.curseforge.com/minecraft/mc-mods/ferritecore
 [fps_reducer]: https://www.curseforge.com/minecraft/mc-mods/fps-reducer
 [ftb_backups]: https://www.curseforge.com/minecraft/mc-mods/ftb-backups
@@ -249,6 +257,7 @@ But I still recommend this mod to make it easier to find lagging entities or to 
 [mekanismadditions]: https://www.curseforge.com/minecraft/mc-mods/mekanism-additions
 [mowziesmobs]: https://www.curseforge.com/minecraft/mc-mods/mowzies-mobs
 [mutantbeasts]: https://www.curseforge.com/minecraft/mc-mods/mutant-beasts
+[project-vibrant-journeys]: https://www.curseforge.com/minecraft/mc-mods/project-vibrant-journeys
 [quark]: https://www.curseforge.com/minecraft/mc-mods/quark
 [random_patches]: https://www.curseforge.com/minecraft/mc-mods/randompatches-forge
 [rats]: https://www.curseforge.com/minecraft/mc-mods/rats
@@ -261,5 +270,7 @@ But I still recommend this mod to make it easier to find lagging entities or to 
 [tinkersconstruct]: https://www.curseforge.com/minecraft/mc-mods/tinkers-construct
 [twilightforest]: https://www.curseforge.com/minecraft/mc-mods/the-twilight-forest
 [untamedwilds]: https://www.curseforge.com/minecraft/mc-mods/untamedwilds
+[upgrade-aquatic]: https://www.curseforge.com/minecraft/mc-mods/upgrade-aquatic
 [whisperwoods]: https://www.curseforge.com/minecraft/mc-mods/whisperwoods
+
 [logo]: logo.png

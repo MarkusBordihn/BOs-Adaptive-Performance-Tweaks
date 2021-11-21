@@ -1,0 +1,44 @@
+{
+  "author": "Markus Bordihn",
+  "bedrock": {
+    "behaviorPack": {
+      "description": "Behavior Pack for New cool items"
+    },
+    "resourcePack": {
+      "description": "Resource Pack for New cool items"
+    },
+    "skinPack": {
+      "description": "Skin Pack for New cool skins"
+    },
+    "folderName": "New_cool_items"
+  },
+  "component": "project",
+  "configVersion": "0.0.1",
+  "forge": {
+    "assetsPath": "src\\main\\resources\\assets\\adaptiveperformancetweaks",
+    "className": "AdaptivePerformanceTweaks",
+    "classPath": "src\\main\\java\\de\\markusbordihn\\adaptiveperformancetweaks",
+    "description": "Adaptive Performance Tweaks is a Minecraft Forge Mod to automatically adjust specific settings on the server side to allow a better tps/fps.",
+    "templatePath": "node_modules\\minecraft-forge-utils\\third_party\\minecraft-forge-template-1.17.1",
+    "templatesPath": "node_modules\\minecraft-forge-utils\\third_party\\minecraft-forge-template-1.17.1\\templates",
+    "namespace": "de.markusbordihn.adaptiveperformancetweaks",
+    "vendorName": "markusbordihn",
+    "dataPath": "src\\main\\resources\\data\\adaptiveperformancetweaks"
+  },
+  "gameType": "forge",
+  "id": "adaptive_performance_tweaks",
+  "license": "MIT",
+  "minEngineVersion": "1.16.5",
+  "misc": {},
+  "name": "Adaptive Performance Tweaks",
+  "placeholder": {
+    "Author": "Markus Bordihn",
+    "ModId": "adaptive_performance_tweaks",
+    "ModName": "Adaptive Performance Tweaks",
+    "packageNamespace": "de.markusbordihn.adaptiveperformancetweaks",
+    "classPath": "src\\main\\java\\de\\markusbordihn\\adaptiveperformancetweaks",
+    "assetsPath": "src\\main\\resources\\assets\\adaptiveperformancetweaks"
+  },
+  "type": "unknown",
+  "version": "0.0.0"
+}
