@@ -105,7 +105,7 @@ public class MonsterEntityManager extends Manager {
           // Burn Crepper during days to control population
           if (burnCreeperDuringDaylight && monsterEntity instanceof CreeperEntity
               && entityWorld.canSeeSky(monsterEntity.blockPosition())) {
-            CreeperEntity creeperEntity = (CreeperEntity) monsterEntities;
+            CreeperEntity creeperEntity = (CreeperEntity) monsterEntity;
             creeperEntity.ignite();
           }
           // Remove whirlwind during day
