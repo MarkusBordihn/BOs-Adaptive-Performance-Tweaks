@@ -43,6 +43,7 @@ public class GameRuleManager extends Manager {
   private static boolean randomTickSpeedEnabled = COMMON.randomTickSpeedEnabled.get();
   private static int maxEntityCramming = COMMON.maxEntityCramming.get();
   private static int minEntityCramming = COMMON.maxEntityCramming.get();
+  private static int minEntityCrammingMineColonies = 16;
   private static int randomTickSpeed = COMMON.randomTickSpeed.get();
   private static final Logger log = getLogger(GameRuleManager.class.getSimpleName());
 
@@ -57,10 +58,19 @@ public class GameRuleManager extends Manager {
     if (minEntityCramming >= maxEntityCramming) {
       minEntityCramming = maxEntityCramming - 1;
     }
+
+    // Additional check for Mine Colonies to make sure we don't kill stucked entities.
     if (entityCrammingEnabled && ModList.get().isLoaded(Constants.MINECOLONIES_MOD)
-        && minEntityCramming < 5) {
-      log.warn("The recommended value for minEntityCramming with {} is min. 5 instead of {}!",
-          Constants.MINECOLONIES_NAME, minEntityCramming);
+        && minEntityCramming < minEntityCrammingMineColonies) {
+      log.warn(
+          "WARNING: The recommended value for minEntityCramming with {} is min. {} instead of {}!",
+          Constants.MINECOLONIES_NAME, minEntityCrammingMineColonies, minEntityCramming);
+      log.info("The minEntityCramming will be automatically set to {}!",
+          minEntityCrammingMineColonies);
+      minEntityCramming = minEntityCrammingMineColonies;
+      if (maxEntityCramming <= minEntityCramming) {
+        maxEntityCramming = minEntityCramming + 1;
+      }
     }
   }
 

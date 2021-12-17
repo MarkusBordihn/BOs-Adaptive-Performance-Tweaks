@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ExperienceOrbEntity;
 import net.minecraft.world.World;
+
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -59,9 +60,14 @@ public class ExperienceOrbEntityManager extends Manager {
     experienceOrbsClusterRange = COMMON.experienceOrbsClusterRange.get();
     if (optimizeExperienceOrbs) {
       log.info("Enable clustering of Experience Orbs with a radius of {} blocks.", experienceOrbsClusterRange);
+
+      // Additional check for Clumps.
       if (ModList.get().isLoaded(Constants.CLUMPS_MOD)) {
         log.error(
-            "Clumps groups XP orbs together into a new single entity, which will conflict with the XP Orb feature of this mod. Don't use both optimizations together!");
+            "WARNING: Clumps groups XP orbs together into a new single entity, which will conflict with the XP Orb feature of this mod!");
+        log.warn(
+            "Don't use both optimizations together! Clustering of Experience Orbs will be automatically disabled!");
+        optimizeExperienceOrbs = false;
       }
     } else {
       log.info("Disable Experience Orbs clustering ...");
@@ -127,6 +133,9 @@ public class ExperienceOrbEntityManager extends Manager {
           experienceOrbEntity.moveTo(existingExperienceOrbEntity.getX(),
               existingExperienceOrbEntity.getY(), existingExperienceOrbEntity.getZ());
           experienceOrbEntity.remove();
+
+          // Chancel event to remove entity
+          event.setCanceled(true);
           return;
         }
       }

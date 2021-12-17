@@ -160,6 +160,9 @@ public class PlayerPosition {
   }
 
   public String toString() {
+    if (!this.viewAreaCalculated) {
+      calculateViewArea();
+    }
     return "PlayerPosition[Player{name: '" + this.playerName + "', world: '" + this.worldName
         + "', x:" + this.posX + ", y:" + this.posY + ", z:" + this.posZ + "}, Range{x:"
         + this.viewAreaStartX + " to " + this.viewAreaStopX + ", y:" + this.viewAreaStartY + " to "

@@ -54,6 +54,7 @@ public class CommandManager extends Manager {
         .then(CommandSpawner.register())
         .then(CommandSpecialSpawnRules.register())
         .then(CommandVersion.register())
+        .then(CommandViewDistance.register())
         .then(CommandWorlds.register())
       // @formatter:on
     );
