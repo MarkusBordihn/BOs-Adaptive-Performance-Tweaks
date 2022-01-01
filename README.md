@@ -1,3 +1,8 @@
+[![Adaptive Performance Tweaks Downloads](http://cf.way2muchnoise.eu/full_adaptive-performance-tweaks_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks)
+[![Adaptive Performance Tweaks MC Versions](http://cf.way2muchnoise.eu/versions/Minecraft_adaptive-performance-tweaks_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks)
+
+**⚠️ Note: For version 1.18.1 and higher, please got to [BOs-Adaptive-Performance-Tweaks][adaptive_performance_tweaks] instead.**
+
 # Adaptive Performance Tweaks
 
 ![Adaptive Performance Tweaks][logo]
@@ -242,6 +247,8 @@ But I still recommend this mod to make it easier to find lagging entities or to 
 - [FerriteCore][ferrite_core] This mod reduces the memory usage of Minecraft in a few different ways.
 - [RandomPatches (Forge)][random_patches] Collection of bug fixes and quality of life improvements for Minecraft
 - [Spark][spark] Performance profiling plugin/mod for Minecraft clients, servers and proxies.
+
+[adaptive_performance_tweaks]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks
 
 [alexmobs]: https://www.curseforge.com/minecraft/mc-mods/alexs-mobs
 [aquaculture]: https://www.curseforge.com/minecraft/mc-mods/aquaculture
