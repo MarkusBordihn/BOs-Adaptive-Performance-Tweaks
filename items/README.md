@@ -1,17 +1,14 @@
-# Adaptive Performance Tweaks: Items
+[![Adaptive Performance Tweaks Downloads](http://cf.way2muchnoise.eu/full_561439_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules)
+[![Adaptive Performance Tweaks MC Versions](http://cf.way2muchnoise.eu/versions/Minecraft_561439_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules)
 
-![Adaptive Performance Tweaks: Items][logo]
+![Adaptive Performance Tweaks: Game Rules][header]
 
 Adaptive Performance Tweaks is a collection of Minecraft Forge server-side Mod which automatically adjust specific settings on the server to allow a more balanced TPS/FPS.
 The goal of this mod is to allow a smoother experience on a server with several (=> 180) Mods.
+Adaptive Performance Tweaks is a collection of Minecraft Forge server-side Mod which automatically adjust specific settings on the server to allow a more balanced TPS/FPS.
+The goal of this mod is to allow a smoother experience on a server with several (=> 180) Mods.
 
-### Why is this splitted into several modules ❓
-
-The **APTweaks** is separated into several modules to support all individual needs and to allow the usage of other mods with the same or similar functionality.
-
-It's your mod-pack / server and your rules, pick and mix the optimization mods you want to use.😉
-
-## ✨ Item clustering (fallen blocks, experience orbs, ...) and garbage cleanup 🗑️
+## ✨🗑️ Item clustering (fallen blocks, experience orbs, ...) and garbage cleanup
 
 Sometimes there are a lot of items lying around in the world which are not picked up by the user or not used at all.
 In most cases these are clustered together but they could easily exceed the limit if you are mining and not picking up the items.
@@ -22,28 +19,27 @@ Experience Orbs could cause a lag from bigger monster farms or if they are not p
 They will be automatically clustered in a specific range and combine the experience values.
 These optimization happens on the server side without introducing any new custom items.
 
-## How does it work ❓
+## Install additional Optimization
 
-Take a look at the additional modules and install all modules which are relevant for your use-case.
+### Bundled Version
 
-## Additional Modules
+If you want to install all modules together use the bundled version:
 
-### 🔩 Core
+➡️[Install the bundled version][bundled]
 
-This mod is required for all other modules and provides a core monitoring functionally and additional events.
+### Customized
 
-➡️[Get Core dependency][core]
+If you want to pick and choose your optimization mod, take a look at the core page:
 
-### 🔀 Game Rule Optimizations
+➡️[Install separate modules][core]
 
-Automatically adjust the random tick speed, entity cramming, raids, patrol, trader and insomnia based on the current server load.
+### Issues
 
-### 😊 Player Login Optimization (wip)
+Please report issues over the **Issue** link.
 
-Sometimes it takes up to 30sec until the player is able to interact with the world after he is logged in.
-This mod automatically protects the user for the time between login and to be able to interactive with the world to make sure that he is not attacked by mobs during this time.
-Furthermore other smaller optimization will be done to allow a smoother login process.
+[header]: ../assets/aptweaks-header.png
 
-[logo]: src/main/resources/logo.png
 [core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
+[bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
 [gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules
+[items]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-items

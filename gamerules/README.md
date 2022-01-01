@@ -29,6 +29,7 @@ If you want to pick and choose your optimization mod, take a look at the core pa
 Please report issues over the **Issue** link.
 
 [header]: ../assets/aptweaks-header.png
+
 [core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
 [gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules
