@@ -5,63 +5,71 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  setup:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up JDK 11
-      uses: actions/setup-java@v2
-      with:
-        java-version: '11'
-        distribution: 'adopt'
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-    - name: Build with Gradle
-      run: ./gradlew build
-
   core:
-    needs: setup
+    runs-on: ubuntu-latest
     steps:
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-      working-directory: ./core
-    - name: Build core with Gradle
-      run: ./gradlew build
-      working-directory: ./core
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: "11"
+          distribution: "adopt"
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        working-directory: ./core
+      - name: Build core with Gradle
+        run: ./gradlew build
+        working-directory: ./core
 
   bundle:
-    needs: setup
+    runs-on: ubuntu-latest
     steps:
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-      working-directory: ./bundle
-    - name: Build bundle with Gradle
-      run: ./gradlew build
-      working-directory: ./bundle
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: "11"
+          distribution: "adopt"
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        working-directory: ./bundle
+      - name: Build bundle with Gradle
+        run: ./gradlew build
+        working-directory: ./bundle
 
   gamerules:
-    needs: setup
+    runs-on: ubuntu-latest
     steps:
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-      working-directory: ./gamerules
-    - name: Build gamerules with Gradle
-      run: ./gradlew build
-      working-directory: ./gamerules
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: "11"
+          distribution: "adopt"
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        working-directory: ./gamerules
+      - name: Build gamerules with Gradle
+        run: ./gradlew build
+        working-directory: ./gamerules
 
   items:
-    needs: setup
+    runs-on: ubuntu-latest
     steps:
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-      working-directory: ./items
-    - name: Build items with Gradle
-      run: ./gradlew build
-      working-directory: ./items
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: "11"
+          distribution: "adopt"
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        working-directory: ./items
+      - name: Build items with Gradle
+        run: ./gradlew build
+        working-directory: ./items
