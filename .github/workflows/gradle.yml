@@ -10,7 +10,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  setup:
 
     runs-on: ubuntu-latest
 
@@ -25,3 +25,43 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build
+
+  core:
+    needs: setup
+    steps:
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      working-directory: ./core
+    - name: Build core with Gradle
+      run: ./gradlew build
+      working-directory: ./core
+
+  bundle:
+    needs: setup
+    steps:
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      working-directory: ./bundle
+    - name: Build bundle with Gradle
+      run: ./gradlew build
+      working-directory: ./bundle
+
+  gamerules:
+    needs: setup
+    steps:
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      working-directory: ./gamerules
+    - name: Build gamerules with Gradle
+      run: ./gradlew build
+      working-directory: ./gamerules
+
+  items:
+    needs: setup
+    steps:
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      working-directory: ./items
+    - name: Build items with Gradle
+      run: ./gradlew build
+      working-directory: ./items
