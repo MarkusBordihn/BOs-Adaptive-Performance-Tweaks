@@ -22,6 +22,8 @@ package de.markusbordihn.adaptiveperformancetweakscore.server;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -57,6 +59,7 @@ public class ServerManager {
   }
 
   @SubscribeEvent
+  @OnlyIn(Dist.DEDICATED_SERVER)
   public static void handleServerTickEvent(TickEvent.ServerTickEvent event) {
     if (event.phase == TickEvent.Phase.END) {
       ticks++;

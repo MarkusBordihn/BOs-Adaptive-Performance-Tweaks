@@ -15,7 +15,6 @@ plugins {
 }
 
 apply plugin: 'net.minecraftforge.gradle'
-// Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
@@ -129,14 +128,17 @@ dependencies {
   minecraft 'net.minecraftforge:forge:1.18.1-39.0.9'
 
   // Required: Bo's Adaptive Performance Tweaks: Core (dev dependency)
-  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:0.1.1")
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:0.1.1")
+  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:0.2.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:0.2.0")
 
   // Required: Bo's Adaptive Performance Tweaks: Gamerules (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksgamerules:gamerules:0.1.1")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksgamerules:gamerules:0.2.0")
 
   // Required: Bo's Adaptive Performance Tweaks: Items (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksitems:items:0.1.1")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksitems:items:0.2.0")
+
+  // Required: Bo's Adaptive Performance Tweaks: Player (runtime dependency)
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksitems:player:0.2.0")
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..
@@ -186,6 +188,8 @@ curseforge {
         requiredDependency 'adaptive-performance-tweaks-core'
         requiredDependency 'adaptive-performance-tweaks-gamerules'
         requiredDependency 'adaptive-performance-tweaks-items'
+        requiredDependency 'adaptive-performance-tweaks-player'
+        optionalDependency 'configured'
       }
     }
   }

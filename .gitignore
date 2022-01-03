@@ -40,3 +40,6 @@ generated
 *.stackdump
 *.log
 *.bak
+
+# WIP
+server/

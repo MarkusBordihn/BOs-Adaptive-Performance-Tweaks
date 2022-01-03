@@ -6,7 +6,7 @@
 Adaptive Performance Tweaks is a collection of Minecraft Forge server-side Mod which automatically adjust specific settings on the server to allow a more balanced TPS/FPS.
 The goal of this mod is to allow a smoother experience on a server with several (=> 180) Mods.
 
-## 😊 Player Login Optimization and Protection
+## 🛡️ Player Login Optimization and Protection
 
 Sometimes it takes up to 30sec until the player is able to interact with the world after he is logged in.
 This mod automatically protects the user for the time between login and to be able to interactive with the world to make sure that he is not attacked by mobs during this time.
@@ -32,21 +32,22 @@ You could adjust the view distance over `/aptweaks setSimulationDistance <simula
 
 If you want to install all modules together use the bundled version:
 
-➡️[Install the bundled version][bundled]
+**➡️[Install the bundled version][bundled]**
 
 ### Customized
 
 If you want to pick and choose your optimization mod, take a look at the core page:
 
-➡️[Install separate modules][core]
+**➡️[Install separate modules][core]**
 
 ### Issues
 
 Please report issues over the **Issue** link.
 
 [header]: ../assets/aptweaks-header.png
-[core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
+
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
+[core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
 [gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules
 [items]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-items
 [player]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player

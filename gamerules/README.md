@@ -16,13 +16,13 @@ Automatically adjust the random tick speed, entity cramming, raids, patrol, trad
 
 If you want to install all modules together use the bundled version:
 
-➡️[Install the bundled version][bundled]
+**➡️[Install the bundled version][bundled]**
 
 ### Customized
 
 If you want to pick and choose your optimization mod, take a look at the core page:
 
-➡️[Install separate modules][core]
+**➡️[Install separate modules][core]**
 
 ### Issues
 

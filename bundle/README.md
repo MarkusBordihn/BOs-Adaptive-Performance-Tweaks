@@ -17,7 +17,7 @@ This mod includes the bundle version of all optimization.
 
 If you want to pick and choose your optimization mod, take a look at the core page:
 
-➡️[Install separate modules][core]
+**➡️[Install separate modules][core]**
 
 ## ⚠️ Version 1.16.5 / 1.17.1
 
