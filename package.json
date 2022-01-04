@@ -8,5 +8,5 @@
     "release:patch": "standard-version --release-as patch",
     "release:major": "standard-version --release-as major"
   },
-  "version": "1.0.1"
+  "version": "1.0.2"
 }
