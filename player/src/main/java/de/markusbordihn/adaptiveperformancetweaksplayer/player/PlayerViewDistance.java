@@ -45,6 +45,10 @@ public class PlayerViewDistance {
   private static int viewDistanceDefault = COMMON.viewDistanceDefault.get();
   private static int viewDistanceMax = COMMON.viewDistanceMax.get();
   private static int viewDistanceMin = COMMON.viewDistanceMin.get();
+  private static int viewDistanceTimeBetweenUpdates = COMMON.viewDistanceTimeBetweenUpdates.get();
+
+  private static long lastUpdateTime = System.currentTimeMillis();
+  private static int timeBetweenUpdates = 20000;
 
   protected PlayerViewDistance() {}
 
@@ -54,6 +58,8 @@ public class PlayerViewDistance {
     viewDistanceDefault = COMMON.viewDistanceDefault.get();
     viewDistanceMin = COMMON.viewDistanceMin.get();
     viewDistanceMax = COMMON.viewDistanceMax.get();
+    viewDistanceTimeBetweenUpdates = COMMON.viewDistanceTimeBetweenUpdates.get();
+    timeBetweenUpdates = viewDistanceTimeBetweenUpdates * 1000;
   }
 
   @SubscribeEvent
@@ -61,8 +67,8 @@ public class PlayerViewDistance {
     if (!optimizeViewDistance) {
       return;
     }
-    log.info("View distance will be optimized between {} and {} with {} as default",
-        viewDistanceMin, viewDistanceMax, viewDistanceDefault);
+    log.info("View distance will be optimized between {} and {} with {} as default and {} sec delay between updates.",
+        viewDistanceMin, viewDistanceMax, viewDistanceDefault, viewDistanceTimeBetweenUpdates);
     setViewDistance(viewDistanceMin);
   }
 
@@ -71,19 +77,29 @@ public class PlayerViewDistance {
     if (!optimizeViewDistance) {
       return;
     }
+    // To make the updates less noticeable we are delaying the updates.
+    if (System.currentTimeMillis() -  lastUpdateTime <= timeBetweenUpdates) {
+      return;
+    }
+    boolean hasUpdated = false;
     int numOfPlayers = ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerCount();
     if (event.hasHighServerLoad()) {
-      decreaseViewDistance();
+      hasUpdated = decreaseViewDistance();
     } else if (event.hasNormalServerLoad() && numOfPlayers >= 1) {
-      decreaseViewDistance();
+      hasUpdated = decreaseViewDistance();
     } else if (event.hasNormalServerLoad() && numOfPlayers == 1) {
-      increaseViewDistance();
+      hasUpdated = increaseViewDistance();
     } else if (event.hasLowServerLoad() && numOfPlayers >= 1) {
-      increaseViewDistance();
+      hasUpdated = increaseViewDistance();
+    }
+
+    // Only update the last update time if we really updated something.
+    if (hasUpdated) {
+      lastUpdateTime = System.currentTimeMillis();
     }
   }
 
-  public static void setViewDistance(int viewDistance) {
+  public static boolean setViewDistance(int viewDistance) {
     if (viewDistance > viewDistanceMax) {
       viewDistance = viewDistanceMax;
     } else if (viewDistance < viewDistanceMin) {
@@ -95,15 +111,17 @@ public class PlayerViewDistance {
       log.debug("Changing server view distance from {} to {} for {} players.",
           playerList.getViewDistance(), viewDistance, playerList.getPlayers().size());
       playerList.setViewDistance(viewDistance);
+      return true;
     }
+    return false;
   }
 
-  public static void increaseViewDistance() {
-    setViewDistance(getViewDistance() + 1);
+  public static boolean increaseViewDistance() {
+    return setViewDistance(getViewDistance() + 1);
   }
 
-  public static void decreaseViewDistance() {
-    setViewDistance(getViewDistance() - 1);
+  public static boolean decreaseViewDistance() {
+    return setViewDistance(getViewDistance() - 1);
   }
 
   public static int getViewDistance() {

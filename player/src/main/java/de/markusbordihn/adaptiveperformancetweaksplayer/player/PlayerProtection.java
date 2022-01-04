@@ -20,8 +20,8 @@
 package de.markusbordihn.adaptiveperformancetweaksplayer.player;
 
 import java.util.ConcurrentModificationException;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
@@ -46,7 +46,7 @@ public class PlayerProtection {
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
-  private static Set<PlayerValidation> playerValidationList = new HashSet<>();
+  private static Set<PlayerValidation> playerValidationList = ConcurrentHashMap.newKeySet();
   private static short ticker = 0;
 
   private static boolean protectPlayerDuringLogin = COMMON.protectPlayerDuringLogin.get();
@@ -58,6 +58,7 @@ public class PlayerProtection {
 
   @SubscribeEvent
   public static void onServerAboutToStartEvent(ServerAboutToStartEvent event) {
+    playerValidationList = ConcurrentHashMap.newKeySet();
     protectPlayerDuringLogin = COMMON.protectPlayerDuringLogin.get();
     protectPlayerDuringLoginLogging = COMMON.protectPlayerDuringLoginLogging.get();
     playerLoginValidationTimeout = COMMON.playerLoginValidationTimeout.get();
@@ -110,36 +111,38 @@ public class PlayerProtection {
 
   @SubscribeEvent
   public static void handleServerTickEvent(TickEvent.ServerTickEvent event) {
-    if (event.phase == TickEvent.Phase.END) {
+    if (event.phase == TickEvent.Phase.END || ticker++ != 40 || playerValidationList.isEmpty()) {
       return;
     }
 
-    if (ticker++ == 40) {
-      if (!playerValidationList.isEmpty()) {
-        // Check for any un-validated players and try to detect if they logged-in.
-        for (PlayerValidation playerValidation : playerValidationList) {
-          String username = playerValidation.getUsername();
-          if (playerValidation.hasPlayerMoved()) {
-            long validationTimeInSecs =
-                TimeUnit.MILLISECONDS.toSeconds(playerValidation.getValidationTimeElapsed());
-            if (protectPlayerDuringLoginLogging) {
-              log.info("Player {} was successful validated after {} secs.", username,
-                  validationTimeInSecs);
-            } else {
-              log.debug("User {} was successful validated after {} secs.", username,
-                  validationTimeInSecs);
-            }
-            addPlayer(username);
-          } else if (playerValidation.getValidationTimeElapsed()
-              / 1000 >= playerLoginValidationTimeout) {
-            log.warn("User validation for {} timed out after {} secs.", username,
-                playerLoginValidationTimeout);
-            addPlayer(username);
+    try {
+      // Check for any un-validated players and try to detect if they logged-in.
+      for (PlayerValidation playerValidation : playerValidationList) {
+        String username = playerValidation.getUsername();
+        if (playerValidation.hasPlayerMoved()) {
+          long validationTimeInSecs =
+              TimeUnit.MILLISECONDS.toSeconds(playerValidation.getValidationTimeElapsed());
+          if (protectPlayerDuringLoginLogging) {
+            log.info("Player {} was successful validated after {} secs.", username,
+                validationTimeInSecs);
+          } else {
+            log.debug("User {} was successful validated after {} secs.", username,
+                validationTimeInSecs);
           }
+          addPlayer(username);
+        } else if (playerValidation.getValidationTimeElapsed()
+            / 1000 >= playerLoginValidationTimeout) {
+          log.warn("User validation for {} timed out after {} secs.", username,
+              playerLoginValidationTimeout);
+          addPlayer(username);
         }
       }
-      ticker = 0;
+    } catch (ConcurrentModificationException error) {
+      log.error(
+          "Unexpected error during user validation. Please report the following error under {} .\n{}",
+          Constants.ISSUE_REPORT, error);
     }
+    ticker = 0;
   }
 
   private static void addPlayer(String username) {

@@ -19,6 +19,13 @@ jobs:
         with:
           java-version: "17"
           distribution: "adopt"
+      - name: Cache Gradle packages
+        uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/.gradle.properties') }}
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: ./core
@@ -45,6 +52,13 @@ jobs:
         with:
           java-version: "17"
           distribution: "adopt"
+      - name: Cache Gradle packages
+        uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/.gradle.properties') }}
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
       - name: Download artifacts
         uses: actions/download-artifact@v2
         with:
@@ -76,6 +90,13 @@ jobs:
         with:
           java-version: "17"
           distribution: "adopt"
+      - name: Cache Gradle packages
+        uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/.gradle.properties') }}
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
       - name: Download artifacts
         uses: actions/download-artifact@v2
         with:
@@ -107,6 +128,13 @@ jobs:
         with:
           java-version: "17"
           distribution: "adopt"
+      - name: Cache Gradle packages
+        uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/.gradle.properties') }}
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
       - name: Download artifacts
         uses: actions/download-artifact@v2
         with:
@@ -138,6 +166,13 @@ jobs:
         with:
           java-version: "17"
           distribution: "adopt"
+      - name: Cache Gradle packages
+        uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/.gradle.properties') }}
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
       - name: Download artifacts
         uses: actions/download-artifact@v2
         with:

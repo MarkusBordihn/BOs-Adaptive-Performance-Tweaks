@@ -62,11 +62,13 @@ public final class CommonConfig {
     public final ForgeConfigSpec.IntValue simulationDistanceMin;
     public final ForgeConfigSpec.IntValue simulationDistanceMax;
     public final ForgeConfigSpec.IntValue simulationDistanceDefault;
+    public final ForgeConfigSpec.IntValue simulationDistanceTimeBetweenUpdates;
 
     public final ForgeConfigSpec.BooleanValue optimizeViewDistance;
     public final ForgeConfigSpec.IntValue viewDistanceMin;
     public final ForgeConfigSpec.IntValue viewDistanceMax;
     public final ForgeConfigSpec.IntValue viewDistanceDefault;
+    public final ForgeConfigSpec.IntValue viewDistanceTimeBetweenUpdates;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
@@ -94,8 +96,10 @@ public final class CommonConfig {
           .comment("Enable/Disable simulation distance optimization depending on the server load.")
           .define("optimizeSimulationDistance", true);
       simulationDistanceMax = builder.defineInRange("simulationDistanceMax", 12, 6, 32);
-      simulationDistanceMin = builder.defineInRange("simulationDistanceMin", 5, 5, 16);
+      simulationDistanceMin = builder.defineInRange("simulationDistanceMin", 4, 2, 16);
       simulationDistanceDefault = builder.defineInRange("simulationDistanceDefault", 6, 5, 16);
+      simulationDistanceTimeBetweenUpdates =
+          builder.defineInRange("simulationDistanceTimeBetweenUpdates", 10, 1, 90);
       builder.pop();
 
       builder.push("View Distance");
@@ -103,8 +107,10 @@ public final class CommonConfig {
           builder.comment("Enable/Disable view distance optimization depending on the server load.")
               .define("optimizeViewDistance", true);
       viewDistanceMax = builder.defineInRange("viewDistanceMax", 16, 4, 32);
-      viewDistanceMin = builder.defineInRange("viewDistanceMin", 2, 2, 16);
+      viewDistanceMin = builder.defineInRange("viewDistanceMin", 5, 2, 16);
       viewDistanceDefault = builder.defineInRange("viewDistanceDefault", 8, 2, 16);
+      viewDistanceTimeBetweenUpdates =
+          builder.defineInRange("viewDistanceTimeBetweenUpdates", 30, 1, 90);
       builder.pop();
     }
   }

@@ -181,6 +181,7 @@ curseforge {
       relations {
         requiredDependency 'adaptive-performance-tweaks-core'
         optionalDependency 'configured'
+        optionalDependency 'farsight'
       }
     }
   }

@@ -19,7 +19,7 @@ license="MIT"
 [[mods]] #mandatory
     modId="adaptive_performance_tweaks_player"
     version="${file.jarVersion}"
-    displayName="🚀 APTweaks: Player"
+    displayName="APTweaks: Player"
     logoFile="logo.png"
     credits=""
     authors="Markus Bordihn"
