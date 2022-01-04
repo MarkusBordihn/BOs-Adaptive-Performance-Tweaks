@@ -173,7 +173,7 @@ curseforge {
   apiKey = "${credentials.curseforge_api_token}"
   project {
     id = "${curseforge_project_id}"
-    changelog = 'See https://github.com/MarkusBordihn/adaptive_performance_tweaks/commits/main'
+    changelog = file("../CHANGELOG.md")
     releaseType = 'release'
     addGameVersion("1.18.1")
     addGameVersion("Forge")
