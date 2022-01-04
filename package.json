@@ -9,7 +9,7 @@
     "release:patch": "standard-version --release-as patch && auto-changelog -p && git add CHANGELOG.md && git commit --amend --no-edit",
     "release:major": "standard-version --release-as major && auto-changelog -p && git add CHANGELOG.md && git commit --amend --no-edit"
   },
-  "version": "1.1.0",
+  "version": "1.1.1",
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
