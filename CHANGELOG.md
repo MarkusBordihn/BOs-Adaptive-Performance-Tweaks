@@ -1,3 +1,9 @@
+# Changelog
+
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+### [1.0.1](https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/compare/v1.0.3...v1.0.1) (2022-01-04)
+
 ### Changelog
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
