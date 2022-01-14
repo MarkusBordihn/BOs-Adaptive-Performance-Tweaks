@@ -108,7 +108,7 @@ For this reason it's important to test different kind of combination for your sp
 
 I'm not able to test all possible mod combination, so you need to test this on your on own to find out.
 
-[header]: assets/aptweaks-header.png
+[header]: ../assets/aptweaks-header.png
 
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
 [core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
