@@ -20,6 +20,7 @@
 package de.markusbordihn.adaptiveperformancetweaksplayer.player;
 
 import java.util.ConcurrentModificationException;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -49,19 +50,26 @@ public class PlayerProtection {
   private static Set<PlayerValidation> playerValidationList = ConcurrentHashMap.newKeySet();
   private static short ticker = 0;
 
+  private static List<String> childPlayerProtectionList = COMMON.childPlayerProtectionList.get();
+  private static boolean enableChildPlayerProtection = COMMON.enableChildPlayerProtection.get();
   private static boolean protectPlayerDuringLogin = COMMON.protectPlayerDuringLogin.get();
   private static boolean protectPlayerDuringLoginLogging =
       COMMON.protectPlayerDuringLoginLogging.get();
   private static int playerLoginValidationTimeout = COMMON.playerLoginValidationTimeout.get();
+  private static long playerLoginValidationTimeoutMilli =
+      TimeUnit.SECONDS.toMillis(playerLoginValidationTimeout);
 
   protected PlayerProtection() {}
 
   @SubscribeEvent
   public static void onServerAboutToStartEvent(ServerAboutToStartEvent event) {
     playerValidationList = ConcurrentHashMap.newKeySet();
+    childPlayerProtectionList = COMMON.childPlayerProtectionList.get();
+    enableChildPlayerProtection = COMMON.enableChildPlayerProtection.get();
+    playerLoginValidationTimeout = COMMON.playerLoginValidationTimeout.get();
     protectPlayerDuringLogin = COMMON.protectPlayerDuringLogin.get();
     protectPlayerDuringLoginLogging = COMMON.protectPlayerDuringLoginLogging.get();
-    playerLoginValidationTimeout = COMMON.playerLoginValidationTimeout.get();
+    playerLoginValidationTimeoutMilli = TimeUnit.SECONDS.toMillis(playerLoginValidationTimeout);
   }
 
   @SubscribeEvent
@@ -79,19 +87,32 @@ public class PlayerProtection {
     }
     String username = event.getPlayer().getName().getString();
     if (!username.isEmpty()) {
-      if (protectPlayerDuringLoginLogging) {
-        log.info("Player {} {} logged in and will be protected for {} secs.", username,
-            event.getEntity(), playerLoginValidationTimeout);
-      } else {
-        log.debug("Player {} {} logged in.", username, event.getEntity());
-      }
       ServerPlayer player =
           ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
 
-      // Protect player during login
-      player.setInvisible(true);
-      player.setInvulnerable(true);
-      player.heal(1);
+      // Player Protection
+      if (protectPlayerDuringLoginLogging) {
+        log.info("Player {} {} logged in and will be protected for {} secs.", username,
+            event.getEntity(), playerLoginValidationTimeout);
+        player.setInvisible(true);
+        player.setInvulnerable(true);
+        player.heal(1);
+      } else {
+        log.debug("Player {} {} logged in.", username, event.getEntity());
+      }
+
+      // Child Player Protection
+      if (enableChildPlayerProtection && childPlayerProtectionList.contains(username)) {
+        log.info(
+            "Child Player {} logged-in and game settings adjusted for a better player experience.",
+            username);
+        if (player.experienceLevel < 50) {
+          player.setExperienceLevels(++player.experienceLevel);
+        }
+        player.heal(10);
+        player.setInvisible(true);
+        player.setInvulnerable(true);
+      }
 
       playerValidationList.add(new PlayerValidation(player));
     }
@@ -111,36 +132,34 @@ public class PlayerProtection {
 
   @SubscribeEvent
   public static void handleServerTickEvent(TickEvent.ServerTickEvent event) {
-    if (event.phase == TickEvent.Phase.END || ticker++ != 40 || playerValidationList.isEmpty()) {
+    if (event.phase == TickEvent.Phase.END || ticker++ < 40) {
       return;
     }
 
-    try {
-      // Check for any un-validated players and try to detect if they logged-in.
-      for (PlayerValidation playerValidation : playerValidationList) {
-        String username = playerValidation.getUsername();
-        if (playerValidation.hasPlayerMoved()) {
-          long validationTimeInSecs =
-              TimeUnit.MILLISECONDS.toSeconds(playerValidation.getValidationTimeElapsed());
-          if (protectPlayerDuringLoginLogging) {
-            log.info("Player {} was successful validated after {} secs.", username,
+    if (!playerValidationList.isEmpty()) {
+      try {
+        // Check for any un-validated players and try to detect if they logged-in.
+        for (PlayerValidation playerValidation : playerValidationList) {
+          String username = playerValidation.getUsername();
+          if (playerValidation.hasPlayerMoved()) {
+            long validationTimeInSecs =
+                TimeUnit.MILLISECONDS.toSeconds(playerValidation.getValidationTimeElapsed());
+            log.info("{} {} was successful validated after {} secs.",
+                protectPlayerDuringLoginLogging ? "Protected Player" : "Player", username,
                 validationTimeInSecs);
-          } else {
-            log.debug("User {} was successful validated after {} secs.", username,
-                validationTimeInSecs);
+            addPlayer(username);
+          } else if (playerValidation
+              .getValidationTimeElapsed() >= playerLoginValidationTimeoutMilli) {
+            log.warn("User validation for {} timed out after {} secs.", username,
+                playerLoginValidationTimeout);
+            addPlayer(username);
           }
-          addPlayer(username);
-        } else if (playerValidation.getValidationTimeElapsed()
-            / 1000 >= playerLoginValidationTimeout) {
-          log.warn("User validation for {} timed out after {} secs.", username,
-              playerLoginValidationTimeout);
-          addPlayer(username);
         }
+      } catch (ConcurrentModificationException error) {
+        log.error(
+            "Unexpected error during user validation. Please report the following error under {} .\n{}",
+            Constants.ISSUE_REPORT, error);
       }
-    } catch (ConcurrentModificationException error) {
-      log.error(
-          "Unexpected error during user validation. Please report the following error under {} .\n{}",
-          Constants.ISSUE_REPORT, error);
     }
     ticker = 0;
   }
@@ -152,12 +171,17 @@ public class PlayerProtection {
       for (PlayerValidation playerValidation : playerValidationList) {
         if (username.equals(playerValidation.getUsername())) {
           log.debug("Found player {} with player validation {}", player, playerValidation);
-          // Remove protection from login process
-          if (player.isInvisible()) {
-            player.setInvisible(false);
-          }
-          if (player.isInvulnerable()) {
-            player.setInvulnerable(false);
+          boolean isChildPlayerAccount =
+              (enableChildPlayerProtection && childPlayerProtectionList.contains(username));
+          if (protectPlayerDuringLoginLogging
+              && (player.isInvisible() || player.isInvulnerable())) {
+            log.info("Removing player protection from player {}!", username);
+            if (player.isInvisible() && !isChildPlayerAccount) {
+              player.setInvisible(false);
+            }
+            if (player.isInvulnerable() && !isChildPlayerAccount) {
+              player.setInvulnerable(false);
+            }
           }
           playerValidationList.remove(playerValidation);
           break;

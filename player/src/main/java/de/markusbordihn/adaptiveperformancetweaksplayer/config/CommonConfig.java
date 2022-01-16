@@ -19,6 +19,9 @@
 
 package de.markusbordihn.adaptiveperformancetweaksplayer.config;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -58,6 +61,9 @@ public final class CommonConfig {
     public final ForgeConfigSpec.BooleanValue protectPlayerDuringLogin;
     public final ForgeConfigSpec.BooleanValue protectPlayerDuringLoginLogging;
 
+    public final ForgeConfigSpec.BooleanValue enableChildPlayerProtection;
+    public final ForgeConfigSpec.ConfigValue<List<String>> childPlayerProtectionList;
+
     public final ForgeConfigSpec.BooleanValue optimizeSimulationDistance;
     public final ForgeConfigSpec.IntValue simulationDistanceMin;
     public final ForgeConfigSpec.IntValue simulationDistanceMax;
@@ -89,6 +95,15 @@ public final class CommonConfig {
       protectPlayerDuringLoginLogging =
           builder.comment("Enable/Disable player protection logging with login time.")
               .define("protectPlayerDuringLoginLogging", true);
+      builder.pop();
+
+      builder.push("Child Player Protection");
+      enableChildPlayerProtection =
+          builder.comment("Protect child player and give them a more enjoyable play experience.")
+              .define("enableChildPlayerProtection", true);
+      childPlayerProtectionList =
+          builder.comment("List of child player username for the child player protection.")
+              .define("childPlayerProtectionList", new ArrayList<String>(Arrays.asList("")));
       builder.pop();
 
       builder.push("Simulation Distance");

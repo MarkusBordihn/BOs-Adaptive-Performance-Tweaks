@@ -12,6 +12,11 @@ Sometimes it takes up to 30sec until the player is able to interact with the wor
 This mod automatically protects the user for the time between login and to be able to interactive with the world to make sure that he is not attacked by mobs during this time.
 Furthermore other smaller optimization will be done to allow a smoother login process.
 
+## 🛡️🐨 Child Player Protection
+
+Changes the game-mode of your Child automatically to a more peaceful / easier mode so that they are more enjoying the game even if you are playing in another mode like hardcore.
+Just add the child player name's to the configuration to automatically activate this mode for them.
+
 ## 🔭 Optimized player view distance
 
 The mod automatically increase or decrease the player view distance depending on the server load of the current world.
@@ -45,7 +50,6 @@ If you want to pick and choose your optimization mod, take a look at the core pa
 Please report issues over the **Issue** link.
 
 [header]: ../assets/aptweaks-header.png
-
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
 [core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
 [gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules

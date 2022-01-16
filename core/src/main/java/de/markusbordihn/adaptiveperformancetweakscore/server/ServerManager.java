@@ -27,6 +27,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.server.ServerLifecycleHooks;
 import net.minecraftforge.event.server.ServerStartingEvent;
@@ -59,13 +60,15 @@ public class ServerManager {
   }
 
   @SubscribeEvent
-  @OnlyIn(Dist.DEDICATED_SERVER)
+  // @OnlyIn(Dist.DEDICATED_SERVER)
   public static void handleServerTickEvent(TickEvent.ServerTickEvent event) {
     if (event.phase == TickEvent.Phase.END) {
       ticks++;
       return;
     }
 
+    LogicalSide logicalSide = event.side;
+    log.info("side: {} {}", logicalSide, event.type);
     if (ticks == SERVER_LOAD_TICK) {
       ServerLoad.measureLoadAndPost();
     } else if (ticks == WORLD_LOAD_TICK) {

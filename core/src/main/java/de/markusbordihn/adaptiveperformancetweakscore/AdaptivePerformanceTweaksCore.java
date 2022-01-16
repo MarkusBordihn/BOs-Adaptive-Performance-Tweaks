@@ -29,7 +29,8 @@ public class AdaptivePerformanceTweaksCore {
 
   public AdaptivePerformanceTweaksCore() {
     ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class,
-        () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (a, b) -> true));
+        () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY,
+            (a, b) -> true));
   }
 
 }
