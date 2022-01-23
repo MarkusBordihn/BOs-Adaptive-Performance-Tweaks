@@ -43,3 +43,8 @@ generated
 
 # WIP
 server/
+core/.vscode/launch.json
+gamerules/.vscode/launch.json
+items/.vscode/launch.json
+player/.vscode/launch.json
+spawn/.vscode/launch.json

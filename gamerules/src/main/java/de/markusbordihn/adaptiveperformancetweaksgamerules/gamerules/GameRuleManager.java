@@ -19,6 +19,8 @@
 
 package de.markusbordihn.adaptiveperformancetweaksgamerules.gamerules;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -40,8 +42,8 @@ import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLoadEvent;
 @EventBusSubscriber
 public class GameRuleManager {
 
-  private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
 
   private static GameRules gameRules;
 
@@ -57,6 +59,9 @@ public class GameRuleManager {
   private static int minEntityCrammingMineColonies = 16;
   private static int randomTickSpeed = COMMON.randomTickSpeed.get();
 
+  private static int timeBetweenUpdates = COMMON.timeBetweenUpdates.get() * 1000;
+  private static long lastUpdateTime = System.currentTimeMillis();
+
   protected GameRuleManager() {}
 
   @SubscribeEvent
@@ -71,6 +76,8 @@ public class GameRuleManager {
     maxEntityCramming = COMMON.maxEntityCramming.get();
     minEntityCramming = COMMON.minEntityCramming.get();
     randomTickSpeed = COMMON.randomTickSpeed.get();
+
+    timeBetweenUpdates = COMMON.timeBetweenUpdates.get() * 1000;
 
     // Entity Cramming (max).
     if (minEntityCramming >= maxEntityCramming) {
@@ -95,6 +102,10 @@ public class GameRuleManager {
   @SubscribeEvent
   public static void handleServerStartingEvent(ServerStartingEvent event) {
     gameRules = ServerLifecycleHooks.getCurrentServer().getGameRules();
+
+    log.info("Gamerules will be optimized with an {} sec delay between updates.",
+        timeBetweenUpdates / 1000);
+
     if (randomTickSpeedEnabled) {
       log.info("Random Tick Speed will be optimized between {} and {}", 1, randomTickSpeed);
       if (gameRules.getInt(GameRules.RULE_RANDOMTICKING) != randomTickSpeed) {
@@ -166,6 +177,11 @@ public class GameRuleManager {
       return;
     }
 
+    // To make the updates less noticeable we are delaying increasing updates.
+    if (System.currentTimeMillis() - lastUpdateTime < timeBetweenUpdates) {
+      return;
+    }
+
     // General: Handle normal and low server load
     if (patrolSpawningEnabled) {
       enablePatrolSpawning();
@@ -194,6 +210,9 @@ public class GameRuleManager {
         increaseMaxEntityCramming();
       }
     }
+
+    // Update the last update time
+    lastUpdateTime = System.currentTimeMillis();
   }
 
   public static void enablePatrolSpawning() {
@@ -294,4 +313,27 @@ public class GameRuleManager {
           .executeServerCommand(String.format("gamerule maxEntityCramming %s", maxEntity));
     }
   }
+
+  public static GameRules getGameRules() {
+    if (gameRules == null) {
+      gameRules = ServerLifecycleHooks.getCurrentServer().getGameRules();
+    }
+    return gameRules;
+  }
+
+  public static Map<String, String> getGameRulesOverview() {
+    Map<String, String> overview = new ConcurrentHashMap<>();
+    overview.put("disableRaids",
+        String.valueOf(gameRules.getBoolean(GameRules.RULE_DISABLE_RAIDS)));
+    overview.put("doInsomnia", String.valueOf(gameRules.getBoolean(GameRules.RULE_DOINSOMNIA)));
+    overview.put("doPatrolSpawning",
+        String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)));
+    overview.put("doTraderSpawning",
+        String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_TRADER_SPAWNING)));
+    overview.put("maxEntityCramming",
+        String.valueOf(gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING)));
+    overview.put("randomTickSpeed", String.valueOf(gameRules.getInt(GameRules.RULE_RANDOMTICKING)));
+    return overview;
+  }
+
 }

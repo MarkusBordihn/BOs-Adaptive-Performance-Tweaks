@@ -28,6 +28,7 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
 
+import de.markusbordihn.adaptiveperformancetweakscore.Constants;
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
@@ -35,31 +36,39 @@ public final class CommonConfig {
 
   private static final Logger log = LogManager.getLogger(CoreConstants.LOG_NAME);
 
-  private CommonConfig() {
-  }
+  private CommonConfig() {}
 
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
 
   static {
     com.electronwill.nightconfig.core.Config.setInsertionOrderPreserved(true);
-    final Pair<Config, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Config::new);
+    final Pair<Config, ForgeConfigSpec> specPair =
+        new ForgeConfigSpec.Builder().configure(Config::new);
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
-    log.info("Registering {} common config ...", CoreConstants.MOD_NAME);
+    log.info("{} common config ...", Constants.LOG_REGISTER_PREFIX);
     ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec);
   }
 
   public static class Config {
 
+    public final ForgeConfigSpec.IntValue timeBetweenUpdates;
+
     public final ForgeConfigSpec.BooleanValue logServerLoad;
+    public final ForgeConfigSpec.BooleanValue logServerLevelLoad;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(CoreConstants.MOD_NAME);
 
       builder.push("General");
-      logServerLoad = builder.comment("Enable/Disable logging of the server/world load.")
+      timeBetweenUpdates = builder.comment(
+          "The time after a high to low load change is considered as valid. High loads are always considered immediately.")
+          .defineInRange("timeBetweenUpdates", 10, 1, 90);
+      logServerLoad = builder.comment("Enable/Disable logging of the overall server load.")
           .define("logServerLoad", true);
+      logServerLevelLoad = builder.comment("Enable/Disable logging of the individual level load.")
+          .define("logServerLevelLoad", true);
       builder.pop();
     }
   }

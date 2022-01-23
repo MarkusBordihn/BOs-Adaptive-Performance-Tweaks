@@ -19,19 +19,43 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.server;
 
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.Event;
 
 import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLoad.ServerLoadLevel;
 
 public class ServerLoadEvent extends Event {
 
-  private ServerLoadLevel serverLoadLevel = ServerLoadLevel.NORMAL;
+  private Dist dist;
   private ServerLoadLevel lastServerLoadLevel = ServerLoadLevel.NORMAL;
+  private ServerLoadLevel serverLoadLevel = ServerLoadLevel.NORMAL;
+  private double avgTickTime = 50.0;
+  private double lastAvgTickTime = 45.0;
 
-  public ServerLoadEvent(ServerLoadLevel currentServerLoad, ServerLoadLevel lastServerLoad) {
+  public ServerLoadEvent(ServerLoadLevel currentServerLoad, ServerLoadLevel lastServerLoad,
+      double avgTickTime, double lastAvgTickTim, Dist dist) {
     super();
-    this.serverLoadLevel = currentServerLoad;
+    this.avgTickTime = avgTickTime;
+    this.dist = dist;
+    this.lastAvgTickTime = lastAvgTickTim;
     this.lastServerLoadLevel = lastServerLoad;
+    this.serverLoadLevel = currentServerLoad;
+  }
+
+  public boolean isDedicatedServer() {
+    return this.dist.isDedicatedServer();
+  }
+
+  public boolean isClient() {
+    return this.dist.isClient();
+  }
+
+  public double getAvgTickTime() {
+    return this.avgTickTime;
+  }
+
+  public double getLastAvgTickTime() {
+    return this.lastAvgTickTime;
   }
 
   public ServerLoadLevel getServerLoad() {

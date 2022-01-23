@@ -45,7 +45,8 @@ public class PlayerSimulationDistance {
   private static int simulationDistanceDefault = COMMON.simulationDistanceDefault.get();
   private static int simulationDistanceMax = COMMON.simulationDistanceMax.get();
   private static int simulationDistanceMin = COMMON.simulationDistanceMin.get();
-  private static int simulationDistanceTimeBetweenUpdates = COMMON.simulationDistanceTimeBetweenUpdates.get();
+  private static int simulationDistanceTimeBetweenUpdates =
+      COMMON.simulationDistanceTimeBetweenUpdates.get();
 
   private static long lastUpdateTime = System.currentTimeMillis();
   private static int timeBetweenUpdates = 10000;
@@ -67,7 +68,8 @@ public class PlayerSimulationDistance {
     if (!optimizeSimulationDistance) {
       return;
     }
-    log.info("Simulation distance will be optimized between {} and {} with {} as default and {} sec delay between updates.",
+    log.info(
+        "Simulation distance will be optimized between {} and {} with {} as default and {} sec delay between updates.",
         simulationDistanceMin, simulationDistanceMax, simulationDistanceDefault,
         simulationDistanceTimeBetweenUpdates);
     setSimulationDistance(simulationDistanceMin);
@@ -78,19 +80,23 @@ public class PlayerSimulationDistance {
     if (!optimizeSimulationDistance) {
       return;
     }
-    // To make the updates less noticeable we are delaying the updates.
-    if (System.currentTimeMillis() - lastUpdateTime <= timeBetweenUpdates) {
-      return;
-    }
+
+    // To make the updates less noticeable we are delaying increasing updates.
+    boolean shouldOptimizeViewDistance =
+        System.currentTimeMillis() - lastUpdateTime >= timeBetweenUpdates;
+
     boolean hasUpdated = false;
     int numOfPlayers = ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerCount();
+
+    // Decrease the simulation distance immediately, but increase the simulation distance with an
+    // delay.
     if (event.hasHighServerLoad()) {
       hasUpdated = decreaseSimulationDistance();
     } else if (event.hasNormalServerLoad() && numOfPlayers >= 1) {
       hasUpdated = decreaseSimulationDistance();
-    } else if (event.hasNormalServerLoad() && numOfPlayers == 1) {
+    } else if (shouldOptimizeViewDistance && event.hasNormalServerLoad() && numOfPlayers == 1) {
       hasUpdated = increaseSimulationDistance();
-    } else if (event.hasLowServerLoad() && numOfPlayers >= 1) {
+    } else if (shouldOptimizeViewDistance && event.hasLowServerLoad() && numOfPlayers >= 1) {
       hasUpdated = increaseSimulationDistance();
     }
 
@@ -118,12 +124,20 @@ public class PlayerSimulationDistance {
     return false;
   }
 
+  public static boolean increaseSimulationDistance(int factor) {
+    return setSimulationDistance(getSimulationDistance() + factor);
+  }
+
+  public static boolean decreaseSimulationDistance(int factor) {
+    return setSimulationDistance(getSimulationDistance() - factor);
+  }
+
   public static boolean increaseSimulationDistance() {
-    return setSimulationDistance(getSimulationDistance() + 1);
+    return increaseSimulationDistance(1);
   }
 
   public static boolean decreaseSimulationDistance() {
-    return setSimulationDistance(getSimulationDistance() - 1);
+    return decreaseSimulationDistance(1);
   }
 
   public static int getSimulationDistance() {

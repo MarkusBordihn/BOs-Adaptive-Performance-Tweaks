@@ -22,6 +22,7 @@ package de.markusbordihn.adaptiveperformancetweaksplayer.config;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -110,11 +111,12 @@ public final class CommonConfig {
       optimizeSimulationDistance = builder
           .comment("Enable/Disable simulation distance optimization depending on the server load.")
           .define("optimizeSimulationDistance", true);
-      simulationDistanceMax = builder.defineInRange("simulationDistanceMax", 12, 6, 32);
-      simulationDistanceMin = builder.defineInRange("simulationDistanceMin", 4, 2, 16);
-      simulationDistanceDefault = builder.defineInRange("simulationDistanceDefault", 6, 5, 16);
-      simulationDistanceTimeBetweenUpdates =
-          builder.defineInRange("simulationDistanceTimeBetweenUpdates", 10, 1, 90);
+      simulationDistanceMax = builder.defineInRange("simulationDistanceMax", 10, 6, 32);
+      simulationDistanceMin = builder.defineInRange("simulationDistanceMin", 2, 2, 16);
+      simulationDistanceDefault = builder.defineInRange("simulationDistanceDefault", 5, 5, 16);
+      simulationDistanceTimeBetweenUpdates = builder.comment(
+          "The time after a high to low load change is considered as valid. High loads are always considered immediately.")
+          .defineInRange("simulationDistanceTimeBetweenUpdates", 30, 1, 90);
       builder.pop();
 
       builder.push("View Distance");
@@ -124,8 +126,9 @@ public final class CommonConfig {
       viewDistanceMax = builder.defineInRange("viewDistanceMax", 16, 4, 32);
       viewDistanceMin = builder.defineInRange("viewDistanceMin", 5, 2, 16);
       viewDistanceDefault = builder.defineInRange("viewDistanceDefault", 8, 2, 16);
-      viewDistanceTimeBetweenUpdates =
-          builder.defineInRange("viewDistanceTimeBetweenUpdates", 30, 1, 90);
+      viewDistanceTimeBetweenUpdates = builder.comment(
+          "The time after a high to low load change is considered as valid. High loads are always considered immediately.")
+          .defineInRange("viewDistanceTimeBetweenUpdates", 60, 1, 90);
       builder.pop();
     }
   }

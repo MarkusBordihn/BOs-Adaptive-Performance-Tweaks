@@ -20,31 +20,54 @@
 package de.markusbordihn.adaptiveperformancetweakscore.server;
 
 import net.minecraft.server.level.ServerLevel;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.Event;
 
 import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLevelLoad.ServerLevelLoadLevel;
 
 public class ServerLevelLoadEvent extends Event {
 
+  private Dist dist;
   private ServerLevel serverLevel;
   private ServerLevelLoadLevel lastServerLevelLoadLevel = ServerLevelLoadLevel.NORMAL;
   private ServerLevelLoadLevel serverLevelLoadLevel = ServerLevelLoadLevel.NORMAL;
   private String serverLevelName;
   private double serverLevelLoadLevelFactor = 0;
   private int playerCount = 0;
+  private double avgTickTime = 50.0;
+  private double lastAvgTickTime = 45.0;
 
   public ServerLevelLoadEvent(ServerLevel serverLevel, ServerLevelLoadLevel serverLevelLoadLevel,
-      ServerLevelLoadLevel lastServerLevelLoadLevel) {
+      ServerLevelLoadLevel lastServerLevelLoadLevel,  double avgTickTime, double lastAvgTickTim, Dist dist) {
     super();
+    this.avgTickTime = avgTickTime;
+    this.dist = dist;
+    this.lastAvgTickTime = lastAvgTickTim;
+    this.lastServerLevelLoadLevel = lastServerLevelLoadLevel;
     this.playerCount = serverLevel.players().size();
     this.serverLevel = serverLevel;
-    this.serverLevelName = serverLevel.getLevel().dimension().location().toString();
-    this.lastServerLevelLoadLevel = lastServerLevelLoadLevel;
     this.serverLevelLoadLevel = serverLevelLoadLevel;
+    this.serverLevelName = serverLevel.getLevel().dimension().location().toString();
+  }
+
+  public boolean isDedicatedServer() {
+    return this.dist.isDedicatedServer();
+  }
+
+  public boolean isClient() {
+    return this.dist.isClient();
   }
 
   public int getPlayerCount() {
     return this.playerCount;
+  }
+
+  public double getAvgTickTime() {
+    return this.avgTickTime;
+  }
+
+  public double getLastAvgTickTime() {
+    return this.lastAvgTickTime;
   }
 
   public ServerLevel getServerLevel() {

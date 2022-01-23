@@ -17,9 +17,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.adaptiveperformancetweaksplayer.commands;
+package de.markusbordihn.adaptiveperformancetweaksgamerules.commands;
 
-import com.mojang.brigadier.arguments.IntegerArgumentType;
+import java.util.Map;
+
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -28,29 +29,28 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 
 import de.markusbordihn.adaptiveperformancetweakscore.commands.CustomCommand;
-import de.markusbordihn.adaptiveperformancetweaksplayer.player.PlayerViewDistance;
+import de.markusbordihn.adaptiveperformancetweaksgamerules.gamerules.GameRuleManager;
 
-public class ViewDistanceCommand extends CustomCommand {
+public class GameRuleCommand extends CustomCommand {
 
-  private static final ViewDistanceCommand command = new ViewDistanceCommand();
+  private static final GameRuleCommand command = new GameRuleCommand();
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
-    return Commands.literal("setViewDistance").requires(cs -> cs.hasPermission(2))
-        .then(Commands.argument("distance", IntegerArgumentType.integer(2, 32)).executes(command));
+    return Commands.literal("gamerules").requires(cs -> cs.hasPermission(2)).executes(command);
   }
 
   @Override
   public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-    final int viewDistance = IntegerArgumentType.getInteger(context, "distance");
-    if (viewDistance > PlayerViewDistance.getMaxViewDistance()
-        || viewDistance < PlayerViewDistance.getMinViewDistance()) {
-      sendFeedback(context,
-          "\u26A0 View distance needs to be between " + PlayerViewDistance.getMinViewDistance()
-              + " and " + PlayerViewDistance.getMaxViewDistance() + " !");
+    Map<String, String> gameRules = GameRuleManager.getGameRulesOverview();
+    if (gameRules.isEmpty()) {
+      sendFeedback(context, "Unable to get game rules overview!");
     } else {
-      sendFeedback(context, "\u25BA Try to change view distance from "
-          + PlayerViewDistance.getViewDistance() + " to " + viewDistance + "...");
-      PlayerViewDistance.setViewDistance(viewDistance);
+      sendFeedback(context, "Game Rule Overview\n===================");
+      StringBuilder output = new StringBuilder();
+      for (var gamerule : gameRules.entrySet()) {
+        output.append(String.format("%s: %s\n", gamerule.getKey(), gamerule.getValue()));
+      }
+      sendFeedback(context, output.toString());
     }
     return 0;
   }

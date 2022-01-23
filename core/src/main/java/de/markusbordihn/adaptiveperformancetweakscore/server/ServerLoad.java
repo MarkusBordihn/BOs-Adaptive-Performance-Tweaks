@@ -22,24 +22,29 @@ package de.markusbordihn.adaptiveperformancetweakscore.server;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.server.ServerLifecycleHooks;
-import net.minecraftforge.event.server.ServerAboutToStartEvent;
 
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweakscore.config.CommonConfig;
 
 @EventBusSubscriber
 public class ServerLoad {
+
   private static final Logger log = LogManager.getLogger(CoreConstants.LOG_NAME);
+
+  private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
+  private static boolean logServerLoad = CommonConfig.COMMON.logServerLoad.get();
+  private static int timeBetweenUpdates = COMMON.timeBetweenUpdates.get() * 1000;
+  private static long lastUpdateTime = System.currentTimeMillis();
 
   private static ServerLoadLevel currentServerLoad = ServerLoadLevel.NORMAL;
   private static ServerLoadLevel lastServerLoad = ServerLoadLevel.NORMAL;
-  private static boolean logServerLoad = CommonConfig.COMMON.logServerLoad.get();
-  private static double avgTickTime;
+  private static double avgTickTime = 50.0;
+  private static double lastAvgTickTime = 45.0;
 
   public enum ServerLoadLevel {
     VERY_LOW, LOW, NORMAL, MEDIUM, HIGH, VERY_HIGH
@@ -48,21 +53,37 @@ public class ServerLoad {
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
     logServerLoad = CommonConfig.COMMON.logServerLoad.get();
+    timeBetweenUpdates = COMMON.timeBetweenUpdates.get() * 1000;
   }
 
-  public static void measureLoadAndPost() {
-    MinecraftServer currentServer = ServerLifecycleHooks.getCurrentServer();
-    if (currentServer == null) {
+  public static void measureLoadAndPost(Dist dist) {
+    double currentAverangeTickTime = ServerManager.getAverageTickTime();
+
+    // Restrict and smoother high to low server load updates
+    if (lastAvgTickTime >= currentAverangeTickTime
+        && System.currentTimeMillis() - lastUpdateTime < timeBetweenUpdates) {
       return;
     }
-    avgTickTime = currentServer.getAverageTickTime();
+
+    // Cache former tick time and load and calculate current load.
+    lastAvgTickTime = avgTickTime;
+    avgTickTime = ServerManager.getAverageTickTime();
     lastServerLoad = currentServerLoad;
     currentServerLoad = getServerLoadLevelFromTickTime(avgTickTime);
+
+    // Report change to server log, if enabled.
     if (currentServerLoad != lastServerLoad && logServerLoad) {
-      log.info("Server load changed from {} to {} (avg. {})", lastServerLoad, currentServerLoad,
-          avgTickTime);
+      String loadIndicator = lastAvgTickTime > avgTickTime ? "↓" : "↑";
+      log.info("{} Server load changed from {} (avg. {}) to {} (avg. {})", loadIndicator,
+          lastServerLoad, lastAvgTickTime, currentServerLoad, avgTickTime);
     }
-    MinecraftForge.EVENT_BUS.post(new ServerLoadEvent(currentServerLoad, lastServerLoad));
+
+    // Post result to the event bus.
+    MinecraftForge.EVENT_BUS.post(
+        new ServerLoadEvent(currentServerLoad, lastServerLoad, avgTickTime, lastAvgTickTime, dist));
+
+    // Update the last update time
+    lastUpdateTime = System.currentTimeMillis();
   }
 
   public static ServerLoadLevel getServerLoadLevelFromTickTime(double tickTime) {
@@ -111,4 +132,5 @@ public class ServerLoad {
   public static double getAvgTickTime() {
     return avgTickTime;
   }
+
 }

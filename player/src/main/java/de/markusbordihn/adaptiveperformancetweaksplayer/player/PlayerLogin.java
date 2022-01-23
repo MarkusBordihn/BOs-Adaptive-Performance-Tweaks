@@ -61,9 +61,9 @@ public class PlayerLogin {
       return;
     }
 
-    // Skip optimization if there is no player on the server and the server load is normal or low.
+    // Skip optimization if there is no other player on the server and the server load is low.
     int numOfPlayers = ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerCount();
-    if (numOfPlayers == 0 && (ServerLoad.hasLowServerLoad() || ServerLoad.hasNormalServerLoad())) {
+    if (numOfPlayers == 0 && (ServerLoad.hasLowServerLoad())) {
       return;
     }
 

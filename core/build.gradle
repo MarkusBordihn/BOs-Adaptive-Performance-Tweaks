@@ -2,6 +2,7 @@ buildscript {
   repositories {
     maven { url = 'https://maven.minecraftforge.net' }
     mavenCentral()
+    jcenter()
   }
   dependencies {
     classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
@@ -16,7 +17,6 @@ plugins {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
-compileJava {options.encoding = "UTF-8"}
 
 version = "${version_major}.${version_minor}.${version_patch}"
 archivesBaseName = "${mod_id}_${mc_version}"
@@ -121,7 +121,7 @@ dependencies {
   // Specify the version of Minecraft to use, If this is any group other then 'net.minecraft' it is assumed
   // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
   // The userdev artifact is a special name and will get all sorts of transformations applied to it.
-  minecraft 'net.minecraftforge:forge:1.18.1-39.0.36'
+  minecraft 'net.minecraftforge:forge:1.18.1-39.0.59'
 
   // Additional helpful Mods for development (dev depenedency)
   // runtimeOnly fg.deobf("curse.maven:spark-361579:3542245")

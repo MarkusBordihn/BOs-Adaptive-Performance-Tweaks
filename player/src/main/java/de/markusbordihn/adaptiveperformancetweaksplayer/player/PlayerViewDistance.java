@@ -67,29 +67,36 @@ public class PlayerViewDistance {
     if (!optimizeViewDistance) {
       return;
     }
-    log.info("View distance will be optimized between {} and {} with {} as default and {} sec delay between updates.",
+    log.info(
+        "View distance will be optimized between {} and {} with {} as default and {} sec delay between updates.",
         viewDistanceMin, viewDistanceMax, viewDistanceDefault, viewDistanceTimeBetweenUpdates);
-    setViewDistance(viewDistanceMin);
+    if (event.getServer().isDedicatedServer()) {
+      setViewDistance(viewDistanceMin);
+    }
   }
 
   @SubscribeEvent
   public static void handleServerLoadEvent(ServerLoadEvent event) {
-    if (!optimizeViewDistance) {
+    // Don't optimize view distance on the client side or if feature is disabled.
+    if (event.isClient() || !optimizeViewDistance) {
       return;
     }
-    // To make the updates less noticeable we are delaying the updates.
-    if (System.currentTimeMillis() -  lastUpdateTime <= timeBetweenUpdates) {
-      return;
-    }
+
+    // To make the updates less noticeable we are delaying increasing updates.
+    boolean shouldOptimizeViewDistance =
+        System.currentTimeMillis() - lastUpdateTime >= timeBetweenUpdates;
+
     boolean hasUpdated = false;
     int numOfPlayers = ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerCount();
+
+    // Decrease the view distance immediately, but increase the view distance with an delay.
     if (event.hasHighServerLoad()) {
       hasUpdated = decreaseViewDistance();
     } else if (event.hasNormalServerLoad() && numOfPlayers >= 1) {
       hasUpdated = decreaseViewDistance();
-    } else if (event.hasNormalServerLoad() && numOfPlayers == 1) {
+    } else if (shouldOptimizeViewDistance && event.hasNormalServerLoad() && numOfPlayers == 1) {
       hasUpdated = increaseViewDistance();
-    } else if (event.hasLowServerLoad() && numOfPlayers >= 1) {
+    } else if (shouldOptimizeViewDistance && event.hasLowServerLoad() && numOfPlayers >= 1) {
       hasUpdated = increaseViewDistance();
     }
 
@@ -116,12 +123,20 @@ public class PlayerViewDistance {
     return false;
   }
 
+  public static boolean increaseViewDistance(int factor) {
+    return setViewDistance(getViewDistance() + factor);
+  }
+
+  public static boolean decreaseViewDistance(int factor) {
+    return setViewDistance(getViewDistance() - factor);
+  }
+
   public static boolean increaseViewDistance() {
-    return setViewDistance(getViewDistance() + 1);
+    return increaseViewDistance(1);
   }
 
   public static boolean decreaseViewDistance() {
-    return setViewDistance(getViewDistance() - 1);
+    return decreaseViewDistance(1);
   }
 
   public static int getViewDistance() {

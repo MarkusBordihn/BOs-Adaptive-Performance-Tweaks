@@ -45,7 +45,7 @@ public class SimulationDistanceCommand extends CustomCommand {
     if (simulationDistance > PlayerSimulationDistance.getMaxSimulationDistance()
         || simulationDistance < PlayerSimulationDistance.getMinSimulationDistance()) {
       sendFeedback(context,
-          "⚠️ Simulation distance needs to be between "
+          "\u26A0 Simulation distance needs to be between "
               + PlayerSimulationDistance.getMinSimulationDistance() + " and "
               + PlayerSimulationDistance.getMaxSimulationDistance() + " !");
     } else {

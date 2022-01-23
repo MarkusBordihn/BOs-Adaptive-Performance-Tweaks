@@ -52,6 +52,8 @@ public final class CommonConfig {
 
   public static class Config {
 
+    public final ForgeConfigSpec.IntValue timeBetweenUpdates;
+
     public final ForgeConfigSpec.BooleanValue entityCrammingEnabled;
     public final ForgeConfigSpec.IntValue minEntityCramming;
     public final ForgeConfigSpec.IntValue maxEntityCramming;
@@ -69,6 +71,12 @@ public final class CommonConfig {
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
+
+      builder.push("General");
+      timeBetweenUpdates = builder.comment(
+          "The time after a high to low load change is considered as valid. High loads are always considered immediately.")
+          .defineInRange("timeBetweenUpdates", 30, 1, 90);
+      builder.pop();
 
       builder.push("Entity Cramming");
       entityCrammingEnabled = builder.comment("Enable/Disable dynamic entity cramming adjustments.")

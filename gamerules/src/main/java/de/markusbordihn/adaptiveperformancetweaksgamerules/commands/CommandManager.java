@@ -17,28 +17,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.adaptiveperformancetweakscore;
+package de.markusbordihn.adaptiveperformancetweaksgamerules.commands;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import net.minecraftforge.fml.IExtensionPoint;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.NetworkConstants;
+import com.mojang.brigadier.CommandDispatcher;
 
-@Mod(CoreConstants.MOD_ID)
-public class AdaptivePerformanceTweaksCore {
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
-  public AdaptivePerformanceTweaksCore() {
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import de.markusbordihn.adaptiveperformancetweaksgamerules.Constants;
 
-    log.info("{}", Constants.LOG_REGISTER_PREFIX);
+@EventBusSubscriber
+public class CommandManager {
 
-    ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class,
-        () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY,
-            (a, b) -> true));
+  private static final Logger log = LogManager.getLogger(CoreConstants.LOG_NAME);
+
+  protected CommandManager() {}
+
+  @SubscribeEvent
+  public static void handleRegisterCommandsEvent(RegisterCommandsEvent event) {
+    log.info("Registering /aptweaks commands for {} ...", Constants.MOD_NAME);
+    CommandDispatcher<CommandSourceStack> commandDispatcher = event.getDispatcher();
+    commandDispatcher.register(Commands.literal(CoreConstants.MOD_COMMAND)
+    // @formatter:off
+      .then(GameRuleCommand.register())
+    // @formatter:on
+    );
   }
 
 }
