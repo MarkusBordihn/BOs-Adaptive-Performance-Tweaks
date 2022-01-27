@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Markus Bordihn
+ * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
  * associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -19,37 +19,31 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.commands;
 
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import de.markusbordihn.adaptiveperformancetweakscore.Constants;
+import de.markusbordihn.adaptiveperformancetweakscore.debug.DebugManager;
 
-public class KillCommand extends CustomCommand {
+public class DebugCommand extends CustomCommand {
 
-  private static final KillCommand command = new KillCommand();
+  private static final DebugCommand command = new DebugCommand();
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
-    return Commands.literal("kill").requires(cs -> cs.hasPermission(2)).executes(command::run)
-        .then(Commands.literal("entities").executes(command::killEntities))
-        .then(Commands.literal("items").executes(command::killItems));
+    return Commands.literal("debug").requires(cs -> cs.hasPermission(2))
+        .then(Commands.literal("core")
+            .then(Commands.argument("enable", BoolArgumentType.bool()).executes(command)));
   }
 
   @Override
-  public int run(CommandContext<CommandSourceStack> context) {
-    sendFeedback(context,
-        "kill entities: kill all entities except players\nkill items: kill items entities");
+  public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+    final boolean enable = BoolArgumentType.getBool(context, "enable");
+    sendDebugFeedback(context, Constants.MODULE_NAME, enable);
+    DebugManager.enableDebugLevel(Constants.LOG_NAME, enable);
     return 0;
   }
-
-  public int killEntities(CommandContext<CommandSourceStack> context) {
-    CommandManager.executeUserCommand("kill @e[type=!player,distance=0..]");
-    return 0;
-  }
-
-  public int killItems(CommandContext<CommandSourceStack> context) {
-    CommandManager.executeUserCommand("kill @e[type=item,distance=0..]");
-    return 0;
-  }
-
 }

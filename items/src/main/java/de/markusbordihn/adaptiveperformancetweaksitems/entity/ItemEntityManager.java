@@ -37,7 +37,7 @@ import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -53,28 +53,37 @@ import de.markusbordihn.adaptiveperformancetweaksitems.config.CommonConfig;
 @EventBusSubscriber
 public class ItemEntityManager {
 
-  private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
+  private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
   private static Integer maxNumberOfItems = COMMON.maxNumberOfItems.get();
   private static Integer maxNumberOfItemsPerType = COMMON.maxNumberOfItemsPerType.get();
+  private static boolean optimizeItems = COMMON.optimizeItems.get();
+  private static int itemClusterRange = COMMON.itemsClusterRange.get();
+
   private static Map<String, Set<ItemEntity>> itemTypeEntityMap = new ConcurrentHashMap<>();
   private static Map<String, Set<ItemEntity>> itemWorldEntityMap = new ConcurrentHashMap<>();
   private static boolean hasHighServerLoad = false;
   private static boolean needsOptimization = false;
-  private static boolean optimizeItems = COMMON.optimizeItems.get();
-  private static int itemClusterRange = COMMON.itemsClusterRange.get();
+
+  private static short ticks = 0;
+  private static final short VERIFICATION_TICK = 30 * 20;
 
   protected ItemEntityManager() {}
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
+    // Reset cache to avoid side effects.
     itemTypeEntityMap = new ConcurrentHashMap<>();
     itemWorldEntityMap = new ConcurrentHashMap<>();
+
+    // Re-load config options.
     itemClusterRange = COMMON.itemsClusterRange.get();
     maxNumberOfItems = COMMON.maxNumberOfItems.get();
     maxNumberOfItemsPerType = COMMON.maxNumberOfItemsPerType.get();
     optimizeItems = COMMON.optimizeItems.get();
+
+    // Show additional messages, if needed.
     if (maxNumberOfItems < maxNumberOfItemsPerType) {
       maxNumberOfItems = maxNumberOfItemsPerType * 2;
       log.error(
@@ -87,6 +96,14 @@ public class ItemEntityManager {
       log.info("Enable clustering of items with a radius of {} blocks.", itemClusterRange);
     } else {
       log.info("Item Optimization is disabled!");
+    }
+  }
+
+  @SubscribeEvent
+  public static void handleClientServerTickEvent(TickEvent.ServerTickEvent event) {
+    if (event.phase == TickEvent.Phase.END && ticks++ >= VERIFICATION_TICK) {
+      verifyEntities();
+      ticks = 0;
     }
   }
 
@@ -152,8 +169,7 @@ public class ItemEntityManager {
       if (itemStack != null && itemStack.isStackable()
           && itemStack.getCount() < itemStack.getMaxStackSize()
           && itemStack.getMaxStackSize() > 1) {
-        Set<ItemEntity> itemEntities = new HashSet<>(itemTypeEntities);
-        Iterator<ItemEntity> itemEntitiesIterator = itemEntities.iterator();
+        // Get basic information about the current item.
         int x = (int) itemEntity.getX();
         int y = (int) itemEntity.getY();
         int z = (int) itemEntity.getZ();
@@ -164,6 +180,10 @@ public class ItemEntityManager {
         int yEnd = y + itemClusterRange;
         int zEnd = z + itemClusterRange;
         boolean itemCanSeeSky = level.canSeeSky(itemEntity.blockPosition());
+
+        // Compare information with known items.
+        Set<ItemEntity> itemEntities = new HashSet<>(itemTypeEntities);
+        Iterator<ItemEntity> itemEntitiesIterator = itemEntities.iterator();
         while (itemEntitiesIterator.hasNext()) {
           ItemEntity existingItemEntity = itemEntitiesIterator.next();
           int xSub = (int) existingItemEntity.getX();
@@ -189,7 +209,7 @@ public class ItemEntityManager {
       }
     }
 
-    // Storing items per world regardless of type
+    // Storing items per world regardless of item type
     itemWorldEntityMap.computeIfAbsent(levelName, k -> new LinkedHashSet<>());
     Set<ItemEntity> itemWorldEntities = itemWorldEntityMap.get(levelName);
     itemWorldEntities.add(itemEntity);
@@ -319,6 +339,7 @@ public class ItemEntityManager {
         }
       }
     }
+
     if (numberOfRemovedItems > 0) {
       log.debug("[Optimized Items] Removed {} items from all worlds!", numberOfRemovedItems);
     } else {
@@ -337,5 +358,37 @@ public class ItemEntityManager {
 
   public static Map<String, Set<ItemEntity>> getItemTypeEntityMap() {
     return itemTypeEntityMap;
+  }
+
+  public static void verifyEntities() {
+    int removedEntries = 0;
+
+    // Verify Entities in overall overview
+    for (Set<ItemEntity> entities : itemTypeEntityMap.values()) {
+      Iterator<ItemEntity> entityIterator = entities.iterator();
+      while (entityIterator.hasNext()) {
+        Entity entity = entityIterator.next();
+        if (entity != null && entity.isRemoved()) {
+          entityIterator.remove();
+          removedEntries++;
+        }
+      }
+    }
+
+    // Verify Entities from world specific overview
+    for (Set<ItemEntity> entities : itemWorldEntityMap.values()) {
+      Iterator<ItemEntity> entityIterator = entities.iterator();
+      while (entityIterator.hasNext()) {
+        Entity entity = entityIterator.next();
+        if (entity != null && entity.isRemoved()) {
+          entityIterator.remove();
+          removedEntries++;
+        }
+      }
+    }
+
+    if (removedEntries > 0) {
+      log.debug("Removed {} entries during the verification", removedEntries);
+    }
   }
 }

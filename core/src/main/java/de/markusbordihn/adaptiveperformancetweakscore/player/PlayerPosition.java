@@ -23,6 +23,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 
 public class PlayerPosition {
+
+  private static final String OVERWORLD = "minecraft:overworld";
+  private static final int CHUNK_SIZE = 16;
+  private static final int MAX_BUILD_HEIGHT = 320;
+  private static final int MIN_BUILD_HEIGHT = -64;
+  private static final int OVERGROUND_Y = 63;
+  private static final int OVERGROUND_Y_MIN_VIEW = OVERGROUND_Y - 12;
+  private static final int WATER_Y_MAX_VIEW = OVERGROUND_Y + 12;
+
   private ServerPlayer player;
   private String playerName = "";
   private String levelName = "";
@@ -33,6 +42,8 @@ public class PlayerPosition {
   private int posX = 0;
   private int posY = 0;
   private int posZ = 0;
+  private int simulationDistance = 4;
+  private int viewAreaDistance = 8;
   private int viewAreaStartX = 0;
   private int viewAreaStartY = 0;
   private int viewAreaStartZ = 0;
@@ -41,48 +52,24 @@ public class PlayerPosition {
   private int viewAreaStopZ = 0;
   private int viewDistance = 8;
 
-  private static final int CHUNK_SIZE = 16;
-  private static final int MAX_BUILD_HEIGHT = 320;
-  private static final int MIN_BUILD_HEIGHT = -64;
-
-  public PlayerPosition(ServerPlayer player, int viewDistance) {
+  public PlayerPosition(ServerPlayer player, int viewDistance, int simulationDistance) {
     this.player = player;
     this.playerName = player.getName().getString();
-    this.updatePosition(player.getLevel().dimension().location().toString(), viewDistance);
+    this.updatePosition(player.getLevel().dimension().location().toString(), viewDistance,
+        simulationDistance);
     this.calculateViewArea();
   }
 
-  public boolean update(ServerPlayer player, int viewDistance) {
-    return update(player.getLevel().dimension().location().toString(), viewDistance);
+  public void update(ServerPlayer player, int viewDistance, int simulationDistance) {
+    update(player.getLevel().dimension().location().toString(), viewDistance, simulationDistance);
   }
 
-  public boolean update(String levelName, int viewDistance) {
-    if (!this.levelName.equals(levelName)
-        || this.viewDistance != viewDistance || this.lastActionTime != this.player.getLastActionTime()
-        || hasChangedPosition()) {
-      this.updatePosition(levelName, viewDistance);
-      return true;
+  public void update(String levelName, int viewDistance, int simulationDistance) {
+    if (!this.levelName.equals(levelName) || this.viewDistance != viewDistance
+        || this.simulationDistance != simulationDistance
+        || this.lastActionTime != this.player.getLastActionTime() || hasChangedPosition()) {
+      this.updatePosition(levelName, viewDistance, simulationDistance);
     }
-    return false;
-  }
-
-  public void updatePosition(String levelName, int viewDistance) {
-    this.lastActionTime = player.getLastActionTime();
-    Vec3 position = player.position();
-    this.posX = (int) position.x;
-    this.posY = (int) position.y;
-    this.posZ = (int) position.z;
-    this.canSeeSky = this.player.getLevel().canSeeSky(this.player.blockPosition());
-    this.isUnderWater = this.player.isUnderWater();
-    if (!this.levelName.equals(levelName)) {
-      this.levelName = levelName;
-    }
-    updateViewDistance(viewDistance);
-    this.viewAreaCalculated = false;
-  }
-
-  public void updateViewDistance(int viewDistance) {
-    this.viewDistance = viewDistance;
   }
 
   public boolean isInsidePlayerViewArea(String levelName, int x, int y, int z) {
@@ -106,31 +93,77 @@ public class PlayerPosition {
         || Integer.compare(this.posZ, (int) currentPosition.z) != 0;
   }
 
+  private void updatePosition(String levelName, int viewDistance, int simulationDistance) {
+    this.lastActionTime = player.getLastActionTime();
+    Vec3 position = player.position();
+    this.posX = (int) position.x;
+    this.posY = (int) position.y;
+    this.posZ = (int) position.z;
+    this.canSeeSky = this.player.getLevel().canSeeSky(this.player.blockPosition());
+    this.isUnderWater = this.player.isUnderWater();
+    if (!this.levelName.equals(levelName)) {
+      this.levelName = levelName;
+    }
+    this.simulationDistance = simulationDistance;
+    this.viewDistance = viewDistance;
+    this.viewAreaCalculated = false;
+  }
+
   private void calculateViewArea() {
     if (this.viewAreaCalculated) {
       return;
     }
 
+    // Calculate view area distance in blocks based on surrounding factors
+    if (!this.canSeeSky || this.isUnderWater) {
+      this.viewAreaDistance = (this.simulationDistance < this.viewDistance ? this.simulationDistance
+          : this.simulationDistance - 1) * CHUNK_SIZE;
+    } else {
+      this.viewAreaDistance = this.viewDistance * CHUNK_SIZE;
+    }
+
     // Simple calculation for X, Y and Z
-    this.viewAreaStartX = this.posX - this.viewDistance * CHUNK_SIZE;
-    this.viewAreaStopX = this.posX + this.viewDistance * CHUNK_SIZE;
-    this.viewAreaStartY = Math.max(this.posY - this.viewDistance * CHUNK_SIZE, MIN_BUILD_HEIGHT);
-    this.viewAreaStopY = Math.min(this.posY + this.viewDistance * CHUNK_SIZE, MAX_BUILD_HEIGHT);
-    this.viewAreaStartZ = this.posZ - this.viewDistance * CHUNK_SIZE;
-    this.viewAreaStopZ = this.posZ + this.viewDistance * CHUNK_SIZE;
+    this.viewAreaStartX = this.posX - this.viewAreaDistance;
+    this.viewAreaStopX = this.posX + this.viewAreaDistance;
+    this.viewAreaStartY = Math.max(this.posY - this.viewAreaDistance, MIN_BUILD_HEIGHT);
+    this.viewAreaStopY = Math.min(this.posY + this.viewAreaDistance, MAX_BUILD_HEIGHT);
+    this.viewAreaStartZ = this.posZ - this.viewAreaDistance;
+    this.viewAreaStopZ = this.posZ + this.viewAreaDistance;
+
+    // Additional optimization based on the current position, world and other factors like if the
+    // player is able to see the sky, if the player is overground or underground.
+    if (OVERWORLD.equals(this.levelName)) {
+
+      // Player is on overground and can see Sky
+      if (this.posY >= OVERGROUND_Y) {
+        this.viewAreaStartY = OVERGROUND_Y_MIN_VIEW;
+      }
+
+      // Player is underground and can not see the sky
+      else if (!this.canSeeSky) {
+        this.viewAreaStopY = OVERGROUND_Y;
+      }
+
+      // Player is underground and underwater
+      else if (this.isUnderWater) {
+        this.viewAreaStopY = WATER_Y_MAX_VIEW;
+      }
+    }
 
     this.viewAreaCalculated = true;
   }
 
   public String toString() {
-    // Makes sure we get accurate values, if the view area is not calculated yet.
+    // Make sure to calculate view area before displaying results.
     calculateViewArea();
+
     return "PlayerPosition[Player{name: '" + this.playerName + "', world: '" + this.levelName
         + "', x:" + this.posX + ", y:" + this.posY + ", z:" + this.posZ + ", viewDistance: "
-        + this.viewDistance + "}, Range{x:" + this.viewAreaStartX + " to " + this.viewAreaStopX
-        + ", y:" + this.viewAreaStartY + " to " + this.viewAreaStopY + ", z:" + this.viewAreaStartZ
-        + " to " + this.viewAreaStopZ + "}, Meta{canSeeSky: " + this.canSeeSky + ", isUnderWater: "
-        + this.isUnderWater + "}]";
+        + this.viewDistance + ", simulationDistance: " + this.simulationDistance
+        + ", viewAreaDistance: " + this.viewAreaDistance + "}, Range{x:" + this.viewAreaStartX
+        + " to " + this.viewAreaStopX + ", y:" + this.viewAreaStartY + " to " + this.viewAreaStopY
+        + ", z:" + this.viewAreaStartZ + " to " + this.viewAreaStopZ + "}, Meta{canSeeSky: "
+        + this.canSeeSky + ", isUnderWater: " + this.isUnderWater + "}]";
   }
 
 }

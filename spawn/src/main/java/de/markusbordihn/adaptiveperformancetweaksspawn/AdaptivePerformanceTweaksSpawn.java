@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Markus Bordihn
+ * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
  * associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -17,19 +17,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.adaptiveperformancetweakscore;
+package de.markusbordihn.adaptiveperformancetweaksspawn;
 
-public final class Constants {
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-  protected Constants() {}
+import net.minecraftforge.fml.IExtensionPoint;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.NetworkConstants;
 
-  // General Mod definitions
-  public static final String ISSUE_REPORT =
-      "https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues";
-  public static final String LOG_NAME = "APTweaks(Core)";
-  public static final String LOG_REGISTER_PREFIX = "Register Adaptive Performance Tweaks: Core";
-  public static final String MOD_COMMAND = "aptweaks";
-  public static final String MOD_ID = "adaptive_performance_tweaks_core";
-  public static final String MOD_NAME = "Adaptive Performance Tweaks: Core";
-  public static final String MODULE_NAME = "Core";
+@Mod(Constants.MOD_ID)
+public class AdaptivePerformanceTweaksSpawn {
+
+  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+
+  public AdaptivePerformanceTweaksSpawn() {
+    log.info(Constants.LOG_THANKS);
+    ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class,
+        () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY,
+            (a, b) -> true));
+  }
+
 }

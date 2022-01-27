@@ -17,39 +17,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.adaptiveperformancetweakscore.commands;
+package de.markusbordihn.adaptiveperformancetweaksspawn.commands;
 
-import com.mojang.brigadier.builder.ArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.mojang.brigadier.CommandDispatcher;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 
-public class KillCommand extends CustomCommand {
+import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
-  private static final KillCommand command = new KillCommand();
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 
-  public static ArgumentBuilder<CommandSourceStack, ?> register() {
-    return Commands.literal("kill").requires(cs -> cs.hasPermission(2)).executes(command::run)
-        .then(Commands.literal("entities").executes(command::killEntities))
-        .then(Commands.literal("items").executes(command::killItems));
-  }
+@EventBusSubscriber
+public class CommandManager {
 
-  @Override
-  public int run(CommandContext<CommandSourceStack> context) {
-    sendFeedback(context,
-        "kill entities: kill all entities except players\nkill items: kill items entities");
-    return 0;
-  }
+  private static final Logger log = LogManager.getLogger(CoreConstants.LOG_NAME);
 
-  public int killEntities(CommandContext<CommandSourceStack> context) {
-    CommandManager.executeUserCommand("kill @e[type=!player,distance=0..]");
-    return 0;
-  }
+  protected CommandManager() {}
 
-  public int killItems(CommandContext<CommandSourceStack> context) {
-    CommandManager.executeUserCommand("kill @e[type=item,distance=0..]");
-    return 0;
+  @SubscribeEvent
+  public static void handleRegisterCommandsEvent(RegisterCommandsEvent event) {
+    log.info("Registering /aptweaks commands for {} ...", Constants.MOD_NAME);
+    CommandDispatcher<CommandSourceStack> commandDispatcher = event.getDispatcher();
+    commandDispatcher.register(Commands.literal(CoreConstants.MOD_COMMAND)
+    // @formatter:off
+      .then(DebugCommand.register())
+    // @formatter:on
+    );
   }
 
 }

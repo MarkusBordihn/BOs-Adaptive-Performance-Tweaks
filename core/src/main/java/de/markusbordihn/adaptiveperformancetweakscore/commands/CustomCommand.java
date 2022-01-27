@@ -21,17 +21,39 @@ package de.markusbordihn.adaptiveperformancetweakscore.commands;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
-
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.TextComponent;
 
 public abstract class CustomCommand implements Command<CommandSourceStack> {
 
-  protected CustomCommand() {
-  }
+  protected CustomCommand() {}
 
   public static void sendFeedback(CommandContext<CommandSourceStack> context, String feedback) {
     CommandSourceStack commandSource = context.getSource();
     commandSource.sendSuccess(new TextComponent(feedback), false);
   }
+
+  public static void sendDebugFeedback(CommandContext<CommandSourceStack> context, String module,
+      boolean enabled) {
+    CommandSourceStack commandSource = context.getSource();
+    String commandName = module.toLowerCase();
+    if (enabled) {
+      commandSource.sendSuccess(new TextComponent("\u25BA Enable debug for the " + module
+          + " module, please check debug.log for the full output.").withStyle(ChatFormatting.GREEN),
+          false);
+      commandSource.sendSuccess(new TextComponent(
+          "> Use '/aptweaks debug " + commandName + " false' to disable the debug!")
+              .withStyle(ChatFormatting.WHITE),
+          false);
+    } else {
+      commandSource
+          .sendSuccess(new TextComponent("\u25A0 Disable debug for the " + commandName + " module!")
+              .withStyle(ChatFormatting.RED), false);
+      commandSource
+          .sendSuccess(new TextComponent("> Please check the debug.log for the full output.")
+              .withStyle(ChatFormatting.WHITE), false);
+    }
+  }
+
 }

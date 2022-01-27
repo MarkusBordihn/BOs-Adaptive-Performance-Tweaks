@@ -78,11 +78,12 @@ public class PlayerPositionManager {
         if (playerList != null) {
           List<ServerPlayer> serverPlayerList = playerList.getPlayers();
           int viewDistance = playerList.getViewDistance();
+          int simulationDistance = playerList.getSimulationDistance();
           if (!serverPlayerList.isEmpty()) {
             for (ServerPlayer player : ServerLifecycleHooks.getCurrentServer().getPlayerList()
                 .getPlayers()) {
               if (player.isAlive() && !player.hasDisconnected()) {
-                updatePlayerPosition(player, viewDistance);
+                updatePlayerPosition(player, viewDistance, simulationDistance);
               }
             }
           }
@@ -116,12 +117,10 @@ public class PlayerPositionManager {
     return playerPositionMap;
   }
 
-  private static void updatePlayerPosition(ServerPlayer player, int viewDistance) {
+  private static void updatePlayerPosition(ServerPlayer player, int viewDistance, int simulationDistance) {
     String username = player.getName().getString();
     PlayerPosition playerPosition = playerPositionMap.computeIfAbsent(username, k -> new PlayerPosition(player,
-        viewDistance));
-    if (playerPosition.update(player, viewDistance)) {
-      log.debug("Update player position for {} with {}", username, playerPosition);
-    }
+        viewDistance, simulationDistance));
+    playerPosition.update(player, viewDistance, simulationDistance);
   }
 }

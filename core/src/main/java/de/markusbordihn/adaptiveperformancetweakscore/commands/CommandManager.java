@@ -47,6 +47,8 @@ public class CommandManager {
     CommandDispatcher<CommandSourceStack> commandDispatcher = event.getDispatcher();
     commandDispatcher.register(Commands.literal(CoreConstants.MOD_COMMAND)
     // @formatter:off
+      .then(DebugCommand.register())
+      .then(EntityCommand.register())
       .then(KillCommand.register())
       .then(LoadCommand.register())
       .then(PlayerPositionCommand.register())

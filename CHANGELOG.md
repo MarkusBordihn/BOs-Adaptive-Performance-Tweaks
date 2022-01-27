@@ -6,6 +6,22 @@ This change log includes the summarized changes.
 For the full changelog, please go to the following url instead:
 <https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/commits/main>
 
+### 2022.01.27
+
+- Added experimental entity / spawn control module.
+- Added debug manager for easy activate of the debug output over `/aptweaks debug <module> <enable|disable>`.
+- Fixed smaller performance issue.
+
+### 2022.01.26
+
+- Added automatic clean-up every 30 secs for the item cache.
+- Optimized kill command to work only inside a specific dimension.
+- Preparation for entity / spawn control module
+  - Adjusted view area calculation to consider additional factors
+  - Added `/aptweaks entity <options> command`
+  - Added entity monitoring
+  - Added automatic clean-up every 30 secs for the entity / spawn cache.
+
 ### 2022.01.23
 
 - Overworked modules and optimized cpu and memory usage
