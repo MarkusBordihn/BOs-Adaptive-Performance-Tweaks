@@ -37,6 +37,7 @@ import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
@@ -125,7 +126,7 @@ public class ItemEntityManager {
     }
   }
 
-  @SubscribeEvent(priority = EventPriority.HIGH)
+  @SubscribeEvent(priority = EventPriority.HIGHEST)
   public static void handleItemEntityJoinWorldEvent(EntityJoinWorldEvent event) {
     // Ignore client side world.
     Level level = event.getWorld();
@@ -133,9 +134,9 @@ public class ItemEntityManager {
       return;
     }
 
-    // Ignore everything else besides Items
+    // Ignore everything else besides Items or items which are removed.
     Entity entity = event.getEntity();
-    if (!(entity instanceof ItemEntity)) {
+    if (!(entity instanceof ItemEntity) || entity.isRemoved()) {
       return;
     }
 
@@ -156,8 +157,8 @@ public class ItemEntityManager {
     // Get world name and start processing of data
     String levelName = level.dimension().location().toString();
     if (log.isDebugEnabled()) {
-      log.debug("Item {} {} joined {}.", itemName, itemEntity.getDisplayName().getString(),
-          levelName);
+      log.debug("[Item joined {}] {} {}", levelName, itemName,
+          itemEntity.getDisplayName().getString());
     }
 
     // Check if items could be merged with other items
@@ -199,7 +200,7 @@ public class ItemEntityManager {
               && ((itemCanSeeSky && existingItemCanSeeSky) || (yStart < ySub && ySub < yEnd))
               && (zStart < zSub && zSub < zEnd)) {
             int newItemCount = existingItemStack.getCount() + itemStack.getCount();
-            log.debug("Merge item {} with {} and {} items", itemEntity, existingItemEntity,
+            log.debug("[Merge Item] {} + {} = {} items", itemEntity, existingItemEntity,
                 newItemCount);
             ItemStack combinedItemStack = ItemEntity.merge(existingItemStack, itemStack, 64);
             existingItemEntity.setItem(combinedItemStack);
@@ -252,7 +253,7 @@ public class ItemEntityManager {
     }
   }
 
-  @SubscribeEvent
+  @SubscribeEvent(priority = EventPriority.HIGHEST)
   public static void handleItemEntityLeaveWorldEvent(EntityLeaveWorldEvent event) {
     // Ignore client side world.
     Level level = event.getWorld();
@@ -291,8 +292,8 @@ public class ItemEntityManager {
     if (itemTypeEntities != null) {
       itemTypeEntities.remove(itemEntity);
       if (log.isDebugEnabled()) {
-        log.debug("Item {} {} leaved {}.", itemName, itemEntity.getDisplayName().getString(),
-            levelName);
+        log.debug("[Item leaved {}] {} {}.", levelName, itemName,
+            itemEntity.getDisplayName().getString());
       }
     } else {
       log.warn("Item {} {} in {} was not tracked by item entity manager!", itemName,
@@ -388,7 +389,7 @@ public class ItemEntityManager {
     }
 
     if (removedEntries > 0) {
-      log.debug("Removed {} entries during the verification", removedEntries);
+      log.debug("[Verification] Removed {} entries", removedEntries);
     }
   }
 }

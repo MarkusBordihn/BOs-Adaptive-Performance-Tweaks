@@ -36,8 +36,10 @@ import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.npc.Npc;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.vehicle.AbstractMinecartContainer;
 import net.minecraft.world.entity.vehicle.MinecartChest;
 import net.minecraft.world.level.Level;
 
@@ -51,6 +53,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 import de.markusbordihn.adaptiveperformancetweakscore.Constants;
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweakscore.player.PlayerPosition;
 
 @EventBusSubscriber
@@ -89,7 +92,7 @@ public class EntityManager {
       return;
     }
 
-    // Ignore entities which are not relevant.
+    // Entity instance checks to ignore specific and short living entities like projectiles.
     Entity entity = event.getEntity();
     if (!isRelevantEntity(entity)) {
       return;
@@ -107,7 +110,7 @@ public class EntityManager {
             entity.getType(), entity.getCustomName().getString(), levelName);
       } else {
         log.warn("Unknown entity name for entity {} ({}) in {}. Please report this issue under {}!",
-            entity, entity.getType(), levelName, Constants.ISSUE_REPORT);
+            entity, entity.getType(), levelName, CoreConstants.ISSUE_REPORT);
       }
       return;
     }
@@ -305,7 +308,8 @@ public class EntityManager {
     return !(entity instanceof ExperienceOrb || entity instanceof ItemEntity
         || entity instanceof LightningBolt || entity instanceof FallingBlockEntity
         || entity instanceof Projectile || entity instanceof MinecartChest
-        || entity instanceof Player);
+        || entity instanceof AbstractMinecartContainer || entity instanceof Player
+        || entity instanceof Npc || entity.isRemoved());
   }
 
 }

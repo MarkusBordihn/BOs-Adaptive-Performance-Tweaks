@@ -31,13 +31,12 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
-import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 
 @EventBusSubscriber
 public class CommandManager {
 
-  private static final Logger log = LogManager.getLogger(CoreConstants.LOG_NAME);
+  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   protected CommandManager() {}
 
@@ -45,7 +44,7 @@ public class CommandManager {
   public static void handleRegisterCommandsEvent(RegisterCommandsEvent event) {
     log.info("Registering /aptweaks commands for {} ...", Constants.MOD_NAME);
     CommandDispatcher<CommandSourceStack> commandDispatcher = event.getDispatcher();
-    commandDispatcher.register(Commands.literal(CoreConstants.MOD_COMMAND)
+    commandDispatcher.register(Commands.literal(Constants.MOD_COMMAND)
     // @formatter:off
       .then(DebugCommand.register())
     // @formatter:on

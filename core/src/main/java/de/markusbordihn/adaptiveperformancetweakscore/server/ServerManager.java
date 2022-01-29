@@ -34,12 +34,12 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.server.ServerLifecycleHooks;
 import net.minecraftforge.event.server.ServerStartingEvent;
 
-import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import de.markusbordihn.adaptiveperformancetweakscore.Constants;
 
 @EventBusSubscriber
 public class ServerManager {
 
-  private static final Logger log = LogManager.getLogger(CoreConstants.LOG_NAME);
+  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static short ticks = 0;
   private static final short SERVER_LOAD_TICK = 1 * 20;

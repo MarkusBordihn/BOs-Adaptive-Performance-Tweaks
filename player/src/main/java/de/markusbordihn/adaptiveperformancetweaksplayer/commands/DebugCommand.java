@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Markus Bordihn
+ * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
  * associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -19,37 +19,33 @@
 
 package de.markusbordihn.adaptiveperformancetweaksplayer.commands;
 
-import com.mojang.brigadier.CommandDispatcher;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.brigadier.builder.ArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-
 import de.markusbordihn.adaptiveperformancetweaksplayer.Constants;
+import de.markusbordihn.adaptiveperformancetweakscore.commands.CustomCommand;
+import de.markusbordihn.adaptiveperformancetweakscore.debug.DebugManager;
 
-@EventBusSubscriber
-public class CommandManager {
+public class DebugCommand extends CustomCommand {
 
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  private static final DebugCommand command = new DebugCommand();
 
-  protected CommandManager() {}
-
-  @SubscribeEvent
-  public static void handleRegisterCommandsEvent(RegisterCommandsEvent event) {
-    log.info("Registering /aptweaks commands for {} ...", Constants.MOD_NAME);
-    CommandDispatcher<CommandSourceStack> commandDispatcher = event.getDispatcher();
-    commandDispatcher.register(Commands.literal(Constants.MOD_COMMAND)
-    // @formatter:off
-      .then(DebugCommand.register())
-      .then(SimulationDistanceCommand.register())
-      .then(ViewDistanceCommand.register())
-    // @formatter:on
-    );
+  public static ArgumentBuilder<CommandSourceStack, ?> register() {
+    return Commands.literal("debug").requires(cs -> cs.hasPermission(2))
+        .then(Commands.literal("player")
+            .then(Commands.argument("enable", BoolArgumentType.bool()).executes(command)));
   }
 
+  @Override
+  public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+    final boolean enable = BoolArgumentType.getBool(context, "enable");
+    sendDebugFeedback(context, Constants.MODULE_NAME, enable);
+    DebugManager.enableDebugLevel(Constants.LOG_NAME, enable);
+    return 0;
+  }
 }

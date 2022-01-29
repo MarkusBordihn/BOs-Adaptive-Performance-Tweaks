@@ -19,23 +19,15 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.NetworkConstants;
 
-@Mod(CoreConstants.MOD_ID)
+@Mod(Constants.MOD_ID)
 public class AdaptivePerformanceTweaksCore {
 
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-
   public AdaptivePerformanceTweaksCore() {
-
-    log.info("{}", Constants.LOG_REGISTER_PREFIX);
-
     ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class,
         () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY,
             (a, b) -> true));

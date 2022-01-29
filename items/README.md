@@ -37,8 +37,16 @@ If you want to pick and choose your optimization mod, take a look at the core pa
 
 Please report issues over the **Issue** link.
 
-[header]: ../assets/aptweaks-header.png
+## Version Status Overview 🛠️
 
+| Version        | Status                |
+| -------------- | --------------------- |
+| Fabric Version | ❌ Not planned        |
+| Forge 1.16.5   | ❌ Not planned        |
+| Forge 1.17.1   | ❌ Not planned        |
+| Forge 1.18.1   | ✔️ Active development |
+
+[header]: ../assets/aptweaks-header.png
 [core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
 [gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules

@@ -19,32 +19,44 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore;
 
+import net.minecraftforge.fml.ModList;
+
 public final class CoreConstants {
 
-    protected CoreConstants() {
-    }
+  protected CoreConstants() {}
 
-    // General Mod definitions
-    public static final String ISSUE_REPORT = "https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues";
-    public static final String LOG_NAME = "APTweaks(Core)";
-    public static final String MOD_COMMAND = "aptweaks";
-    public static final String MOD_ID = "adaptive_performance_tweaks_core";
-    public static final String MOD_NAME = "Adaptive Performance Tweaks: Core";
+  // General Mod definitions
+  public static final String ISSUE_REPORT =
+      "https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues";
 
-    // List of Mod IDs for easier maintenance and access
-    public static final String CLUMPS_MOD = "clumps";
-    public static final String CLUMPS_NAME = "Clumps";
-    public static final String DYNVIEW_MOD = "dynview";
-    public static final String INCONTROL_MOD = "incontrol";
-    public static final String INCONTROL_NAME = "InControl";
-    public static final String LAZYDFU_MOD = "lazydfu";
-    public static final String LAZYDFU_NAME = "Lazy DataFixerUpper";
-    public static final String MINECOLONIES_MOD = "minecolonies";
-    public static final String MINECOLONIES_NAME = "MineColonies";
-    public static final String PERFORMANT_MOD = "performant";
-    public static final String PERFORMANT_NAME = "Performant";
-    public static final String RATS_MOD = "rats";
-    public static final String RATS_NAME = "Rats";
-    public static final String SODIUM_MOD = "sodium";
-    public static final String SODIUM_NAME = "Sodium";
+  // List of Mod IDs for easier maintenance and access
+  public static final String CLUMPS_MOD = "clumps";
+  public static final String CLUMPS_NAME = "Clumps";
+  public static final boolean CLUMPS_LOADED = ModList.get().isLoaded(CLUMPS_MOD);
+
+  public static final String DYNVIEW_MOD = "dynview";
+  public static final String DYNVIEW_NAME = "Dynview";
+  public static final boolean DYNVIEW_LOADED = ModList.get().isLoaded(DYNVIEW_MOD);
+
+  public static final String INCONTROL_MOD = "incontrol";
+  public static final String INCONTROL_NAME = "InControl";
+  public static final boolean INCONTROL_LOADED = ModList.get().isLoaded(INCONTROL_MOD);
+
+  public static final String LOOTR_MOD = "lootr:";
+  public static final String LOOTR_NAME = "Lootr";
+  public static final boolean LOOTR_LOADED = ModList.get().isLoaded(LOOTR_MOD);
+
+  public static final String MINECOLONIES_MOD = "minecolonies";
+  public static final String MINECOLONIES_NAME = "MineColonies";
+  public static final boolean MINECOLONIES_LOADED = ModList.get().isLoaded(MINECOLONIES_MOD);
+
+  public static final String PERFORMANT_MOD = "performant";
+  public static final String PERFORMANT_NAME = "Performant";
+  public static final boolean PERFORMANT_LOADED = ModList.get().isLoaded(PERFORMANT_MOD);
+
+  public static final String RATS_MOD = "rats";
+  public static final String RATS_NAME = "Rats";
+
+  public static final String SODIUM_MOD = "sodium";
+  public static final String SODIUM_NAME = "Sodium";
 }

@@ -30,4 +30,5 @@ public final class Constants {
     public static final String MOD_COMMAND = "aptweaks";
     public static final String MOD_ID = "adaptive_performance_tweaks_gamerules";
     public static final String MOD_NAME = "Adaptive Performance Tweaks: Gamerules";
+    public static final String MODULE_NAME = "Gamerules";
 }

@@ -28,13 +28,13 @@ import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
-import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import de.markusbordihn.adaptiveperformancetweakscore.Constants;
 import de.markusbordihn.adaptiveperformancetweakscore.config.CommonConfig;
 
 @EventBusSubscriber
 public class ServerLoad {
 
-  private static final Logger log = LogManager.getLogger(CoreConstants.LOG_NAME);
+  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
   private static boolean logServerLoad = CommonConfig.COMMON.logServerLoad.get();

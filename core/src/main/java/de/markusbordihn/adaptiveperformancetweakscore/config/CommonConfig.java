@@ -29,12 +29,11 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
 
 import de.markusbordihn.adaptiveperformancetweakscore.Constants;
-import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public final class CommonConfig {
 
-  private static final Logger log = LogManager.getLogger(CoreConstants.LOG_NAME);
+  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private CommonConfig() {}
 
@@ -59,7 +58,7 @@ public final class CommonConfig {
     public final ForgeConfigSpec.BooleanValue logServerLevelLoad;
 
     Config(ForgeConfigSpec.Builder builder) {
-      builder.comment(CoreConstants.MOD_NAME);
+      builder.comment(Constants.MOD_NAME);
 
       builder.push("General");
       timeBetweenUpdates = builder.comment(

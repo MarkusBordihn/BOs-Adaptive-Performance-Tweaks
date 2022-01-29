@@ -19,11 +19,20 @@ If you want to pick and choose your optimization mod, take a look at the core pa
 
 **➡️[Install separate modules][core]**
 
-## ⚠️ Version 1.16.5 / 1.17.1
+## Version 1.16.5 / 1.17.1 🛠️
 
-The next-gen version of Adaptive Performance Tweaks will only supporting 1.18.1 and higher.
-The former versions 1.16.5 and 1.17.1 will only be receiving maintaining updates but will
+The next-gen version of Adaptive Performance Tweaks is only supporting 1.18.1 and higher.
+The former versions 1.16.5 will only be receiving maintaining updates but will
 not be upgraded to the next-gen version.
+
+## Version Status Overview 🛠️
+
+| Version        | Status                |
+| -------------- | --------------------- |
+| Fabric Version | ❌ Not planned        |
+| Forge 1.16.5   | ⚠️ Maintenance only   |
+| Forge 1.17.1   | ⚠️ Deprecated         |
+| Forge 1.18.1   | ✔️ Active development |
 
 [header]: ../assets/aptweaks-header.png
 

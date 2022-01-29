@@ -24,8 +24,6 @@ public final class Constants {
   protected Constants() {}
 
   // General Mod definitions
-  public static final String ISSUE_REPORT =
-      "https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues";
   public static final String LOG_NAME = "APTweaks(Core)";
   public static final String LOG_REGISTER_PREFIX = "Register Adaptive Performance Tweaks: Core";
   public static final String MOD_COMMAND = "aptweaks";

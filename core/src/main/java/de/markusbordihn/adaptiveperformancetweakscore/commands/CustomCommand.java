@@ -21,6 +21,7 @@ package de.markusbordihn.adaptiveperformancetweakscore.commands;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.TextComponent;
@@ -50,9 +51,10 @@ public abstract class CustomCommand implements Command<CommandSourceStack> {
       commandSource
           .sendSuccess(new TextComponent("\u25A0 Disable debug for the " + commandName + " module!")
               .withStyle(ChatFormatting.RED), false);
-      commandSource
-          .sendSuccess(new TextComponent("> Please check the debug.log for the full output.")
-              .withStyle(ChatFormatting.WHITE), false);
+      commandSource.sendSuccess(
+          new TextComponent("> Please check the latest.log and/or debug.log for the full output.")
+              .withStyle(ChatFormatting.WHITE),
+          false);
     }
   }
 

@@ -19,9 +19,6 @@
 
 package de.markusbordihn.adaptiveperformancetweaksspawn;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -30,10 +27,7 @@ import net.minecraftforge.network.NetworkConstants;
 @Mod(Constants.MOD_ID)
 public class AdaptivePerformanceTweaksSpawn {
 
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-
   public AdaptivePerformanceTweaksSpawn() {
-    log.info(Constants.LOG_THANKS);
     ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class,
         () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY,
             (a, b) -> true));

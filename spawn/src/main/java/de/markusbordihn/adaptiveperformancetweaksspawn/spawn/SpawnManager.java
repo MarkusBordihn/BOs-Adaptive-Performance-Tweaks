@@ -27,7 +27,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
@@ -38,6 +37,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweakscore.entity.EntityManager;
 import de.markusbordihn.adaptiveperformancetweakscore.player.PlayerPosition;
 import de.markusbordihn.adaptiveperformancetweakscore.player.PlayerPositionManager;
@@ -81,7 +81,7 @@ public class SpawnManager {
     }
     if (spawnLimitationEnabled) {
       if (spawnLimitationLimiter > 0) {
-        log.info("\u2713 Enable limiter and block every {} mob from spawning ...",
+        log.info("\u2713 Enable limiter and block randomly every {} mob from spawning ...",
             spawnLimitationLimiter);
       }
       log.info("\u2713 Enable spawn rate control with maxPerPlayer:{} and maxPerWorld:{} ...",
@@ -183,6 +183,11 @@ public class SpawnManager {
 
   private static boolean isRelevantEntity(Entity entity, String entityName, String levelName) {
 
+    // Entity instance checks to ignore specific and short living entities like projectiles.
+    if (!EntityManager.isRelevantEntity(entity)) {
+      return false;
+    }
+
     // Skip other checks if unknown entity name
     if (entityName == null) {
       if (entity.isMultipartEntity() || entity.getType().toString().contains("body_part")) {
@@ -190,7 +195,7 @@ public class SpawnManager {
       } else {
         log.warn(
             "[Unknown Entity] Name for spawn entity {} ({}) in {} is unknown. Please report this issue under {}]!",
-            entity, entity.getType(), levelName, Constants.ISSUE_REPORT);
+            entity, entity.getType(), levelName, CoreConstants.ISSUE_REPORT);
       }
       return false;
     }
@@ -198,11 +203,6 @@ public class SpawnManager {
     // Pre-check for allowed entities to avoid expensive calculations
     if (allowList.contains(entityName)) {
       log.debug("[Allowed Entity] Allow spawn event for {} in {} ", entity, levelName);
-      return false;
-    }
-
-    // Entity instance checks to ignore specific and short living entities like projectiles.
-    if (entity instanceof Projectile) {
       return false;
     }
 

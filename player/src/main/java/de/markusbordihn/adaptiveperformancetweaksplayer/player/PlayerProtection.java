@@ -38,6 +38,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweaksplayer.Constants;
 import de.markusbordihn.adaptiveperformancetweaksplayer.config.CommonConfig;
 
@@ -158,7 +159,7 @@ public class PlayerProtection {
       } catch (ConcurrentModificationException error) {
         log.error(
             "Unexpected error during user validation. Please report the following error under {} .\n{}",
-            Constants.ISSUE_REPORT, error);
+            CoreConstants.ISSUE_REPORT, error);
       }
     }
     ticker = 0;
@@ -190,7 +191,7 @@ public class PlayerProtection {
     } catch (ConcurrentModificationException error) {
       log.error(
           "Unexpected error during adding player. Please report the following error under {} .\n{}",
-          Constants.ISSUE_REPORT, error);
+          CoreConstants.ISSUE_REPORT, error);
     }
     log.debug("Added player {}", username);
   }
@@ -206,7 +207,7 @@ public class PlayerProtection {
     } catch (ConcurrentModificationException error) {
       log.error(
           "Unexpected error during removing player. Please report the following error under {} .\n{}",
-          Constants.ISSUE_REPORT, error);
+          CoreConstants.ISSUE_REPORT, error);
     }
     log.debug("Remove player {}", username);
   }
