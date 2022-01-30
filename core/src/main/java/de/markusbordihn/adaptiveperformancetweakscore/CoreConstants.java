@@ -30,6 +30,11 @@ public final class CoreConstants {
       "https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues";
 
   // List of Mod IDs for easier maintenance and access
+
+  public static final String ADHOOKS_MOD = "adhooks";
+  public static final String ADHOOKS_NAME = "Advanced Hook Launchers";
+  public static final boolean ADHOOKS_LOADED = ModList.get().isLoaded(ADHOOKS_MOD);
+
   public static final String CLUMPS_MOD = "clumps";
   public static final String CLUMPS_NAME = "Clumps";
   public static final boolean CLUMPS_LOADED = ModList.get().isLoaded(CLUMPS_MOD);

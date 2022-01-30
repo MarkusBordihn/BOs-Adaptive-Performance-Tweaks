@@ -33,5 +33,5 @@ public final class Constants {
 
     // Other
     public static final String LOG_THANKS =
-            "🙏Thanks for using " + MOD_NAME + " (bundle), please report issues to " + ISSUE_REPORT;
+            "Thanks for using " + MOD_NAME + " (bundle), please report issues to: " + ISSUE_REPORT;
 }

@@ -6,12 +6,17 @@ This change log includes the summarized changes.
 For the full changelog, please go to the following url instead:
 <https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/commits/main>
 
+### 2022.01.30
+
+- Added Spawn module to the bundled version.
+
 ### 2022.01.29
 
 - Optimized core module and increased event priority to make sure to capture all relevant events.
 - Improved pre-filtering of entities
 - Added better entity / spawn control logic and filtering
 - Added debug command and additional output for all modules
+- Added Spawner monitoring
 
 ### 2022.01.27
 

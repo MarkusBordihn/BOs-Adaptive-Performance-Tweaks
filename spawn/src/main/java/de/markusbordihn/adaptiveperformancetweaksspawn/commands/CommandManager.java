@@ -47,6 +47,7 @@ public class CommandManager {
     commandDispatcher.register(Commands.literal(Constants.MOD_COMMAND)
     // @formatter:off
       .then(DebugCommand.register())
+      .then(SpawnerCommand.register())
     // @formatter:on
     );
   }

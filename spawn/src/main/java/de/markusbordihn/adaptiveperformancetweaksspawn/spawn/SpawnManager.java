@@ -193,9 +193,8 @@ public class SpawnManager {
       if (entity.isMultipartEntity() || entity.getType().toString().contains("body_part")) {
         log.debug("[Multipart Entity] Allow spawn event for {} in {}", entity, levelName);
       } else {
-        log.warn(
-            "[Unknown Entity] Name for spawn entity {} ({}) in {} is unknown. Please report this issue under {}]!",
-            entity, entity.getType(), levelName, CoreConstants.ISSUE_REPORT);
+        log.warn("[Unknown Entity] Name for spawn entity {} ({}) in {} is unknown!", entity,
+            entity.getType(), levelName);
       }
       return false;
     }

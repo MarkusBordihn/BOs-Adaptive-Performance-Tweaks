@@ -19,6 +19,117 @@
 
 package de.markusbordihn.adaptiveperformancetweaksspawn.spawn;
 
+import java.util.Iterator;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.level.BaseSpawner;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingSpawnEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+
+import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
+
+@EventBusSubscriber
 public class SpawnerManager {
+
+  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+
+  private static short ticks = 0;
+  private static final short VERIFICATION_TICK = 60 * 20;
+
+  static Set<BaseSpawner> spawnerList = ConcurrentHashMap.newKeySet();
+  private static ConcurrentHashMap<BaseSpawner, Set<BlockPos>> spawnerMap =
+      new ConcurrentHashMap<>();
+
+  protected SpawnerManager() {}
+
+  @SubscribeEvent(priority = EventPriority.NORMAL)
+  public static void handleLivingCheckSpawnEvent(LivingSpawnEvent.CheckSpawn event) {
+    handleSpawnEvent(event);
+  }
+
+  @SubscribeEvent
+  public static void handleClientServerTickEvent(TickEvent.ServerTickEvent event) {
+    if (event.phase == TickEvent.Phase.END && ticks++ >= VERIFICATION_TICK) {
+      verifyEntities();
+      ticks = 0;
+    }
+  }
+
+  private static void handleSpawnEvent(LivingSpawnEvent event) {
+
+    // Ignore client side.
+    LevelAccessor level = event.getWorld();
+    if (level.isClientSide()) {
+      return;
+    }
+
+    // Ignore null entities and specific entities.
+    Entity entity = event.getEntity();
+    if (entity == null || entity instanceof Projectile) {
+      return;
+    }
+
+    if (event instanceof LivingSpawnEvent.CheckSpawn checkSpawn
+        && checkSpawn.getSpawner() != null) {
+      BaseSpawner spawner = checkSpawn.getSpawner();
+      addSpawner(spawner);
+    }
+
+  }
+
+  public static void addSpawner(BaseSpawner spawner) {
+    // Ignore already reported spawner
+    if (spawnerList.contains(spawner)) {
+      return;
+    }
+    spawnerList.add(spawner);
+
+    // Only do expensive lookup for debugging.
+    if (log.isDebugEnabled()) {
+      BlockEntity blockEntity = spawner.getSpawnerBlockEntity();
+      BlockPos blockPos = blockEntity.getBlockPos();
+      String levelName = blockEntity.getLevel().dimension().location().toString();
+      CompoundTag spawnerData = blockEntity.serializeNBT();
+      String spawnerId = spawnerData.getString("id");
+      String spawnEntityId =
+          spawnerData.getCompound("SpawnData").getCompound("entity").getString("id");
+      log.debug("[Spawner] Found {}({}) at {} in {}", spawnerId, spawnEntityId, blockPos, levelName);
+    }
+  }
+
+  public static Set<BaseSpawner> getSpawnerList() {
+    return spawnerList;
+  }
+
+  public static void verifyEntities() {
+    int removedEntries = 0;
+
+    // Verify spawner entries
+    Iterator<BaseSpawner> spawnerIterator = spawnerList.iterator();
+    while (spawnerIterator.hasNext()) {
+      BaseSpawner spawner = spawnerIterator.next();
+      if (spawner != null && spawner.getSpawnerBlockEntity().isRemoved()) {
+        spawnerIterator.remove();
+        removedEntries++;
+      }
+    }
+
+    if (removedEntries > 0) {
+      log.debug("Removed {} entries during the verification", removedEntries);
+    }
+  }
 
 }

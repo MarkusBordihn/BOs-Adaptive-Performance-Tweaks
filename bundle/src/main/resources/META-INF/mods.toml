@@ -19,7 +19,7 @@ license="MIT"
 [[mods]] #mandatory
     modId="adaptive_performance_tweaks"
     version="${file.jarVersion}"
-    displayName="Adaptive Performance Tweaks (Bundle)"
+    displayName="APTweaks (Bundle)"
     logoFile="logo.png"
     credits=""
     authors="Markus Bordihn"
@@ -42,27 +42,34 @@ license="MIT"
 [[dependencies.adaptive_performance_tweaks]]
     modId="adaptive_performance_tweaks_core"
     mandatory=true
-    versionRange="[0.2.0,)"
+    versionRange="[0.2.0,3.0.0)"
     ordering="NONE"
     side="SERVER"
 
 [[dependencies.adaptive_performance_tweaks]]
     modId="adaptive_performance_tweaks_gamerules"
     mandatory=true
-    versionRange="[0.2.0,)"
+    versionRange="[0.2.0,3.0.0)"
     ordering="NONE"
     side="SERVER"
 
 [[dependencies.adaptive_performance_tweaks]]
     modId="adaptive_performance_tweaks_items"
     mandatory=true
-    versionRange="[0.2.0,)"
+    versionRange="[0.2.0,3.0.0)"
     ordering="NONE"
     side="SERVER"
 
 [[dependencies.adaptive_performance_tweaks]]
     modId="adaptive_performance_tweaks_player"
     mandatory=true
-    versionRange="[0.2.0,)"
+    versionRange="[2.0.0,3.0.0)"
+    ordering="NONE"
+    side="SERVER"
+
+[[dependencies.adaptive_performance_tweaks]]
+    modId="adaptive_performance_tweaks_spawn"
+    mandatory=true
+    versionRange="[2.0.0,3.0.0)"
     ordering="NONE"
     side="SERVER"

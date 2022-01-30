@@ -101,16 +101,19 @@ public class EntityManager {
     String entityName = entity.getEncodeId();
     String levelName = level.dimension().location().toString();
 
-    // Skip other checks if unknown entity name
+    // Skip other checks if unknown entity name, multi-part or custom entity
     if (entityName == null) {
-      if (entity.isMultipartEntity() || entity.getType().toString().contains("body_part")) {
+      String entityType = entity.getType().getDescriptionId();
+      if (entityType.startsWith("entity.adhooks.")) {
+        log.debug("Ignore {} entity {} in {}", CoreConstants.ADHOOKS_NAME, entity, levelName);
+      } else if (entity.isMultipartEntity() || entityType.contains("body_part")) {
         log.debug("Ignore multipart entity {} in {}.", entity, levelName);
       } else if (entity.hasCustomName()) {
         log.debug("Unknown entity name for entity {} ({}) with custom name {} in {}.", entity,
-            entity.getType(), entity.getCustomName().getString(), levelName);
+            entityType, entity.getCustomName().getString(), levelName);
       } else {
         log.warn("Unknown entity name for entity {} ({}) in {}. Please report this issue under {}!",
-            entity, entity.getType(), levelName, CoreConstants.ISSUE_REPORT);
+            entity, entityType, levelName, CoreConstants.ISSUE_REPORT);
       }
       return;
     }

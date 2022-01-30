@@ -126,20 +126,27 @@ dependencies {
   // Specify the version of Minecraft to use, If this is any group other then 'net.minecraft' it is assumed
   // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
   // The userdev artifact is a special name and will get all sorts of transformations applied to it.
-  minecraft 'net.minecraftforge:forge:1.18.1-39.0.36'
+  minecraft 'net.minecraftforge:forge:1.18.1-39.0.63'
 
   // Required: Bo's Adaptive Performance Tweaks: Core (dev dependency)
-  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:0.2.0")
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:0.2.0")
+  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:2.0.1")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:2.0.1")
 
   // Required: Bo's Adaptive Performance Tweaks: Gamerules (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksgamerules:gamerules:0.2.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksgamerules:gamerules:2.0.0")
 
   // Required: Bo's Adaptive Performance Tweaks: Items (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksitems:items:0.2.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksitems:items:2.0.0")
 
   // Required: Bo's Adaptive Performance Tweaks: Player (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksplayer:player:0.2.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksplayer:player:2.0.0")
+
+  // Required: Bo's Adaptive Performance Tweaks: Spawn (runtime dependency)
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksspawn:spawn:2.0.1")
+
+  // Additional helpful Mods for development (runtime depenedency)
+  runtimeOnly fg.deobf("curse.maven:xaeros_minimap-263420:3613287")
+  runtimeOnly fg.deobf("curse.maven:configured-457570:3559398")
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..
@@ -190,6 +197,7 @@ curseforge {
         requiredDependency 'adaptive-performance-tweaks-gamerules'
         requiredDependency 'adaptive-performance-tweaks-items'
         requiredDependency 'adaptive-performance-tweaks-player'
+        requiredDependency 'adaptive-performance-tweaks-spawn'
         optionalDependency 'configured'
       }
     }
