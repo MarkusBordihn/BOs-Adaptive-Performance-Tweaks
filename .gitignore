@@ -27,6 +27,12 @@ npm-debug.log
 # Files from Forge MDK
 forge*changelog.txt
 
+# Local Maven repro
+.mcmodsrepo
+
+# VSCode
+.vscode/launch.json
+
 # Other
 .DS_Store
 generated
