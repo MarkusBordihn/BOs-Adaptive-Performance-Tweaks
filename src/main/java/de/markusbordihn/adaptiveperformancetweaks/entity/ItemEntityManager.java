@@ -28,12 +28,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.Logger;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -56,6 +59,9 @@ public class ItemEntityManager extends Manager {
   private static boolean needsOptimization = false;
   private static boolean optimizeItems = COMMON.optimizeItems.get();
   private static int itemClusterRange = COMMON.itemsClusterRange.get();
+
+  private static short ticks = 0;
+  private static final short VERIFICATION_TICK = 30 * 20; // Every 30 secs.
 
   public static final String LOG_NAME = ItemEntityManager.class.getSimpleName();
   private static final Logger log = getLogger(LOG_NAME);
@@ -80,6 +86,14 @@ public class ItemEntityManager extends Manager {
       log.info("Enable clustering of items with a radius of {} blocks.", itemClusterRange);
     } else {
       log.info("Item Optimization is disabled!");
+    }
+  }
+
+  @SubscribeEvent
+  public static void handleClientServerTickEvent(TickEvent.ServerTickEvent event) {
+    if (event.phase == TickEvent.Phase.END && ticks++ >= VERIFICATION_TICK) {
+      verifyEntities();
+      ticks = 0;
     }
   }
 
@@ -331,4 +345,37 @@ public class ItemEntityManager extends Manager {
   public static Map<String, Set<ItemEntity>> getItemTypeEntityMap() {
     return itemTypeEntityMap;
   }
+
+  public static void verifyEntities() {
+    int removedEntries = 0;
+
+    // Verify Entities in overall overview
+    for (Set<ItemEntity> entities : itemTypeEntityMap.values()) {
+      Iterator<ItemEntity> entityIterator = entities.iterator();
+      while (entityIterator.hasNext()) {
+        Entity entity = entityIterator.next();
+        if (entity != null && !entity.isAlive()) {
+          entityIterator.remove();
+          removedEntries++;
+        }
+      }
+    }
+
+    // Verify Entities from world specific overview
+    for (Set<ItemEntity> entities : itemWorldEntityMap.values()) {
+      Iterator<ItemEntity> entityIterator = entities.iterator();
+      while (entityIterator.hasNext()) {
+        Entity entity = entityIterator.next();
+        if (entity != null && !entity.isAlive()) {
+          entityIterator.remove();
+          removedEntries++;
+        }
+      }
+    }
+
+    if (removedEntries > 0) {
+      log.debug("[Verification] Removed {} item entries from the cache ...", removedEntries);
+    }
+  }
+
 }

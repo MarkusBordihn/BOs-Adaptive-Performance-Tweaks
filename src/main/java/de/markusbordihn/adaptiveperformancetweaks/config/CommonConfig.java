@@ -22,6 +22,7 @@ package de.markusbordihn.adaptiveperformancetweaks.config;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
@@ -254,8 +255,8 @@ public final class CommonConfig {
       optimizeViewDistance =
           builder.comment("Enable/Disable view distance optimization depending on the server load.")
               .define("optimizeViewDistance", true);
-      optimizeGeneralMobs = builder
-              .comment("Enable/Disable general mobs optimization depending on the server load.")
+      optimizeGeneralMobs =
+          builder.comment("Enable/Disable general mobs optimization depending on the server load.")
               .define("optimizeGeneralMobs", true);
       optimizePassiveMobs =
           builder.comment("Enable/Disable passive mobs optimization depending on the server load.")
@@ -309,7 +310,7 @@ public final class CommonConfig {
       viewAreaDistanceFactor = builder
           .comment(
               "Factor per view-distance which is used to calculated the view area of the player.")
-          .defineInRange("viewAreaDistanceFactor", 0.75, 0.1, 1);
+          .defineInRange("viewAreaDistanceFactor", 0.8, 0.1, 1);
       builder.pop();
 
       builder.comment("View / render distance optimization.").push("View Distance");
@@ -343,7 +344,6 @@ public final class CommonConfig {
       builder.pop();
 
       builder.pop();
-
 
       builder.push("Spawner");
       spawnerEnabled =

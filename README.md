@@ -1,9 +1,11 @@
 [![Adaptive Performance Tweaks Downloads](http://cf.way2muchnoise.eu/full_adaptive-performance-tweaks_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks)
-[![Adaptive Performance Tweaks MC Versions](http://cf.way2muchnoise.eu/versions/Minecraft_adaptive-performance-tweaks_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks)
+[![Adaptive Performance Tweaks Versions](http://cf.way2muchnoise.eu/versions/Minecraft_adaptive-performance-tweaks_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks)
 
 **⚠️ Note: For version 1.18.1 and higher, please got to [BOs-Adaptive-Performance-Tweaks][adaptive_performance_tweaks] instead.**
 
-# Adaptive Performance Tweaks
+**The 1.16.5 version is no longer actively developed and will be only receiving maintenance updates.**
+
+# Adaptive Performance Tweaks 1.16.5 (legacy version)
 
 ![Adaptive Performance Tweaks][logo]
 
@@ -280,4 +282,4 @@ But I still recommend this mod to make it easier to find lagging entities or to 
 [upgrade-aquatic]: https://www.curseforge.com/minecraft/mc-mods/upgrade-aquatic
 [whisperwoods]: https://www.curseforge.com/minecraft/mc-mods/whisperwoods
 
-[logo]: logo.png
+[logo]: src/main/resources/logo.png

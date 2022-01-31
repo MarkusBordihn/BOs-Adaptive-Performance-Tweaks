@@ -19,7 +19,7 @@ license="MIT"
 [[mods]] #mandatory
     modId="adaptive_performance_tweaks"
     version="${file.jarVersion}"
-    displayName="Adaptive Performance Tweaks"
+    displayName="APTweaks"
     # A URL to query for updates for this mod. See the JSON update specification https://mcforge.readthedocs.io/en/latest/gettingstarted/autoupdate/
     #updateJSONURL="https://change.me.example.invalid/updates.json" #optional
     # A URL for the "homepage" for this mod, displayed in the mod UI

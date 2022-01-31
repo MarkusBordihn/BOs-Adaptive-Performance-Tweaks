@@ -31,6 +31,8 @@ public class CommandKill extends CustomCommand {
 
   public static ArgumentBuilder<CommandSource, ?> register() {
     return Commands.literal("kill").requires(cs -> cs.hasPermission(2)).executes(command)
+        .then(Commands.literal("bats").executes(command::killBats))
+        .then(Commands.literal("creeper").executes(command::killCreeper))
         .then(Commands.literal("entities").executes(command::killEntities))
         .then(Commands.literal("items").executes(command::killItems));
   }
@@ -42,13 +44,23 @@ public class CommandKill extends CustomCommand {
     return 0;
   }
 
+  public int killBats(CommandContext<CommandSource> context) {
+    CommandManager.executeUserCommand("kill @e[type=minecraft:bat,distance=0..]");
+    return 0;
+  }
+
+  public int killCreeper(CommandContext<CommandSource> context) {
+    CommandManager.executeUserCommand("kill @e[type=minecraft:creeper,distance=0..]");
+    return 0;
+  }
+
   public int killEntities(CommandContext<CommandSource> context) {
-    CommandManager.executeUserCommand("kill @e[type=!player]");
+    CommandManager.executeUserCommand("kill @e[type=!player,distance=0..]");
     return 0;
   }
 
   public int killItems(CommandContext<CommandSource> context) {
-    CommandManager.executeUserCommand("kill @e[type=item]");
+    CommandManager.executeUserCommand("kill @e[type=item,distance=0..]");
     return 0;
   }
 

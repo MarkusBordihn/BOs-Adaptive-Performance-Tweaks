@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.logging.log4j.Logger;
 
 import net.minecraft.entity.Entity;
@@ -32,11 +33,15 @@ import net.minecraft.entity.effect.LightningBoltEntity;
 import net.minecraft.entity.item.ExperienceOrbEntity;
 import net.minecraft.entity.item.FallingBlockEntity;
 import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.item.minecart.AbstractMinecartEntity;
+import net.minecraft.entity.item.minecart.MinecartEntity;
 import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
+
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -51,14 +56,17 @@ import de.markusbordihn.adaptiveperformancetweaks.player.PlayerPosition;
 @EventBusSubscriber
 public class EntityManager extends Manager {
 
+  public static final String LOG_NAME = EntityManager.class.getSimpleName();
+  private static final Logger log = getLogger(LOG_NAME);
+
   private static ConcurrentHashMap<String, Set<Entity>> entityMap = new ConcurrentHashMap<>();
   private static ConcurrentHashMap<String, Set<Entity>> entityMapPerWorld =
       new ConcurrentHashMap<>();
   private static Set<String> allowList = new HashSet<>(COMMON.spawnAllowList.get());
   private static Set<String> denyList = new HashSet<>(COMMON.spawnDenyList.get());
 
-  public static final String LOG_NAME = EntityManager.class.getSimpleName();
-  private static final Logger log = getLogger(LOG_NAME);
+  private static short ticks = 0;
+  private static final short VERIFICATION_TICK = 60 * 20; // Every 1 minutes.
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
@@ -66,6 +74,14 @@ public class EntityManager extends Manager {
     entityMapPerWorld = new ConcurrentHashMap<>();
     allowList = new HashSet<>(COMMON.spawnAllowList.get());
     denyList = new HashSet<>(COMMON.spawnDenyList.get());
+  }
+
+  @SubscribeEvent
+  public static void handleClientServerTickEvent(TickEvent.ServerTickEvent event) {
+    if (event.phase == TickEvent.Phase.END && ticks++ >= VERIFICATION_TICK) {
+      verifyEntities();
+      ticks = 0;
+    }
   }
 
   @SubscribeEvent(priority = EventPriority.HIGH)
@@ -78,9 +94,7 @@ public class EntityManager extends Manager {
 
     // Ignore entities which are handled by other instances or not relevant.
     Entity entity = event.getEntity();
-    if (entity instanceof ExperienceOrbEntity || entity instanceof ItemEntity
-        || entity instanceof LightningBoltEntity || entity instanceof FallingBlockEntity
-        || entity instanceof ProjectileEntity) {
+    if (!isRelevantEntity(entity)) {
       return;
     } else if (entity instanceof PlayerEntity) {
       log.debug("Player {} joined world.", entity);
@@ -134,9 +148,7 @@ public class EntityManager extends Manager {
 
     // Ignore entities which are handled by other instances or not relevant.
     Entity entity = event.getEntity();
-    if (entity instanceof ExperienceOrbEntity || entity instanceof ItemEntity
-        || entity instanceof LightningBoltEntity || entity instanceof FallingBlockEntity
-        || entity instanceof ProjectileEntity) {
+    if (!isRelevantEntity(entity)) {
       return;
     } else if (entity instanceof PlayerEntity) {
       log.debug("Player {} leaved world.", entity);
@@ -261,6 +273,45 @@ public class EntityManager extends Manager {
       }
     }
     return counter;
+  }
+
+  public static void verifyEntities() {
+    int removedEntries = 0;
+
+    // Verify Entities in overall overview
+    for (Set<Entity> entities : entityMap.values()) {
+      Iterator<Entity> entityIterator = entities.iterator();
+      while (entityIterator.hasNext()) {
+        Entity entity = entityIterator.next();
+        if (entity != null && !entity.isAlive()) {
+          entityIterator.remove();
+          removedEntries++;
+        }
+      }
+    }
+
+    // Verify Entities from world specific overview
+    for (Set<Entity> entities : entityMapPerWorld.values()) {
+      Iterator<Entity> entityIterator = entities.iterator();
+      while (entityIterator.hasNext()) {
+        Entity entity = entityIterator.next();
+        if (entity != null && !entity.isAlive()) {
+          entityIterator.remove();
+          removedEntries++;
+        }
+      }
+    }
+
+    if (removedEntries > 0) {
+      log.debug("Removed {} entity entries from the cache ...", removedEntries);
+    }
+  }
+
+  public static boolean isRelevantEntity(Entity entity) {
+    return !(entity instanceof ExperienceOrbEntity || entity instanceof ItemEntity
+        || entity instanceof LightningBoltEntity || entity instanceof FallingBlockEntity
+        || entity instanceof ProjectileEntity || entity instanceof MinecartEntity
+        || entity instanceof AbstractMinecartEntity);
   }
 
 }
