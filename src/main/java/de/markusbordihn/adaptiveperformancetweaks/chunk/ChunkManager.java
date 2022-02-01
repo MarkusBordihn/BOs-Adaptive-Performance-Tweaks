@@ -22,12 +22,14 @@ package de.markusbordihn.adaptiveperformancetweaks.chunk;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.logging.log4j.Logger;
 
 import net.minecraft.tileentity.MobSpawnerTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
+
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;

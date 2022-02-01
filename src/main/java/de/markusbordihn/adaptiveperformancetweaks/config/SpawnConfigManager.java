@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.logging.log4j.Logger;
 
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -83,7 +84,7 @@ public class SpawnConfigManager extends Manager {
 
     if (ModList.get().isLoaded(Constants.RATS_MOD)) {
       log.warn(
-          "There are known issue with the rats mod and spawn control, see https://github.com/MarkusBordihn/adaptive_performance_tweaks/issues/4 !");
+          "There are known issue with the rats mod and spawn control, please not report any issue!");
     }
   }
 

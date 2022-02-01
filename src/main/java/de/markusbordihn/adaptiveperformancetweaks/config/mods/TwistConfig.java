@@ -34,22 +34,22 @@ public class TwistConfig extends SpawnConfigModSupport {
 
   private static Set<String> passiveMobList = new HashSet<>(Arrays.asList(
   // @formatter:off
-  "twist:sporel",
-  "twist:peblings",
-  "twist:groundedslug"
+    "twist:sporel",
+    "twist:peblings",
+    "twist:groundedslug"
   // @formatter:on
   ));
 
   private static Set<String> neutralMobList = new HashSet<>(Arrays.asList(
   // @formatter:off
-  "twist:buckus",
-  "twist:slug",
-  "twist:zimple",
-  // Uncategorized
-  "twist:boomba",
-  "twist:ghoul",
-  "twist:talonzimple",
-  "twist:diansuzimple"
+    "twist:buckus",
+    "twist:slug",
+    "twist:zimple",
+    // Uncategorized
+    "twist:boomba",
+    "twist:ghoul",
+    "twist:talonzimple",
+    "twist:diansuzimple"
   // @formatter:on
   ));
 

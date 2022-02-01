@@ -102,6 +102,11 @@ public final class CommonConfig {
     public final ForgeConfigSpec.ConfigValue<List<String>> spawnAllowList;
     public final ForgeConfigSpec.ConfigValue<List<String>> spawnDenyList;
 
+    public final ForgeConfigSpec.BooleanValue spawnLimitationEnabled;
+    public final ForgeConfigSpec.IntValue spawnLimitationLimiter;
+    public final ForgeConfigSpec.IntValue spawnLimitationMaxMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue spawnLimitationMaxMobsPerWorld;
+
     public final ForgeConfigSpec.BooleanValue minecraftEnabled;
     public final ForgeConfigSpec.IntValue minecraftMaxPassiveMobsPerPlayer;
     public final ForgeConfigSpec.IntValue minecraftMaxPassiveMobsPerWorld;
@@ -367,6 +372,21 @@ public final class CommonConfig {
       spawnDenyList = builder.comment(
           "General deny list for spawn entities (e.g. minecraft:bat) to no longer spawn in all worlds.")
           .define("denyList", new ArrayList<String>(Arrays.asList("")));
+
+      builder.push("Limitations");
+      spawnLimitationEnabled =
+          builder.comment("Enable/Disable general spawn limitations for unknown mobs.")
+              .define("spawnLimitationEnabled", true);
+      spawnLimitationLimiter = builder.comment(
+          "Blocks every x spawn of unknown mobs to avoid an over population with the limited spawn area. Use 0 to disable this optimization.")
+          .defineInRange("spawnLimitationLimiter", 10, 0, 100);
+      spawnLimitationMaxMobsPerPlayer = builder.comment(
+          "Defines the max. number of unknown entities of a specific type, which could spawn within the player view area. Use 0 to disable this optimization.")
+          .defineInRange("spawnLimitationMaxMobsPerPlayer", 16, 1, 256);
+      spawnLimitationMaxMobsPerWorld = builder.comment(
+          "Defines the max. number of unknown entities of a specific type, which could spawn within a single world. Use 0 to disable this optimization.")
+          .defineInRange("spawnLimitationMaxMobsPerWorld", 64, 1, 512);
+      builder.pop();
 
       builder.push("Minecraft");
       minecraftEnabled = builder.define("minecraftEnabled", true);

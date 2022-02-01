@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.logging.log4j.Logger;
 
 import net.minecraft.block.Block;
@@ -41,7 +42,6 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
-import de.markusbordihn.adaptiveperformancetweaks.config.CommonConfig;
 import de.markusbordihn.adaptiveperformancetweaks.entity.EntityManager;
 import de.markusbordihn.adaptiveperformancetweaks.server.ServerWorldLoadEvent;
 
@@ -51,9 +51,9 @@ public class SpawnerManager extends Manager {
   private static Map<String, Double> serverWorldLoadFactorMap = new HashMap<>();
   private static Set<MobSpawnerTileEntity> spawnerList = new HashSet<>();
   private static Set<TileEntity> unknownSpawnerList = new HashSet<>();
-  private static boolean spawnerEnabled = CommonConfig.COMMON.spawnerEnabled.get();
-  private static int spawnerMaxEntityPerChunk = CommonConfig.COMMON.spawnerMaxEntityPerChunk.get();
-  private static int spawnerMaxEntityPerWorld = CommonConfig.COMMON.spawnerMaxEntityPerWorld.get();
+  private static boolean spawnerEnabled = COMMON.spawnerEnabled.get();
+  private static int spawnerMaxEntityPerChunk = COMMON.spawnerMaxEntityPerChunk.get();
+  private static int spawnerMaxEntityPerWorld = COMMON.spawnerMaxEntityPerWorld.get();
 
   public static final String LOG_NAME = SpawnerManager.class.getSimpleName();
   private static final Logger log = getLogger(LOG_NAME);
@@ -62,11 +62,11 @@ public class SpawnerManager extends Manager {
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
     serverWorldLoadFactorMap = new HashMap<>();
     spawnerList = new HashSet<>();
-    spawnerEnabled = CommonConfig.COMMON.spawnerEnabled.get();
-    spawnerMaxEntityPerWorld = CommonConfig.COMMON.spawnerMaxEntityPerWorld.get();
-    spawnerMaxEntityPerChunk = CommonConfig.COMMON.spawnerMaxEntityPerChunk.get();
+    spawnerEnabled = COMMON.spawnerEnabled.get();
+    spawnerMaxEntityPerWorld = COMMON.spawnerMaxEntityPerWorld.get();
+    spawnerMaxEntityPerChunk = COMMON.spawnerMaxEntityPerChunk.get();
     if (spawnerEnabled) {
-      log.info("Optimize Spawner with a limit of {} per world and {} per chunk.",
+      log.info("\u2713 Optimize Spawner with a limit of {} per world and {} per chunk.",
           spawnerMaxEntityPerWorld, spawnerMaxEntityPerChunk);
     }
   }

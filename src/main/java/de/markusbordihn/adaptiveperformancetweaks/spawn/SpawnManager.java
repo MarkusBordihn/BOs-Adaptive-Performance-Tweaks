@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.logging.log4j.Logger;
 
 import net.minecraft.entity.Entity;
@@ -33,6 +34,7 @@ import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.World;
 import net.minecraft.world.spawner.AbstractSpawner;
+
 import net.minecraftforge.event.DifficultyChangeEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.eventbus.api.Event;
@@ -65,13 +67,19 @@ public class SpawnManager extends Manager {
       SpawnConfigManager.getSpawnConfigPerWorld();
   private static Map<String, Integer> spawnConfigSpecial =
       SpawnConfigManager.getSpawnConfigSpecial();
-  private static Set<String> allowList = new HashSet<>(COMMON.spawnAllowList.get());
-  private static Set<String> denyList = new HashSet<>(COMMON.spawnDenyList.get());
   private static Set<String> spawnConfigEntity = SpawnConfigManager.getSpawnConfigEntity();
   private static String lastBlockedSpawnEntityByPlayerLimit = "";
   private static String lastBlockedSpawnEntityByViewArea = "";
   private static String lastBlockedSpawnEntityByWorldLimit = "";
   private static double difficultyFactor = 1;
+  private static int spawnLimiter = 0;
+
+  private static Set<String> allowList = new HashSet<>(COMMON.spawnAllowList.get());
+  private static Set<String> denyList = new HashSet<>(COMMON.spawnDenyList.get());
+  private static boolean spawnLimitationEnabled = COMMON.spawnLimitationEnabled.get();
+  private static int spawnLimitationLimiter = COMMON.spawnLimitationLimiter.get();
+  private static int spawnLimitationMaxMobsPerPlayer = COMMON.spawnLimitationMaxMobsPerPlayer.get();
+  private static int spawnLimitationMaxMobsPerWorld = COMMON.spawnLimitationMaxMobsPerWorld.get();
 
   public static final String LOG_NAME = SpawnManager.class.getSimpleName();
   private static final Logger log = getLogger(LOG_NAME);
@@ -82,6 +90,10 @@ public class SpawnManager extends Manager {
     serverWorldLoadFactorMap = new HashMap<>();
     allowList = new HashSet<>(COMMON.spawnAllowList.get());
     denyList = new HashSet<>(COMMON.spawnDenyList.get());
+    spawnLimitationEnabled = COMMON.spawnLimitationEnabled.get();
+    spawnLimitationLimiter = COMMON.spawnLimitationLimiter.get();
+    spawnLimitationMaxMobsPerPlayer = COMMON.spawnLimitationMaxMobsPerPlayer.get();
+    spawnLimitationMaxMobsPerWorld = COMMON.spawnLimitationMaxMobsPerWorld.get();
   }
 
   @SubscribeEvent
@@ -92,6 +104,22 @@ public class SpawnManager extends Manager {
     }
     if (!denyList.isEmpty()) {
       log.info("Deny List: {}", denyList);
+    }
+
+    // Spawn Limitations Info
+    if (spawnLimitationEnabled) {
+      if (spawnLimitationLimiter > 0) {
+        log.info("\u2713 Enable limiter and block randomly every {} unknown mob from spawning ...",
+            spawnLimitationLimiter);
+      }
+      if (spawnLimitationMaxMobsPerWorld > 0) {
+        log.info("\u2713 Enable spawn rate control with max {} per world ...",
+            spawnLimitationMaxMobsPerWorld);
+      }
+      if (spawnLimitationMaxMobsPerPlayer > 0) {
+        log.info("\u2713 Enable spawn rate control with max {} per player ...",
+            spawnLimitationMaxMobsPerPlayer);
+      }
     }
   }
 
@@ -109,8 +137,17 @@ public class SpawnManager extends Manager {
     updateGameDifficulty(event.getDifficulty());
   }
 
-  @SubscribeEvent(priority = EventPriority.HIGH)
+  @SubscribeEvent(priority = EventPriority.HIGHEST)
   public static void handleLivingCheckSpawnEvent(LivingSpawnEvent.CheckSpawn event) {
+    handleSpawnEvent(event);
+  }
+
+  @SubscribeEvent(priority = EventPriority.HIGHEST)
+  public static void handleLivingSpecialSpawnEvent(LivingSpawnEvent.SpecialSpawn event) {
+    handleSpawnEvent(event);
+  }
+
+  private static void handleSpawnEvent(LivingSpawnEvent event) {
     Entity entity = event.getEntity();
     String entityName = entity.getEncodeId();
     World world = entity.level;
@@ -168,9 +205,55 @@ public class SpawnManager extends Manager {
       return;
     }
 
-    // Check if entity should be optimized otherwise ignore entity.
+    // Check if entity should be optimized otherwise ignore entity for advanced calculations.
     if (!spawnConfigEntity.contains(entityName)
         && !spawnConfigEntity.contains(worldName + ':' + entityName)) {
+
+      // Perform basic spawn optimization if spawn limitations are enabled.
+      if (spawnLimitationEnabled) {
+
+        // Limited spawn randomly for all "unknown" entities.
+        if (spawnLimitationLimiter > 0 && spawnLimiter++ >= spawnLimitationLimiter) {
+          log.debug("[Spawn Limiter {}] Blocked spawn event for unknown {} in {}.",
+              spawnLimitationLimiter, entity, worldName);
+          event.setResult(Event.Result.DENY);
+          spawnLimiter = 0;
+          return;
+        }
+
+        // Limit spawn per world, if enabled
+        int numberOfEntities = EntityManager.getNumberOfEntities(worldName, entityName);
+        if (spawnLimitationMaxMobsPerWorld > 0
+            && numberOfEntities >= spawnLimitationMaxMobsPerWorld) {
+          log.debug("[World limit] Blocked spawn event for unknown {} ({} >= {}) in {}", entityName,
+              numberOfEntities, spawnLimitationMaxMobsPerWorld, worldName);
+          event.setResult(Event.Result.DENY);
+          return;
+        }
+
+        // Limit spawn per player, if enabled
+        if (spawnLimitationMaxMobsPerPlayer > 0
+            && numberOfEntities >= spawnLimitationMaxMobsPerPlayer * numOfPlayersInsideViewArea) {
+          log.debug("[Player limit] Blocked spawn event for unknown {} ({} >= {} * {}) in {}",
+              entityName, numberOfEntities, spawnLimitationMaxMobsPerPlayer, worldName);
+          event.setResult(Event.Result.DENY);
+          return;
+        }
+
+        // Expensive calculation to Limit spawn based on real entities within player position.
+        int numberOfEntitiesInsideViewArea = EntityManager.getNumberOfEntitiesInPlayerPositions(
+            worldName, entityName, playersPositionsInsideViewArea);
+        if (spawnLimitationMaxMobsPerPlayer > 0
+            && numberOfEntitiesInsideViewArea >= spawnLimitationMaxMobsPerPlayer
+                * numOfPlayersInsideViewArea) {
+          log.debug("[View Area Limit] Blocked spawn event for unknown {} ({} >= {} * {}) in {}",
+              entityName, numberOfEntitiesInsideViewArea, spawnLimitationMaxMobsPerPlayer,
+              worldName);
+          event.setResult(Event.Result.DENY);
+          return;
+        }
+      }
+
       log.debug("[Untracked Entity] Skip spawn event for {} in {}", entityName, worldName);
       event.setResult(Event.Result.DEFAULT);
       return;
@@ -180,10 +263,13 @@ public class SpawnManager extends Manager {
     boolean hasLowWorldLoad = serverWorldLoadMap.getOrDefault(worldName, false);
 
     // Check if entity is from spawner ignore these as long the server load is low.
-    AbstractSpawner spawner = event.getSpawner();
-    if (spawner != null && hasLowWorldLoad) {
-      log.debug("[Spawner Entity] Ignore spawn event for {} in {}", entityName, worldName);
-      return;
+    AbstractSpawner spawner = null;
+    if (event instanceof LivingSpawnEvent.CheckSpawn) {
+      spawner = ((LivingSpawnEvent.CheckSpawn) event).getSpawner();
+      if (spawner != null && hasLowWorldLoad) {
+        log.debug("[Spawner Entity] Ignore spawn event for {} in {}", entityName, worldName);
+        return;
+      }
     }
 
     // Defines the spawn factor based on difficulty setting and world load.
@@ -259,47 +345,16 @@ public class SpawnManager extends Manager {
       return;
     }
 
-    // Allow spawn is no rule is matching and entity is not from spawner
+    // Allow spawn is no rule is matching and entity is not from spawner to avoid log spawn.
     if (spawner == null) {
-      log.debug("[Allow Spawn] For {} in {} with {} in view and {} in world", entityName, worldName,
-          numberOfEntitiesInsideViewArea, numberOfEntities);
-      event.setResult(Event.Result.DEFAULT);
-    }
-  }
-
-  @SubscribeEvent
-  public static void handleLivingSpecialSpawnEvent(LivingSpawnEvent.SpecialSpawn event) {
-    Entity entity = event.getEntity();
-    String entityName = entity.getEncodeId();
-    World world = entity.level;
-    String worldName = world.dimension().location().toString();
-
-    // Skip other checks if unknown entity name
-    if (entityName == null) {
-      if (entity.isMultipartEntity() || entity.getType().toString().contains("body_part")) {
-        log.debug("[Multipart Entity] Allow special spawn event for {} in {}", entity, worldName);
+      if (event instanceof LivingSpawnEvent.SpecialSpawn) {
+        log.debug("[Special Spawn Event] Allow special spawn Event {}", entity);
       } else {
-        log.warn(
-            "Unknown entity name for special spawn entity {} ({}) in {}. Please report this issue under {}]!",
-            entity, entity.getType(), worldName, Constants.ISSUE_REPORT);
+        log.debug("[Allow Spawn] For {} in {} with {} in view and {} in world", entityName,
+            worldName, numberOfEntitiesInsideViewArea, numberOfEntities);
+        event.setResult(Event.Result.DEFAULT);
       }
-      event.setResult(Event.Result.DEFAULT);
-      return;
     }
-
-    if (allowList.contains(entityName)) {
-      log.debug("[Allowed Entity] Allow special spawn event for {} in {} ", entity, worldName);
-      event.setResult(Event.Result.DEFAULT);
-      return;
-    }
-
-    if (denyList.contains(entityName)) {
-      log.debug("[Denied Entity] Denied special spawn event for {} in {}", entityName, worldName);
-      event.setResult(Event.Result.DENY);
-      return;
-    }
-
-    log.debug("[Special Spawn Event] Allow special spawn Event {}", entity);
   }
 
   public static void updateGameDifficulty(Difficulty difficulty) {

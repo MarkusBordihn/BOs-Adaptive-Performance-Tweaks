@@ -103,7 +103,8 @@ This is a list of the currently supported mods within the config file for indivi
 
 ### ⛔ Unsupported Mods
 
-The following mods are currently unsupported because of using outdated and/or unexpected ways (mixin) of spawning mobs:
+The following mods are unsupported because of using outdated and/or unexpected ways (mixin) of spawning mobs.
+You can test them and see it they are working but I will not offer any support on these.
 
 - ❌ [BetterEnd (Forge)][betterend-forge-port]
 - ❌ [Environmental][environmental]
