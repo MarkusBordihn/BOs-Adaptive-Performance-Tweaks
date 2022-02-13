@@ -23,6 +23,9 @@ The mod automatically increase or decrease the player view distance depending on
 This means players different dimensions are not directly affected by the player view distance of other dimensions, if the server load on this dimension is normal.
 Worlds / Dimensions without any players will be automatically set to a lower player view distance until players entering the dimension again.
 
+**Note: Currently by design as soon the view distance gets adjusted it will trigger a chunk update on the client side.
+To mitigate the effect you can use a higher `minViewDistance` or the [Farsight Mod][farsight] which has some additional benefits.**
+
 You could adjust the view distance over `/aptweaks setViewDistance <view distance>`.
 
 ## ⚙️ Optimized player simulation distance
@@ -59,8 +62,11 @@ Please report issues over the **Issue** link.
 | Forge 1.18.1   | ✔️ Active development |
 
 [header]: ../assets/aptweaks-header.png
+
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
 [core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
 [gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules
 [items]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-items
 [player]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player
+
+[farsight]: https://www.curseforge.com/minecraft/mc-mods/farsight
