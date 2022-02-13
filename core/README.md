@@ -1,5 +1,5 @@
 [![Adaptive Performance Tweaks Downloads](http://cf.way2muchnoise.eu/full_561087_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core)
-[![Adaptive Performance Tweaks MC Versions](http://cf.way2muchnoise.eu/versions/Minecraft_561087_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core)
+[![Adaptive Performance Tweaks Versions](http://cf.way2muchnoise.eu/versions/Minecraft_561087_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core)
 
 ![Adaptive Performance Tweaks: Core][header]
 
@@ -65,6 +65,13 @@ You could adjust the view distance over `/aptweaks setSimulationDistance <simula
 
 **➡️[Install Player Optimization][player]**
 
+## 👻Spawn Control and 📦Spawner Optimization
+
+Mob spawns are limited to a specific view area of the player which allows a better distribution and lowers the numbers of entities without a visible effect for the user.
+_Example: If you are walking on the surface entities below a specific distance / which are currently not reachable will not be spawn until you are closer to them._
+
+**➡️[Install Spawn Optimization][spawn]**
+
 ## Version Status Overview 🛠️
 
 | Version        | Status                |
@@ -112,3 +119,4 @@ I'm not able to test all possible mod combination, so you need to test this on y
 [gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules
 [items]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-items
 [player]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player
+[spawn]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-spawn

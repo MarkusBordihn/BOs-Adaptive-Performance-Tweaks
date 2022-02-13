@@ -25,6 +25,7 @@ public final class Constants {
 
   // General Mod definitions
   public static final String LOG_NAME = "APTweaks(Spawn)";
+  public static final String LOG_PREFIX = "[APTweaks:Spawn]";
   public static final String MOD_COMMAND = "aptweaks";
   public static final String MOD_ID = "adaptive_performance_tweaks_spawn";
   public static final String MOD_NAME = "Adaptive Performance Tweaks: Spawn";

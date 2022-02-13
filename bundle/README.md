@@ -1,5 +1,5 @@
 [![Adaptive Performance Tweaks Downloads](http://cf.way2muchnoise.eu/full_adaptive-performance-tweaks_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks)
-[![Adaptive Performance Tweaks MC Versions](http://cf.way2muchnoise.eu/versions/Minecraft_adaptive-performance-tweaks_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks)
+[![Adaptive Performance Tweaks Versions](http://cf.way2muchnoise.eu/versions/Minecraft_adaptive-performance-tweaks_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks)
 
 ![Adaptive Performance Tweaks: Game Rules][header]
 
@@ -8,22 +8,29 @@ The goal of this mod is to allow a smoother experience on a server with several 
 
 **⚠️Please make sure to create regular backup of your world in case something goes wrong.**
 
-## 🚀 Version 1.18.1 and higher
+# 🚀 Version 1.18.1 and higher 🛠️
 
 The next-gen version of Adaptive Performance Tweaks is separated by functionally to allow an easier mix with other optimization mods.
 This mod includes the bundle version of all optimization.
 
-### 🔭 Customized
+## 🔭 Customized
 
 If you want to pick and choose your optimization mod, take a look at the core page:
 
-**➡️[Install separate modules][core]**
+**➡️ [Install separate modules][core]**
 
-## Version 1.16.5 / 1.17.1 🛠️
+# 🚀 Version 1.16.5 ⚠️
 
 The next-gen version of Adaptive Performance Tweaks is only supporting 1.18.1 and higher.
-The former versions 1.16.5 will only be receiving maintaining updates but will
-not be upgraded to the next-gen version.
+
+The former 1.16.5 version will only be receiving maintaining updates and has some backported feature from the next-gen version.
+But there will be no other backports of features and you should switch to 1.18.1, to get the latest features.
+
+**➡️ [1.16.5 Documentation][adaptive_performance_tweaks_legacy]**
+
+## 🚀 Version 1.17.1 ❌
+
+This version is deprecated and will no longer receive and updates of fixes. Use it on your own risk.
 
 ## Version Status Overview 🛠️
 
@@ -36,7 +43,8 @@ not be upgraded to the next-gen version.
 
 [header]: ../assets/aptweaks-header.png
 
-[core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
+[adaptive_performance_tweaks_legacy]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/tree/1.16.5
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
+[core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
 [gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules
 [items]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-items

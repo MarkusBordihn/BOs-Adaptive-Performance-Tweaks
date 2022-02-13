@@ -58,6 +58,7 @@ public final class CommonConfig {
 
     public final ForgeConfigSpec.ConfigValue<List<String>> spawnAllowList;
     public final ForgeConfigSpec.ConfigValue<List<String>> spawnDenyList;
+    public final ForgeConfigSpec.ConfigValue<List<String>> spawnIgnoreDimensionList;
 
     public final ForgeConfigSpec.BooleanValue spawnLimitationEnabled;
     public final ForgeConfigSpec.IntValue spawnLimitationLimiter;
@@ -74,6 +75,8 @@ public final class CommonConfig {
       spawnDenyList = builder.comment(
           "General deny list for spawn entities (e.g. minecraft:bat) to no longer spawn in all worlds.")
           .define("denyList", new ArrayList<String>(Arrays.asList("")));
+      spawnIgnoreDimensionList = builder.comment("General list of ignored dimensions.")
+          .define("spawnIgnoreDimensionList", new ArrayList<String>(Arrays.asList("minecraft:the_end")));
       builder.pop();
 
       builder.push("Spawn Limitations");

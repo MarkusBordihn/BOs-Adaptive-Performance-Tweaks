@@ -9,7 +9,7 @@ The goal of this mod is to allow a smoother experience on a server with several 
 ## 👾Optimized Mob Spawn Calculations
 
 Mob spawns are limited to a specific view area of the player which allows a better distribution and lowers the numbers of entities without a visible effect for the user.
-_Example: If you are walking on the surface entities below a specific distance / which are currently not reachable mobs will not be spawn until you are closer to them._
+_Example: If you are walking on the surface entities below a specific distance / which are currently not reachable will not be spawn until you are closer to them._
 
 ## 👻Spawn Control
 
@@ -26,7 +26,7 @@ Number Of players * Max Number Of Entity * Server Load * Game Difficulty
 
 You could also get an overview of all currently loaded monster over `/aptweaks monster`.
 
-## 📦Spawner Optimization (wip)
+## 📦Spawner Optimization
 
 Keeps track of the current number of loaded spawner and perform smaller optimization.
 You could also get an overview of all currently loaded spawners over `/aptweaks spawner`.

@@ -1,10 +1,15 @@
-# Changelog for Adaptive Performance Tweaks
+# Changelog for Adaptive Performance Tweaks (> 1.18.x)
 
 ## Note
 
 This change log includes the summarized changes.
-For the full changelog, please go to the following url instead:
-<https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/commits/main>
+For the full changelog, please go to the [Git Hub History][history] instead.
+
+### 2022.02.13
+
+- Added game difficult level and game difficult factor to the core module.
+- Added ignore dimension list to spawn module which includes "The End" by default.
+- Fixed and improved logging messages.
 
 ### 2022.01.30
 
@@ -62,3 +67,5 @@ For the full changelog, please go to the following url instead:
 
 - Added bundled version to allow easier transition from 1.16.5 and 17.1.1
 - Initial check-in of next gen-version of Adaptive Performance Tweaks.
+
+[history]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/commits/main

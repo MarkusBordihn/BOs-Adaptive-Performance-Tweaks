@@ -26,6 +26,7 @@ public final class Constants {
   // General Mod definitions
   public static final String LOG_NAME = "APTweaks(Core)";
   public static final String LOG_REGISTER_PREFIX = "Register Adaptive Performance Tweaks: Core";
+  public static final String LOG_PREFIX = "[APTweaks:Core]";
   public static final String MOD_COMMAND = "aptweaks";
   public static final String MOD_ID = "adaptive_performance_tweaks_core";
   public static final String MOD_NAME = "Adaptive Performance Tweaks: Core";

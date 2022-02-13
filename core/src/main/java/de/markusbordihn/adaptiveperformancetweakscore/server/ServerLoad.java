@@ -74,8 +74,8 @@ public class ServerLoad {
     // Report change to server log, if enabled.
     if (currentServerLoad != lastServerLoad && logServerLoad) {
       String loadIndicator = lastAvgTickTime > avgTickTime ? "↓" : "↑";
-      log.info("{} Server load changed from {} (avg. {}) to {} (avg. {})", loadIndicator,
-          lastServerLoad, lastAvgTickTime, currentServerLoad, avgTickTime);
+      log.info("{} {} Server load changed from {} (avg. {}) to {} (avg. {})", Constants.LOG_PREFIX,
+          loadIndicator, lastServerLoad, lastAvgTickTime, currentServerLoad, avgTickTime);
     }
 
     // Post result to the event bus.

@@ -19,6 +19,7 @@ license="MIT"
 [[mods]] #mandatory
     modId="adaptive_performance_tweaks_spawn"
     version="${file.jarVersion}"
+    displayURL="https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-spawn/"
     displayName="APTweaks: Spawn"
     logoFile="logo.png"
     credits=""
@@ -42,6 +43,6 @@ license="MIT"
 [[dependencies.adaptive_performance_tweaks_spawn]]
     modId="adaptive_performance_tweaks_core"
     mandatory=true
-    versionRange="[2.0.0,3.0.0)"
+    versionRange="[2.1.0,3.0.0)"
     ordering="NONE"
     side="SERVER"

@@ -33,6 +33,7 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
+
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -50,8 +51,6 @@ public class SpawnerManager {
   private static final short VERIFICATION_TICK = 60 * 20;
 
   static Set<BaseSpawner> spawnerList = ConcurrentHashMap.newKeySet();
-  private static ConcurrentHashMap<BaseSpawner, Set<BlockPos>> spawnerMap =
-      new ConcurrentHashMap<>();
 
   protected SpawnerManager() {}
 

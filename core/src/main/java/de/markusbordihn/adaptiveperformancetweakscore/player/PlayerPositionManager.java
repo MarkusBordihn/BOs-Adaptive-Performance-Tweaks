@@ -60,7 +60,7 @@ public class PlayerPositionManager {
   public static void handlePlayerLoggedOutEvent(PlayerEvent.PlayerLoggedOutEvent event) {
     String username = event.getPlayer().getName().getString();
     if (!username.isEmpty()) {
-      log.debug("Removing player {} from tracking.", event.getEntity());
+      log.debug("Removing player {} from position tracking.", event.getEntity());
       playerPositionMap.remove(username);
     }
   }

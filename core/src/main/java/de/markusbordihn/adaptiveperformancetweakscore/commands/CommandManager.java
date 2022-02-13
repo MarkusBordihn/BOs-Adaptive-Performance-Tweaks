@@ -19,9 +19,10 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.commands;
 
-import com.mojang.brigadier.CommandDispatcher;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import com.mojang.brigadier.CommandDispatcher;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;

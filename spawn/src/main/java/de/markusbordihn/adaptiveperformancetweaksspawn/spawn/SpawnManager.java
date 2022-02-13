@@ -37,10 +37,10 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
-import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweakscore.entity.EntityManager;
 import de.markusbordihn.adaptiveperformancetweakscore.player.PlayerPosition;
 import de.markusbordihn.adaptiveperformancetweakscore.player.PlayerPositionManager;
+import de.markusbordihn.adaptiveperformancetweakscore.server.ServerManager;
 import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.CommonConfig;
 
@@ -52,6 +52,7 @@ public class SpawnManager {
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
   private static Set<String> allowList = new HashSet<>(COMMON.spawnAllowList.get());
   private static Set<String> denyList = new HashSet<>(COMMON.spawnDenyList.get());
+  private static Set<String> ignoreDimensionList = new HashSet<>(COMMON.spawnIgnoreDimensionList.get());
   private static boolean spawnLimitationEnabled = COMMON.spawnLimitationEnabled.get();
   private static int spawnLimitationLimiter = COMMON.spawnLimitationLimiter.get();
   private static int spawnLimitationMaxMobsPerPlayer = COMMON.spawnLimitationMaxMobsPerPlayer.get();
@@ -65,6 +66,7 @@ public class SpawnManager {
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
     allowList = new HashSet<>(COMMON.spawnAllowList.get());
     denyList = new HashSet<>(COMMON.spawnDenyList.get());
+    ignoreDimensionList = new HashSet<>(COMMON.spawnIgnoreDimensionList.get());
     spawnLimitationEnabled = COMMON.spawnLimitationEnabled.get();
     spawnLimitationLimiter = COMMON.spawnLimitationLimiter.get();
     spawnLimitationMaxMobsPerPlayer = COMMON.spawnLimitationMaxMobsPerPlayer.get();
@@ -74,18 +76,27 @@ public class SpawnManager {
   @SubscribeEvent
   public static void handleServerStarting(ServerStartingEvent event) {
     if (!allowList.isEmpty()) {
-      log.info("Spawn allow List: {}", allowList);
+      log.info("{} Spawn allow list: {}", Constants.LOG_PREFIX, allowList);
     }
     if (!denyList.isEmpty()) {
-      log.info("Spawn deny List: {}", denyList);
+      log.info("{} Spawn deny list: {}", Constants.LOG_PREFIX, denyList);
+    }
+    if (!ignoreDimensionList.isEmpty()) {
+      log.info("{} Ignore dimension list: {}", Constants.LOG_PREFIX, ignoreDimensionList);
     }
     if (spawnLimitationEnabled) {
       if (spawnLimitationLimiter > 0) {
-        log.info("\u2713 Enable limiter and block randomly every {} mob from spawning ...",
-            spawnLimitationLimiter);
+        log.info("{} \u2713 Enable limiter and block randomly every {} mob from spawning ...",
+            Constants.LOG_PREFIX, spawnLimitationLimiter);
       }
-      log.info("\u2713 Enable spawn rate control with maxPerPlayer:{} and maxPerWorld:{} ...",
-          spawnLimitationMaxMobsPerPlayer, spawnLimitationMaxMobsPerWorld);
+      if (spawnLimitationMaxMobsPerWorld > 0) {
+        log.info("{} \u2713 Enable spawn rate control with max {} per world ...",
+            Constants.LOG_PREFIX, spawnLimitationMaxMobsPerWorld);
+      }
+      if (spawnLimitationMaxMobsPerPlayer > 0) {
+        log.info("{} \u2713 Enable spawn rate control with max {} per player ...",
+            Constants.LOG_PREFIX, spawnLimitationMaxMobsPerPlayer);
+      }
     }
   }
 
@@ -137,29 +148,34 @@ public class SpawnManager {
     }
 
     // Limit spawns randomly every x times.
-    if (spawnLimitationLimiter > 0 && spawnLimiter++ == spawnLimitationLimiter) {
-      log.debug("[Spawn Limiter] Blocked spawn event for {} in {}.", entity, levelName);
+    if (spawnLimitationLimiter > 0 && spawnLimiter++ >= spawnLimitationLimiter) {
+      log.debug("[Spawn Limiter {}] Blocked spawn event for {} in {}.", spawnLimitationLimiter,
+          entity, levelName);
       event.setResult(Event.Result.DENY);
       spawnLimiter = 0;
       return;
     }
 
+    // Get current game difficult to define spawn factor.
+    double spawnFactor = ServerManager.getGameDifficultyFactor();
+
     // Get the number of current entities for this world.
     int numberOfEntities = EntityManager.getNumberOfEntities(levelName, entityName);
 
     // Limit spawn based on world limits.
-    if (spawnLimitationMaxMobsPerWorld > 0 && numberOfEntities >= spawnLimitationMaxMobsPerWorld) {
-      log.debug("[World limit] Blocked spawn event for {} ({} >= {}) in {}", entityName,
-          numberOfEntities, spawnLimitationMaxMobsPerWorld, levelName);
+    if (spawnLimitationMaxMobsPerWorld > 0 && numberOfEntities >= spawnLimitationMaxMobsPerWorld * spawnFactor) {
+      log.debug("[World limit] Blocked spawn event for {} ({} >= {} * {}f) in {}", entityName,
+          numberOfEntities, spawnLimitationMaxMobsPerWorld, spawnFactor, levelName);
       event.setResult(Event.Result.DENY);
       return;
     }
 
     // Cheap and fast calculation to limit spawn based on possible entities within player limits.
     if (spawnLimitationMaxMobsPerPlayer > 0
-        && numberOfEntities >= spawnLimitationMaxMobsPerPlayer * numOfPlayersInsideViewArea) {
-      log.debug("[Player limit] Blocked spawn event for {} ({} >= {} * {}) in {}", entityName,
-          numberOfEntities, spawnLimitationMaxMobsPerPlayer, levelName);
+        && numberOfEntities >= spawnLimitationMaxMobsPerPlayer * numOfPlayersInsideViewArea * spawnFactor) {
+      log.debug("[Player limit] Blocked spawn event for {} ({} >= {} * {} * {}f) in {}", entityName,
+          numberOfEntities, spawnLimitationMaxMobsPerPlayer,
+          numOfPlayersInsideViewArea, spawnFactor, levelName);
       event.setResult(Event.Result.DENY);
       return;
     }
@@ -169,9 +185,10 @@ public class SpawnManager {
         levelName, entityName, playersPositionsInsideViewArea);
     if (spawnLimitationMaxMobsPerPlayer > 0
         && numberOfEntitiesInsideViewArea >= spawnLimitationMaxMobsPerPlayer
-            * numOfPlayersInsideViewArea) {
-      log.debug("[View Area Limit] Blocked spawn event for {} ({} >= {} * {}) in {}", entityName,
-          numberOfEntitiesInsideViewArea, spawnLimitationMaxMobsPerPlayer, levelName);
+            * numOfPlayersInsideViewArea * spawnFactor) {
+      log.debug("[View Area Limit] Blocked spawn event for {} ({} >= {} * {} * {}f) in {}", entityName,
+          numberOfEntitiesInsideViewArea, spawnLimitationMaxMobsPerPlayer,
+          numOfPlayersInsideViewArea, spawnFactor, levelName);
       event.setResult(Event.Result.DENY);
       return;
     }
@@ -182,6 +199,12 @@ public class SpawnManager {
   }
 
   private static boolean isRelevantEntity(Entity entity, String entityName, String levelName) {
+
+    // Pre-check for ignored dimension to avoid further checks
+    if (ignoreDimensionList.contains(levelName)) {
+      log.debug("[Ignored Dimension] Allow spawn event for {} in {} ", entity, levelName);
+      return false;
+    }
 
     // Entity instance checks to ignore specific and short living entities like projectiles.
     if (!EntityManager.isRelevantEntity(entity)) {

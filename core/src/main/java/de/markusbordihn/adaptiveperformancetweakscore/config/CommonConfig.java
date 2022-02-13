@@ -57,6 +57,11 @@ public final class CommonConfig {
     public final ForgeConfigSpec.BooleanValue logServerLoad;
     public final ForgeConfigSpec.BooleanValue logServerLevelLoad;
 
+    public final ForgeConfigSpec.DoubleValue gameDifficultyFactorEasy;
+    public final ForgeConfigSpec.DoubleValue gameDifficultyFactorNormal;
+    public final ForgeConfigSpec.DoubleValue gameDifficultyFactorPeaceful;
+    public final ForgeConfigSpec.DoubleValue gameDifficultyFactorHard;
+
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
@@ -68,6 +73,14 @@ public final class CommonConfig {
           .define("logServerLoad", true);
       logServerLevelLoad = builder.comment("Enable/Disable logging of the individual level load.")
           .define("logServerLevelLoad", true);
+      builder.pop();
+
+      builder.push("Game Difficulty Factors");
+      gameDifficultyFactorEasy = builder.defineInRange("gameDifficultyFactorEasy", 0.75, 0.10, 10);
+      gameDifficultyFactorNormal = builder.defineInRange("gameDifficultyFactorNormal", 1, 0.10, 10);
+      gameDifficultyFactorPeaceful =
+          builder.defineInRange("gameDifficultyFactorPeaceful", 1, 0.10, 10);
+      gameDifficultyFactorHard = builder.defineInRange("gameDifficultyFactorHard", 1.5, 0.10, 10);
       builder.pop();
     }
   }
