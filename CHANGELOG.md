@@ -5,6 +5,15 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.02.26
+
+- Fixed issue with **FTB Ultimine** mod and other mods which offers similar features.
+- Added smaller performance improvements.
+
+### 2022.02.15
+
+- Added smaller performance optimization mostly for memory usage and unnecessary object instances.
+
 ### 2022.02.13
 
 - Added game difficult level and game difficult factor to the core module.

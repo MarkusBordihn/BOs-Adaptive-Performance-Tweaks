@@ -49,9 +49,9 @@ public class PlayerPositionCommand extends CustomCommand {
       sendFeedback(context,
           String.format("Player Positions (%s online)\n===", playerPositionMap.size()));
       for (Map.Entry<String, PlayerPosition> player : playerPositionMap.entrySet()) {
-        String playerName = player.getKey();
         PlayerPosition playerPosition = player.getValue();
-        sendFeedback(context, String.format("\u221F %s %s", playerName, playerPosition));
+        sendFeedback(context,
+            String.format("\u221F %s %s", playerPosition.getPlayerName(), playerPosition));
       }
     }
     return 0;

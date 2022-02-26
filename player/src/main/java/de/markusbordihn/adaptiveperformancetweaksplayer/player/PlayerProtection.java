@@ -166,11 +166,11 @@ public class PlayerProtection {
   }
 
   private static void addPlayer(String username) {
-    ServerPlayer player =
-        ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
     try {
       for (PlayerValidation playerValidation : playerValidationList) {
         if (username.equals(playerValidation.getUsername())) {
+          ServerPlayer player =
+              ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
           log.debug("Found player {} with player validation {}", player, playerValidation);
           boolean isChildPlayerAccount =
               (enableChildPlayerProtection && childPlayerProtectionList.contains(username));

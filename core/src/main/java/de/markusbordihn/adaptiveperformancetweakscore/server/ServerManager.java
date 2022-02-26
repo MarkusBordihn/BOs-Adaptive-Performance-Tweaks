@@ -97,13 +97,21 @@ public class ServerManager {
   @SubscribeEvent
   @OnlyIn(Dist.CLIENT)
   public static void handleClientServerTickEvent(TickEvent.ServerTickEvent event) {
-    handleServerTickEvent(event, Dist.CLIENT);
+    if (event.phase == TickEvent.Phase.START) {
+      handleServerTickEvent(Dist.CLIENT);
+    } else {
+      ticks++;
+    }
   }
 
   @SubscribeEvent
   @OnlyIn(Dist.DEDICATED_SERVER)
   public static void handleDedicatedServerTickEvent(TickEvent.ServerTickEvent event) {
-    handleServerTickEvent(event, Dist.DEDICATED_SERVER);
+    if (event.phase == TickEvent.Phase.START) {
+      handleServerTickEvent(Dist.DEDICATED_SERVER);
+    } else {
+      ticks++;
+    }
   }
 
   @SubscribeEvent
@@ -111,11 +119,7 @@ public class ServerManager {
     updateGameDifficulty(event.getDifficulty());
   }
 
-  public static void handleServerTickEvent(TickEvent.ServerTickEvent event, Dist dist) {
-    if (event.phase == TickEvent.Phase.END) {
-      ticks++;
-      return;
-    }
+  public static void handleServerTickEvent(Dist dist) {
     if (ticks == SERVER_LOAD_TICK) {
       ServerLoad.measureLoadAndPost(dist);
     } else if (ticks == WORLD_LOAD_TICK) {

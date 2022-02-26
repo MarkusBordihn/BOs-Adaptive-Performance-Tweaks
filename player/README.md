@@ -1,5 +1,5 @@
 [![Adaptive Performance Tweaks Downloads](http://cf.way2muchnoise.eu/full_563963_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player)
-[![Adaptive Performance Tweaks MC Versions](http://cf.way2muchnoise.eu/versions/Minecraft_563963_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player)
+[![Adaptive Performance Tweaks Versions](http://cf.way2muchnoise.eu/versions/Minecraft_563963_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player)
 
 ![Adaptive Performance Tweaks: Player][header]
 

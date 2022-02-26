@@ -22,6 +22,7 @@ package de.markusbordihn.adaptiveperformancetweakscore.player;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.LogManager;
@@ -48,8 +49,7 @@ public class PlayerPositionManager {
   private static Map<String, PlayerPosition> playerPositionMap = new ConcurrentHashMap<>();
   private static int ticks = 0;
 
-  protected PlayerPositionManager() {
-  }
+  protected PlayerPositionManager() {}
 
   @SubscribeEvent
   public static void onServerAboutToStartEvent(ServerAboutToStartEvent event) {
@@ -58,10 +58,10 @@ public class PlayerPositionManager {
 
   @SubscribeEvent
   public static void handlePlayerLoggedOutEvent(PlayerEvent.PlayerLoggedOutEvent event) {
-    String username = event.getPlayer().getName().getString();
-    if (!username.isEmpty()) {
-      log.debug("Removing player {} from position tracking.", event.getEntity());
-      playerPositionMap.remove(username);
+    String playerUUID = event.getPlayer().getStringUUID();
+    if (playerUUID != null) {
+      log.debug("Removing player {} from position tracking.", event.getPlayer());
+      playerPositionMap.remove(playerUUID);
     }
   }
 
@@ -71,7 +71,7 @@ public class PlayerPositionManager {
       ticks++;
       return;
     }
-    if (ticks == 50) {
+    if (ticks >= 50) {
       MinecraftServer minecraftServer = ServerLifecycleHooks.getCurrentServer();
       if (minecraftServer != null) {
         PlayerList playerList = minecraftServer.getPlayerList();
@@ -79,12 +79,9 @@ public class PlayerPositionManager {
           List<ServerPlayer> serverPlayerList = playerList.getPlayers();
           int viewDistance = playerList.getViewDistance();
           int simulationDistance = playerList.getSimulationDistance();
-          if (!serverPlayerList.isEmpty()) {
-            for (ServerPlayer player : ServerLifecycleHooks.getCurrentServer().getPlayerList()
-                .getPlayers()) {
-              if (player.isAlive() && !player.hasDisconnected()) {
-                updatePlayerPosition(player, viewDistance, simulationDistance);
-              }
+          for (ServerPlayer player : serverPlayerList) {
+            if (player.isAlive() && !player.hasDisconnected()) {
+              updatePlayerPosition(player, viewDistance, simulationDistance);
             }
           }
         }
@@ -117,10 +114,10 @@ public class PlayerPositionManager {
     return playerPositionMap;
   }
 
-  private static void updatePlayerPosition(ServerPlayer player, int viewDistance, int simulationDistance) {
-    String username = player.getName().getString();
-    PlayerPosition playerPosition = playerPositionMap.computeIfAbsent(username, k -> new PlayerPosition(player,
-        viewDistance, simulationDistance));
+  private static void updatePlayerPosition(ServerPlayer player, int viewDistance,
+      int simulationDistance) {
+    PlayerPosition playerPosition = playerPositionMap.computeIfAbsent(player.getStringUUID(),
+        key -> new PlayerPosition(player, viewDistance, simulationDistance));
     playerPosition.update(player, viewDistance, simulationDistance);
   }
 }

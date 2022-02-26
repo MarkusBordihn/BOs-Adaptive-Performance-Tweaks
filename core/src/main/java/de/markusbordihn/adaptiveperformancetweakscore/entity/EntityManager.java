@@ -174,9 +174,8 @@ public class EntityManager {
   public static void addEntity(Entity entity, String entityName, String levelName) {
 
     // Store entities per type and world.
-    String entityMapKey = '[' + levelName + ']' + entityName;
-    Set<Entity> entities =
-        entityMap.computeIfAbsent(entityMapKey, key -> ConcurrentHashMap.newKeySet());
+    Set<Entity> entities = entityMap.computeIfAbsent('[' + levelName + ']' + entityName,
+        key -> ConcurrentHashMap.newKeySet());
     entities.add(entity);
 
     // Store entities per world.

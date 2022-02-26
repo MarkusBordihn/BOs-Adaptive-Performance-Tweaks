@@ -17,31 +17,31 @@ license="MIT"
 #issueTrackerURL="https://change.me.to.your.issue.tracker.example.invalid/" #optional
 # A list of mods - how many allowed here is determined by the individual mod loader
 [[mods]] #mandatory
-    modId="adaptive_performance_tweaks_core"
-    version="${file.jarVersion}"
-    displayName="APTweaks: Core"
-    displayURL="https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core/"
-    logoFile="logo.png"
-    credits=""
-    authors="Markus Bordihn"
-    description='''Adaptive Performance Tweaks is a Minecraft Forge Mod to automatically adjust specific settings on the server side to allow a better tps/fps.'''
+  modId="adaptive_performance_tweaks_core"
+  version="${file.jarVersion}"
+  displayName="APTweaks: Core"
+  displayURL="https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core/"
+  logoFile="logo.png"
+  credits=""
+  authors="Markus Bordihn"
+  description='''Adaptive Performance Tweaks is a Minecraft Forge Mod to automatically adjust specific settings on the server side to allow a better tps/fps.'''
 
 [[dependencies.adaptive_performance_tweaks_core]] #optional
-    # the modid of the dependency
-    modId="forge" #mandatory
-    # Does this dependency have to exist - if not, ordering below must be specified
-    mandatory=true #mandatory
-    # The version range of the dependency
-    versionRange="[39,)" #mandatory
-    # An ordering relationship for the dependency - BEFORE or AFTER required if the relationship is not mandatory
-    ordering="NONE"
-    # Side this dependency is applied on - BOTH, CLIENT or SERVER
-    side="BOTH"
+  # the modid of the dependency
+  modId="forge" #mandatory
+  # Does this dependency have to exist - if not, ordering below must be specified
+  mandatory=true #mandatory
+  # The version range of the dependency
+  versionRange="[39,)" #mandatory
+  # An ordering relationship for the dependency - BEFORE or AFTER required if the relationship is not mandatory
+  ordering="NONE"
+  # Side this dependency is applied on - BOTH, CLIENT or SERVER
+  side="BOTH"
 
 [[dependencies.adaptive_performance_tweaks_core]]
-    modId="minecraft"
-    mandatory=true
-    # This version range declares a minimum of the current minecraft version up to but not including the next major version
-    versionRange="[1.18.1,1.19)"
-    ordering="NONE"
-    side="BOTH"
+  modId="minecraft"
+  mandatory=true
+  # This version range declares a minimum of the current minecraft version up to but not including the next major version
+  versionRange="[1.18.1,1.19)"
+  ordering="NONE"
+  side="BOTH"

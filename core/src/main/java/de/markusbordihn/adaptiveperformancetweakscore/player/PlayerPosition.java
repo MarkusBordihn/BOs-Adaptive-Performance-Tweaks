@@ -19,6 +19,7 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.player;
 
+import java.util.UUID;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 
@@ -34,6 +35,7 @@ public class PlayerPosition {
 
   private ServerPlayer player;
   private String playerName = "";
+  private UUID playerUUID;
   private String levelName = "";
   private boolean canSeeSky = false;
   private boolean isUnderWater = false;
@@ -55,6 +57,7 @@ public class PlayerPosition {
   public PlayerPosition(ServerPlayer player, int viewDistance, int simulationDistance) {
     this.player = player;
     this.playerName = player.getName().getString();
+    this.playerUUID = player.getUUID();
     this.updatePosition(player.getLevel().dimension().location().toString(), viewDistance,
         simulationDistance);
     this.calculateViewArea();
@@ -157,13 +160,13 @@ public class PlayerPosition {
     // Make sure to calculate view area before displaying results.
     calculateViewArea();
 
-    return "PlayerPosition[Player{name: '" + this.playerName + "', world: '" + this.levelName
-        + "', x:" + this.posX + ", y:" + this.posY + ", z:" + this.posZ + ", viewDistance: "
-        + this.viewDistance + ", simulationDistance: " + this.simulationDistance
-        + ", viewAreaDistance: " + this.viewAreaDistance + "}, Range{x:" + this.viewAreaStartX
-        + " to " + this.viewAreaStopX + ", y:" + this.viewAreaStartY + " to " + this.viewAreaStopY
-        + ", z:" + this.viewAreaStartZ + " to " + this.viewAreaStopZ + "}, Meta{canSeeSky: "
-        + this.canSeeSky + ", isUnderWater: " + this.isUnderWater + "}]";
+    return "PlayerPosition[Player{name: '" + this.playerName + "', uuid: '" + this.playerUUID
+        + "', world: '" + this.levelName + "', x:" + this.posX + ", y:" + this.posY + ", z:"
+        + this.posZ + ", viewDistance: " + this.viewDistance + ", simulationDistance: "
+        + this.simulationDistance + ", viewAreaDistance: " + this.viewAreaDistance + "}, Range{x:"
+        + this.viewAreaStartX + " to " + this.viewAreaStopX + ", y:" + this.viewAreaStartY + " to "
+        + this.viewAreaStopY + ", z:" + this.viewAreaStartZ + " to " + this.viewAreaStopZ
+        + "}, Meta{canSeeSky: " + this.canSeeSky + ", isUnderWater: " + this.isUnderWater + "}]";
   }
 
 }

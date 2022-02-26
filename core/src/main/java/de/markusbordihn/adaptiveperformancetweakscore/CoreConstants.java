@@ -43,6 +43,10 @@ public final class CoreConstants {
   public static final String DYNVIEW_NAME = "Dynview";
   public static final boolean DYNVIEW_LOADED = ModList.get().isLoaded(DYNVIEW_MOD);
 
+  public static final String FTB_ULTIMINE_MOD = "ftbultimine";
+  public static final String FTB_ULTIMINE_NAME = "FTB Ultimine";
+  public static final boolean FTB_ULTIMINE_LOADED = ModList.get().isLoaded(FTB_ULTIMINE_MOD);
+
   public static final String INCONTROL_MOD = "incontrol";
   public static final String INCONTROL_NAME = "InControl";
   public static final boolean INCONTROL_LOADED = ModList.get().isLoaded(INCONTROL_MOD);

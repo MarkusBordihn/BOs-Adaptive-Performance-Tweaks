@@ -25,6 +25,7 @@ import net.minecraft.world.phys.Vec3;
 public class PlayerValidation {
 
   private ServerPlayer player;
+  private String playerUUID;
   private String username;
   private Vec3 position;
   private double rotationYawHead;
@@ -32,19 +33,23 @@ public class PlayerValidation {
 
   PlayerValidation(ServerPlayer player) {
     this.player = player;
+    this.playerUUID = player.getStringUUID();
     this.position = player.position();
     this.rotationYawHead = player.getYHeadRot();
     this.username = player.getName().getString();
   }
 
   public boolean hasPlayerMoved() {
-    return (!this.username.equals(this.player.getName().getString())
-        || !this.position.equals(this.player.position())
+    return (!this.position.equals(this.player.position())
         || this.rotationYawHead != this.player.getYHeadRot());
   }
 
   public ServerPlayer getPlayer() {
     return this.player;
+  }
+
+  public String getPlayerUUID() {
+    return this.playerUUID;
   }
 
   public String getUsername() {

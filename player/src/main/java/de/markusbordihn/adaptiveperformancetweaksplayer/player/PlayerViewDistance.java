@@ -112,6 +112,8 @@ public class PlayerViewDistance {
     } else if (viewDistance < viewDistanceMin) {
       viewDistance = viewDistanceMin;
     }
+
+    // Only update view distance if we have any player and if it is different than the current one.
     MinecraftServer minecraftServer = ServerLifecycleHooks.getCurrentServer();
     PlayerList playerList = minecraftServer.getPlayerList();
     if (!playerList.getPlayers().isEmpty() && playerList.getViewDistance() != viewDistance) {
@@ -120,7 +122,12 @@ public class PlayerViewDistance {
       playerList.setViewDistance(viewDistance);
       return true;
     }
+
     return false;
+  }
+
+  public static boolean defaultViewDistance() {
+    return setViewDistance(viewDistanceDefault);
   }
 
   public static boolean increaseViewDistance(int factor) {

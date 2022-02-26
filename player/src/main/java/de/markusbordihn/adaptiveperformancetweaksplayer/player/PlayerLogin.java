@@ -23,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import net.minecraft.server.level.ServerPlayer;
+
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -78,7 +79,7 @@ public class PlayerLogin {
     }
 
     if (optimizeViewDistance) {
-      PlayerViewDistance.decreaseViewDistance();
+      PlayerViewDistance.defaultViewDistance();
     }
   }
 }

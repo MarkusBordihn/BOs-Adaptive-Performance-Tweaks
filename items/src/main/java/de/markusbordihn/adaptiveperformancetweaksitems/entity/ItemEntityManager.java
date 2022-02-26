@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -126,7 +125,7 @@ public class ItemEntityManager {
     }
   }
 
-  @SubscribeEvent(priority = EventPriority.HIGHEST)
+  @SubscribeEvent(priority = EventPriority.LOW)
   public static void handleItemEntityJoinWorldEvent(EntityJoinWorldEvent event) {
     // Ignore client side world.
     Level level = event.getWorld();
@@ -253,7 +252,7 @@ public class ItemEntityManager {
     }
   }
 
-  @SubscribeEvent(priority = EventPriority.HIGHEST)
+  @SubscribeEvent(priority = EventPriority.LOW)
   public static void handleItemEntityLeaveWorldEvent(EntityLeaveWorldEvent event) {
     // Ignore client side world.
     Level level = event.getWorld();
@@ -311,7 +310,7 @@ public class ItemEntityManager {
       Set<ItemEntity> itemWorldEntitiesValues = itemWorldEntities.getValue();
       if (itemWorldEntitiesValues.size() > maxNumberOfOptimizedWorldItems) {
         List<ItemEntity> sortedItemWorldEntitiesValues = itemWorldEntitiesValues.stream()
-            .sorted(Comparator.comparing(ItemEntity::getId)).collect(Collectors.toList());
+            .sorted(Comparator.comparing(ItemEntity::getId)).toList();
         for (int i = 0; i < sortedItemWorldEntitiesValues.size()
             - maxNumberOfOptimizedWorldItems; i++) {
           ItemEntity itemEntity = sortedItemWorldEntitiesValues.get(i);
@@ -329,7 +328,7 @@ public class ItemEntityManager {
       Set<ItemEntity> itemTypeEntitiesValues = itemTypeEntities.getValue();
       if (itemTypeEntitiesValues.size() > maxNumberOfOptimizedTypeItems) {
         List<ItemEntity> sortedItemTypeEntitiesValues = itemTypeEntitiesValues.stream()
-            .sorted(Comparator.comparing(ItemEntity::getId)).collect(Collectors.toList());
+            .sorted(Comparator.comparing(ItemEntity::getId)).toList();
         for (int i = 0; i < sortedItemTypeEntitiesValues.size()
             - maxNumberOfOptimizedTypeItems; i++) {
           ItemEntity itemEntity = sortedItemTypeEntitiesValues.get(i);

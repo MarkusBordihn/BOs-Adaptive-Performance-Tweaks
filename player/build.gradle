@@ -27,6 +27,7 @@ plugins {
 }
 
 apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
 version = "${version_major}.${version_minor}.${version_patch}"
@@ -143,11 +144,12 @@ dependencies {
   minecraft 'net.minecraftforge:forge:1.18.1-39.0.76'
 
   // Required: Bo's Adaptive Performance Tweaks: Core (dev dependency)
-  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:2.0.0")
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:2.0.0")
+  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:2.1.1")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:2.1.1")
 
   // Additional helpful Mods for development (runtime depenedency)
   runtimeOnly fg.deobf("curse.maven:configured-457570:3559398")
+  runtimeOnly fg.deobf("curse.maven:spark-361579:3644347")
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..
