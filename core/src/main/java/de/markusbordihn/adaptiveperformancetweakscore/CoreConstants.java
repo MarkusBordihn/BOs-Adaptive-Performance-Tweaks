@@ -25,6 +25,10 @@ public final class CoreConstants {
 
   protected CoreConstants() {}
 
+  // Config Prefix
+  public static final String CONFIG_ID = "adaptive_performance_tweaks";
+  public static final String CONFIG_ID_PREFIX = CONFIG_ID + "/";
+
   // General Mod definitions
   public static final String ISSUE_REPORT =
       "https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues";

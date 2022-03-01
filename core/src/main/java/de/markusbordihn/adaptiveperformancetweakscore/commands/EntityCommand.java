@@ -53,8 +53,10 @@ public class EntityCommand extends CustomCommand {
 
   @Override
   public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-    sendFeedback(context,
-        "Usage:\n/aptweaks entities overview - List of entities in the world\n/aptweaks entities registry - List of known entities from the registry");
+    sendFeedback(context, """
+        Usage:
+        /aptweaks entities overview - List of entities in the world
+        /aptweaks entities registry - List of known entities from the registry""");
     return 0;
   }
 

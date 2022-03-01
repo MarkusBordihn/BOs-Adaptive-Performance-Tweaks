@@ -160,6 +160,6 @@ public class ServerLevelLoadEvent extends Event {
   }
 
   public boolean hasChanged() {
-    return this.serverLevelLoadLevel == this.lastServerLevelLoadLevel;
+    return this.serverLevelLoadLevel != this.lastServerLevelLoadLevel;
   }
 }

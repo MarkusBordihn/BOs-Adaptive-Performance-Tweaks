@@ -20,7 +20,9 @@
 package de.markusbordihn.adaptiveperformancetweakscore.player;
 
 import java.util.UUID;
+
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
 public class PlayerPosition {
@@ -75,14 +77,28 @@ public class PlayerPosition {
     }
   }
 
+  public boolean isInsidePlayerViewArea(String levelName) {
+    return this.levelName.equals(levelName);
+  }
+
   public boolean isInsidePlayerViewArea(String levelName, int x, int y, int z) {
-    if (!this.levelName.equals(levelName)) {
+    if (!isInsidePlayerViewArea(levelName)) {
       return false;
     }
     calculateViewArea();
     return ((this.viewAreaStartX < x && x < this.viewAreaStopX)
         && (this.viewAreaStartY < y && y < this.viewAreaStopY)
         && (this.viewAreaStartZ < z && z < this.viewAreaStopZ));
+  }
+
+  public boolean isInsidePlayerViewArea(Entity entity, String levelName) {
+    if (entity == null || entity.isRemoved() || !isInsidePlayerViewArea(levelName)) {
+      return false;
+    }
+    int x = (int) entity.getX();
+    int y = (int) entity.getY();
+    int z = (int) entity.getZ();
+    return isInsidePlayerViewArea(levelName, x, y, z);
   }
 
   public String getPlayerName() {
@@ -123,6 +139,10 @@ public class PlayerPosition {
           : this.simulationDistance - 1) * CHUNK_SIZE;
     } else {
       this.viewAreaDistance = this.viewDistance * CHUNK_SIZE;
+    }
+    if (this.viewAreaDistance > 240) {
+      // This 240x240 (15x15 chunks) is the max. mob spawn radius for any natural spawn
+      this.viewAreaDistance = 240;
     }
 
     // Simple calculation for X, Y and Z

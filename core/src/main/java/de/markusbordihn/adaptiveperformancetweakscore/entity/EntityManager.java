@@ -21,10 +21,11 @@ package de.markusbordihn.adaptiveperformancetweakscore.entity;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -62,7 +63,7 @@ public class EntityManager {
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static short ticks = 0;
-  private static final short VERIFICATION_TICK = 30 * 20;
+  private static final short VERIFICATION_TICK = 25 * 20;
 
   private static ConcurrentHashMap<String, Set<Entity>> entityMap = new ConcurrentHashMap<>();
   private static ConcurrentHashMap<String, Set<Entity>> entityMapPerWorld =
@@ -78,7 +79,13 @@ public class EntityManager {
 
   @SubscribeEvent
   public static void handleClientServerTickEvent(TickEvent.ServerTickEvent event) {
-    if (event.phase == TickEvent.Phase.END && ticks++ >= VERIFICATION_TICK) {
+    if (event.phase == TickEvent.Phase.START) {
+      ticks++;
+      return;
+    }
+
+    // Verify entities to consider removed and unloaded entities.
+    if (ticks >= VERIFICATION_TICK) {
       verifyEntities();
       ticks = 0;
     }
@@ -174,7 +181,8 @@ public class EntityManager {
   public static void addEntity(Entity entity, String entityName, String levelName) {
 
     // Store entities per type and world.
-    Set<Entity> entities = entityMap.computeIfAbsent('[' + levelName + ']' + entityName,
+    Set<Entity> entities = entityMap.computeIfAbsent(
+        getEntityMapKey(levelName, entityName),
         key -> ConcurrentHashMap.newKeySet());
     entities.add(entity);
 
@@ -194,7 +202,7 @@ public class EntityManager {
 
   public static void removeEntity(Entity entity, String entityName, String levelName) {
     // Remove entity from per type and world map.
-    Set<Entity> entities = entityMap.get('[' + levelName + ']' + entityName);
+    Set<Entity> entities = entityMap.get(getEntityMapKey(levelName, entityName));
     if (entities != null) {
       entities.remove(entity);
     }
@@ -208,12 +216,32 @@ public class EntityManager {
     log.debug("[Left] Entity {} ({}) leaved {}.", entityName, entity, levelName);
   }
 
+  public static String getEntityMapKey(String levelName, String entityName) {
+    return '[' + levelName + ']' + entityName;
+  }
+
   public static Map<String, Set<Entity>> getEntities() {
     return entityMap;
   }
 
+  public static Map<String, Set<Entity>> getEntities(String dimensionName) {
+    ConcurrentHashMap<String, Set<Entity>> entityResultMap = new ConcurrentHashMap<>();
+    Set<Map.Entry<String, Set<Entity>>> entities = entityMap.entrySet();
+    Iterator<Map.Entry<String, Set<Entity>>> entitiesIterator = entities.iterator();
+    String levelName = '[' + dimensionName + ']';
+
+    while (entitiesIterator.hasNext()) {
+      Map.Entry<String, Set<Entity>> entity = entitiesIterator.next();
+      String key = entity.getKey();
+      if (key.startsWith(levelName)) {
+        entityResultMap.put(key, entity.getValue());
+      }
+    }
+    return entityResultMap;
+  }
+
   public static Integer getNumberOfEntities(String levelName, String entityName) {
-    Set<Entity> entities = entityMap.get('[' + levelName + ']' + entityName);
+    Set<Entity> entities = entityMap.get(getEntityMapKey(levelName, entityName));
     if (entities == null) {
       return 0;
     }
@@ -230,20 +258,18 @@ public class EntityManager {
 
   public static Integer getNumberOfEntitiesInPlayerPositions(String levelName, String entityName,
       List<PlayerPosition> playerPositions) {
-    if (!entityMap.contains('[' + levelName + ']' + entityName)) {
+    String entityMapKey = getEntityMapKey(levelName, entityName);
+    if (!entityMap.containsKey(entityMapKey)) {
       return 0;
     }
     int counter = 0;
-    Set<Entity> entities = new HashSet<>(entityMap.get('[' + levelName + ']' + entityName));
+    Set<Entity> entities = new HashSet<>(entityMap.get(entityMapKey));
     Iterator<Entity> entityIterator = entities.iterator();
     while (entityIterator.hasNext()) {
       Entity entity = entityIterator.next();
       if (entity != null) {
-        int x = (int) entity.getX();
-        int y = (int) entity.getY();
-        int z = (int) entity.getZ();
         for (PlayerPosition playerPosition : playerPositions) {
-          if (playerPosition.isInsidePlayerViewArea(levelName, x, y, z)) {
+          if (playerPosition.isInsidePlayerViewArea(entity, levelName)) {
             counter++;
           }
         }
@@ -253,7 +279,7 @@ public class EntityManager {
   }
 
   public static Integer getNumberOfEntitiesInChunkPosition(String levelName, Vector3d position) {
-    if (!entityMap.contains(levelName)) {
+    if (!entityMapPerWorld.containsKey(levelName)) {
       return 0;
     }
     int counter = 0;
@@ -274,36 +300,36 @@ public class EntityManager {
     return counter;
   }
 
-  public static void verifyEntities() {
+  private static void verifyEntities() {
     int removedEntries = 0;
 
     // Verify Entities in overall overview
-    for (Set<Entity> entities : entityMap.values()) {
-      Iterator<Entity> entityIterator = entities.iterator();
-      while (entityIterator.hasNext()) {
-        Entity entity = entityIterator.next();
-        if (entity != null && entity.isRemoved()) {
-          entityIterator.remove();
-          removedEntries++;
-        }
-      }
-    }
+    removedEntries += removeDiscardedEntities(entityMap);
 
     // Verify Entities from world specific overview
-    for (Set<Entity> entities : entityMapPerWorld.values()) {
-      Iterator<Entity> entityIterator = entities.iterator();
-      while (entityIterator.hasNext()) {
-        Entity entity = entityIterator.next();
-        if (entity != null && entity.isRemoved()) {
-          entityIterator.remove();
-          removedEntries++;
-        }
-      }
-    }
+    removedEntries += removeDiscardedEntities(entityMapPerWorld);
 
     if (removedEntries > 0) {
       log.debug("Removed {} entries during the verification", removedEntries);
     }
+  }
+
+  private static int removeDiscardedEntities(ConcurrentMap<String, Set<Entity>> entityMapToCheck) {
+    int removedEntries = 0;
+    if (entityMapToCheck != null && entityMapToCheck.size() > 0) {
+      // Remove entities which are no longer valid liked removed onces.
+      for (Set<Entity> entities : entityMapToCheck.values()) {
+        Iterator<Entity> entityIterator = entities.iterator();
+        while (entityIterator.hasNext()) {
+          Entity entity = entityIterator.next();
+          if (entity != null && entity.isRemoved()) {
+            entityIterator.remove();
+            removedEntries++;
+          }
+        }
+      }
+    }
+    return removedEntries;
   }
 
   public static boolean isRelevantEntity(Entity entity) {

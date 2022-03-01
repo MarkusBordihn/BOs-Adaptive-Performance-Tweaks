@@ -31,7 +31,10 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.fml.loading.FileUtils;
 
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
@@ -51,7 +54,10 @@ public final class CommonConfig {
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
     log.info("Registering {} common config ...", Constants.MOD_NAME);
-    ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec);
+    FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
+        CoreConstants.CONFIG_ID);
+    ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec,
+        CoreConstants.CONFIG_ID_PREFIX + "spawn.toml");
   }
 
   public static class Config {
@@ -87,10 +93,10 @@ public final class CommonConfig {
           .defineInRange("spawnLimitationLimiter", 10, 0, 100);
       spawnLimitationMaxMobsPerPlayer = builder.comment(
           "Defines the max. number of entities of a specific type, which could spawn within the player view area. Use 0 to disable this optimization.")
-          .defineInRange("spawnLimitationMaxMobsPerPlayer", 8, 1, 256);
+          .defineInRange("spawnLimitationMaxMobsPerPlayer", 8, 0, 256);
       spawnLimitationMaxMobsPerWorld = builder.comment(
           "Defines the max. number of entities of a specific type, which could spawn within a single world. Use 0 to disable this optimization.")
-          .defineInRange("spawnLimitationMaxMobsPerWorld", 16, 1, 512);
+          .defineInRange("spawnLimitationMaxMobsPerWorld", 128, 0, 1024);
       builder.pop();
     }
   }

@@ -86,6 +86,6 @@ public class ServerLoadEvent extends Event {
   }
 
   public boolean hasChanged() {
-    return this.serverLoadLevel == this.lastServerLoadLevel;
+    return this.serverLoadLevel != this.lastServerLoadLevel;
   }
 }

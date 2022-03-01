@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,6 +41,7 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 
 import de.markusbordihn.adaptiveperformancetweakscore.Constants;
+import de.markusbordihn.adaptiveperformancetweakscore.dimension.DimensionManager;
 
 @Mod.EventBusSubscriber
 public class PlayerPositionManager {
@@ -48,6 +50,7 @@ public class PlayerPositionManager {
 
   private static Map<String, PlayerPosition> playerPositionMap = new ConcurrentHashMap<>();
   private static int ticks = 0;
+  private static int numberOfPlayers = 0;
 
   protected PlayerPositionManager() {}
 
@@ -76,12 +79,19 @@ public class PlayerPositionManager {
       if (minecraftServer != null) {
         PlayerList playerList = minecraftServer.getPlayerList();
         if (playerList != null) {
-          List<ServerPlayer> serverPlayerList = playerList.getPlayers();
-          int viewDistance = playerList.getViewDistance();
-          int simulationDistance = playerList.getSimulationDistance();
-          for (ServerPlayer player : serverPlayerList) {
-            if (player.isAlive() && !player.hasDisconnected()) {
-              updatePlayerPosition(player, viewDistance, simulationDistance);
+          numberOfPlayers = playerList.getPlayerCount();
+          if (numberOfPlayers == 0) {
+            if (!playerPositionMap.isEmpty()) {
+              playerPositionMap = new ConcurrentHashMap<>();
+            }
+          } else {
+            List<ServerPlayer> serverPlayerList = playerList.getPlayers();
+            int viewDistance = playerList.getViewDistance();
+            int simulationDistance = playerList.getSimulationDistance();
+            for (ServerPlayer player : serverPlayerList) {
+              if (player.isAlive() && !player.hasDisconnected()) {
+                updatePlayerPosition(player, viewDistance, simulationDistance);
+              }
             }
           }
         }
@@ -90,12 +100,38 @@ public class PlayerPositionManager {
     }
   }
 
+  public static int getNumberOfPlayers() {
+    return numberOfPlayers;
+  }
+
   public static List<PlayerPosition> getPlayerPositionsInsideViewArea(String world, int x, int y,
       int z) {
     List<PlayerPosition> playerPositions = new ArrayList<>();
     for (PlayerPosition playerPosition : playerPositionMap.values()) {
       if (playerPosition.isInsidePlayerViewArea(world, x, y, z)) {
         playerPositions.add(playerPosition);
+      }
+    }
+    return playerPositions;
+  }
+
+  public static List<PlayerPosition> getPlayerPositions(String world) {
+    List<PlayerPosition> playerPositions = new ArrayList<>();
+    for (PlayerPosition playerPosition : playerPositionMap.values()) {
+      if (playerPosition.isInsidePlayerViewArea(world)) {
+        playerPositions.add(playerPosition);
+      }
+    }
+    return playerPositions;
+  }
+
+  public static ConcurrentMap<String, List<PlayerPosition>> getPlayerPositions() {
+    ConcurrentHashMap<String, List<PlayerPosition>> playerPositions = new ConcurrentHashMap<>();
+    List<String> dimensionList = DimensionManager.getDimensionList();
+    for (String dimension : dimensionList) {
+      List<PlayerPosition> playerPositionsForDimension = getPlayerPositions(dimension);
+      if (!playerPositionsForDimension.isEmpty()) {
+        playerPositions.put(dimension, playerPositionsForDimension);
       }
     }
     return playerPositions;

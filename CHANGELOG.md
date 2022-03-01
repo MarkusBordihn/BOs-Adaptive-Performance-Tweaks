@@ -5,6 +5,12 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.03.01
+
+- Moved config files to separate directory. NOTE: Please make sure to check the new auto-generated configs.
+- Improved entity and position manager to improve tracking of entities and player positions.
+- Fixed issue with spawn rules which wrongly triggering "Player Limit" rule when it should not.
+
 ### 2022.02.26
 
 - Fixed issue with **FTB Ultimine** mod and other mods which offers similar features.
