@@ -22,11 +22,16 @@ package de.markusbordihn.adaptiveperformancetweaksitems.config;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import de.markusbordihn.adaptiveperformancetweaksitems.Constants;
+
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.fml.loading.FileUtils;
+
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import de.markusbordihn.adaptiveperformancetweaksitems.Constants;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public final class CommonConfig {
@@ -45,7 +50,10 @@ public final class CommonConfig {
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
     log.info("Registering {} common config ...", Constants.MOD_NAME);
-    ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec);
+    FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
+        CoreConstants.CONFIG_ID);
+    ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec,
+        CoreConstants.CONFIG_ID_PREFIX + "items.toml");
   }
 
   public static class Config {
@@ -67,13 +75,13 @@ public final class CommonConfig {
       maxNumberOfItemsPerType = builder.comment(
           "Defines the max. number of items / itemstacks per type which are allowed to lay around in the world.")
           .defineInRange("maxNumberOfItemsPerType", 32, 16, 128);
-      maxNumberOfItems = builder
-          .comment(
-              "Defines the max. number of items which are allowed to lay around in a single world.")
+      maxNumberOfItems = builder.comment(
+          "Defines the max. number of items / itemstacks which are allowed to lay around in a single world.")
           .defineInRange("maxNumberOfItems", 128, 16, 1000);
-      itemsClusterRange =
-          builder.comment("Defines the radius in blocks which items will be clustered together.")
-              .defineInRange("itemsClusterRange", 3, 1, 16);
+      itemsClusterRange = builder
+          .comment(
+              "Defines the radius in blocks which items / itemstacks will be clustered together.")
+          .defineInRange("itemsClusterRange", 3, 1, 16);
       builder.pop();
 
 
