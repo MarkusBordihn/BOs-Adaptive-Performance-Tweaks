@@ -5,6 +5,10 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.03.07
+
+- Refactored code for version 1.18.2-40.0.12
+
 ### 2022.03.01
 
 - Moved config files to separate directory. NOTE: Please make sure to check the new auto-generated configs.

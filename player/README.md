@@ -60,13 +60,12 @@ Please report issues over the **Issue** link.
 | Forge 1.16.5   | ❌ Not planned        |
 | Forge 1.17.1   | ❌ Not planned        |
 | Forge 1.18.1   | ✔️ Active development |
+| Forge 1.18.2   | ⚠️ Maintenance only   |
 
 [header]: ../assets/aptweaks-header.png
-
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
 [core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
 [gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules
 [items]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-items
 [player]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player
-
 [farsight]: https://www.curseforge.com/minecraft/mc-mods/farsight
