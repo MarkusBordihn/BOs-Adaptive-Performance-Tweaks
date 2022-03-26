@@ -111,9 +111,20 @@ public class EntityManager extends Manager {
         log.debug("Unknown entity name for entity {} ({}) with custom name {} in {}.", entity,
             entity.getType(), entity.getCustomName().getString(), worldName);
       } else {
-        log.warn("Unknown entity name for entity {} ({}) in {}. Please report this issue under {}!",
-            entity, entity.getType(), worldName, Constants.ISSUE_REPORT);
+        String entityType = entity.getType().toString();
+
+        // Avoid warning message for specific mods
+        if (!entityType.startsWith("entity.mana-and-artifice.")) {
+          log.warn(
+              "Unknown entity name for entity {} ({}) in {}. Please report this issue under {}!",
+              entity, entity.getType(), worldName, Constants.ISSUE_REPORT);
+        }
       }
+      return;
+    }
+
+    // Skip entities from specific mods
+    if (entityName.equals("mana-and-artifice:residual_magic")) {
       return;
     }
 

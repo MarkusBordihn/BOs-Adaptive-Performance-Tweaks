@@ -5,6 +5,10 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.03.26
+
+- Fix reported warning and errors from mana-and-artifice mod in the log.
+
 ### 2022.02.01
 
 - Released updated 2.0.0 version, which will be the last major update for the 1.16.5 version with backports from the 1.18.1 version.
