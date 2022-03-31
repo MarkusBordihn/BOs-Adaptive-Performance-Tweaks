@@ -6,7 +6,7 @@
 Adaptive Performance Tweaks is a collection of Minecraft Forge server-side Mod which automatically adjust specific settings on the server to allow a more balanced TPS/FPS.
 The goal of this mod is to allow a smoother experience on a server with several (=> 180) Mods.
 
-## Please read before using
+## Please read before using ⚠️
 
 This mod is renaming / moving your mod files, for this reason it is important that you have regular backups in place.
 I will do my best to implement corresponding safety features to avoid possible issues, but I'm not able to cover all use cases.
@@ -14,12 +14,19 @@ I will do my best to implement corresponding safety features to avoid possible i
 ## 👾Automatic Server Bundle (one mod pack for client/server)
 
 This mod automatically disable mods which are incompatible or not needed on the server side.
-There is no need to have a separated "server" and "client" mod pack only for the mods.
+There is no longer the need to have a separated "server" and "client" mod pack only for the mods.
 
 ## 👾 Automatic Mod Cleanup
 
-This mod automatically clean up duplicated files, by moving older versions in an archive folder.
-This is helpful to avoid manual deleting of older versions.
+This mod automatically clean up duplicated files, by removing older versions.
+This is helpful to avoid duplication issues and manual deleting of older versions.
+
+## How to use the mod ?
+
+Just add the mod to your mod pack and during the start on a Minecraft Client or a Minecraft Server it will automatically optimize the mods in the mod folder.
+
+If the mod is used on a server all client related mods will be automatically renamed to "???.client".
+The mod is mostly helpful if it is used on the server and the client side.
 
 ## Install additional Optimization
 
@@ -48,7 +55,7 @@ Please report issues over the **Issue** link.
 | Forge 1.17.1   | ❌ Not planned        |
 | Forge 1.18.1   | ✔️ Active development |
 
-[header]: ../assets/aptweaks-header.png
+[header]: ../assets/aptweaks-header-only.png
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
 [core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
 [gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules

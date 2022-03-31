@@ -25,10 +25,29 @@ import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.config.ModsDatab
 
 public class ClientSideMods {
 
+  public static final String CLIENT_MOD_EXTENSION = ".client";
+
   protected ClientSideMods() {}
 
-  public static void enable() {
-    // ToDo
+  public static void enable(File modPath) {
+    if (modPath == null) {
+      return;
+    }
+    File[] modsFiles = modPath.listFiles();
+    for (File modFile : modsFiles) {
+      String modFileName = modFile.getName();
+      if (modFileName.endsWith(CLIENT_MOD_EXTENSION) && isClientSide(modFileName)) {
+        File clientFile = new File(
+            modFile.getAbsoluteFile().toString().replace(".jar" + CLIENT_MOD_EXTENSION, ".jar"));
+        if (clientFile.exists()) {
+          if (!modFile.delete()) {
+            System.out.printf("Was unable to remove duplicated client side mod %s!\n", modFile);
+          }
+        } else if (!modFile.renameTo(clientFile)) {
+          System.out.printf("Was unable to enable client side mod %s!\n", modFile);
+        }
+      }
+    }
   }
 
   public static void disable(File modPath) {
@@ -38,25 +57,23 @@ public class ClientSideMods {
     File[] modsFiles = modPath.listFiles();
     for (File modFile : modsFiles) {
       String modFileName = modFile.getName();
-      if (!modFileName.endsWith(".client") && isClientSide(modFileName)) {
-        File clientFile = new File(modFile.getAbsoluteFile() + ".client");
-        modFile.renameTo(clientFile);
+      if (!modFileName.endsWith(CLIENT_MOD_EXTENSION) && modFileName.endsWith(".jar")
+          && isClientSide(modFileName)) {
+        File clientFile = new File(modFile.getAbsoluteFile() + CLIENT_MOD_EXTENSION);
+        if (clientFile.exists()) {
+          if (!modFile.delete()) {
+            System.out.printf("Was unable to remove duplicated client side mod %s!\n", modFile);
+          }
+        } else if (!modFile.renameTo(clientFile)) {
+          System.out.printf("Was unable to disable client side mod %s!\n", modFile);
+        }
       }
     }
   }
 
   public static boolean isClientSide(String name) {
-    String shortedModName = stripeVersionNumbers(name);
+    String shortedModName = ModsDatabase.stripeVersionNumbers(name);
     return ModsDatabase.clientSideMods.contains(shortedModName);
-  }
-
-  public static String stripeVersionNumbers(String name) {
-    // Remove version strings with RegExp in two steps:
-    // 1. ReplaceAll (-(mc)?[^A-Za-z_]+).jar with ".jar"
-    // 2. ReplaceAll (-[^A-Za-z_]+) with "-"
-    // 3. Replace -jar with .jar
-    return name.replaceAll("(-(mc)?[^A-Za-z_]+).jar", ".jar").replaceAll("(-[^A-Za-z_]+)", "-")
-        .replaceAll("-jar$", ".jar");
   }
 
 }

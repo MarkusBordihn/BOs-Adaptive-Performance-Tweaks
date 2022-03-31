@@ -17,27 +17,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.minecraft.adaptiveperformancetweaksmods.utils;
+package de.markusbordihn.minecraft.adaptiveperformancetweaksmods.config;
 
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.data.TestData;
 
-public class ClientSideModsTests {
-
+public class ModsDatabaseTests {
   @Test
-  void testIsClientSide() {
-    for (String clientMod : TestData.clientModList) {
-      System.out.printf("Client Mod: %s\n", clientMod);
-      assertTrue(ClientSideMods.isClientSide(clientMod));
-    }
-    for (String generalMod : TestData.modList) {
-      System.out.printf("General Mod: %s\n", generalMod);
-      assertFalse(ClientSideMods.isClientSide(generalMod));
+  void testStripeVersionNumbers() {
+    for (String mod : TestData.clientModList) {
+      assertNotEquals(ModsDatabase.stripeVersionNumbers(mod), mod);
+      assertFalse(ModsDatabase.stripeVersionNumbers(mod).contains("0."));
     }
   }
-
 }

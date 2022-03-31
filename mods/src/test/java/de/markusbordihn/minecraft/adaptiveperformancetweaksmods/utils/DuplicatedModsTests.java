@@ -19,25 +19,19 @@
 
 package de.markusbordihn.minecraft.adaptiveperformancetweaksmods.utils;
 
-import org.junit.jupiter.api.Test;
+import java.io.File;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.data.TestData;
+import org.junit.jupiter.api.Test;
 
-public class ClientSideModsTests {
+public class DuplicatedModsTests {
+
+  private final String testFilePath = "src/test/resources/testfile/duplicates";
+  private final File testFiles = new File(testFilePath);
 
   @Test
-  void testIsClientSide() {
-    for (String clientMod : TestData.clientModList) {
-      System.out.printf("Client Mod: %s\n", clientMod);
-      assertTrue(ClientSideMods.isClientSide(clientMod));
-    }
-    for (String generalMod : TestData.modList) {
-      System.out.printf("General Mod: %s\n", generalMod);
-      assertFalse(ClientSideMods.isClientSide(generalMod));
-    }
+  void testFindLatestMod() {
+    assertTrue(true);
   }
-
 }

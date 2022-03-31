@@ -42,6 +42,7 @@ import net.minecraftforge.forgespi.locating.IModLocator;
 
 import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.Constants;
 import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.utils.ClientSideMods;
+import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.utils.DuplicatedMods;
 
 @Mod(Constants.MOD_ID)
 public class ModOptimizer implements IModLocator {
@@ -60,7 +61,7 @@ public class ModOptimizer implements IModLocator {
         isClient = false;
       }
     } else if (GAME_DIR != null) {
-      log.warn("Unable to detect environment will check game dir ...");
+      log.warn("Unable to detect environment will check game dir for additional hints ...");
       File[] gameFiles = GAME_DIR.listFiles();
       for (File gameFile : gameFiles) {
         if (gameFile.getName().contains("server")) {
@@ -68,13 +69,22 @@ public class ModOptimizer implements IModLocator {
         }
       }
     } else {
-      log.error("Unable to detected running environment, will stop to avoid any damage!");
+      log.error("Unable to detected running environment, will stop to avoid any possible damage!");
       return;
     }
 
     log.info("Init Mod Optimizer with game dir {} and mods dir {} for target {}", GAME_DIR,
         MODS_DIR, isClient ? "CLIENT" : "SERVER");
-    if (!isClient) {
+
+    log.info("Optimize Duplicated Mods ...");
+    DuplicatedMods.searchDuplicatedMods(MODS_DIR);
+
+    log.info("Optimize client / server side mods ...");
+    if (isClient) {
+      log.info("Enable possible client side mods ...");
+      ClientSideMods.enable(MODS_DIR);
+    } else {
+      log.info("Disable possible client side mods ...");
       ClientSideMods.disable(MODS_DIR);
     }
   }
