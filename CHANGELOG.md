@@ -5,6 +5,11 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.04.02
+
+- Added additional compatibility for other mods which are optimize / limiting the spawn events.
+- Added warning and error messages for specific mods to make users aware about possible issues.
+
 ### 2022.03.31
 
 - Released early experimental "adaptive-performance-tweaks: mods" module

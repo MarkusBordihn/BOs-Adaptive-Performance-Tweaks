@@ -72,6 +72,15 @@ _Example: If you are walking on the surface entities below a specific distance /
 
 **➡️[Install Spawn Optimization][spawn]**
 
+## 👾Automatic Server Bundle (one mod pack for client/server) and mod cleanup
+
+Automatically disable mods which are incompatible or not needed on the server side.
+There is no longer the need to have a separated "server" and "client" mod pack only for the mods.
+Further more it's automatically clean up duplicated files, by removing older versions.
+This is helpful to avoid duplication issues and manual deleting of older versions.
+
+**➡️[Install Mods Optimization][mods]**
+
 ## Version Status Overview 🛠️
 
 | Version        | Status                |
@@ -118,5 +127,6 @@ I'm not able to test all possible mod combination, so you need to test this on y
 [core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
 [gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules
 [items]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-items
+[mods]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-mods
 [player]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player
 [spawn]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-spawn

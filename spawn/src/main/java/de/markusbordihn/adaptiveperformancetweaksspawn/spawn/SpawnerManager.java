@@ -36,6 +36,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -83,6 +84,13 @@ public class SpawnerManager {
 
     if (event instanceof LivingSpawnEvent.CheckSpawn checkSpawn
         && checkSpawn.getSpawner() != null) {
+
+      // Ignore events which are already canceled or denied.
+      if (event.isCanceled() || event.getResult() == Event.Result.DENY) {
+        log.debug("[Canceled / denied Spawner Event] Ignore spawner event {}!", event);
+        return;
+      }
+
       BaseSpawner spawner = checkSpawn.getSpawner();
       addSpawner(spawner);
     }

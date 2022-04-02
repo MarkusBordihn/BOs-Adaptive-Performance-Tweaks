@@ -148,8 +148,8 @@ dependencies {
   minecraft 'net.minecraftforge:forge:1.18.1-39.1.2'
 
   // Required: Bo's Adaptive Performance Tweaks: Core (dev dependency)
-  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:2.2.0")
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:2.2.0")
+  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:2.3.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:2.3.0")
 
   // Additional helpful Mods for development (runtime depenedency)
   runtimeOnly fg.deobf("curse.maven:xaeros_minimap-263420:3613287")

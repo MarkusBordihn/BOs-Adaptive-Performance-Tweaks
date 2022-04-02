@@ -37,7 +37,9 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweakscore.entity.EntityManager;
+import de.markusbordihn.adaptiveperformancetweakscore.message.WarnMessages;
 import de.markusbordihn.adaptiveperformancetweakscore.player.PlayerPosition;
 import de.markusbordihn.adaptiveperformancetweakscore.player.PlayerPositionManager;
 import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLoadEvent;
@@ -102,6 +104,24 @@ public class SpawnManager {
             Constants.LOG_PREFIX, spawnLimitationMaxMobsPerPlayer);
       }
     }
+
+    if (CoreConstants.PERFORMANT_LOADED) {
+      log.warn(WarnMessages.coreModWarning(CoreConstants.PERFORMANT_NAME));
+    }
+
+    if (CoreConstants.SODIUM_LOADED) {
+      log.error(WarnMessages.coreModWarning(CoreConstants.SODIUM_NAME));
+    }
+
+    if (CoreConstants.RUBIDIUM_LOADED) {
+      log.error(WarnMessages.coreModWarning(CoreConstants.RUBIDIUM_NAME));
+    }
+
+    if (CoreConstants.INCONTROL_LOADED) {
+      log.warn(WarnMessages.conflictingFeaturesModWarning(CoreConstants.INCONTROL_NAME,
+          "controls the mob spawns and entity spawns"));
+    }
+
   }
 
   @SubscribeEvent
@@ -122,6 +142,12 @@ public class SpawnManager {
   }
 
   private static void handleSpawnEvent(LivingSpawnEvent event) {
+    // Ignore events which are already canceled or denied.
+    if (event.isCanceled() || event.getResult() == Event.Result.DENY) {
+      log.debug("[Canceled / denied Spawn Event] Ignore spawn event {}!", event);
+      return;
+    }
+
     Entity entity = event.getEntity();
     String entityName = entity.getEncodeId();
     Level level = entity.level;
@@ -247,6 +273,13 @@ public class SpawnManager {
     // Pre-check for allowed entities to avoid expensive calculations
     if (allowList.contains(entityName)) {
       log.debug("[Allowed Entity] Allow spawn event for {} in {} ", entity, levelName);
+      return false;
+    }
+
+    // Ignore specific entities from other mods which are not extending the right classes or using
+    // some custom definitions which could not be easily checked.
+    if (CoreConstants.MANA_AND_ARTIFICE_LOADED
+        && entityName.equals("mana-and-artifice:residual_magic")) {
       return false;
     }
 

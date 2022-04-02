@@ -30,7 +30,8 @@ import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.server.ServerLifecycleHooks;
-
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import de.markusbordihn.adaptiveperformancetweakscore.message.WarnMessages;
 import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaksplayer.Constants;
 import de.markusbordihn.adaptiveperformancetweaksplayer.config.CommonConfig;
@@ -73,6 +74,23 @@ public class PlayerViewDistance {
     if (event.getServer().isDedicatedServer()) {
       setViewDistance(viewDistanceMin);
     }
+
+    if (CoreConstants.DYNVIEW_LOADED) {
+      log.warn(WarnMessages.conflictingFeaturesModWarning(CoreConstants.DYNVIEW_NAME, "optimizing the player view distance"));
+    }
+
+    if (CoreConstants.PERFORMANT_LOADED) {
+      log.warn(WarnMessages.coreModWarning(CoreConstants.PERFORMANT_NAME));
+    }
+
+    if (CoreConstants.SODIUM_LOADED) {
+      log.error(WarnMessages.coreModWarning(CoreConstants.SODIUM_NAME));
+    }
+
+    if (CoreConstants.RUBIDIUM_LOADED) {
+      log.error(WarnMessages.knownIssuesModWarning(CoreConstants.RUBIDIUM_NAME));
+    }
+
   }
 
   @SubscribeEvent
