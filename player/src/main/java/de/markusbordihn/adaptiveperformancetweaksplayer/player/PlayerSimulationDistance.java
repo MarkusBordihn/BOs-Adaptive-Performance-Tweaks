@@ -30,6 +30,7 @@ import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.server.ServerLifecycleHooks;
+
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweakscore.message.WarnMessages;
 import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLoadEvent;
@@ -76,7 +77,7 @@ public class PlayerSimulationDistance {
     setSimulationDistance(simulationDistanceMin);
 
     if (CoreConstants.DYNVIEW_LOADED) {
-      log.warn(WarnMessages.conflictingFeaturesModWarning(CoreConstants.DYNVIEW_NAME,
+      log.warn(() -> WarnMessages.conflictingFeaturesModWarning(CoreConstants.DYNVIEW_NAME,
           "optimizing the player simulation distance"));
     }
   }

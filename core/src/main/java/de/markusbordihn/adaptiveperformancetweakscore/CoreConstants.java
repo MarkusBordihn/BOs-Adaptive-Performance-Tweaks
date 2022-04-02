@@ -55,7 +55,7 @@ public final class CoreConstants {
   public static final String INCONTROL_NAME = "InControl";
   public static final boolean INCONTROL_LOADED = ModList.get().isLoaded(INCONTROL_MOD);
 
-  public static final String LOOTR_MOD = "lootr:";
+  public static final String LOOTR_MOD = "lootr";
   public static final String LOOTR_NAME = "Lootr";
   public static final boolean LOOTR_LOADED = ModList.get().isLoaded(LOOTR_MOD);
 

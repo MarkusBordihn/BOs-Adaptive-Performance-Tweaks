@@ -139,6 +139,12 @@ public class ItemEntityManager {
       return;
     }
 
+    // Ignore events which are already canceled
+    if (event.isCanceled()) {
+      log.debug("Ignore canceled Item event {}!", event);
+      return;
+    }
+
     // All items has the entity minecraft.item, so we are using the translation key
     // to better distinguish the different types of items and minecraft.item as backup.
     ItemEntity itemEntity = (ItemEntity) entity;

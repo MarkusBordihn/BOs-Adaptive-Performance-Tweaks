@@ -88,7 +88,8 @@ This is helpful to avoid duplication issues and manual deleting of older version
 | Fabric Version | ❌ Not planned        |
 | Forge 1.16.5   | ❌ Not planned        |
 | Forge 1.17.1   | ❌ Not planned        |
-| Forge 1.18.1   | ✔️ Active development |
+| Forge 1.18.1   | ⚠️ Maintenance only   |
+| Forge 1.18.2   | ✔️ Active development |
 
 ## 🙋 FAQ
 
@@ -122,7 +123,6 @@ For this reason it's important to test different kind of combination for your sp
 I'm not able to test all possible mod combination, so you need to test this on your on own to find out.
 
 [header]: ../assets/aptweaks-header.png
-
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
 [core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
 [gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules
