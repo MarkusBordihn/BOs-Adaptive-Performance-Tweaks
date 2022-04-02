@@ -148,6 +148,13 @@ public class SpawnManager extends Manager {
   }
 
   private static void handleSpawnEvent(LivingSpawnEvent event) {
+
+    // Ignore events which are already canceled or denied.
+    if (event.isCanceled() || event.getResult() == Event.Result.DENY) {
+      log.debug("[Canceled / denied Spawn Event] Ignore spawn event {}!", event);
+      return;
+    }
+
     Entity entity = event.getEntity();
     String entityName = entity.getEncodeId();
     World world = entity.level;
@@ -162,14 +169,12 @@ public class SpawnManager extends Manager {
             "Unknown entity name for spawn entity {} ({}) in {}. Please report this issue under {}]!",
             entity, entity.getType(), worldName, Constants.ISSUE_REPORT);
       }
-      event.setResult(Event.Result.DEFAULT);
       return;
     }
 
     // Pre-check for allowed entities to avoid expensive calculations
     if (allowList.contains(entityName)) {
       log.debug("[Allowed Entity] Allow spawn event for {} in {} ", entity, worldName);
-      event.setResult(Event.Result.DEFAULT);
       return;
     }
 
@@ -183,7 +188,6 @@ public class SpawnManager extends Manager {
     // Ignore entities with custom name (e.g. name tags) regardless of type
     if (entity.hasCustomName()) {
       log.debug("[Custom Entity] Skip spawn event for {} in {} ", entity, worldName);
-      event.setResult(Event.Result.DEFAULT);
       return;
     }
 
@@ -255,7 +259,6 @@ public class SpawnManager extends Manager {
       }
 
       log.debug("[Untracked Entity] Skip spawn event for {} in {}", entityName, worldName);
-      event.setResult(Event.Result.DEFAULT);
       return;
     }
 
@@ -292,7 +295,6 @@ public class SpawnManager extends Manager {
       } else {
         log.debug("[Allow Special Spawn] For {} ({}) in {}", entityName, numberOfEntities,
             worldName);
-        event.setResult(Event.Result.DEFAULT);
         return;
       }
     }
@@ -352,7 +354,6 @@ public class SpawnManager extends Manager {
       } else {
         log.debug("[Allow Spawn] For {} in {} with {} in view and {} in world", entityName,
             worldName, numberOfEntitiesInsideViewArea, numberOfEntities);
-        event.setResult(Event.Result.DEFAULT);
       }
     }
   }

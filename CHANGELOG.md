@@ -5,6 +5,10 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.04.02
+
+- Added additional compatibility for other mods which are optimization / limiting the spawn events.
+
 ### 2022.03.26
 
 - Fix reported warning and errors from mana-and-artifice mod in the log.

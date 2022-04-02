@@ -1,17 +1,5 @@
 buildscript {
   repositories {
-    maven {
-      url = 'http://revy:49161/repository/MinecraftForge/'
-      allowInsecureProtocol = true
-    }
-    maven {
-      url = 'http://revy:49161/repository/maven-central/'
-      allowInsecureProtocol = true
-    }
-    maven {
-      url = 'http://revy:49161/repository/jcenter/'
-      allowInsecureProtocol = true
-    }
     maven { url = 'https://maven.minecraftforge.net' }
     jcenter()
     mavenCentral()
@@ -135,7 +123,7 @@ dependencies {
   minecraft 'net.minecraftforge:forge:1.16.5-36.2.33'
 
   // Mod Testing
-  implementation fg.deobf("curse.maven:wyrmroost-340333:3173775")
+  // implementation fg.deobf("curse.maven:wyrmroost-340333:3173775")
 
   // Mods Unsupported (Mixin or other integration errors for proper testing, use at your own risk)
   // implementation fg.deobf("curse.maven:betterend-428877:3467948")
