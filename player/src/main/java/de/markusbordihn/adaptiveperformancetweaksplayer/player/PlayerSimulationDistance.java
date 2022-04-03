@@ -30,7 +30,8 @@ import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.server.ServerLifecycleHooks;
-
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import de.markusbordihn.adaptiveperformancetweakscore.message.WarnMessages;
 import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaksplayer.Constants;
 import de.markusbordihn.adaptiveperformancetweaksplayer.config.CommonConfig;
@@ -39,7 +40,7 @@ import de.markusbordihn.adaptiveperformancetweaksplayer.config.CommonConfig;
 public class PlayerSimulationDistance {
 
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static boolean optimizeSimulationDistance = COMMON.optimizeSimulationDistance.get();
   private static int simulationDistanceDefault = COMMON.simulationDistanceDefault.get();

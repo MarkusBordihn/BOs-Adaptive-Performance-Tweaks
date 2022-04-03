@@ -46,7 +46,7 @@ import de.markusbordihn.adaptiveperformancetweakscore.dimension.DimensionManager
 @Mod.EventBusSubscriber
 public class PlayerPositionManager {
 
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static Map<String, PlayerPosition> playerPositionMap = new ConcurrentHashMap<>();
   private static int ticks = 0;

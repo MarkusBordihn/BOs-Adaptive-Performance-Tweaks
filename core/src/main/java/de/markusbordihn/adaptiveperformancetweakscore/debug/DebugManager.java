@@ -30,7 +30,7 @@ import de.markusbordihn.adaptiveperformancetweakscore.Constants;
 
 public class DebugManager {
 
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   protected DebugManager() {}
 

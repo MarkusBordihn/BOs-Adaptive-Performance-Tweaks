@@ -38,7 +38,7 @@ import de.markusbordihn.adaptiveperformancetweaksplayer.config.CommonConfig;
 public class PlayerLogin {
 
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static boolean optimizePlayerLogin = COMMON.optimizePlayerLogin.get();
   private static boolean optimizeSimulationDistance = COMMON.optimizeSimulationDistance.get();

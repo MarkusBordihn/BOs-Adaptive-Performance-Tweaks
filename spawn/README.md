@@ -31,6 +31,16 @@ You could also get an overview of all currently loaded monster over `/aptweaks m
 Keeps track of the current number of loaded spawner and perform smaller optimization.
 You could also get an overview of all currently loaded spawners over `/aptweaks spawner`.
 
+## 🗄️Config file
+
+With the config file you can disable / enable each of these individual features and adjust the relevant list of affected mobs.
+
+### ✔️Supported Mods
+
+This is a list of the currently supported mods within the config file for individual settings.
+
+- ✅ [Aquaculture 2][aquaculture]
+
 ## Install additional Optimization
 
 ### Bundled Version
@@ -65,3 +75,4 @@ Please report issues over the **Issue** link.
 [gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules
 [items]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-items
 [player]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player
+[aquaculture]: https://www.curseforge.com/minecraft/mc-mods/aquaculture

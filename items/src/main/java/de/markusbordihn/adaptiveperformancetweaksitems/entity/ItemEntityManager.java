@@ -53,7 +53,7 @@ import de.markusbordihn.adaptiveperformancetweaksitems.config.CommonConfig;
 @EventBusSubscriber
 public class ItemEntityManager {
 
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
   private static Integer maxNumberOfItems = COMMON.maxNumberOfItems.get();

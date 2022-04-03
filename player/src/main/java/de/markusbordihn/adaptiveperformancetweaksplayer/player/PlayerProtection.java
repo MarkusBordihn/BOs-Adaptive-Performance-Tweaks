@@ -46,7 +46,7 @@ import de.markusbordihn.adaptiveperformancetweaksplayer.config.CommonConfig;
 public class PlayerProtection {
 
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static Set<PlayerValidation> playerValidationList = ConcurrentHashMap.newKeySet();
   private static short ticker = 0;

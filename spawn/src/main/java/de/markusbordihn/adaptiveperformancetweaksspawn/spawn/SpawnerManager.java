@@ -36,6 +36,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -45,7 +46,7 @@ import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 @EventBusSubscriber
 public class SpawnerManager {
 
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static short ticks = 0;
   private static final short VERIFICATION_TICK = 60 * 20;

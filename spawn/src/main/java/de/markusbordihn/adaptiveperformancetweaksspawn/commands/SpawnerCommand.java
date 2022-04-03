@@ -36,14 +36,13 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-
 import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 import de.markusbordihn.adaptiveperformancetweaksspawn.spawn.SpawnerManager;
 import de.markusbordihn.adaptiveperformancetweakscore.commands.CustomCommand;
 
 public class SpawnerCommand extends CustomCommand {
 
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static final SpawnerCommand command = new SpawnerCommand();
 

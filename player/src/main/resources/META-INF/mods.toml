@@ -24,7 +24,7 @@ license="MIT"
   logoFile="logo.png"
   credits=""
   authors="Markus Bordihn"
-  description='''Adaptive Performance Tweaks Player automatically optimization player login, view distance and simulation distance.'''
+  description='''Adaptive Performance Tweaks Player provides player logging protection and automatically optimization player login, view distance and simulation distance.'''
 
 [[dependencies.adaptive_performance_tweaks_player]]
   modId="forge"

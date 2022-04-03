@@ -5,6 +5,12 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.04.03
+
+- Merged latest changes from 1.18.1 to 1.18.2
+- Added mod specific configs for Minecraft and Aquaculture 2 to 1.18.2 to allow individual fine tuning for specific mob groups.
+  You can easily add or remove specific mob over the mob list in the relevant config files.
+
 ### 2022.03.07
 
 - Refactored code for version 1.18.2-40.0.12

@@ -30,7 +30,7 @@ import net.minecraftforge.network.NetworkConstants;
 @Mod(Constants.MOD_ID)
 public class AdaptivePerformanceTweaks {
 
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   public AdaptivePerformanceTweaks() {
     log.info(Constants.LOG_THANKS);

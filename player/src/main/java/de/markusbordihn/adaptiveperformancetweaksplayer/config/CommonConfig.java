@@ -40,7 +40,7 @@ import de.markusbordihn.adaptiveperformancetweaksplayer.Constants;
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public final class CommonConfig {
 
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private CommonConfig() {}
 

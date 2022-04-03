@@ -50,7 +50,7 @@ import de.markusbordihn.adaptiveperformancetweaksitems.config.CommonConfig;
 public class ExperienceOrbManager {
 
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static Map<String, Set<ExperienceOrb>> experienceOrbEntityMap = new ConcurrentHashMap<>();
   private static boolean optimizeExperienceOrbs = COMMON.optimizeExperienceOrbs.get();

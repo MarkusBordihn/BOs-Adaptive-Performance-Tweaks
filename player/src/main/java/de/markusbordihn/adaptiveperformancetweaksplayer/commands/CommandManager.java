@@ -35,7 +35,7 @@ import de.markusbordihn.adaptiveperformancetweaksplayer.Constants;
 @EventBusSubscriber
 public class CommandManager {
 
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   protected CommandManager() {}
 

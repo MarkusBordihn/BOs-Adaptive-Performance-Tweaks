@@ -147,6 +147,9 @@ dependencies {
   compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.3.0")
   runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.3.0")
 
+  // Testing (runtime depenedency)
+  runtimeOnly fg.deobf("curse.maven:aquaculture-60028:3707130")
+
   // Additional helpful Mods for development (runtime depenedency)
   runtimeOnly fg.deobf("curse.maven:xaeros_minimap-263420:3673239")
   runtimeOnly fg.deobf("curse.maven:spark-361579:3670050")

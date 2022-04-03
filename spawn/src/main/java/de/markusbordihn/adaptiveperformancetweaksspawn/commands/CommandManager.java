@@ -36,7 +36,7 @@ import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 @EventBusSubscriber
 public class CommandManager {
 
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   protected CommandManager() {}
 
@@ -47,6 +47,7 @@ public class CommandManager {
     commandDispatcher.register(Commands.literal(Constants.MOD_COMMAND)
     // @formatter:off
       .then(DebugCommand.register())
+      .then(SpawnRulesCommand.register())
       .then(SpawnerCommand.register())
     // @formatter:on
     );

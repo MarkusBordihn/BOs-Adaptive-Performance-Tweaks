@@ -17,9 +17,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.adaptiveperformancetweakscore.commands;
+package de.markusbordihn.adaptiveperformancetweaksspawn.commands;
 
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
@@ -32,59 +31,41 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
-
 import net.minecraftforge.registries.ForgeRegistries;
 
-import de.markusbordihn.adaptiveperformancetweakscore.Constants;
-import de.markusbordihn.adaptiveperformancetweakscore.entity.EntityManager;
+import de.markusbordihn.adaptiveperformancetweakscore.commands.CustomCommand;
+import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
+import de.markusbordihn.adaptiveperformancetweaksspawn.spawn.SpawnConfigManager;
 
-public class EntityCommand extends CustomCommand {
+public class SpawnRulesCommand extends CustomCommand {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
-  private static final EntityCommand command = new EntityCommand();
+  private static final SpawnRulesCommand command = new SpawnRulesCommand();
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
-    return Commands.literal("entities").requires(cs -> cs.hasPermission(2)).executes(command)
-        .then(Commands.literal("overview").executes(command::overview))
-        .then(Commands.literal("registry").executes(command::registry));
+    return Commands.literal("spawnRules").requires(cs -> cs.hasPermission(2)).executes(command);
   }
 
   @Override
   public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-    sendFeedback(context, """
-        Usage:
-        /aptweaks entities overview - List of entities in the world
-        /aptweaks entities registry - List of known entities from the registry""");
-    return 0;
-  }
-
-  public int overview(CommandContext<CommandSourceStack> context) {
-    Map<String, Set<Entity>> entities = EntityManager.getEntities();
-    if (entities.isEmpty()) {
-      sendFeedback(context, "Unable to find any entities. Server / World is not loaded?");
-      return 0;
-    }
-    sendFeedback(context, String.format("Entity overview (%s types)\n===", entities.size()));
-    log.info("Entity overview: {}", entities);
-    for (Map.Entry<String, Set<Entity>> entity : entities.entrySet()) {
-      sendFeedback(context, String.format("%s x %s", entity.getValue().size(), entity.getKey()));
-    }
-    return 0;
-  }
-
-  public int registry(CommandContext<CommandSourceStack> context) {
     Set<ResourceLocation> entitiesKeys = ForgeRegistries.ENTITIES.getKeys();
     if (entitiesKeys.isEmpty()) {
       sendFeedback(context, "Unable to find any entities. Server / World is not loaded?");
       return 0;
     }
-    sendFeedback(context, String.format("Entity registry (%s types)\n===", entitiesKeys.size()));
-    log.info("Entity registry: {}", entitiesKeys);
+    sendFeedback(context, "Spawn Rules, please check info.log for the full output.\n===");
+    sendFeedback(context, "Entity Name|perPlayer|perWorld");
     for (ResourceLocation entityKey : entitiesKeys) {
-      sendFeedback(context, String.format("\u25CB %s", entityKey));
+      String entityName = entityKey.toString();
+      if (entityName != null && SpawnConfigManager.hasSpawnLimit(entityName)) {
+        int spawnRatePerPlayer = SpawnConfigManager.getSpawnLimitPerPlayer(entityName);
+        int spawnRatePerWorld = SpawnConfigManager.getSpawnLimitPerWorld(entityName);
+        sendFeedback(context,
+            String.format("%s|%s|%s", entityName, spawnRatePerPlayer, spawnRatePerWorld));
+      }
     }
     return 0;
   }
+
 }
