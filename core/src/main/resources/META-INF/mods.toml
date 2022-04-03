@@ -24,7 +24,7 @@ license="MIT"
   logoFile="logo.png"
   credits=""
   authors="Markus Bordihn"
-  description='''Adaptive Performance Tweaks is a Minecraft Forge Mod to automatically adjust specific settings on the server side to allow a better tps/fps.'''
+  description='''Adaptive Performance Tweaks Core is required for all Adaptive Performance Tweaks Modules and provides a shared API, monitoring functionally, events and commands.'''
 
 [[dependencies.adaptive_performance_tweaks_core]]
   modId="forge"

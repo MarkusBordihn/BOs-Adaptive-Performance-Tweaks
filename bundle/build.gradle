@@ -141,23 +141,23 @@ dependencies {
   // Specify the version of Minecraft to use, If this is any group other then 'net.minecraft' it is assumed
   // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
   // The userdev artifact is a special name and will get all sorts of transformations applied to it.
-  minecraft 'net.minecraftforge:forge:1.18.2-40.0.12'
+  minecraft 'net.minecraftforge:forge:1.18.2-40.0.36'
 
   // Required: Bo's Adaptive Performance Tweaks: Core (dev dependency)
-  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.0.0")
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.0.0")
+  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.3.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.3.0")
 
   // Required: Bo's Adaptive Performance Tweaks: Gamerules (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksgamerules:gamerules:3.0.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksgamerules:gamerules:3.3.0")
 
   // Required: Bo's Adaptive Performance Tweaks: Items (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksitems:items:3.0.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksitems:items:3.3.0")
 
   // Required: Bo's Adaptive Performance Tweaks: Player (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksplayer:player:3.0.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksplayer:player:3.3.0")
 
   // Required: Bo's Adaptive Performance Tweaks: Spawn (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksspawn:spawn:3.0.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksspawn:spawn:3.3.0")
 
   // Additional helpful Mods for development (runtime depenedency)
   runtimeOnly fg.deobf("curse.maven:xaeros_minimap-263420:3673239")
@@ -217,4 +217,8 @@ curseforge {
       }
     }
   }
+}
+
+tasks.withType(JavaCompile).configureEach {
+  options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }

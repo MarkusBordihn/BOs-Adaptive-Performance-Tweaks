@@ -64,7 +64,7 @@ public class ServerLevelLoad {
 
   public static void measureLoadAndPost(Dist dist) {
     for (ServerLevel ServerLevel : ServerManager.getAllLevels()) {
-      // Calculate current averange tick times.
+      // Calculate current average tick times.
       long[] tickTimes = ServerManager.getMinecraftServer().getTickTime(ServerLevel.dimension());
       if (tickTimes != null) {
         double avgTickTime = Arrays.stream(tickTimes).average().orElse(Double.NaN) / 1000000;

@@ -55,7 +55,7 @@ public final class CoreConstants {
   public static final String INCONTROL_NAME = "InControl";
   public static final boolean INCONTROL_LOADED = ModList.get().isLoaded(INCONTROL_MOD);
 
-  public static final String LOOTR_MOD = "lootr:";
+  public static final String LOOTR_MOD = "lootr";
   public static final String LOOTR_NAME = "Lootr";
   public static final boolean LOOTR_LOADED = ModList.get().isLoaded(LOOTR_MOD);
 
@@ -63,13 +63,23 @@ public final class CoreConstants {
   public static final String MINECOLONIES_NAME = "MineColonies";
   public static final boolean MINECOLONIES_LOADED = ModList.get().isLoaded(MINECOLONIES_MOD);
 
+  public static final String RUBIDIUM_MOD = "rubidium";
+  public static final String RUBIDIUM_NAME = "Rubidium";
+  public static final boolean RUBIDIUM_LOADED = ModList.get().isLoaded(RUBIDIUM_MOD);
+
   public static final String PERFORMANT_MOD = "performant";
   public static final String PERFORMANT_NAME = "Performant";
   public static final boolean PERFORMANT_LOADED = ModList.get().isLoaded(PERFORMANT_MOD);
+
+  public static final String MANA_AND_ARTIFICE_MOD = "mana-and-artifice";
+  public static final String MANA_AND_ARTIFICE_NAME = "Mana and Artifice";
+  public static final boolean MANA_AND_ARTIFICE_LOADED =
+      ModList.get().isLoaded(MANA_AND_ARTIFICE_MOD);
 
   public static final String RATS_MOD = "rats";
   public static final String RATS_NAME = "Rats";
 
   public static final String SODIUM_MOD = "sodium";
   public static final String SODIUM_NAME = "Sodium";
+  public static final boolean SODIUM_LOADED = ModList.get().isLoaded(SODIUM_MOD);
 }

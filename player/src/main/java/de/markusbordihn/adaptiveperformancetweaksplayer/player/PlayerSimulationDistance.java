@@ -73,6 +73,11 @@ public class PlayerSimulationDistance {
         simulationDistanceMin, simulationDistanceMax, simulationDistanceDefault,
         simulationDistanceTimeBetweenUpdates);
     setSimulationDistance(simulationDistanceMin);
+
+    if (CoreConstants.DYNVIEW_LOADED) {
+      log.error(() -> WarnMessages.conflictingFeaturesModWarning(CoreConstants.DYNVIEW_NAME,
+          "optimizing the player simulation distance"));
+    }
   }
 
   @SubscribeEvent

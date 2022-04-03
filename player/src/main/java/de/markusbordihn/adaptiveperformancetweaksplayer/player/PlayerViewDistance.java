@@ -73,6 +73,24 @@ public class PlayerViewDistance {
     if (event.getServer().isDedicatedServer()) {
       setViewDistance(viewDistanceMin);
     }
+
+    if (CoreConstants.DYNVIEW_LOADED) {
+      log.error(() -> WarnMessages.conflictingFeaturesModWarning(CoreConstants.DYNVIEW_NAME,
+          "optimizing the player view distance"));
+    }
+
+    if (CoreConstants.PERFORMANT_LOADED) {
+      log.warn(() -> WarnMessages.coreModWarning(CoreConstants.PERFORMANT_NAME));
+    }
+
+    if (CoreConstants.SODIUM_LOADED) {
+      log.error(() -> WarnMessages.coreModWarning(CoreConstants.SODIUM_NAME));
+    }
+
+    if (CoreConstants.RUBIDIUM_LOADED) {
+      log.error(() -> WarnMessages.knownIssuesModWarning(CoreConstants.RUBIDIUM_NAME));
+    }
+
   }
 
   @SubscribeEvent

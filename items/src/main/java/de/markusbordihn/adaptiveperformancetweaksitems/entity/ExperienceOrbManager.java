@@ -85,15 +85,22 @@ public class ExperienceOrbManager {
   public static void handleExperienceOrbJoinWorldEvent(EntityJoinWorldEvent event) {
     // Ignore client side world.
     Level level = event.getWorld();
-    if (level.isClientSide) {
+    if (level.isClientSide || event.isCanceled()) {
       return;
     }
 
-    // Ignore everything else besides experience orbs
+    // Ignore everything else besides experience orbs.
     Entity entity = event.getEntity();
     if (!(entity instanceof ExperienceOrb)) {
       return;
     }
+
+    // Ignore events which are already canceled
+    if (event.isCanceled()) {
+      log.debug("Ignore canceled Experience Orb event {}!", event);
+      return;
+    }
+
     ExperienceOrb experienceOrbEntity = (ExperienceOrb) entity;
 
     // Get world name and ignore orb if it has 0 xp.

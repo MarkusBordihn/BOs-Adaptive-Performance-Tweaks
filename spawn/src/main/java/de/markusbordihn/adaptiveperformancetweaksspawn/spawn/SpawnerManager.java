@@ -83,6 +83,13 @@ public class SpawnerManager {
 
     if (event instanceof LivingSpawnEvent.CheckSpawn checkSpawn
         && checkSpawn.getSpawner() != null) {
+
+      // Ignore events which are already canceled or denied.
+      if (event.isCanceled() || event.getResult() == Event.Result.DENY) {
+        log.debug("[Canceled / denied Spawner Event] Ignore spawner event {}!", event);
+        return;
+      }
+
       BaseSpawner spawner = checkSpawn.getSpawner();
       addSpawner(spawner);
     }

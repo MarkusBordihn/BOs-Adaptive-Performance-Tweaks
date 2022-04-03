@@ -42,9 +42,10 @@ generated
 *.bak
 
 # WIP
-server/
 core/.vscode/launch.json
 gamerules/.vscode/launch.json
 items/.vscode/launch.json
+mods/.vscode/launch.json
 player/.vscode/launch.json
+server/.vscode/launch.json
 spawn/.vscode/launch.json

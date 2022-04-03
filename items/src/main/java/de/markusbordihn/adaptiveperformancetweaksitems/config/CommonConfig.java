@@ -73,17 +73,16 @@ public final class CommonConfig {
       optimizeItems =
           builder.comment("Enable/Disable items optimization.").define("optimizeItems", true);
       maxNumberOfItemsPerType = builder.comment(
-          "Defines the max. number of items / itemstacks per type which are allowed to lay around in the world.")
+          "Defines the max. number of items / item stacks per type which are allowed to lay around in the world.")
           .defineInRange("maxNumberOfItemsPerType", 32, 16, 128);
       maxNumberOfItems = builder.comment(
-          "Defines the max. number of items / itemstacks which are allowed to lay around in a single world.")
+          "Defines the max. number of items / item stacks which are allowed to lay around in a single world.")
           .defineInRange("maxNumberOfItems", 128, 16, 1000);
       itemsClusterRange = builder
           .comment(
-              "Defines the radius in blocks which items / itemstacks will be clustered together.")
+              "Defines the radius in blocks which items / item stacks will be clustered together.")
           .defineInRange("itemsClusterRange", 3, 1, 16);
       builder.pop();
-
 
       builder.push("Experience Orbs");
       optimizeExperienceOrbs = builder.comment("Enable/Disable experience orbs optimization.")
