@@ -25,19 +25,26 @@ public class WarnMessages {
 
   public static String coreModWarning(String modName) {
     return String.format(
-        "The mod %s use core modifications which could conflicting with this none-core mod. Do not report any issues with both mods enabled.",
+        "⚠️ The mod %s use core modifications which could conflicting with this none-core mod. Do not report any issues with both mods enabled.",
         modName);
   }
 
   public static String conflictingFeaturesModWarning(String modName, String reason) {
     return String.format(
-        "The mod %s %s, which could conflict with the feature of this mod. Don't use both optimizations together to avoid any side effects!",
+        "⚠️ The mod %s %s, which could conflict with the feature of this mod. Don't use both optimizations together to avoid any side effects!",
         modName, reason);
   }
 
   public static String knownIssuesModWarning(String modName) {
-    return String.format("There are known issue with the %s mod, please not report any issue!",
+    return String.format("⚠️ There are known issue with the %s mod, please not report any issue!",
         modName);
+  }
+
+  public static String debugLogLevelWarning(String loggerName, String level) {
+    return String.format(
+        "⚠️ The log level for %s is set to %s, this will log all debug information and will cause performance issues."
+            + " This is expected on an developer environment or for testing but not on a production environment!",
+        loggerName, level);
   }
 
 }

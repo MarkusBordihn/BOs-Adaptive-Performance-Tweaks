@@ -44,7 +44,7 @@ public class SpawnRulesCommand extends CustomCommand {
   private static final SpawnRulesCommand command = new SpawnRulesCommand();
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
-    return Commands.literal("spawnRules").requires(cs -> cs.hasPermission(2)).executes(command);
+    return Commands.literal("spawnrules").requires(cs -> cs.hasPermission(2)).executes(command);
   }
 
   @Override

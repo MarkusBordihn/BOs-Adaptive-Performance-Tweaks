@@ -35,6 +35,10 @@ public final class CoreConstants {
 
   // List of Mod IDs for easier maintenance and access
 
+  public static final String AQUACULTURE_MOD = "aquaculture";
+  public static final String AQUACULTURE_NAME = "Aquaculture 2";
+  public static final boolean AQUACULTURE_LOADED = ModList.get().isLoaded(AQUACULTURE_MOD);
+
   public static final String ADHOOKS_MOD = "adhooks";
   public static final String ADHOOKS_NAME = "Advanced Hook Launchers";
   public static final boolean ADHOOKS_LOADED = ModList.get().isLoaded(ADHOOKS_MOD);
