@@ -21,9 +21,15 @@ package de.markusbordihn.minecraft.adaptiveperformancetweaksmods.utils;
 
 import java.io.File;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.Constants;
 import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.config.ModsDatabase;
 
 public class ClientSideMods {
+
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   public static final String CLIENT_MOD_EXTENSION = ".client";
 
@@ -39,13 +45,16 @@ public class ClientSideMods {
       if (modFileName.endsWith(CLIENT_MOD_EXTENSION) && isClientSide(modFileName)) {
         File clientFile = new File(
             modFile.getAbsoluteFile().toString().replace(".jar" + CLIENT_MOD_EXTENSION, ".jar"));
+        log.info("[Client Side Mod] ✔️ Try to enable client side mod {} ...", modFileName);
         if (clientFile.exists()) {
           if (!modFile.delete()) {
-            System.out.printf("Was unable to remove duplicated client side mod %s!\n", modFile);
+            log.error("[Client Side Mod] ⚠️ Was unable to remove duplicated client side mod {}!", modFile);
           }
         } else if (!modFile.renameTo(clientFile)) {
-          System.out.printf("Was unable to enable client side mod %s!\n", modFile);
+          log.error("[Client Side Mod] ⚠️ Was unable to enable client side mod {}!", modFile);
         }
+      } else {
+
       }
     }
   }
@@ -60,12 +69,13 @@ public class ClientSideMods {
       if (!modFileName.endsWith(CLIENT_MOD_EXTENSION) && modFileName.endsWith(".jar")
           && isClientSide(modFileName)) {
         File clientFile = new File(modFile.getAbsoluteFile() + CLIENT_MOD_EXTENSION);
+        log.info("[Client Side Mod] ❌ Try to disable client side mod {} ...", modFileName);
         if (clientFile.exists()) {
           if (!modFile.delete()) {
-            System.out.printf("Was unable to remove duplicated client side mod %s!\n", modFile);
+            log.error("[Client Side Mod] ⚠️ Was unable to remove duplicated client side mod {}!", modFile);
           }
         } else if (!modFile.renameTo(clientFile)) {
-          System.out.printf("Was unable to disable client side mod %s!\n", modFile);
+          log.error("[Client Side Mod] ⚠️ Was unable to disable client side mod {}!", modFile);
         }
       }
     }

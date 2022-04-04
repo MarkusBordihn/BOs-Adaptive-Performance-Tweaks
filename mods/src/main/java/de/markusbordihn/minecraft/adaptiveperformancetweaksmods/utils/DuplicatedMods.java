@@ -24,9 +24,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.Constants;
 import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.config.ModsDatabase;
 
 public class DuplicatedMods {
+
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   protected DuplicatedMods() {}
 
@@ -51,8 +57,8 @@ public class DuplicatedMods {
         }
         if (!duplicatedMods.isEmpty()) {
           duplicatedMods.add(modFile);
-          System.out.printf("Found duplicated Mods: %s\n", duplicatedMods);
-          System.out.printf("Most recent Mod: %s\n", findLatestMod(duplicatedMods));
+          log.info("[Duplicated Mods] ⚠️ Found duplicated Mods: {}", duplicatedMods);
+          log.info("[Duplicated Mods] ✔️ Will keep most recent Mod: {}", findLatestMod(duplicatedMods));
           archiveDuplicatedMods(duplicatedMods);
         }
       }
@@ -64,7 +70,7 @@ public class DuplicatedMods {
     for (File modFile : modList) {
       if (modFile != newestMod) {
         if (!modFile.delete()) {
-          System.out.printf("Was unable to remove outdated mod %s!\n", modFile);
+          log.error("[Duplicated Mods] ⚠️ Was unable to remove outdated mod {}!", modFile);
         }
       }
     }

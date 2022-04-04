@@ -169,7 +169,6 @@ jar {
       "Specification-Title": "${mod_name}",
       "Specification-Vendor": "${vendor_name}",
       "Specification-Version": "1", // We are version 1 of ourselves
-      "Main-Class": "de.markusbordihn.adaptiveperformancetweaksmods.AdaptivePerformanceTweaksModsCli",
       "Implementation-Title": project.name,
       "Implementation-Version": "${version}",
       "Implementation-Vendor" :"${mod_id}",

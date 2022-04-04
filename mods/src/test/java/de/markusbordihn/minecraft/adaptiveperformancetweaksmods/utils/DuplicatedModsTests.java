@@ -32,6 +32,7 @@ public class DuplicatedModsTests {
 
   @Test
   void testFindLatestMod() {
+    System.out.printf("Test Mod Files: %s\n", testFiles);
     assertTrue(true);
   }
 }

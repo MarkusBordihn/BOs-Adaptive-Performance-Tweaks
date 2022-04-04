@@ -69,29 +69,29 @@ public class ModOptimizer implements IModLocator {
         }
       }
     } else {
-      log.error("Unable to detected running environment, will stop to avoid any possible damage!");
+      log.error(
+          "Unable to detected running environment, will stop here to avoid any possible damage!");
       return;
     }
 
     log.info("Init Mod Optimizer with game dir {} and mods dir {} for target {}", GAME_DIR,
         MODS_DIR, isClient ? "CLIENT" : "SERVER");
 
-    log.info("Optimize Duplicated Mods ...");
+    log.info("1. Step: Optimize Duplicated Mods ...");
     DuplicatedMods.searchDuplicatedMods(MODS_DIR);
 
-    log.info("Optimize client / server side mods ...");
+    log.info("2. Step: Optimize client / server side mods ...");
     if (isClient) {
-      log.info("Enable possible client side mods ...");
+      log.info("✔️ Enable possible client side mods ...");
       ClientSideMods.enable(MODS_DIR);
     } else {
-      log.info("Disable possible client side mods ...");
+      log.info("❌ Disable possible client side mods ...");
       ClientSideMods.disable(MODS_DIR);
     }
   }
 
   @Override
   public List<IModFile> scanMods() {
-    log.info("scanMods");
     return Collections.emptyList();
   }
 
@@ -107,7 +107,7 @@ public class ModOptimizer implements IModLocator {
 
   @Override
   public void initArguments(Map<String, ?> arguments) {
-    log.info("initArguments {}", arguments);
+    log.info("Env: {}", arguments);
   }
 
   @Override
