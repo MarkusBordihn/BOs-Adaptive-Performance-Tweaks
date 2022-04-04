@@ -106,7 +106,7 @@ public class DebugManager {
   }
 
   public static void checkForDebugLogging(String loggerName) {
-    if (isDebugLevel(Constants.LOG_NAME)) {
+    if (isDebugLevel(loggerName)) {
       Logger logger = LogManager.getLogger(loggerName);
       String logLevelName = logger.getLevel().name();
       logger.warn(() -> WarnMessages.debugLogLevelWarning(loggerName, logLevelName));
