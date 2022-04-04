@@ -5,6 +5,10 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.04.04
+
+- Added warning and fixed performance issues with 2.4.0 caused by other mods and/or specific server configuration which setting logging = ALL which enables all debug messages and cause a additional server load up to 10%.
+
 ### 2022.04.02
 
 - Added additional compatibility for other mods which are optimize / limiting the spawn events.

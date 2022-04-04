@@ -1,17 +1,5 @@
 buildscript {
   repositories {
-    maven {
-      url = 'http://revy:49161/repository/MinecraftForge/'
-      allowInsecureProtocol = true
-    }
-    maven {
-      url = 'http://revy:49161/repository/maven-central/'
-      allowInsecureProtocol = true
-    }
-    maven {
-      url = 'http://revy:49161/repository/jcenter/'
-      allowInsecureProtocol = true
-    }
     maven { url = 'https://maven.minecraftforge.net' }
     mavenCentral()
     jcenter()
@@ -122,10 +110,6 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 // Curse Maven Plugin
 repositories {
   maven {
-    url "http://revy:49161/repository/CurseMaven/"
-    allowInsecureProtocol = true
-  }
-  maven {
     url "https://www.cursemaven.com"
     content {
         includeGroup "curse.maven"
@@ -188,4 +172,8 @@ curseforge {
     addGameVersion("1.18.1")
     addGameVersion("Forge")
   }
+}
+
+tasks.withType(JavaCompile).configureEach {
+  options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }

@@ -57,10 +57,10 @@ public class ServerLoad {
   }
 
   public static void measureLoadAndPost(Dist dist) {
-    double currentAverangeTickTime = ServerManager.getAverageTickTime();
+    double currentAverageTickTime = ServerManager.getAverageTickTime();
 
     // Restrict and smoother high to low server load updates
-    if (lastAvgTickTime >= currentAverangeTickTime
+    if (lastAvgTickTime >= currentAverageTickTime
         && System.currentTimeMillis() - lastUpdateTime < timeBetweenUpdates) {
       return;
     }

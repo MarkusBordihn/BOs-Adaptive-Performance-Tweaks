@@ -21,14 +21,14 @@ package de.markusbordihn.adaptiveperformancetweaksgamerules;
 
 public final class Constants {
 
-    protected Constants() {
-    }
+  protected Constants() {
+  }
 
-    // General Mod definitions
-    public static final String ISSUE_REPORT = "https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues";
-    public static final String LOG_NAME = "APTweaks(Gamerules)";
-    public static final String MOD_COMMAND = "aptweaks";
-    public static final String MOD_ID = "adaptive_performance_tweaks_gamerules";
-    public static final String MOD_NAME = "Adaptive Performance Tweaks: Gamerules";
-    public static final String MODULE_NAME = "Gamerules";
+  // General Mod definitions
+  public static final String ISSUE_REPORT = "https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues";
+  public static final String LOG_NAME = "APTweaks(Gamerules)";
+  public static final String MOD_COMMAND = "aptweaks";
+  public static final String MOD_ID = "adaptive_performance_tweaks_gamerules";
+  public static final String MOD_NAME = "Adaptive Performance Tweaks: Gamerules";
+  public static final String MODULE_NAME = "Gamerules";
 }

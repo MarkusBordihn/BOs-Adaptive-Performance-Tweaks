@@ -106,19 +106,19 @@ public class SpawnManager {
     }
 
     if (CoreConstants.PERFORMANT_LOADED) {
-      log.warn(WarnMessages.coreModWarning(CoreConstants.PERFORMANT_NAME));
+      log.warn(() -> WarnMessages.coreModWarning(CoreConstants.PERFORMANT_NAME));
     }
 
     if (CoreConstants.SODIUM_LOADED) {
-      log.error(WarnMessages.coreModWarning(CoreConstants.SODIUM_NAME));
+      log.error(() -> WarnMessages.coreModWarning(CoreConstants.SODIUM_NAME));
     }
 
     if (CoreConstants.RUBIDIUM_LOADED) {
-      log.error(WarnMessages.coreModWarning(CoreConstants.RUBIDIUM_NAME));
+      log.error(() -> WarnMessages.coreModWarning(CoreConstants.RUBIDIUM_NAME));
     }
 
     if (CoreConstants.INCONTROL_LOADED) {
-      log.warn(WarnMessages.conflictingFeaturesModWarning(CoreConstants.INCONTROL_NAME,
+      log.warn(() -> WarnMessages.conflictingFeaturesModWarning(CoreConstants.INCONTROL_NAME,
           "controls the mob spawns and entity spawns"));
     }
 

@@ -19,6 +19,8 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.debug;
 
+import java.util.Optional;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,7 +28,11 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 
+import cpw.mods.modlauncher.Launcher;
+import cpw.mods.modlauncher.api.IEnvironment;
+
 import de.markusbordihn.adaptiveperformancetweakscore.Constants;
+import de.markusbordihn.adaptiveperformancetweakscore.message.WarnMessages;
 
 public class DebugManager {
 
@@ -86,6 +92,33 @@ public class DebugManager {
       DebugManager.setLogLevel(logger, Level.DEBUG);
     } else {
       DebugManager.setLogLevel(logger, Level.INFO);
+    }
+  }
+
+  public static Level getLogLevel(String loggerName) {
+    Logger logger = LogManager.getLogger(loggerName);
+    return logger.getLevel();
+  }
+
+  public static boolean isDebugLevel(String loggerName) {
+    Level level = getLogLevel(loggerName);
+    return level == Level.DEBUG || level == Level.TRACE || level == Level.ALL;
+  }
+
+  public static void checkForDebugLogging(String loggerName) {
+    if (isDebugLevel(Constants.LOG_NAME)) {
+      Logger logger = LogManager.getLogger(loggerName);
+      String logLevelName = logger.getLevel().name();
+      logger.warn(() -> WarnMessages.debugLogLevelWarning(loggerName, logLevelName));
+      Optional<String> version =
+          Launcher.INSTANCE.environment().getProperty(IEnvironment.Keys.VERSION.get());
+      if (version.isPresent() && version.get() != null && "MOD_DEV".equals(version.get())) {
+        logger.debug("Detected MDK environment, will not change log level for {}!", loggerName);
+      } else {
+        logger.warn("Adjusting log level for {} from {} to {}, for performance reasons!",
+            loggerName, logLevelName, Level.INFO);
+        enableDebugLevel(loggerName, false);
+      }
     }
   }
 
