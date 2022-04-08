@@ -28,6 +28,11 @@ Just add the mod to your mod pack and during the start on a Minecraft Client or 
 If the mod is used on a server all client related mods will be automatically renamed to "???.client".
 The mod is mostly helpful if it is used on the server and the client side.
 
+## Example Mod Pack
+
+If you want to see this mod in action, please take a look at:
+https://www.curseforge.com/minecraft/modpacks/bos-adventure-world
+
 ## Install additional Optimization
 
 ### Bundled Version
