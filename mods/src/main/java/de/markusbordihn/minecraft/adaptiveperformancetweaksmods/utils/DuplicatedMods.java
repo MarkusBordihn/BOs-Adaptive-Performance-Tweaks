@@ -34,35 +34,54 @@ public class DuplicatedMods {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
+  private static final String LOG_PREFIX = "[Duplicated Mods]";
+
   protected DuplicatedMods() {}
 
-  public static void searchDuplicatedMods(File modPath) {
-    if (modPath == null) {
-      return;
+  public static int searchDuplicatedMods(File modPath) {
+    return searchDuplicatedMods(modPath, ".jar");
+  }
+
+  public static int searchDuplicatedClientMods(File modPath) {
+    return searchDuplicatedMods(modPath, ".jar.client");
+  }
+
+  public static int searchDuplicatedMods(File modPath, String fileExtension) {
+    int result = 0;
+    if (modPath == null || !modPath.exists()) {
+      log.error("{} unable to find valid mod path: {}", LOG_PREFIX, modPath);
+      return result;
     }
     File[] modsFiles = modPath.listFiles();
     List<File> checkedFiles = new ArrayList<>();
     for (File modFile : modsFiles) {
       String modFileName = modFile.getName();
-      if (modFileName.endsWith(".jar") && !checkedFiles.contains(modFile)) {
+      if (modFileName.endsWith(fileExtension) && !checkedFiles.contains(modFile)) {
         String simplifiedModName = ModsDatabase.stripeVersionNumbers(modFileName);
         List<File> duplicatedMods = new ArrayList<>();
         for (File modFileToCompare : modsFiles) {
-          String simplifiedModNameToCompare =
-              ModsDatabase.stripeVersionNumbers(modFileToCompare.getName());
-          if (modFile != modFileToCompare && simplifiedModName.equals(simplifiedModNameToCompare)) {
-            duplicatedMods.add(modFileToCompare);
-            checkedFiles.add(modFileToCompare);
+          String modFileToCompareName = modFileToCompare.getName();
+          if (modFileToCompareName.endsWith(fileExtension)) {
+            String simplifiedModNameToCompare =
+                ModsDatabase.stripeVersionNumbers(modFileToCompare.getName());
+            if (modFile != modFileToCompare
+                && simplifiedModName.equals(simplifiedModNameToCompare)) {
+              duplicatedMods.add(modFileToCompare);
+              checkedFiles.add(modFileToCompare);
+            }
           }
         }
         if (!duplicatedMods.isEmpty()) {
           duplicatedMods.add(modFile);
-          log.info("[Duplicated Mods] ⚠️ Found duplicated Mods: {}", duplicatedMods);
-          log.info("[Duplicated Mods] ✔️ Will keep most recent Mod: {}", findLatestMod(duplicatedMods));
+          log.info("{} ⚠️ Found duplicated Mods: {}", LOG_PREFIX, duplicatedMods);
+          log.info("{} ✔️ Will keep most recent Mod: {}", LOG_PREFIX,
+              findLatestMod(duplicatedMods));
           archiveDuplicatedMods(duplicatedMods);
+          result++;
         }
       }
     }
+    return result;
   }
 
   public static void archiveDuplicatedMods(List<File> modList) {
@@ -70,7 +89,7 @@ public class DuplicatedMods {
     for (File modFile : modList) {
       if (modFile != newestMod) {
         if (!modFile.delete()) {
-          log.error("[Duplicated Mods] ⚠️ Was unable to remove outdated mod {}!", modFile);
+          log.error("{} ⚠️ Was unable to remove outdated mod {}!", LOG_PREFIX, modFile);
         }
       }
     }

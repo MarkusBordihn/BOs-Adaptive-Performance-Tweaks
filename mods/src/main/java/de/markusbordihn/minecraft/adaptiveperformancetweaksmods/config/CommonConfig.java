@@ -53,19 +53,19 @@ public final class CommonConfig {
     FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
         CoreConstants.CONFIG_ID);
     ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec,
-        CoreConstants.CONFIG_ID_PREFIX + "server.toml");
+        CoreConstants.CONFIG_ID_PREFIX + "mods.toml");
   }
 
   public static class Config {
 
-    public final ForgeConfigSpec.BooleanValue serverLimitationEnabled;
+    public final ForgeConfigSpec.BooleanValue modsEnabled;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
-      builder.push("General");
-      serverLimitationEnabled = builder.comment("Enable/Disable general server limitations.")
-          .define("serverLimitationEnabled", true);
+      builder.push("Mods");
+      modsEnabled = builder.comment("Enable/Disable mods optimization.")
+          .define("modsEnabled", true);
       builder.pop();
     }
   }

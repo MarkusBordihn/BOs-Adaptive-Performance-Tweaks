@@ -43,44 +43,29 @@ These optimization happens on the server side without introducing any new custom
 
 **➡️[Install Item Optimization][items]**
 
-### 😊 Player Optimizations
-
-#### 🛡️ Player Login Optimization and Protection
+### 😊 Player Login Optimization and Protection
 
 Sometimes it takes up to 30sec until the player is able to interact with the world after he is logged in.
 This mod automatically protects the user for the time between login and to be able to interactive with the world to make sure that he is not attacked by mobs during this time.
 Furthermore other smaller optimization will be done to allow a smoother login process.
 
-#### 🔭 Optimized player view distance
-
-The mod automatically increase or decrease the player view distance depending on the server load of the current world.
-
-You could adjust the view distance over `/aptweaks setViewDistance <view distance>`.
-
-#### ⚙️ Optimized player simulation distance
-
-The mod automatically increase or decrease the player simulation distance depending on the server load of the current world.
-
-You could adjust the view distance over `/aptweaks setSimulationDistance <simulation distance>`.
-
 **➡️[Install Player Optimization][player]**
 
-## 👻Spawn Control and 📦Spawner Optimization
+### 👻Spawn Control and 📦Spawner Optimization
 
 Mob spawns are limited to a specific view area of the player which allows a better distribution and lowers the numbers of entities without a visible effect for the user.
 _Example: If you are walking on the surface entities below a specific distance / which are currently not reachable will not be spawn until you are closer to them._
 
 **➡️[Install Spawn Optimization][spawn]**
 
-## Version Status Overview 🛠️
+### 👾Automatic Server Bundle (one mod pack for client/server) and mod cleanup
 
-| Version        | Status                |
-| -------------- | --------------------- |
-| Fabric Version | ❌ Not planned        |
-| Forge 1.16.5   | ❌ Not planned        |
-| Forge 1.17.1   | ❌ Not planned        |
-| Forge 1.18.1   | ⚠️ Maintenance only   |
-| Forge 1.18.2   | ✔️ Active development |
+This mod automatically disable mods which are incompatible or not needed on the server side.
+There is no longer the need to have a separated "server" and "client" mod pack only for the mods.
+Furthermore it's automatically clean up duplicated files, by removing older versions.
+This is helpful to avoid duplication issues and manual deleting / sorting out of older versions.
+
+**➡️[Install Mods Optimization][mods]**
 
 ## 🙋 FAQ
 
@@ -109,9 +94,23 @@ You should try to use as less as possible performance mods with overlapping feat
 Depending on your mod pack it could be that one works better than the other.
 For this reason it's important to test different kind of combination for your specific case.
 
-### Will it work with xyz ❓
+### Will it work with xyz❓
 
 I'm not able to test all possible mod combination, so you need to test this on your on own to find out.
+
+### 🚩Issues
+
+Please report issues over the **Issue** link.
+
+## Version Status Overview 🛠️
+
+| Version        | Status                |
+| -------------- | --------------------- |
+| Fabric Version | ❌ Not planned        |
+| Forge 1.16.5   | ❌ Not planned        |
+| Forge 1.17.1   | ❌ Not planned        |
+| Forge 1.18.1   | ⚠️ Maintenance only   |
+| Forge 1.18.2   | ✔️ Active development |
 
 [header]: ../assets/aptweaks-header.png
 
@@ -119,5 +118,6 @@ I'm not able to test all possible mod combination, so you need to test this on y
 [core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
 [gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules
 [items]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-items
+[mods]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-mods
 [player]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player
 [spawn]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-spawn

@@ -35,13 +35,21 @@ public final class CoreConstants {
 
   // List of Mod IDs for easier maintenance and access
 
-  public static final String AQUACULTURE_MOD = "aquaculture";
-  public static final String AQUACULTURE_NAME = "Aquaculture 2";
-  public static final boolean AQUACULTURE_LOADED = ModList.get().isLoaded(AQUACULTURE_MOD);
+  public static final String ALEXSMOBS_MOD = "alexsmobs";
+  public static final String ALEXSMOBS_NAME = "Alex's Mobs";
+  public static final boolean ALEXSMOBS_LOADED = ModList.get().isLoaded(ALEXSMOBS_MOD);
+
+  public static final String ARTIFACTS_MOD = "artifacts";
+  public static final String ARTIFACTS_NAME = "Artifacts";
+  public static final boolean ARTIFACTS_LOADED = ModList.get().isLoaded(ARTIFACTS_MOD);
 
   public static final String ADHOOKS_MOD = "adhooks";
   public static final String ADHOOKS_NAME = "Advanced Hook Launchers";
   public static final boolean ADHOOKS_LOADED = ModList.get().isLoaded(ADHOOKS_MOD);
+
+  public static final String AQUACULTURE_MOD = "aquaculture";
+  public static final String AQUACULTURE_NAME = "Aquaculture 2";
+  public static final boolean AQUACULTURE_LOADED = ModList.get().isLoaded(AQUACULTURE_MOD);
 
   public static final String CLUMPS_MOD = "clumps";
   public static final String CLUMPS_NAME = "Clumps";
@@ -55,13 +63,32 @@ public final class CoreConstants {
   public static final String FTB_ULTIMINE_NAME = "FTB Ultimine";
   public static final boolean FTB_ULTIMINE_LOADED = ModList.get().isLoaded(FTB_ULTIMINE_MOD);
 
+  public static final String GET_IT_TOGETHER_MOD = "getittogetherdrops";
+  public static final String GET_IT_TOGETHER_NAME = "Get It Together, Drops!";
+  public static final boolean GET_IT_TOGETHER_LOADED = ModList.get().isLoaded(GET_IT_TOGETHER_MOD);
+
   public static final String INCONTROL_MOD = "incontrol";
   public static final String INCONTROL_NAME = "InControl";
   public static final boolean INCONTROL_LOADED = ModList.get().isLoaded(INCONTROL_MOD);
 
+  public static final String LOGIN_PROTECTION_MOD = "logprot";
+  public static final String LOGIN_PROTECTION_NAME = "Login Protection";
+  public static final boolean LOGIN_PROTECTION_LOADED =
+      ModList.get().isLoaded(LOGIN_PROTECTION_MOD);
+
   public static final String LOOTR_MOD = "lootr";
   public static final String LOOTR_NAME = "Lootr";
   public static final boolean LOOTR_LOADED = ModList.get().isLoaded(LOOTR_MOD);
+
+  public static final String MANA_AND_ARTIFICE_MOD = "mana-and-artifice";
+  public static final String MANA_AND_ARTIFICE_NAME = "Mana and Artifice";
+  public static final boolean MANA_AND_ARTIFICE_LOADED =
+      ModList.get().isLoaded(MANA_AND_ARTIFICE_MOD);
+
+  public static final String MEKANISMADDITIONS_MOD = "mekanismadditions";
+  public static final String MEKANISMADDITIONS_NAME = "Mekanism Additions";
+  public static final boolean MEKANISMADDITIONS_LOADED =
+      ModList.get().isLoaded(MEKANISMADDITIONS_MOD);
 
   public static final String MINECOLONIES_MOD = "minecolonies";
   public static final String MINECOLONIES_NAME = "MineColonies";
@@ -75,10 +102,13 @@ public final class CoreConstants {
   public static final String PERFORMANT_NAME = "Performant";
   public static final boolean PERFORMANT_LOADED = ModList.get().isLoaded(PERFORMANT_MOD);
 
-  public static final String MANA_AND_ARTIFICE_MOD = "mana-and-artifice";
-  public static final String MANA_AND_ARTIFICE_NAME = "Mana and Artifice";
-  public static final boolean MANA_AND_ARTIFICE_LOADED =
-      ModList.get().isLoaded(MANA_AND_ARTIFICE_MOD);
+  public static final String SUPPLEMENTARIES_MOD = "supplementaries";
+  public static final String SUPPLEMENTARIES_NAME = "Supplementaries";
+  public static final boolean SUPPLEMENTARIES_LOADED = ModList.get().isLoaded(SUPPLEMENTARIES_MOD);
+
+  public static final String TCONSTRUCT_MOD = "tconstruct";
+  public static final String TCONSTRUCT_NAME = "Tinkers Construct";
+  public static final boolean TCONSTRUCT_LOADED = ModList.get().isLoaded(TCONSTRUCT_MOD);
 
   public static final String RATS_MOD = "rats";
   public static final String RATS_NAME = "Rats";
@@ -86,4 +116,12 @@ public final class CoreConstants {
   public static final String SODIUM_MOD = "sodium";
   public static final String SODIUM_NAME = "Sodium";
   public static final boolean SODIUM_LOADED = ModList.get().isLoaded(SODIUM_MOD);
+
+  public static final String QUARK_MOD = "quark";
+  public static final String QUARK_NAME = "Quark";
+  public static final boolean QUARK_LOADED = ModList.get().isLoaded(QUARK_MOD);
+
+  public static final String UNTAMED_WILDS_MOD = "untamedwilds";
+  public static final String UNTAMED_WILDS_NAME = "Untamed Wilds";
+  public static final boolean UNTAMED_WILDS_LOADED = ModList.get().isLoaded(UNTAMED_WILDS_MOD);
 }

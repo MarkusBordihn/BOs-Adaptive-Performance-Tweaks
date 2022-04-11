@@ -68,8 +68,8 @@ public class ExperienceOrbManager {
       log.info("Enable clustering of Experience Orbs with a radius of {} blocks.",
           experienceOrbsClusterRange);
 
-      // Additional check for Clumps.
-      if (ModList.get().isLoaded(CoreConstants.CLUMPS_MOD)) {
+      // Additional checks for conflicting mods.
+      if (CoreConstants.CLUMPS_LOADED) {
         log.error(
             "WARNING: Clumps groups XP orbs together into a new single entity, which will conflict with the XP Orb feature of this mod!");
         log.warn(

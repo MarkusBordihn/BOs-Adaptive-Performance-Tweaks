@@ -34,8 +34,12 @@ import net.minecraftforge.fml.common.Mod;
 
 import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.CommonConfig;
+import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.AlexsMobsSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.AquacultureSpawnConfig;
+import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.MekanismAdditionsSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.MinecraftSpawnConfig;
+import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.QuarkSpawnConfig;
+import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.UntamedWildsSpawnConfig;
 
 @Mod.EventBusSubscriber
 public class SpawnConfigManager {
@@ -43,9 +47,16 @@ public class SpawnConfigManager {
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
+
+  private static final AlexsMobsSpawnConfig.Config ALEXS_MOBS_CONFIG = AlexsMobsSpawnConfig.COMMON;
   private static final AquacultureSpawnConfig.Config AQUACULTURE_CONFIG =
       AquacultureSpawnConfig.COMMON;
+  private static final MekanismAdditionsSpawnConfig.Config MEKANISM_ADDITIONS_CONFIG =
+      MekanismAdditionsSpawnConfig.COMMON;
   private static final MinecraftSpawnConfig.Config MINECRAFT_CONFIG = MinecraftSpawnConfig.COMMON;
+  private static final QuarkSpawnConfig.Config QUARK_CONFIG = QuarkSpawnConfig.COMMON;
+  private static final UntamedWildsSpawnConfig.Config UNTAMED_WILDS_CONFIG =
+      UntamedWildsSpawnConfig.COMMON;
 
   private static int spawnLimitationMaxMobsPerPlayer = COMMON.spawnLimitationMaxMobsPerPlayer.get();
   private static int spawnLimitationMaxMobsPerWorld = COMMON.spawnLimitationMaxMobsPerWorld.get();
@@ -75,12 +86,10 @@ public class SpawnConfigManager {
           new HashSet<>(MINECRAFT_CONFIG.minecraftPassiveMobsList.get()),
           MINECRAFT_CONFIG.minecraftMaxPassiveMobsPerPlayer.get(),
           MINECRAFT_CONFIG.minecraftMaxPassiveMobsPerWorld.get());
-
       addSpawnRatesForNeutralMobs(MINECRAFT_CONFIG.minecraftId.get(),
           new HashSet<>(MINECRAFT_CONFIG.minecraftNeutralMobsList.get()),
           MINECRAFT_CONFIG.minecraftMaxNeutralMobsPerPlayer.get(),
           MINECRAFT_CONFIG.minecraftMaxNeutralMobsPerWorld.get());
-
       addSpawnRatesForHostileMobs(MINECRAFT_CONFIG.minecraftId.get(),
           new HashSet<>(MINECRAFT_CONFIG.minecraftHostileMobsList.get()),
           MINECRAFT_CONFIG.minecraftMaxHostileMobsPerPlayer.get(),
@@ -90,12 +99,10 @@ public class SpawnConfigManager {
           new HashSet<>(MINECRAFT_CONFIG.minecraftWaterPassiveMobsList.get()),
           MINECRAFT_CONFIG.minecraftMaxWaterPassiveMobsPerPlayer.get(),
           MINECRAFT_CONFIG.minecraftMaxWaterPassiveMobsPerWorld.get());
-
       addSpawnRatesForNeutralMobs(MINECRAFT_CONFIG.minecraftId.get(),
           new HashSet<>(MINECRAFT_CONFIG.minecraftWaterNeutralMobsList.get()),
           MINECRAFT_CONFIG.minecraftMaxWaterNeutralMobsPerPlayer.get(),
           MINECRAFT_CONFIG.minecraftMaxWaterNeutralMobsPerWorld.get());
-
       addSpawnRatesForHostileMobs(MINECRAFT_CONFIG.minecraftId.get(),
           new HashSet<>(MINECRAFT_CONFIG.minecraftWaterHostileMobsList.get()),
           MINECRAFT_CONFIG.minecraftMaxWaterHostileMobsPerPlayer.get(),
@@ -109,6 +116,74 @@ public class SpawnConfigManager {
           new HashSet<>(AQUACULTURE_CONFIG.modAquacultureFishList.get()),
           AQUACULTURE_CONFIG.modAquacultureMaxFishPerPlayer.get(),
           AQUACULTURE_CONFIG.modAquacultureMaxFishPerWorld.get());
+    }
+
+    // Alex's Mobs
+    if (Boolean.TRUE.equals(ALEXS_MOBS_CONFIG.alexsMobsEnabled.get())
+        && modList.isLoaded(ALEXS_MOBS_CONFIG.alexsMobsId.get())) {
+      addSpawnRatesForPassiveMobs(ALEXS_MOBS_CONFIG.alexsMobsId.get(),
+          new HashSet<>(ALEXS_MOBS_CONFIG.alexsMobsPassiveMobsList.get()),
+          ALEXS_MOBS_CONFIG.alexsMobsMaxPassiveMobsPerPlayer.get(),
+          ALEXS_MOBS_CONFIG.alexsMobsMaxPassiveMobsPerWorld.get());
+      addSpawnRatesForNeutralMobs(ALEXS_MOBS_CONFIG.alexsMobsId.get(),
+          new HashSet<>(ALEXS_MOBS_CONFIG.alexsMobsNeutralMobsList.get()),
+          ALEXS_MOBS_CONFIG.alexsMobsMaxNeutralMobsPerPlayer.get(),
+          ALEXS_MOBS_CONFIG.alexsMobsMaxNeutralMobsPerWorld.get());
+      addSpawnRatesForHostileMobs(ALEXS_MOBS_CONFIG.alexsMobsId.get(),
+          new HashSet<>(ALEXS_MOBS_CONFIG.alexsMobsHostileMobsList.get()),
+          ALEXS_MOBS_CONFIG.alexsMobsMaxHostileMobsPerPlayer.get(),
+          ALEXS_MOBS_CONFIG.alexsMobsMaxHostileMobsPerWorld.get());
+    }
+
+    // Mekanism Additions
+    if (Boolean.TRUE.equals(MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsEnabled.get())
+        && modList.isLoaded(MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsId.get())) {
+      addSpawnRatesForPassiveMobs(MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsId.get(),
+          new HashSet<>(MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsPassiveMobsList.get()),
+          MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsMaxPassiveMobsPerPlayer.get(),
+          MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsMaxPassiveMobsPerWorld.get());
+      addSpawnRatesForNeutralMobs(MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsId.get(),
+          new HashSet<>(MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsNeutralMobsList.get()),
+          MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsMaxNeutralMobsPerPlayer.get(),
+          MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsMaxNeutralMobsPerWorld.get());
+      addSpawnRatesForHostileMobs(MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsId.get(),
+          new HashSet<>(MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsHostileMobsList.get()),
+          MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsMaxHostileMobsPerPlayer.get(),
+          MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsMaxHostileMobsPerWorld.get());
+    }
+
+    // Quark
+    if (Boolean.TRUE.equals(QUARK_CONFIG.quarkEnabled.get())
+        && modList.isLoaded(QUARK_CONFIG.quarkId.get())) {
+      addSpawnRatesForPassiveMobs(QUARK_CONFIG.quarkId.get(),
+          new HashSet<>(QUARK_CONFIG.quarkPassiveMobsList.get()),
+          QUARK_CONFIG.quarkMaxPassiveMobsPerPlayer.get(),
+          QUARK_CONFIG.quarkMaxPassiveMobsPerWorld.get());
+      addSpawnRatesForNeutralMobs(QUARK_CONFIG.quarkId.get(),
+          new HashSet<>(QUARK_CONFIG.quarkNeutralMobsList.get()),
+          QUARK_CONFIG.quarkMaxNeutralMobsPerPlayer.get(),
+          QUARK_CONFIG.quarkMaxNeutralMobsPerWorld.get());
+      addSpawnRatesForHostileMobs(QUARK_CONFIG.quarkId.get(),
+          new HashSet<>(QUARK_CONFIG.quarkHostileMobsList.get()),
+          QUARK_CONFIG.quarkMaxHostileMobsPerPlayer.get(),
+          QUARK_CONFIG.quarkMaxHostileMobsPerWorld.get());
+    }
+
+    // Untamed Wilds
+    if (Boolean.TRUE.equals(UNTAMED_WILDS_CONFIG.untamedWildsEnabled.get())
+        && modList.isLoaded(UNTAMED_WILDS_CONFIG.untamedWildsId.get())) {
+      addSpawnRatesForPassiveMobs(UNTAMED_WILDS_CONFIG.untamedWildsId.get(),
+          new HashSet<>(UNTAMED_WILDS_CONFIG.untamedWildsPassiveMobsList.get()),
+          UNTAMED_WILDS_CONFIG.untamedWildsMaxPassiveMobsPerPlayer.get(),
+          UNTAMED_WILDS_CONFIG.untamedWildsMaxPassiveMobsPerWorld.get());
+      addSpawnRatesForNeutralMobs(UNTAMED_WILDS_CONFIG.untamedWildsId.get(),
+          new HashSet<>(UNTAMED_WILDS_CONFIG.untamedWildsNeutralMobsList.get()),
+          UNTAMED_WILDS_CONFIG.untamedWildsMaxNeutralMobsPerPlayer.get(),
+          UNTAMED_WILDS_CONFIG.untamedWildsMaxNeutralMobsPerWorld.get());
+      addSpawnRatesForHostileMobs(UNTAMED_WILDS_CONFIG.untamedWildsId.get(),
+          new HashSet<>(UNTAMED_WILDS_CONFIG.untamedWildsHostileMobsList.get()),
+          UNTAMED_WILDS_CONFIG.untamedWildsMaxHostileMobsPerPlayer.get(),
+          UNTAMED_WILDS_CONFIG.untamedWildsMaxHostileMobsPerWorld.get());
     }
 
     log.info("Added {} player spawn rules, {} world spawn rules and {} special spawn rules.",

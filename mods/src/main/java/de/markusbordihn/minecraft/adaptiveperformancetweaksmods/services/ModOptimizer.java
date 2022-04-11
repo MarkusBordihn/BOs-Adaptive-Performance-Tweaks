@@ -51,6 +51,8 @@ public class ModOptimizer implements IModLocator {
 
   private static final File GAME_DIR = FMLPaths.GAMEDIR.get().toFile();
   private static final File MODS_DIR = FMLPaths.MODSDIR.get().toFile();
+  private static final String LOG_PREFIX = "[Mod Optimizer]";
+
   private boolean isClient = true;
 
   public ModOptimizer() {
@@ -61,7 +63,8 @@ public class ModOptimizer implements IModLocator {
         isClient = false;
       }
     } else if (GAME_DIR != null) {
-      log.warn("Unable to detect environment will check game dir for additional hints ...");
+      log.warn("{} ⚠️ Unable to detect environment will check game dir for additional hints ...",
+          LOG_PREFIX);
       File[] gameFiles = GAME_DIR.listFiles();
       for (File gameFile : gameFiles) {
         if (gameFile.getName().contains("server")) {
@@ -70,23 +73,39 @@ public class ModOptimizer implements IModLocator {
       }
     } else {
       log.error(
-          "Unable to detected running environment, will stop here to avoid any possible damage!");
+          "{} ⚠️ Unable to detected running environment, will stop here to avoid any possible damage!",
+          LOG_PREFIX);
       return;
     }
 
-    log.info("Init Mod Optimizer with game dir {} and mods dir {} for target {}", GAME_DIR,
+    log.info("{} ♻️ init with game dir {} and mods dir {} for target {}", LOG_PREFIX, GAME_DIR,
         MODS_DIR, isClient ? "CLIENT" : "SERVER");
 
-    log.info("1. Step: Optimize Duplicated Mods ...");
-    DuplicatedMods.searchDuplicatedMods(MODS_DIR);
+    log.info("{} 🚀 optimize Duplicated Mods ...", LOG_PREFIX);
+    long start = System.nanoTime();
+    int numDuplicatedMods = DuplicatedMods.searchDuplicatedMods(MODS_DIR);
+    if (numDuplicatedMods > 0) {
+      log.info("{} Removed {} duplicated mods in {} secs.", LOG_PREFIX, numDuplicatedMods,
+          System.nanoTime() - start);
+    }
 
-    log.info("2. Step: Optimize client / server side mods ...");
     if (isClient) {
-      log.info("✔️ Enable possible client side mods ...");
-      ClientSideMods.enable(MODS_DIR);
+      start = System.nanoTime();
+      log.info("{} ✔️ Re-Enable possible client side mods ...", LOG_PREFIX);
+      int numClientSideModsEnabled = ClientSideMods.enable(MODS_DIR);
+      if (numClientSideModsEnabled > 0) {
+        log.info("{} ✔️ Re-Enabled {} possible client side mods in {} secs.", LOG_PREFIX,
+            numClientSideModsEnabled, System.nanoTime() - start);
+      }
     } else {
-      log.info("❌ Disable possible client side mods ...");
-      ClientSideMods.disable(MODS_DIR);
+      start = System.nanoTime();
+      log.info("{} ❌ Disable possible client side mods ...", LOG_PREFIX);
+      int numClientSideModsDisabled = ClientSideMods.disable(MODS_DIR);
+      if (numClientSideModsDisabled > 0) {
+        DuplicatedMods.searchDuplicatedClientMods(MODS_DIR);
+        log.info("{} ❌ Disabled {} possible client side mods in {} secs.", LOG_PREFIX,
+            numClientSideModsDisabled, System.nanoTime() - start);
+      }
     }
   }
 
@@ -102,17 +121,17 @@ public class ModOptimizer implements IModLocator {
 
   @Override
   public void scanFile(IModFile modFile, Consumer<Path> pathConsumer) {
-    log.info("scanFile {} {}", modFile, pathConsumer);
+    log.debug("scanFile {} {}", modFile, pathConsumer);
   }
 
   @Override
   public void initArguments(Map<String, ?> arguments) {
-    log.info("Env: {}", arguments);
+    log.debug("Env: {}", arguments);
   }
 
   @Override
   public boolean isValid(IModFile modFile) {
-    log.info("isValid {}", modFile);
+    log.debug("isValid {}", modFile);
     return false;
   }
 

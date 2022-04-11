@@ -22,7 +22,7 @@ The spawn-rate is calculated on the following formula:
 Number Of players * Max Number Of Entity * Server Load * Game Difficulty
 ```
 
-**Note: Playing in the game difficulty HARD could exceed the max number of hostile entity from the config file by max. 1.5x.**
+**Note: Playing in the game difficulty HARD could exceed the max number of hostile entity from the config file by max. 2x.**
 
 You could also get an overview of all currently loaded monster over `/aptweaks monster`.
 
@@ -37,25 +37,29 @@ With the config file you can disable / enable each of these individual features 
 
 ### ✔️Supported Mods
 
-This is a list of the currently supported mods within the config file for individual settings.
+This is a list of the currently supported mods within the config file for individual spawn settings.
 
+- ✅ [Alex's Mobs][alexmobs]
 - ✅ [Aquaculture 2][aquaculture]
+- ✅ [Mekanism Additions][mekanismadditions]
+- ✅ [Quark][quark]
+- ✅ [Untamed Wilds][untamedwilds]
 
-## Install additional Optimization
+## 🚀Install additional Optimization
 
-### Bundled Version
+### 📦Bundled Version
 
 If you want to install all modules together use the bundled version:
 
 **➡️[Install the bundled version][bundled]**
 
-### Customized
+### ⚙️Customized
 
 If you want to pick and choose your optimization mod, take a look at the core page:
 
-**➡️[Install separate modules][core]**
+**➡️[Install additional optimization modules][core]**
 
-### Issues
+### 🚩Issues
 
 Please report issues over the **Issue** link.
 
@@ -69,10 +73,16 @@ Please report issues over the **Issue** link.
 | Forge 1.18.1   | ⚠️ Maintenance only   |
 | Forge 1.18.2   | ✔️ Active development |
 
-[header]: ../assets/aptweaks-header.png
+[header]: ../assets/aptweaks-header-only.png
+
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
 [core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
 [gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules
 [items]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-items
 [player]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player
+
+[alexmobs]: https://www.curseforge.com/minecraft/mc-mods/alexs-mobs
 [aquaculture]: https://www.curseforge.com/minecraft/mc-mods/aquaculture
+[mekanismadditions]: https://www.curseforge.com/minecraft/mc-mods/mekanism-additions
+[quark]: https://www.curseforge.com/minecraft/mc-mods/quark
+[untamedwilds]: https://www.curseforge.com/minecraft/mc-mods/untamedwilds

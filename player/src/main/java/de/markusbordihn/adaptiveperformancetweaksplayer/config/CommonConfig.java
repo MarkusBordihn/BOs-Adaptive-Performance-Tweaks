@@ -71,18 +71,6 @@ public final class CommonConfig {
     public final ForgeConfigSpec.BooleanValue enableChildPlayerProtection;
     public final ForgeConfigSpec.ConfigValue<List<String>> childPlayerProtectionList;
 
-    public final ForgeConfigSpec.BooleanValue optimizeSimulationDistance;
-    public final ForgeConfigSpec.IntValue simulationDistanceMin;
-    public final ForgeConfigSpec.IntValue simulationDistanceMax;
-    public final ForgeConfigSpec.IntValue simulationDistanceDefault;
-    public final ForgeConfigSpec.IntValue simulationDistanceTimeBetweenUpdates;
-
-    public final ForgeConfigSpec.BooleanValue optimizeViewDistance;
-    public final ForgeConfigSpec.IntValue viewDistanceMin;
-    public final ForgeConfigSpec.IntValue viewDistanceMax;
-    public final ForgeConfigSpec.IntValue viewDistanceDefault;
-    public final ForgeConfigSpec.IntValue viewDistanceTimeBetweenUpdates;
-
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
@@ -111,30 +99,6 @@ public final class CommonConfig {
       childPlayerProtectionList =
           builder.comment("List of child player username for the child player protection.")
               .define("childPlayerProtectionList", new ArrayList<String>(Arrays.asList("")));
-      builder.pop();
-
-      builder.push("Simulation Distance");
-      optimizeSimulationDistance = builder
-          .comment("Enable/Disable simulation distance optimization depending on the server load.")
-          .define("optimizeSimulationDistance", true);
-      simulationDistanceMax = builder.defineInRange("simulationDistanceMax", 10, 6, 32);
-      simulationDistanceMin = builder.defineInRange("simulationDistanceMin", 2, 2, 16);
-      simulationDistanceDefault = builder.defineInRange("simulationDistanceDefault", 5, 5, 16);
-      simulationDistanceTimeBetweenUpdates = builder.comment(
-          "The time after a high to low load change is considered as valid. High loads are always considered immediately.")
-          .defineInRange("simulationDistanceTimeBetweenUpdates", 30, 1, 90);
-      builder.pop();
-
-      builder.push("View Distance");
-      optimizeViewDistance =
-          builder.comment("Enable/Disable view distance optimization depending on the server load.")
-              .define("optimizeViewDistance", true);
-      viewDistanceMax = builder.defineInRange("viewDistanceMax", 16, 4, 32);
-      viewDistanceMin = builder.defineInRange("viewDistanceMin", 5, 2, 16);
-      viewDistanceDefault = builder.defineInRange("viewDistanceDefault", 8, 2, 16);
-      viewDistanceTimeBetweenUpdates = builder.comment(
-          "The time after a high to low load change is considered as valid. High loads are always considered immediately.")
-          .defineInRange("viewDistanceTimeBetweenUpdates", 60, 1, 90);
       builder.pop();
     }
   }

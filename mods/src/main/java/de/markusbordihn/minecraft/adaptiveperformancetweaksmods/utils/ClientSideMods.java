@@ -31,13 +31,16 @@ public class ClientSideMods {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
+  private static final String LOG_PREFIX = "[Client Side Mod]";
   public static final String CLIENT_MOD_EXTENSION = ".client";
 
   protected ClientSideMods() {}
 
-  public static void enable(File modPath) {
-    if (modPath == null) {
-      return;
+  public static int enable(File modPath) {
+    int result = 0;
+    if (modPath == null || !modPath.exists()) {
+      log.error("{} unable to find valid mod path: {}", LOG_PREFIX, modPath);
+      return result;
     }
     File[] modsFiles = modPath.listFiles();
     for (File modFile : modsFiles) {
@@ -45,23 +48,29 @@ public class ClientSideMods {
       if (modFileName.endsWith(CLIENT_MOD_EXTENSION) && isClientSide(modFileName)) {
         File clientFile = new File(
             modFile.getAbsoluteFile().toString().replace(".jar" + CLIENT_MOD_EXTENSION, ".jar"));
-        log.info("[Client Side Mod] ✔️ Try to enable client side mod {} ...", modFileName);
+        log.info("{} ✔️ Try to enable client side mod {} ...", LOG_PREFIX, modFileName);
         if (clientFile.exists()) {
           if (!modFile.delete()) {
-            log.error("[Client Side Mod] ⚠️ Was unable to remove duplicated client side mod {}!", modFile);
+            log.error("{} ⚠️ Was unable to remove duplicated client side mod {}!", LOG_PREFIX,
+                modFile);
+          } else {
+            result++;
           }
         } else if (!modFile.renameTo(clientFile)) {
-          log.error("[Client Side Mod] ⚠️ Was unable to enable client side mod {}!", modFile);
+          log.error("{} ⚠️ Was unable to enable client side mod {}!", LOG_PREFIX, modFile);
+        } else {
+          result++;
         }
-      } else {
-
       }
     }
+    return result;
   }
 
-  public static void disable(File modPath) {
-    if (modPath == null) {
-      return;
+  public static int disable(File modPath) {
+    int result = 0;
+    if (modPath == null || !modPath.exists()) {
+      log.error("{} unable to find valid mod path: {}", LOG_PREFIX, modPath);
+      return result;
     }
     File[] modsFiles = modPath.listFiles();
     for (File modFile : modsFiles) {
@@ -69,16 +78,22 @@ public class ClientSideMods {
       if (!modFileName.endsWith(CLIENT_MOD_EXTENSION) && modFileName.endsWith(".jar")
           && isClientSide(modFileName)) {
         File clientFile = new File(modFile.getAbsoluteFile() + CLIENT_MOD_EXTENSION);
-        log.info("[Client Side Mod] ❌ Try to disable client side mod {} ...", modFileName);
+        log.info("{} ❌ Try to disable client side mod {} ...", LOG_PREFIX, modFileName);
         if (clientFile.exists()) {
           if (!modFile.delete()) {
-            log.error("[Client Side Mod] ⚠️ Was unable to remove duplicated client side mod {}!", modFile);
+            log.error("{} ⚠️ Was unable to remove duplicated client side mod {}!", LOG_PREFIX,
+                modFile);
+          } else {
+            result++;
           }
         } else if (!modFile.renameTo(clientFile)) {
-          log.error("[Client Side Mod] ⚠️ Was unable to disable client side mod {}!", modFile);
+          log.error("{} ⚠️ Was unable to disable client side mod {}!", LOG_PREFIX, modFile);
+        } else {
+          result++;
         }
       }
     }
+    return result;
   }
 
   public static boolean isClientSide(String name) {

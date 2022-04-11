@@ -141,26 +141,26 @@ dependencies {
   // Specify the version of Minecraft to use, If this is any group other then 'net.minecraft' it is assumed
   // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
   // The userdev artifact is a special name and will get all sorts of transformations applied to it.
-  minecraft 'net.minecraftforge:forge:1.18.2-40.0.36'
+  minecraft 'net.minecraftforge:forge:1.18.2-40.0.45'
 
   // Required: Bo's Adaptive Performance Tweaks: Core (dev dependency)
-  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.4.0")
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.4.0")
+  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.5.1")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.5.1")
 
   // Required: Bo's Adaptive Performance Tweaks: Gamerules (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksgamerules:gamerules:3.4.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksgamerules:gamerules:3.5.1")
 
   // Required: Bo's Adaptive Performance Tweaks: Items (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksitems:items:3.4.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksitems:items:3.5.1")
 
   // Required: Bo's Adaptive Performance Tweaks: Player (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksplayer:player:3.4.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksplayer:player:3.5.1")
 
   // Required: Bo's Adaptive Performance Tweaks: Spawn (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksspawn:spawn:3.4.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksspawn:spawn:3.5.1")
 
   // Additional helpful Mods for development (runtime depenedency)
-  runtimeOnly fg.deobf("curse.maven:xaeros_minimap-263420:3673239")
+  runtimeOnly fg.deobf("curse.maven:xaeros_minimap-263420:3712760")
   runtimeOnly fg.deobf("curse.maven:spark-361579:3670050")
 }
 

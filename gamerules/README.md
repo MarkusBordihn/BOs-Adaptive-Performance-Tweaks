@@ -1,5 +1,5 @@
 [![Adaptive Performance Tweaks Downloads](http://cf.way2muchnoise.eu/full_561137_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules)
-[![Adaptive Performance Tweaks MC Versions](http://cf.way2muchnoise.eu/versions/Minecraft_561137_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules)
+[![Adaptive Performance Tweaks Versions](http://cf.way2muchnoise.eu/versions/Minecraft_561137_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules)
 
 ![Adaptive Performance Tweaks: Game Rules][header]
 
@@ -10,21 +10,21 @@ The goal of this mod is to allow a smoother experience on a server with several 
 
 Automatically adjust the random tick speed, entity cramming, raids, patrol, trader and insomnia based on the current server load.
 
-## Install additional Optimization
+## 🚀Install additional Optimization
 
-### Bundled Version
+### 📦Bundled Version
 
 If you want to install all modules together use the bundled version:
 
 **➡️[Install the bundled version][bundled]**
 
-### Customized
+### ⚙️Customized
 
 If you want to pick and choose your optimization mod, take a look at the core page:
 
-**➡️[Install separate modules][core]**
+**➡️[Install additional optimization modules][core]**
 
-### Issues
+### 🚩Issues
 
 Please report issues over the **Issue** link.
 
@@ -38,7 +38,7 @@ Please report issues over the **Issue** link.
 | Forge 1.18.1   | ⚠️ Maintenance only   |
 | Forge 1.18.2   | ✔️ Active development |
 
-[header]: ../assets/aptweaks-header.png
+[header]: ../assets/aptweaks-header-only.png
 
 [core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks

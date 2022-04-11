@@ -5,6 +5,12 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.04.11
+
+- Added Alex's Mob's, Mekanism Additions, Quark and Untamed Wilds individual spawn configuration.
+- Improved performance of mods module by ignore specific files and removing additional duplicates.
+- Removed view-distance and simulation distance optimizations from player module >= 3.5.0 and referrer to [Dynamic View][dynamic-view], [Farsight][farsight] and [Better FPS] [better-fps-render-distance] instead.
+
 ### 2022.04.04
 
 - Added warning and fixed performance issues with caused by other mods and/or specific server configuration which setting logging = ALL which enables all debug messages and cause a additional server load up to 10%.
@@ -98,3 +104,7 @@ For the full changelog, please go to the [Git Hub History][history] instead.
 - Initial check-in of next gen-version of Adaptive Performance Tweaks.
 
 [history]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/commits/main
+
+[better-fps-render-distance]: https://www.curseforge.com/minecraft/mc-mods/better-fps-render-distance
+[dynamic-view]: https://www.curseforge.com/minecraft/mc-mods/dynamic-view/
+[farsight]: https://www.curseforge.com/minecraft/mc-mods/farsight

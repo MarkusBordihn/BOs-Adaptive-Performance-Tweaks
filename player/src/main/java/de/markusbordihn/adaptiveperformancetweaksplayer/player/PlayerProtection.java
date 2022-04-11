@@ -39,6 +39,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import de.markusbordihn.adaptiveperformancetweakscore.message.WarnMessages;
 import de.markusbordihn.adaptiveperformancetweaksplayer.Constants;
 import de.markusbordihn.adaptiveperformancetweaksplayer.config.CommonConfig;
 
@@ -71,6 +72,12 @@ public class PlayerProtection {
     protectPlayerDuringLogin = COMMON.protectPlayerDuringLogin.get();
     protectPlayerDuringLoginLogging = COMMON.protectPlayerDuringLoginLogging.get();
     playerLoginValidationTimeoutMilli = TimeUnit.SECONDS.toMillis(playerLoginValidationTimeout);
+
+    // Additional checks for conflicting mods.
+    if (CoreConstants.LOGIN_PROTECTION_LOADED) {
+      log.warn(() -> WarnMessages.conflictingFeaturesModWarning(CoreConstants.LOGIN_PROTECTION_NAME,
+          "protects the user during the login"));
+    }
   }
 
   @SubscribeEvent

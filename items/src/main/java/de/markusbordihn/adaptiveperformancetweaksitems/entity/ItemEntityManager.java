@@ -45,6 +45,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import de.markusbordihn.adaptiveperformancetweakscore.message.WarnMessages;
 import de.markusbordihn.adaptiveperformancetweakscore.server.OptimizationEvent;
 import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaksitems.Constants;
@@ -94,6 +96,13 @@ public class ItemEntityManager {
       log.info("Max number of Items allowed per world: {} / per type: {}", maxNumberOfItems,
           maxNumberOfItemsPerType);
       log.info("Enable clustering of items with a radius of {} blocks.", itemClusterRange);
+
+      // Additional checks for conflicting mods.
+      if (CoreConstants.GET_IT_TOGETHER_LOADED) {
+        log.warn(() -> WarnMessages.conflictingFeaturesModWarning(CoreConstants.GET_IT_TOGETHER_NAME,
+            "clusters items in a specific radius"));
+      }
+
     } else {
       log.info("Item Optimization is disabled!");
     }

@@ -86,7 +86,7 @@ public final class CommonConfig {
       gameDifficultyFactorNormal = builder.defineInRange("gameDifficultyFactorNormal", 1, 0.10, 10);
       gameDifficultyFactorPeaceful =
           builder.defineInRange("gameDifficultyFactorPeaceful", 1, 0.10, 10);
-      gameDifficultyFactorHard = builder.defineInRange("gameDifficultyFactorHard", 1.5, 0.10, 10);
+      gameDifficultyFactorHard = builder.defineInRange("gameDifficultyFactorHard", 2, 0.10, 10);
       builder.pop();
     }
   }

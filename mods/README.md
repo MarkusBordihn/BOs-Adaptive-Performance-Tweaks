@@ -33,21 +33,21 @@ The mod is mostly helpful if it is used on the server and the client side.
 If you want to see this mod in action, please take a look at:
 https://www.curseforge.com/minecraft/modpacks/bos-adventure-world
 
-## Install additional Optimization
+## 🚀Install additional Optimization
 
-### Bundled Version
+### 📦Bundled Version
 
 If you want to install all modules together use the bundled version:
 
 **➡️[Install the bundled version][bundled]**
 
-### Customized
+### ⚙️Customized
 
 If you want to pick and choose your optimization mod, take a look at the core page:
 
-**➡️[Install separate modules][core]**
+**➡️[Install additional optimization modules][core]**
 
-### Issues
+### 🚩Issues
 
 Please report issues over the **Issue** link.
 
@@ -62,6 +62,7 @@ Please report issues over the **Issue** link.
 | Forge 1.18.2   | ✔️ Active development |
 
 [header]: ../assets/aptweaks-header-only.png
+
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
 [core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
 [gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules

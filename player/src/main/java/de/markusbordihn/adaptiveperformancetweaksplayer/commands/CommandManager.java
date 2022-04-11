@@ -46,8 +46,6 @@ public class CommandManager {
     commandDispatcher.register(Commands.literal(Constants.MOD_COMMAND)
     // @formatter:off
       .then(DebugCommand.register())
-      .then(SimulationDistanceCommand.register())
-      .then(ViewDistanceCommand.register())
     // @formatter:on
     );
   }

@@ -41,16 +41,12 @@ public class PlayerLogin {
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static boolean optimizePlayerLogin = COMMON.optimizePlayerLogin.get();
-  private static boolean optimizeSimulationDistance = COMMON.optimizeSimulationDistance.get();
-  private static boolean optimizeViewDistance = COMMON.optimizeViewDistance.get();
 
   protected PlayerLogin() {}
 
   @SubscribeEvent
   public static void onServerAboutToStartEvent(ServerAboutToStartEvent event) {
     optimizePlayerLogin = COMMON.optimizePlayerLogin.get();
-    optimizeSimulationDistance = COMMON.optimizeSimulationDistance.get();
-    optimizeViewDistance = COMMON.optimizeViewDistance.get();
   }
 
   @SubscribeEvent
@@ -73,13 +69,5 @@ public class PlayerLogin {
         ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
 
     log.debug("Optimize Player Login for {} {} and {} players", username, player, numOfPlayers);
-
-    if (optimizeSimulationDistance) {
-      PlayerSimulationDistance.decreaseSimulationDistance();
-    }
-
-    if (optimizeViewDistance) {
-      PlayerViewDistance.defaultViewDistance();
-    }
   }
 }

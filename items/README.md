@@ -1,7 +1,7 @@
 [![Adaptive Performance Tweaks Downloads](http://cf.way2muchnoise.eu/full_561439_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules)
-[![Adaptive Performance Tweaks MC Versions](http://cf.way2muchnoise.eu/versions/Minecraft_561439_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules)
+[![Adaptive Performance Tweaks Versions](http://cf.way2muchnoise.eu/versions/Minecraft_561439_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules)
 
-![Adaptive Performance Tweaks: Game Rules][header]
+![Adaptive Performance Tweaks: Items][header]
 
 Adaptive Performance Tweaks is a collection of Minecraft Forge server-side Mod which automatically adjust specific settings on the server to allow a more balanced TPS/FPS.
 The goal of this mod is to allow a smoother experience on a server with several (=> 180) Mods.
@@ -19,21 +19,21 @@ Experience Orbs could cause a lag from bigger monster farms or if they are not p
 They will be automatically clustered in a specific range and combine the experience values.
 These optimization happens on the server side without introducing any new custom items.
 
-## Install additional Optimization
+## 🚀Install additional Optimization
 
-### Bundled Version
+### 📦Bundled Version
 
 If you want to install all modules together use the bundled version:
 
 **➡️[Install the bundled version][bundled]**
 
-### Customized
+### ⚙️Customized
 
 If you want to pick and choose your optimization mod, take a look at the core page:
 
-**➡️[Install separate modules][core]**
+**➡️[Install additional optimization modules][core]**
 
-### Issues
+### 🚩Issues
 
 Please report issues over the **Issue** link.
 
@@ -47,7 +47,8 @@ Please report issues over the **Issue** link.
 | Forge 1.18.1   | ⚠️ Maintenance only   |
 | Forge 1.18.2   | ✔️ Active development |
 
-[header]: ../assets/aptweaks-header.png
+[header]: ../assets/aptweaks-header-only.png
+
 [core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
 [gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules

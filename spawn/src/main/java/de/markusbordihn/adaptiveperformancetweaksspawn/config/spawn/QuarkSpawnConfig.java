@@ -38,11 +38,11 @@ import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
-public final class AquacultureSpawnConfig {
+public final class QuarkSpawnConfig {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
-  private AquacultureSpawnConfig() {}
+  private QuarkSpawnConfig() {}
 
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
@@ -54,78 +54,75 @@ public final class AquacultureSpawnConfig {
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
     log.info("Registering {} {} spawn config ...", Constants.MOD_NAME,
-        CoreConstants.AQUACULTURE_NAME);
+        CoreConstants.QUARK_NAME);
     FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
         CoreConstants.CONFIG_ID);
     ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec,
-        CoreConstants.CONFIG_ID_PREFIX + "/spawn/AquacultureSpawn.toml");
+        CoreConstants.CONFIG_ID_PREFIX + "/spawn/QuarkSpawn.toml");
   }
 
   public static class Config {
 
-    public final ForgeConfigSpec.BooleanValue modAquacultureEnabled;
-    public final ForgeConfigSpec.ConfigValue<String> modAquacultureId;
+    public final ForgeConfigSpec.BooleanValue quarkEnabled;
+    public final ForgeConfigSpec.ConfigValue<String> quarkId;
 
-    public final ForgeConfigSpec.IntValue modAquacultureMaxFishPerPlayer;
-    public final ForgeConfigSpec.IntValue modAquacultureMaxFishPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> modAquacultureFishList;
+    public final ForgeConfigSpec.IntValue quarkMaxPassiveMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue quarkMaxPassiveMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> quarkPassiveMobsList;
+
+    public final ForgeConfigSpec.IntValue quarkMaxNeutralMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue quarkMaxNeutralMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> quarkNeutralMobsList;
+
+    public final ForgeConfigSpec.IntValue quarkMaxHostileMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue quarkMaxHostileMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> quarkHostileMobsList;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
-      builder.push("Aquaculture 2 Spawn Config");
-      modAquacultureEnabled = builder.define("modAquacultureEnabled", true);
-      modAquacultureId = builder.define("modAquacultureId", CoreConstants.AQUACULTURE_MOD);
+      builder.push("Minecraft Spawn Config");
+      quarkEnabled = builder.define("quarkEnabled", true);
+      quarkId =
+          builder.define("quarkId", CoreConstants.QUARK_MOD);
 
-      modAquacultureMaxFishPerPlayer =
-          builder.defineInRange("modAquacultureMaxFishPerPlayer", 2, 1, 64);
-      modAquacultureMaxFishPerWorld =
-          builder.defineInRange("modAquacultureMaxFishPerWorld", 8, 1, 512);
-      modAquacultureFishList = builder.comment("List of passive Mobs to optimize")
-          .define("modAquacultureFishList", new ArrayList<String>(Arrays.asList(
+      quarkMaxPassiveMobsPerPlayer =
+          builder.defineInRange("quarkMaxPassiveMobsPerPlayer", 2, 1, 64);
+      quarkMaxPassiveMobsPerWorld =
+          builder.defineInRange("quarkMaxPassiveMobsPerWorld", 16, 1, 512);
+      quarkPassiveMobsList = builder.comment("List of passive Mobs to optimize")
+          .define("quarkPassiveMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
-            "aquaculture:acacia_fish_mount",
-            "aquaculture:arapaima",
-            "aquaculture:arrau_turtle",
-            "aquaculture:atlantic_cod",
-            "aquaculture:atlantic_halibut",
-            "aquaculture:atlantic_herring",
-            "aquaculture:bayad",
-            "aquaculture:birch_fish_mount",
-            "aquaculture:blackfish",
-            "aquaculture:bluegill",
-            "aquaculture:bobber",
-            "aquaculture:boulti",
-            "aquaculture:box_turtle",
-            "aquaculture:brown_shrooma",
-            "aquaculture:brown_trout",
-            "aquaculture:capitaine",
-            "aquaculture:carp",
-            "aquaculture:catfish",
-            "aquaculture:dark_oak_fish_mount",
-            "aquaculture:gar",
-            "aquaculture:jellyfish",
-            "aquaculture:jungle_fish_mount",
-            "aquaculture:minnow",
-            "aquaculture:muskellunge",
-            "aquaculture:oak_fish_mount",
-            "aquaculture:pacific_halibut",
-            "aquaculture:perch",
-            "aquaculture:pink_salmon",
-            "aquaculture:piranha",
-            "aquaculture:pollock",
-            "aquaculture:rainbow_trout",
-            "aquaculture:red_grouper",
-            "aquaculture:red_shrooma",
-            "aquaculture:smallmouth_bass",
-            "aquaculture:spruce_fish_mount",
-            "aquaculture:starshell_turtle",
-            "aquaculture:synodontis",
-            "aquaculture:tambaqui",
-            "aquaculture:tuna",
-            "aquaculture:water_arrow"
+            "quark:crab",
+            "quark:frog",
+            "quark:stoneling"
           // @formatter:on
           )));
+
+      quarkMaxNeutralMobsPerPlayer =
+          builder.defineInRange("quarkMaxNeutralMobsPerPlayer", 2, 1, 64);
+      quarkMaxNeutralMobsPerWorld =
+          builder.defineInRange("quarkMaxNeutralMobsPerWorld", 16, 1, 512);
+      quarkNeutralMobsList = builder.comment("List of neutral Mobs to optimize")
+          .define("quarkNeutralMobsList", new ArrayList<String>(Arrays.asList(
+          // @formatter:off
+            "quark:toretoise"
+          // @formatter:on
+          )));
+
+      quarkMaxHostileMobsPerPlayer =
+          builder.defineInRange("quarkMaxHostileMobsPerPlayer", 2, 1, 64);
+      quarkMaxHostileMobsPerWorld =
+          builder.defineInRange("quarkMaxHostileMobsPerWorld", 16, 1, 512);
+      quarkHostileMobsList = builder.comment("List of hostile Mobs to optimize")
+          .define("quarkHostileMobsList", new ArrayList<String>(Arrays.asList(
+          // @formatter:off
+            "quark:forgotten",
+            "quark:foxhound",
+            "quark:wraith"
+          // @formatter:on
+          )));
+
       builder.pop();
     }
   }
