@@ -29,9 +29,14 @@ import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.data.TestData;
 public class ModsDatabaseTests {
   @Test
   void testStripeVersionNumbers() {
-    for (String mod : TestData.clientModList) {
-      assertNotEquals(ModsDatabase.stripeVersionNumbers(mod), mod);
-      assertFalse(ModsDatabase.stripeVersionNumbers(mod).contains("0."));
+    for (String mod : TestData.modList) {
+      String stripedModName = ModsDatabase.stripeVersionNumbers(mod);
+      System.out.printf("%s -> %s\n", mod, stripedModName);
+      assertNotEquals(stripedModName, mod);
+      assertFalse(stripedModName.contains("0."));
+      assertFalse(stripedModName.contains(".0"));
+      assertFalse(stripedModName.contains("1."));
+      assertFalse(stripedModName.contains(".1"));
     }
   }
 }

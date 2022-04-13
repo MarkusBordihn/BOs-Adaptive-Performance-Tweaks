@@ -21,7 +21,8 @@ package de.markusbordihn.minecraft.adaptiveperformancetweaksmods.data;
 
 public class TestData {
 
-  public static String[] modList = {"adaptive_performance_tweaks_1.18.1-2.0.1.jar",
+  public static String[] modList = {
+      "adaptive_performance_tweaks_1.18.1-2.0.1.jar",
       "adaptive_performance_tweaks_core_1.18.1-2.2.0.jar",
       "adaptive_performance_tweaks_gamerules_1.18.1-2.2.0.jar",
       "adaptive_performance_tweaks_items_1.18.1-2.2.0.jar",
@@ -110,9 +111,10 @@ public class TestData {
       "witchesbrew-1.18.1-1.0.jar", "worldedit-mod-7.2.9.jar",
       "Xaeros_Minimap_22.3.0_Forge_1.18.jar", "YungsApi-1.18.1-Forge-26. jar",
       "YungsBridges-Forge-1.18.1-1.0.jar", "YungsExtras-Forge-1.18.1-1.0.jar",
-      "[1.18.1] SecurityCraft v1.9.0.2-beta1.jar"};
+      "[1.18.1] SecurityCraft v1.9.0.2-beta1.jar", "Xaeros_Minimap_22.4.0_Forge_1.18.2.jar"};
 
-  public static String[] clientModList = {"BetterAdvancements-1.18.1-0.1.2.122.jar",
+  public static String[] clientModList = {
+      "BetterAdvancements-1.18.1-0.1.2.122.jar",
       "BetterF3-1.2.2-Forge-1.18.jar", "Controlling-forge-1.18.1-9.0+15.jar", "Ding-1.18-1.3.0.jar",
       "EnchantmentDescriptions-Forge-1.18.1-9.0.13.jar", "EquipmentCompare-1.18.1-1.2.12.jar",
       "FpsReducer2-forge-1.18.2-2.0.jar", "GameMenuModOption-1.18-Forge-1.14.jar",
@@ -122,7 +124,8 @@ public class TestData {
       "notenoughanimations-forge-1.5.0-mc1.18.2.jar", "eatinganimation-1.18.1-2.0.1.jar",
       "farsight-1.18-1.6.jar", "itemzoom-1.18.1-2.5.0.jar"};
 
-  public static String[] modListDuplicates = {"adaptive_performance_tweaks_items_1.18.1-2.2.0.jar",
+  public static String[] modListDuplicates = {
+      "adaptive_performance_tweaks_items_1.18.1-2.2.0.jar",
       "adaptive_performance_tweaks_items_1.18.1-2.3.0.jar",
       "adaptive_performance_tweaks_items_1.18.1-2.2.1.jar",
       "adaptive_performance_tweaks_items_1.18.1-2.2.0.jar",

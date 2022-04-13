@@ -5,6 +5,10 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.04.13
+
+- Improved duplicated mods and client mods detection with exotic 1.18.2 mod names.
+
 ### 2022.04.11
 
 - Added Alex's Mob's, Mekanism Additions, Quark and Untamed Wilds individual spawn configuration.

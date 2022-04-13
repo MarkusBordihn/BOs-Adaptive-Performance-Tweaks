@@ -92,12 +92,25 @@ public class ModsDatabase {
       new HashSet<>(clientSideModsList.stream().map(ModsDatabase::stripeVersionNumbers).toList());
 
   public static String stripeVersionNumbers(String name) {
-    // Remove version strings with RegExp in three steps:
-    // 1. ReplaceAll (-(mc)?[^A-Za-z_]+).jar with ".jar"
-    // 2. ReplaceAll (-[^A-Za-z_]+) with "-"
-    // 3. Replace -jar$ with .jar
-    return name.replaceAll("(-(mc)?[^A-Za-z_]+).jar", ".jar").replaceAll("(-[^A-Za-z_]+)", "-")
-        .replaceAll("-jar$", ".jar");
+    // Remove version strings with RegExp in several steps.
+    // This is needed, because there are two many variants to cover everything with a single check.
+    return name
+        .replaceAll("(?i)(-)?(ALPHA|BETA|RELEASE)(-)?", "")
+        .replaceAll("(-(mc)?[^A-Za-z_]+)[a-z]?.jar$", ".jar")
+        .replaceAll("(_(mc)?[^A-Za-z_]+)[a-z]?.jar$", ".jar")
+        .replaceAll("(.[^A-Za-z_]+)[a-z]?.jar$", ".jar")
+        .replaceAll("(?i)(mc[^A-Z_]+)", "")
+        .replaceAll("(-[^A-Za-z_]+)", "-")
+        .replaceAll("(_[^A-Za-z_]+)", "_")
+        .replaceAll("(v[^A-Za-z_-]+)", "")
+        .replaceAll("(1.18.1|1.18.2)", "")
+        .replace("--", "-")
+        .replace("__", "_")
+        .replace("[]", "")
+        .replace(" .jar", ".jar")
+        .replaceAll("(-)+jar$", ".jar")
+        .replaceAll("(_)+jar$", ".jar")
+        .replaceAll("[a-z]{1}jar$", ".jar");
   }
 
 }

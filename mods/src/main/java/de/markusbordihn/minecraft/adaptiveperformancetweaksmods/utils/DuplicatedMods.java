@@ -39,20 +39,22 @@ public class DuplicatedMods {
   protected DuplicatedMods() {}
 
   public static int searchDuplicatedMods(File modPath) {
-    return searchDuplicatedMods(modPath, ".jar");
+    return searchDuplicatedMods(modPath, ".jar", false);
   }
 
   public static int searchDuplicatedClientMods(File modPath) {
-    return searchDuplicatedMods(modPath, ".jar.client");
+    return searchDuplicatedMods(modPath, ".jar.client", false);
   }
 
-  public static int searchDuplicatedMods(File modPath, String fileExtension) {
+  public static int searchDuplicatedMods(File modPath, String fileExtension, boolean testMode) {
     int result = 0;
     if (modPath == null || !modPath.exists()) {
       log.error("{} unable to find valid mod path: {}", LOG_PREFIX, modPath);
       return result;
     }
     File[] modsFiles = modPath.listFiles();
+    log.info("{} checking ~{} mods in {} for duplication with file extension {} ...", LOG_PREFIX,
+        modsFiles.length, modPath, fileExtension);
     List<File> checkedFiles = new ArrayList<>();
     for (File modFile : modsFiles) {
       String modFileName = modFile.getName();
@@ -63,7 +65,7 @@ public class DuplicatedMods {
           String modFileToCompareName = modFileToCompare.getName();
           if (modFileToCompareName.endsWith(fileExtension)) {
             String simplifiedModNameToCompare =
-                ModsDatabase.stripeVersionNumbers(modFileToCompare.getName());
+                ModsDatabase.stripeVersionNumbers(modFileToCompareName);
             if (modFile != modFileToCompare
                 && simplifiedModName.equals(simplifiedModNameToCompare)) {
               duplicatedMods.add(modFileToCompare);
@@ -76,7 +78,7 @@ public class DuplicatedMods {
           log.info("{} ⚠️ Found duplicated Mods: {}", LOG_PREFIX, duplicatedMods);
           log.info("{} ✔️ Will keep most recent Mod: {}", LOG_PREFIX,
               findLatestMod(duplicatedMods));
-          archiveDuplicatedMods(duplicatedMods);
+          archiveDuplicatedMods(duplicatedMods, testMode);
           result++;
         }
       }
@@ -84,11 +86,13 @@ public class DuplicatedMods {
     return result;
   }
 
-  public static void archiveDuplicatedMods(List<File> modList) {
+  public static void archiveDuplicatedMods(List<File> modList, boolean testMode) {
     File newestMod = findLatestMod(modList);
     for (File modFile : modList) {
       if (modFile != newestMod) {
-        if (!modFile.delete()) {
+        if (testMode) {
+          log.info("{} Would remove duplicated mod {} ...", LOG_PREFIX, modFile);
+        } else if (!modFile.delete()) {
           log.error("{} ⚠️ Was unable to remove outdated mod {}!", LOG_PREFIX, modFile);
         }
       }

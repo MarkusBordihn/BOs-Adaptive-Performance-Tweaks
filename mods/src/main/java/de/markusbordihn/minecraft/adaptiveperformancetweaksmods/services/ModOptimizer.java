@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.apache.logging.log4j.LogManager;
@@ -85,8 +86,8 @@ public class ModOptimizer implements IModLocator {
     long start = System.nanoTime();
     int numDuplicatedMods = DuplicatedMods.searchDuplicatedMods(MODS_DIR);
     if (numDuplicatedMods > 0) {
-      log.info("{} Removed {} duplicated mods in {} secs.", LOG_PREFIX, numDuplicatedMods,
-          System.nanoTime() - start);
+      log.info("{} Removed {} duplicated mods in {} ms.", LOG_PREFIX, numDuplicatedMods,
+          TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));
     }
 
     if (isClient) {
@@ -94,8 +95,8 @@ public class ModOptimizer implements IModLocator {
       log.info("{} ✔️ Re-Enable possible client side mods ...", LOG_PREFIX);
       int numClientSideModsEnabled = ClientSideMods.enable(MODS_DIR);
       if (numClientSideModsEnabled > 0) {
-        log.info("{} ✔️ Re-Enabled {} possible client side mods in {} secs.", LOG_PREFIX,
-            numClientSideModsEnabled, System.nanoTime() - start);
+        log.info("{} ✔️ Re-Enabled {} possible client side mods in {} ms.", LOG_PREFIX,
+            numClientSideModsEnabled, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));
       }
     } else {
       start = System.nanoTime();
@@ -103,8 +104,8 @@ public class ModOptimizer implements IModLocator {
       int numClientSideModsDisabled = ClientSideMods.disable(MODS_DIR);
       if (numClientSideModsDisabled > 0) {
         DuplicatedMods.searchDuplicatedClientMods(MODS_DIR);
-        log.info("{} ❌ Disabled {} possible client side mods in {} secs.", LOG_PREFIX,
-            numClientSideModsDisabled, System.nanoTime() - start);
+        log.info("{} ❌ Disabled {} possible client side mods in {} ms.", LOG_PREFIX,
+            numClientSideModsDisabled, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));
       }
     }
   }

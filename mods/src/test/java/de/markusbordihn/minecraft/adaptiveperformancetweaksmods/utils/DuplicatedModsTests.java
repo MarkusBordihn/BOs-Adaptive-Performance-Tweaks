@@ -20,7 +20,10 @@
 package de.markusbordihn.minecraft.adaptiveperformancetweaksmods.utils;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -30,9 +33,29 @@ public class DuplicatedModsTests {
   private final String testFilePath = "src/test/resources/testfile/duplicates";
   private final File testFiles = new File(testFilePath);
 
+  private final String twoTestFilePath = "src/test/resources/testfile/two_duplicates";
+  private final File twoTestFiles = new File(twoTestFilePath);
+
   @Test
   void testFindLatestMod() {
     System.out.printf("Test Mod Files: %s\n", testFiles);
-    assertTrue(true);
+    List<File> testFileList = new ArrayList<>();
+    for (File testFile : testFiles.listFiles()) {
+      testFileList.add(testFile);
+    }
+    File result = DuplicatedMods.findLatestMod(testFileList);
+    assertEquals(result.getName(), "adaptive_performance_tweaks_items_1.18.1-2.3.4.jar");
+  }
+
+  @Test
+  void testSearchDuplicatedMods() {
+
+    System.out.printf("Two Test Mod Files: %s\n", twoTestFiles);
+    int two_result = DuplicatedMods.searchDuplicatedMods(twoTestFiles, ".jar", true);
+    assertTrue(two_result > 0);
+
+    System.out.printf("Test Mod Files: %s\n", testFiles);
+    int result = DuplicatedMods.searchDuplicatedMods(testFiles, ".jar", true);
+    assertTrue(result > 0);
   }
 }
