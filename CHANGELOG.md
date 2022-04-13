@@ -5,6 +5,10 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.04.13
+
+- Added additional checks to avoid mixin/core-modding issues caused by unexpected behavior.
+
 ### 2022.04.02
 
 - Added additional compatibility for other mods which are optimization / limiting the spawn events.
@@ -111,7 +115,7 @@ For the full changelog, please go to the [Git Hub History][history] instead.
   - Statues
   - Supplementaries
   - Tinkers' Construct
-  - The Twillight Forst
+  - The Twillight Forest
 
 ### 2021.04.04
 

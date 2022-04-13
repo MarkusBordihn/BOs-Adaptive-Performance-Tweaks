@@ -44,6 +44,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -86,6 +87,13 @@ public class EntityManager extends Manager {
 
   @SubscribeEvent(priority = EventPriority.HIGH)
   public static void handleEntityJoinWorldEvent(EntityJoinWorldEvent event) {
+
+    // Ignore events which are already canceled or denied.
+    if (event.isCanceled() || event.getResult() == Event.Result.DENY) {
+      log.debug("[Canceled / denied Spawner Event] Ignore spawner event {}!", event);
+      return;
+    }
+
     // Ignore client side world.
     World world = event.getWorld();
     if (world.isClientSide) {
@@ -108,8 +116,12 @@ public class EntityManager extends Manager {
       if (entity.isMultipartEntity() || entity.getType().toString().contains("body_part")) {
         log.debug("Ignore multipart entity {} in {}.", entity, worldName);
       } else if (entity.hasCustomName()) {
-        log.debug("Unknown entity name for entity {} ({}) with custom name {} in {}.", entity,
-            entity.getType(), entity.getCustomName().getString(), worldName);
+        if (log.isDebugEnabled()) {
+          String customName =
+              entity.getCustomName() == null ? "NULL" : entity.getCustomName().getString();
+          log.debug("Unknown entity name for entity {} ({}) with custom name {} in {}.", entity,
+              entity.getType(), customName, worldName);
+        }
       } else {
         String entityType = entity.getType().toString();
 
@@ -139,8 +151,12 @@ public class EntityManager extends Manager {
       log.debug("Ignore allowed entity {} in {}", entityName, worldName);
       return;
     } else if (entity.hasCustomName()) {
-      log.debug("Ignore custom entity {} with name {} in {}", entityName,
-          entity.getCustomName().getString(), worldName);
+      if (log.isDebugEnabled()) {
+        String customName =
+            entity.getCustomName() == null ? "NULL" : entity.getCustomName().getString();
+        log.debug("Ignore custom entity {} with custom name {} in {}", entityName, customName,
+            worldName);
+      }
       return;
     } else if (entity instanceof MonsterEntity) {
       MonsterEntityManager.handleMonsterEntityJoinWorldEvent(event);
@@ -174,8 +190,11 @@ public class EntityManager extends Manager {
     }
 
     if (entity.hasCustomName()) {
-      log.debug("Ignore custom entity {} with name {} in {}", entityName,
-          entity.getCustomName().getString(), worldName);
+      if (log.isDebugEnabled()) {
+        String customName =
+            entity.getCustomName() == null ? "NULL" : entity.getCustomName().getString();
+        log.debug("Ignore custom entity {} with name {} in {}", entityName, customName, worldName);
+      }
     } else if (entity instanceof MonsterEntity) {
       MonsterEntityManager.handleMonsterEntityLeaveWorldEvent(event);
     }
@@ -322,7 +341,7 @@ public class EntityManager extends Manager {
     return !(entity instanceof ExperienceOrbEntity || entity instanceof ItemEntity
         || entity instanceof LightningBoltEntity || entity instanceof FallingBlockEntity
         || entity instanceof ProjectileEntity || entity instanceof MinecartEntity
-        || entity instanceof AbstractMinecartEntity);
+        || entity instanceof AbstractMinecartEntity || !entity.isAlive());
   }
 
 }
