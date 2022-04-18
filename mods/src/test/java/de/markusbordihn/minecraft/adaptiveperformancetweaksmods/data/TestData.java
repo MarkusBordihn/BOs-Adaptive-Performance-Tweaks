@@ -21,8 +21,7 @@ package de.markusbordihn.minecraft.adaptiveperformancetweaksmods.data;
 
 public class TestData {
 
-  public static String[] modList = {
-      "adaptive_performance_tweaks_1.18.1-2.0.1.jar",
+  public static String[] modList = {"adaptive_performance_tweaks_1.18.1-2.0.1.jar",
       "adaptive_performance_tweaks_core_1.18.1-2.2.0.jar",
       "adaptive_performance_tweaks_gamerules_1.18.1-2.2.0.jar",
       "adaptive_performance_tweaks_items_1.18.1-2.2.0.jar",
@@ -65,12 +64,12 @@ public class TestData {
       "gunswithoutroses-1.18.1-1.0.11.jar", "HammerLib-1.18.1-18.1.11.jar",
       "healingcampfire_1.18.1-3.4.jar", "hexerei-0.1.14.jar", "humancompanions-1.18.1-1.4.4.jar",
       "HunterIllager-1.18.1-3.1.6.jar", "Iceberg-1.18.1-1.0.40.jar", "InsaneLib-1.4.3-mc1.18.1.jar",
-      "InventoryProfilesNext-forge-1.18-1.3.5.jar", "Jade-1.18.1-4.4.1.jar",
-      "jei-1.18.1-9.4.1.168.jar", "jepp-1.18-1.0.0.jar", "JustEnoughProfessions-1.18-1.2.2.jar",
-      "JustEnoughResources-1.18.1-0.14.0.157.jar", "justmobheads_1.18.1-5.3.jar",
-      "libnonymous-2.0.5.jar", "LibraryFerret-Forge-1.18.1-1.0.3.jar", "LibX-1.18.1-3.1.18.jar",
-      "lobby_1.18.1-2.2.0.jar", "lootr-1.18-0.1.15.50.jar", "lucky-block-forge-1.18.1-11.0.jar",
-      "malum-1.18.1-1.2.2.jar", "Mantle-1.18.1-1.8.37.jar", "material_elements_1.18.1-3.0.1.jar",
+      "Jade-1.18.1-4.4.1.jar", "jei-1.18.1-9.4.1.168.jar", "jepp-1.18-1.0.0.jar",
+      "JustEnoughProfessions-1.18-1.2.2.jar", "JustEnoughResources-1.18.1-0.14.0.157.jar",
+      "justmobheads_1.18.1-5.3.jar", "libnonymous-2.0.5.jar",
+      "LibraryFerret-Forge-1.18.1-1.0.3.jar", "LibX-1.18.1-3.1.18.jar", "lobby_1.18.1-2.2.0.jar",
+      "lootr-1.18-0.1.15.50.jar", "lucky-block-forge-1.18.1-11.0.jar", "malum-1.18.1-1.2.2.jar",
+      "Mantle-1.18.1-1.8.37.jar", "material_elements_1.18.1-3.0.1.jar",
       "material_elements_armor_tools_weapons_1.18.1-3.0.2.jar",
       "material_elements_decorative_1.18.1-3.0.1.jar", "mcjtylib-1.18-6.0.10.jar",
       "mcw-bridges-2.0.2-mc1.18.1.jar", "mcw-doors-1.0.6-mc1.18.1.jar",
@@ -113,19 +112,17 @@ public class TestData {
       "YungsBridges-Forge-1.18.1-1.0.jar", "YungsExtras-Forge-1.18.1-1.0.jar",
       "[1.18.1] SecurityCraft v1.9.0.2-beta1.jar", "Xaeros_Minimap_22.4.0_Forge_1.18.2.jar"};
 
-  public static String[] clientModList = {
-      "BetterAdvancements-1.18.1-0.1.2.122.jar",
+  public static String[] clientModList = {"BetterAdvancements-1.18.1-0.1.2.122.jar",
       "BetterF3-1.2.2-Forge-1.18.jar", "Controlling-forge-1.18.1-9.0+15.jar", "Ding-1.18-1.3.0.jar",
       "EnchantmentDescriptions-Forge-1.18.1-9.0.13.jar", "EquipmentCompare-1.18.1-1.2.12.jar",
       "FpsReducer2-forge-1.18.2-2.0.jar", "GameMenuModOption-1.18-Forge-1.14.jar",
       "GameMenuRemoveGFARB-1.18-Forge-1.4.jar", "ItemsDontBreak-1.18-0.5.0.jar",
       "LegendaryTooltips-1.18.1-1.2.4.jar", "bettersigns-1.0.jar",
-      "chat_heads-0.6.0-forge-1.18.1.jar", "configured-1.5.3-1.18.1.jar",
+      "InventoryProfilesNext-forge-1.18-1.3.5.jar", "chat_heads-0.6.0-forge-1.18.1.jar",
       "notenoughanimations-forge-1.5.0-mc1.18.2.jar", "eatinganimation-1.18.1-2.0.1.jar",
       "farsight-1.18-1.6.jar", "itemzoom-1.18.1-2.5.0.jar"};
 
-  public static String[] modListDuplicates = {
-      "adaptive_performance_tweaks_items_1.18.1-2.2.0.jar",
+  public static String[] modListDuplicates = {"adaptive_performance_tweaks_items_1.18.1-2.2.0.jar",
       "adaptive_performance_tweaks_items_1.18.1-2.3.0.jar",
       "adaptive_performance_tweaks_items_1.18.1-2.2.1.jar",
       "adaptive_performance_tweaks_items_1.18.1-2.2.0.jar",

@@ -33,6 +33,7 @@ public class ModsDatabase {
    */
   public static final List<String> clientSideModsList = Arrays.asList(
   // @formatter:off
+    "3dskinlayers-forge-1.4.3-mc1.18.2.jar",
     "BetterAdvancements-1.18.1-0.1.2.122.jar",
     "BetterF3-1.2.2-Forge-1.18.jar",
     "BetterModsButton-v3.2.1-1.18.2-Forge.jar",
@@ -42,8 +43,9 @@ public class ModsDatabase {
     "ChunkAnimator-1.18-1.3.3.jar",
     "Controlling-forge-1.18.1-9.0+15.jar",
     "Ding-1.18-1.3.0.jar",
-    "EnchantmentDescriptions-Forge-1.18.1-9.0.13.jar",
+    "EnchantmentDescriptions-Forge-1.18.2-10.0.2.jar",
     "EquipmentCompare-1.18.1-1.2.12.jar",
+    "FPS-Monitor-1.18.2-1.2.1.jar",
     "Fallingleaves-1.18.1-1.3.1.jar",
     "FpsReducer2-forge-1.18.2-2.0.jar",
     "GameMenuModOption-1.18-Forge-1.14.jar",
@@ -51,7 +53,10 @@ public class ModsDatabase {
     "Highlighter-1.18.1-1.1.2.jar",
     "IKnowWhatImDoing-5.0.0-forge.jar",
     "ImprovedMountHUD-v3.1.0-1.18.2-Forge.jar",
+    "InvMove-1.18-0.7.0-Forge.jar",
+    "InvMoveCompats-1.18-0.1.0-Forge.jar",
     "InventoryHud_[1.18].forge-3.4.4.jar",
+    "InventoryProfilesNext-forge-1.18.2-1.3.5.jar",
     "ItemPhysicLite_v1.4.8_mc1.18.jar",
     "ItemsDontBreak-1.18-0.5.0.jar",
     "LegendaryTooltips-1.18.1-1.2.4.jar",
@@ -61,6 +66,7 @@ public class ModsDatabase {
     "Notes-1.18.1-1.2.4.jar",
     "ReAuth-1.18-Forge-4.0.0.jar",
     "TipTheScales-forge-1.18.2-5.0.5.jar",
+    "ToastControl-1.18.2-6.0.2.jar",
     "beautifiedchatclient_1.18.1-1.1.jar",
     "better-loading-screen-1.4.0.jar",
     "betterbiomeblend-1.18.1-1.3.2-forge.jar",
@@ -69,24 +75,33 @@ public class ModsDatabase {
     "catalogue-1.6.0-1.18.1.jar",
     "chat_heads-0.6.0-forge-1.18.1.jar",
     "clienttweaks-forge-1.18.1-7.1.0.jar",
-    "configured-1.5.3-1.18.1.jar",
     "craftingtweaks-forge-1.18.1-14.0.2.jar",
+    "drippyloadingscreen_forge_1.5.1_MC_1.18-1.18.1.jar",
+    "drawerfps-1.18.2-2.3.jar",
+    "flickerfix-2.0.0.jar",
     "eatinganimation-1.18.1-2.0.1.jar",
     "entityculling-forge-mc1.18-1.5.0.jar",
     "extremeSoundMuffler-3.24_Forge-1.18.1.jar",
     "fancymenu_forge_2.6.4_MC_1.18.2.jar",
     "farsight-1.18-1.6.jar",
+    "guiclock_1.18.2-3.1.jar",
+    "guicompass_1.18.2-2.2.jar",
+    "guifollowers_1.18.2-1.9.jar",
+    "hiddenrecipebook_1.18.2-2.4.jar",
     "itemzoom-1.18.1-2.5.0.jar",
     "namepain-1.4.1 forge-1.18.x.jar",
     "notenoughanimations-forge-1.5.0-mc1.18.2.jar",
-    "replanter-forge-1.3.jar"
+    "oculus-mc1.18.2-1.2.2b.jar",
+    "replanter-forge-1.3.jar",
+    "rubidium-0.5.2a.jar",
+    "screenscale-1.18.2-2.0.jar"
   // @formatter:on
   );
 
   /**
    * Aggregated list of client side modes, without version numbers to make them compatible across
-   * versions.
-   * It could be that in the future this needs to be splitted to the different version numbers.
+   * versions. It could be that in the future this needs to be splitted to the different version
+   * numbers.
    */
   public static final Set<String> clientSideMods =
       new HashSet<>(clientSideModsList.stream().map(ModsDatabase::stripeVersionNumbers).toList());
@@ -94,22 +109,14 @@ public class ModsDatabase {
   public static String stripeVersionNumbers(String name) {
     // Remove version strings with RegExp in several steps.
     // This is needed, because there are two many variants to cover everything with a single check.
-    return name
-        .replaceAll("(?i)(-)?(ALPHA|BETA|RELEASE)(-)?", "")
+    return name.replaceAll("(?i)(-)?(ALPHA|BETA|RELEASE)(-)?", "")
         .replaceAll("(-(mc)?[^A-Za-z_]+)[a-z]?.jar$", ".jar")
         .replaceAll("(_(mc)?[^A-Za-z_]+)[a-z]?.jar$", ".jar")
-        .replaceAll("(.[^A-Za-z_]+)[a-z]?.jar$", ".jar")
-        .replaceAll("(?i)(mc[^A-Z_]+)", "")
-        .replaceAll("(-[^A-Za-z_]+)", "-")
-        .replaceAll("(_[^A-Za-z_]+)", "_")
-        .replaceAll("(v[^A-Za-z_-]+)", "")
-        .replaceAll("(1.18.1|1.18.2)", "")
-        .replace("--", "-")
-        .replace("__", "_")
-        .replace("[]", "")
-        .replace(" .jar", ".jar")
-        .replaceAll("(-)+jar$", ".jar")
-        .replaceAll("(_)+jar$", ".jar")
+        .replaceAll("(.[^A-Za-z_]+)[a-z]?.jar$", ".jar").replaceAll("(?i)(mc[^A-Z_]+)", "")
+        .replaceAll("(-[^A-Za-z_]+)", "-").replaceAll("(_[^A-Za-z_]+)", "_")
+        .replaceAll("(v[^A-Za-z_-]+)", "").replaceAll("(1.18.1|1.18.2)", "").replace("--", "-")
+        .replace("__", "_").replace("[]", "").replace(" .jar", ".jar")
+        .replaceAll("(-)+jar$", ".jar").replaceAll("(_)+jar$", ".jar")
         .replaceAll("[a-z]{1}jar$", ".jar");
   }
 
