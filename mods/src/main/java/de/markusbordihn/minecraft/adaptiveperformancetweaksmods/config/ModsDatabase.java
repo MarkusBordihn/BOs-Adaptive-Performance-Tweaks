@@ -63,6 +63,7 @@ public class ModsDatabase {
     "MouseTweaks-forge-mc1.18-2.21.jar",
     "MyServerIsCompatible-1.18-1.0.jar",
     "Neat 1.8-30.jar",
+    "NekosEnchantedBooks-1.18.2-1.6.1.jar",
     "Notes-1.18.1-1.2.4.jar",
     "ReAuth-1.18-Forge-4.0.0.jar",
     "TipTheScales-forge-1.18.2-5.0.5.jar",
