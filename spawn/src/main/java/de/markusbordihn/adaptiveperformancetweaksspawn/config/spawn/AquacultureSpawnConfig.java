@@ -76,12 +76,11 @@ public final class AquacultureSpawnConfig {
       builder.push("Aquaculture 2 Spawn Config");
       modAquacultureEnabled = builder.define("modAquacultureEnabled", true);
       modAquacultureId = builder.define("modAquacultureId", CoreConstants.AQUACULTURE_MOD);
-
       modAquacultureMaxFishPerPlayer =
           builder.defineInRange("modAquacultureMaxFishPerPlayer", 2, 1, 64);
       modAquacultureMaxFishPerWorld =
           builder.defineInRange("modAquacultureMaxFishPerWorld", 8, 1, 512);
-      modAquacultureFishList = builder.comment("List of passive Mobs to optimize")
+      modAquacultureFishList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
           .define("modAquacultureFishList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "aquaculture:acacia_fish_mount",

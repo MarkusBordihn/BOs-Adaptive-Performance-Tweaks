@@ -38,11 +38,11 @@ import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
-public final class QuarkSpawnConfig {
+public final class CustomSpawnConfig {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
-  private QuarkSpawnConfig() {}
+  private CustomSpawnConfig() {}
 
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
@@ -53,73 +53,64 @@ public final class QuarkSpawnConfig {
         new ForgeConfigSpec.Builder().configure(Config::new);
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
-    log.info("Registering {} {} spawn config ...", Constants.MOD_NAME,
-        CoreConstants.QUARK_NAME);
+    log.info("Registering {} custom spawn config ...", Constants.MOD_NAME);
     FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
         CoreConstants.CONFIG_ID);
     ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec,
-        CoreConstants.CONFIG_ID_PREFIX + "/spawn/QuarkSpawn.toml");
+        CoreConstants.CONFIG_ID_PREFIX + "/spawn/CustomSpawn.toml");
   }
 
   public static class Config {
 
-    public final ForgeConfigSpec.BooleanValue quarkEnabled;
-    public final ForgeConfigSpec.ConfigValue<String> quarkId;
+    public final ForgeConfigSpec.BooleanValue customEnabled;
+    public final ForgeConfigSpec.ConfigValue<String> customId;
 
-    public final ForgeConfigSpec.IntValue quarkMaxPassiveMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue quarkMaxPassiveMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> quarkPassiveMobsList;
+    public final ForgeConfigSpec.IntValue customMaxPassiveMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue customMaxPassiveMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> customPassiveMobsList;
 
-    public final ForgeConfigSpec.IntValue quarkMaxNeutralMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue quarkMaxNeutralMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> quarkNeutralMobsList;
+    public final ForgeConfigSpec.IntValue customMaxNeutralMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue customMaxNeutralMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> customNeutralMobsList;
 
-    public final ForgeConfigSpec.IntValue quarkMaxHostileMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue quarkMaxHostileMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> quarkHostileMobsList;
+    public final ForgeConfigSpec.IntValue customMaxHostileMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue customMaxHostileMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> customHostileMobsList;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
-      builder.push("Quark Spawn Config");
-      quarkEnabled = builder.define("quarkEnabled", true);
-      quarkId =
-          builder.define("quarkId", CoreConstants.QUARK_MOD);
+      builder.push("Custom Spawn Config");
+      customEnabled = builder.define("customEnabled", false);
+      customId = builder.define("customId", "custom_config");
 
-      quarkMaxPassiveMobsPerPlayer =
-          builder.defineInRange("quarkMaxPassiveMobsPerPlayer", 2, 1, 64);
-      quarkMaxPassiveMobsPerWorld =
-          builder.defineInRange("quarkMaxPassiveMobsPerWorld", 16, 1, 512);
-      quarkPassiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
-          .define("quarkPassiveMobsList", new ArrayList<String>(Arrays.asList(
+      customMaxPassiveMobsPerPlayer =
+          builder.defineInRange("customMaxPassiveMobsPerPlayer", 2, 1, 64);
+      customMaxPassiveMobsPerWorld =
+          builder.defineInRange("customMaxPassiveMobsPerWorld", 16, 1, 512);
+      customPassiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
+          .define("customPassiveMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
-            "quark:crab",
-            "quark:frog",
-            "quark:stoneling"
           // @formatter:on
           )));
 
-      quarkMaxNeutralMobsPerPlayer =
-          builder.defineInRange("quarkMaxNeutralMobsPerPlayer", 2, 1, 64);
-      quarkMaxNeutralMobsPerWorld =
-          builder.defineInRange("quarkMaxNeutralMobsPerWorld", 16, 1, 512);
-      quarkNeutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
-          .define("quarkNeutralMobsList", new ArrayList<String>(Arrays.asList(
+      customMaxNeutralMobsPerPlayer =
+          builder.defineInRange("customMaxNeutralMobsPerPlayer", 2, 1, 64);
+      customMaxNeutralMobsPerWorld =
+          builder.defineInRange("customMaxNeutralMobsPerWorld", 16, 1, 512);
+      customNeutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
+          .define("customNeutralMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
-            "quark:toretoise"
           // @formatter:on
           )));
 
-      quarkMaxHostileMobsPerPlayer =
-          builder.defineInRange("quarkMaxHostileMobsPerPlayer", 2, 1, 64);
-      quarkMaxHostileMobsPerWorld =
-          builder.defineInRange("quarkMaxHostileMobsPerWorld", 16, 1, 512);
-      quarkHostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
-          .define("quarkHostileMobsList", new ArrayList<String>(Arrays.asList(
+      customMaxHostileMobsPerPlayer =
+          builder.defineInRange("customMaxHostileMobsPerPlayer", 2, 1, 64);
+      customMaxHostileMobsPerWorld =
+          builder.defineInRange("customMaxHostileMobsPerWorld", 16, 1, 512);
+      customHostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
+          .define("customHostileMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
-            "quark:forgotten",
-            "quark:foxhound",
-            "quark:wraith"
           // @formatter:on
           )));
 

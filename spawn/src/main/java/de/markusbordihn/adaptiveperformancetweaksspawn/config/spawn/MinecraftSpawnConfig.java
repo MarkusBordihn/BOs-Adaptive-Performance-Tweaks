@@ -100,7 +100,7 @@ public final class MinecraftSpawnConfig {
           .defineInRange("minecraftMaxPassiveMobsPerPlayer", 3, 1, 64);
       minecraftMaxPassiveMobsPerWorld =
           builder.defineInRange("minecraftMaxPassiveMobsPerWorld", 12, 1, 512);
-      minecraftPassiveMobsList = builder.comment("List of passive Mobs to optimize")
+      minecraftPassiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
           .define("minecraftPassiveMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "minecraft:bat"
@@ -111,7 +111,7 @@ public final class MinecraftSpawnConfig {
           .defineInRange("minecraftMaxNeutralMobsPerPlayer", 8, 1, 64);
       minecraftMaxNeutralMobsPerWorld =
           builder.defineInRange("minecraftMaxNeutralMobsPerWorld", 32, 1, 512);
-      minecraftNeutralMobsList = builder.comment("List of neutral Mobs to optimize")
+      minecraftNeutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
           .define("minecraftNeutralMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "minecraft:bee",
@@ -146,7 +146,7 @@ public final class MinecraftSpawnConfig {
           .defineInRange("minecraftMaxHostileMobsPerPlayer", 8, 1, 64);
       minecraftMaxHostileMobsPerWorld =
           builder.defineInRange("minecraftMaxHostileMobsPerWorld", 32, 1, 512);
-      minecraftHostileMobsList = builder.comment("List of hostile Mobs to optimize")
+      minecraftHostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
           .define("minecraftHostileMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "minecraft:blaze",
@@ -192,6 +192,7 @@ public final class MinecraftSpawnConfig {
       minecraftWaterPassiveMobsList = builder.comment("List of passive water Mobs to optimize")
           .define("minecraftWaterPassiveMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
+            "minecraft:axolotl",
             "minecraft:cod",
             "minecraft:pufferfish",
             "minecraft:salmon",

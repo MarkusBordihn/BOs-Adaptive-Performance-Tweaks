@@ -22,6 +22,8 @@ The spawn-rate is calculated on the following formula:
 Number Of players * Max Number Of Entity * Server Load * Game Difficulty
 ```
 
+You can add your own custom basic spawn control over the `adaptive_performance_tweaks/spawn/CustomSpawn.toml` config file.
+
 **Note: Playing in the game difficulty HARD could exceed the max number of hostile entity from the config file by max. 2x.**
 
 You could also get an overview of all currently loaded monster over `/aptweaks monster`.
@@ -37,13 +39,16 @@ With the config file you can disable / enable each of these individual features 
 
 ### ✔️Supported Mods
 
-This is a list of the currently supported mods within the config file for individual spawn settings.
+This is a list of the currently supported mods with a custom spawn file for individual spawn settings.
 
 - ✅ [Alex's Mobs][alexmobs]
 - ✅ [Aquaculture 2][aquaculture]
 - ✅ [Mekanism Additions][mekanismadditions]
 - ✅ [Quark][quark]
+- ✅ [Tinkers' Construct][tinkersconstruct]
 - ✅ [Untamed Wilds][untamedwilds]
+
+You can adjust the spawn settings over the `adaptive_performance_tweaks/spawn/*.toml` config files.
 
 ## 🚀Install additional Optimization
 
@@ -85,4 +90,5 @@ Please report issues over the **Issue** link.
 [aquaculture]: https://www.curseforge.com/minecraft/mc-mods/aquaculture
 [mekanismadditions]: https://www.curseforge.com/minecraft/mc-mods/mekanism-additions
 [quark]: https://www.curseforge.com/minecraft/mc-mods/quark
+[tinkersconstruct]: https://www.curseforge.com/minecraft/mc-mods/tinkers-construct
 [untamedwilds]: https://www.curseforge.com/minecraft/mc-mods/untamedwilds

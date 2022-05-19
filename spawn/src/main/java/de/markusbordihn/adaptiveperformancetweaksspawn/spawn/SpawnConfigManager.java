@@ -36,9 +36,11 @@ import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.CommonConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.AlexsMobsSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.AquacultureSpawnConfig;
+import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.CustomSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.MekanismAdditionsSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.MinecraftSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.QuarkSpawnConfig;
+import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.TinkersConstructConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.UntamedWildsSpawnConfig;
 
 @Mod.EventBusSubscriber
@@ -51,10 +53,13 @@ public class SpawnConfigManager {
   private static final AlexsMobsSpawnConfig.Config ALEXS_MOBS_CONFIG = AlexsMobsSpawnConfig.COMMON;
   private static final AquacultureSpawnConfig.Config AQUACULTURE_CONFIG =
       AquacultureSpawnConfig.COMMON;
+  private static final CustomSpawnConfig.Config CUSTOM_CONFIG = CustomSpawnConfig.COMMON;
   private static final MekanismAdditionsSpawnConfig.Config MEKANISM_ADDITIONS_CONFIG =
       MekanismAdditionsSpawnConfig.COMMON;
   private static final MinecraftSpawnConfig.Config MINECRAFT_CONFIG = MinecraftSpawnConfig.COMMON;
   private static final QuarkSpawnConfig.Config QUARK_CONFIG = QuarkSpawnConfig.COMMON;
+  private static final TinkersConstructConfig.Config TINKERS_CONSTRUCT_CONFIG =
+      TinkersConstructConfig.COMMON;
   private static final UntamedWildsSpawnConfig.Config UNTAMED_WILDS_CONFIG =
       UntamedWildsSpawnConfig.COMMON;
 
@@ -169,6 +174,15 @@ public class SpawnConfigManager {
           QUARK_CONFIG.quarkMaxHostileMobsPerWorld.get());
     }
 
+    // Tinkers Construct
+    if (Boolean.TRUE.equals(TINKERS_CONSTRUCT_CONFIG.tinkersConstructEnabled.get())
+        && modList.isLoaded(TINKERS_CONSTRUCT_CONFIG.tinkersConstructId.get())) {
+      addSpawnRatesForHostileMobs(TINKERS_CONSTRUCT_CONFIG.tinkersConstructId.get(),
+          new HashSet<>(TINKERS_CONSTRUCT_CONFIG.tinkersConstructHostileMobsList.get()),
+          TINKERS_CONSTRUCT_CONFIG.tinkersConstructMaxHostileMobsPerPlayer.get(),
+          TINKERS_CONSTRUCT_CONFIG.tinkersConstructMaxHostileMobsPerWorld.get());
+    }
+
     // Untamed Wilds
     if (Boolean.TRUE.equals(UNTAMED_WILDS_CONFIG.untamedWildsEnabled.get())
         && modList.isLoaded(UNTAMED_WILDS_CONFIG.untamedWildsId.get())) {
@@ -184,6 +198,22 @@ public class SpawnConfigManager {
           new HashSet<>(UNTAMED_WILDS_CONFIG.untamedWildsHostileMobsList.get()),
           UNTAMED_WILDS_CONFIG.untamedWildsMaxHostileMobsPerPlayer.get(),
           UNTAMED_WILDS_CONFIG.untamedWildsMaxHostileMobsPerWorld.get());
+    }
+
+    // Custom Spawn Config overwrites former definitions!
+    if (Boolean.TRUE.equals(CUSTOM_CONFIG.customEnabled.get())) {
+      addSpawnRatesForPassiveMobs(CUSTOM_CONFIG.customId.get(),
+          new HashSet<>(CUSTOM_CONFIG.customPassiveMobsList.get()),
+          CUSTOM_CONFIG.customMaxPassiveMobsPerPlayer.get(),
+          CUSTOM_CONFIG.customMaxPassiveMobsPerWorld.get());
+      addSpawnRatesForNeutralMobs(CUSTOM_CONFIG.customId.get(),
+          new HashSet<>(CUSTOM_CONFIG.customNeutralMobsList.get()),
+          CUSTOM_CONFIG.customMaxNeutralMobsPerPlayer.get(),
+          CUSTOM_CONFIG.customMaxNeutralMobsPerWorld.get());
+      addSpawnRatesForHostileMobs(CUSTOM_CONFIG.customId.get(),
+          new HashSet<>(CUSTOM_CONFIG.customHostileMobsList.get()),
+          CUSTOM_CONFIG.customMaxHostileMobsPerPlayer.get(),
+          CUSTOM_CONFIG.customMaxHostileMobsPerWorld.get());
     }
 
     log.info("Added {} player spawn rules, {} world spawn rules and {} special spawn rules.",

@@ -81,7 +81,7 @@ public final class UntamedWildsSpawnConfig {
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
-      builder.push("Minecraft Spawn Config");
+      builder.push("Untamed Wilds Spawn Config");
       untamedWildsEnabled = builder.define("untamedWildsEnabled", true);
       untamedWildsId = builder.define("untamedWildsId", CoreConstants.UNTAMED_WILDS_MOD);
 
@@ -89,7 +89,7 @@ public final class UntamedWildsSpawnConfig {
           builder.defineInRange("untamedWildsMaxPassiveMobsPerPlayer", 4, 1, 64);
       untamedWildsMaxPassiveMobsPerWorld =
           builder.defineInRange("untamedWildsMaxPassiveMobsPerWorld", 16, 1, 512);
-      untamedWildsPassiveMobsList = builder.comment("List of passive Mobs to optimize")
+      untamedWildsPassiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
           .define("untamedWildsPassiveMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "untamedwilds:arowana",
@@ -105,7 +105,7 @@ public final class UntamedWildsSpawnConfig {
           builder.defineInRange("untamedWildsMaxNeutralMobsPerPlayer", 4, 1, 64);
       untamedWildsMaxNeutralMobsPerWorld =
           builder.defineInRange("untamedWildsMaxNeutralMobsPerWorld", 16, 1, 512);
-      untamedWildsNeutralMobsList = builder.comment("List of neutral Mobs to optimize")
+      untamedWildsNeutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
           .define("untamedWildsNeutralMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "untamedwilds:aardvark",
@@ -118,7 +118,7 @@ public final class UntamedWildsSpawnConfig {
           builder.defineInRange("untamedWildsMaxHostileMobsPerPlayer", 4, 1, 64);
       untamedWildsMaxHostileMobsPerWorld =
           builder.defineInRange("untamedWildsMaxHostileMobsPerWorld", 16, 1, 512);
-      untamedWildsHostileMobsList = builder.comment("List of hostile Mobs to optimize")
+      untamedWildsHostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
           .define("untamedWildsHostileMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "untamedwilds:bear_black",

@@ -5,6 +5,11 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.05.19
+
+- Added custom spawn config file for individual settings
+- Added default spawn config for Tinkers Construct
+
 ### 2022.04.18
 
 - Added additional client side mods to the mods database.

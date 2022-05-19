@@ -81,7 +81,7 @@ public final class MekanismAdditionsSpawnConfig {
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
-      builder.push("Minecraft Spawn Config");
+      builder.push("Mekanism Spawn Config");
       mekanismAdditionsEnabled = builder.define("mekanismAdditionsEnabled", true);
       mekanismAdditionsId =
           builder.define("mekanismAdditionsId", CoreConstants.MEKANISMADDITIONS_MOD);
@@ -90,7 +90,7 @@ public final class MekanismAdditionsSpawnConfig {
           builder.defineInRange("mekanismAdditionsMaxPassiveMobsPerPlayer", 3, 1, 64);
       mekanismAdditionsMaxPassiveMobsPerWorld =
           builder.defineInRange("mekanismAdditionsMaxPassiveMobsPerWorld", 12, 1, 512);
-      mekanismAdditionsPassiveMobsList = builder.comment("List of passive Mobs to optimize")
+      mekanismAdditionsPassiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
           .define("mekanismAdditionsPassiveMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
           // @formatter:on
@@ -100,7 +100,7 @@ public final class MekanismAdditionsSpawnConfig {
           builder.defineInRange("mekanismAdditionsMaxNeutralMobsPerPlayer", 4, 1, 64);
       mekanismAdditionsMaxNeutralMobsPerWorld =
           builder.defineInRange("mekanismAdditionsMaxNeutralMobsPerWorld", 16, 1, 512);
-      mekanismAdditionsNeutralMobsList = builder.comment("List of neutral Mobs to optimize")
+      mekanismAdditionsNeutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
           .define("mekanismAdditionsNeutralMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
           // @formatter:on
@@ -110,7 +110,7 @@ public final class MekanismAdditionsSpawnConfig {
           builder.defineInRange("mekanismAdditionsMaxHostileMobsPerPlayer", 2, 1, 64);
       mekanismAdditionsMaxHostileMobsPerWorld =
           builder.defineInRange("mekanismAdditionsMaxHostileMobsPerWorld", 8, 1, 512);
-      mekanismAdditionsHostileMobsList = builder.comment("List of hostile Mobs to optimize")
+      mekanismAdditionsHostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
           .define("mekanismAdditionsHostileMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "mekanismadditions:baby_creeper",

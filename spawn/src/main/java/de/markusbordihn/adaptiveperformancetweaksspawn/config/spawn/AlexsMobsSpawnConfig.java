@@ -81,7 +81,7 @@ public final class AlexsMobsSpawnConfig {
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
-      builder.push("Minecraft Spawn Config");
+      builder.push("Alexs Mobs Spawn Config");
       alexsMobsEnabled = builder.define("alexsMobsEnabled", true);
       alexsMobsId =
           builder.define("alexsMobsId", CoreConstants.ALEXSMOBS_MOD);
@@ -90,7 +90,7 @@ public final class AlexsMobsSpawnConfig {
           builder.defineInRange("alexsMobsMaxPassiveMobsPerPlayer", 2, 1, 64);
       alexsMobsMaxPassiveMobsPerWorld =
           builder.defineInRange("alexsMobsMaxPassiveMobsPerWorld", 8, 1, 512);
-      alexsMobsPassiveMobsList = builder.comment("List of passive Mobs to optimize")
+      alexsMobsPassiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
           .define("alexsMobsPassiveMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "alexsmobs:blobfish",
@@ -110,7 +110,7 @@ public final class AlexsMobsSpawnConfig {
           builder.defineInRange("alexsMobsMaxNeutralMobsPerPlayer", 2, 1, 64);
       alexsMobsMaxNeutralMobsPerWorld =
           builder.defineInRange("alexsMobsMaxNeutralMobsPerWorld", 8, 1, 512);
-      alexsMobsNeutralMobsList = builder.comment("List of neutral Mobs to optimize")
+      alexsMobsNeutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
           .define("alexsMobsNeutralMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "alexsmobs:cachalot_whale",
@@ -139,7 +139,7 @@ public final class AlexsMobsSpawnConfig {
           builder.defineInRange("alexsMobsMaxHostileMobsPerPlayer", 2, 1, 64);
       alexsMobsMaxHostileMobsPerWorld =
           builder.defineInRange("alexsMobsMaxHostileMobsPerWorld", 8, 1, 512);
-      alexsMobsHostileMobsList = builder.comment("List of hostile Mobs to optimize")
+      alexsMobsHostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
           .define("alexsMobsHostileMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "alexsmobs:alligator_snapping_turtle",
