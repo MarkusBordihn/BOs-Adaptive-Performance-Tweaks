@@ -76,7 +76,6 @@ public class ModsDatabase {
     "catalogue-1.6.0-1.18.1.jar",
     "chat_heads-0.6.0-forge-1.18.1.jar",
     "clienttweaks-forge-1.18.1-7.1.0.jar",
-    "craftingtweaks-forge-1.18.1-14.0.2.jar",
     "drippyloadingscreen_forge_1.5.1_MC_1.18-1.18.1.jar",
     "drawerfps-1.18.2-2.3.jar",
     "flickerfix-2.0.0.jar",
@@ -92,7 +91,7 @@ public class ModsDatabase {
     "itemzoom-1.18.1-2.5.0.jar",
     "namepain-1.4.1 forge-1.18.x.jar",
     "notenoughanimations-forge-1.5.0-mc1.18.2.jar",
-    "oculus-mc1.18.2-1.2.2b.jar",
+    "oculus-mc1.18.2-1.2.4.jar",
     "replanter-forge-1.3.jar",
     "rubidium-0.5.2a.jar",
     "screenscale-1.18.2-2.0.jar"

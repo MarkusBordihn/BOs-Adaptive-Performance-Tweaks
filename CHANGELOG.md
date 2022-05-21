@@ -5,6 +5,10 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.05.21
+
+- Removed "Crafting Tweaks" from the client mods list, because it has optional server features.
+
 ### 2022.05.19
 
 - Added custom spawn config file for individual settings
