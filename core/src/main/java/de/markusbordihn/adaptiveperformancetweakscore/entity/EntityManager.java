@@ -31,16 +31,21 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.mojang.math.Vector3d;
-
+import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.Marker;
+import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
+import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.Npc;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.vehicle.AbstractMinecartContainer;
+import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.entity.vehicle.MinecartChest;
 import net.minecraft.world.level.Level;
 
@@ -185,8 +190,7 @@ public class EntityManager {
   public static void addEntity(Entity entity, String entityName, String levelName) {
 
     // Store entities per type and world.
-    Set<Entity> entities = entityMap.computeIfAbsent(
-        getEntityMapKey(levelName, entityName),
+    Set<Entity> entities = entityMap.computeIfAbsent(getEntityMapKey(levelName, entityName),
         key -> ConcurrentHashMap.newKeySet());
     entities.add(entity);
 
@@ -341,7 +345,10 @@ public class EntityManager {
         || entity instanceof LightningBolt || entity instanceof FallingBlockEntity
         || entity instanceof Projectile || entity instanceof MinecartChest
         || entity instanceof AbstractMinecartContainer || entity instanceof Player
-        || entity instanceof Npc || entity.isRemoved());
+        || entity instanceof Boat || entity instanceof ArmorStand
+        || entity instanceof AreaEffectCloud || entity instanceof EndCrystal
+        || entity instanceof Marker || entity instanceof HangingEntity || entity instanceof Npc
+        || entity.isRemoved());
   }
 
 }

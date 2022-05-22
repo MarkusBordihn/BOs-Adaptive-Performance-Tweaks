@@ -124,4 +124,8 @@ public final class CoreConstants {
   public static final String UNTAMED_WILDS_MOD = "untamedwilds";
   public static final String UNTAMED_WILDS_NAME = "Untamed Wilds";
   public static final boolean UNTAMED_WILDS_LOADED = ModList.get().isLoaded(UNTAMED_WILDS_MOD);
+
+  public static final String WHISPERWOODS_MOD = "whisperwoods";
+  public static final String WHISPERWOODS_NAME = "Whisperwoods";
+  public static final boolean WHISPERWOODS_LOADED = ModList.get().isLoaded(WHISPERWOODS_MOD);
 }

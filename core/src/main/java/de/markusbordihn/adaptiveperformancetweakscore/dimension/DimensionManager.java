@@ -50,8 +50,8 @@ public class DimensionManager {
       // Mapping names to server level for easier access.
       for (ServerLevel serverLevel : server.getAllLevels()) {
         String dimensionLocation = serverLevel.dimension().location().toString();
-        log.info("Found dimension {}", dimensionLocation);
         if (!dimensionList.contains(dimensionLocation)) {
+          log.info("Found dimension {}", dimensionLocation);
           dimensionList.add(dimensionLocation);
         }
       }

@@ -7,6 +7,7 @@ For the full changelog, please go to the [Git Hub History][history] instead.
 
 ### 2022.05.21
 
+- Added additional entities to the ignore list for better compatibility to fixing warning messages.
 - Removed "Crafting Tweaks" from the client mods list, because it has optional server features.
 
 ### 2022.05.19
