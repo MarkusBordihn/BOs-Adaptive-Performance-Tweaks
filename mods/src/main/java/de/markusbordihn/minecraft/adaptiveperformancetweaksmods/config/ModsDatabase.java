@@ -76,25 +76,27 @@ public class ModsDatabase {
     "catalogue-1.6.0-1.18.1.jar",
     "chat_heads-0.6.0-forge-1.18.1.jar",
     "clienttweaks-forge-1.18.1-7.1.0.jar",
-    "drippyloadingscreen_forge_1.5.1_MC_1.18-1.18.1.jar",
     "drawerfps-1.18.2-2.3.jar",
-    "flickerfix-2.0.0.jar",
+    "drippyloadingscreen_forge_1.5.1_MC_1.18-1.18.1.jar",
     "eatinganimation-1.18.1-2.0.1.jar",
     "entityculling-forge-mc1.18-1.5.0.jar",
     "extremeSoundMuffler-3.24_Forge-1.18.1.jar",
     "fancymenu_forge_2.6.4_MC_1.18.2.jar",
     "farsight-1.18-1.6.jar",
+    "flickerfix-2.0.0.jar",
     "guiclock_1.18.2-3.1.jar",
     "guicompass_1.18.2-2.2.jar",
     "guifollowers_1.18.2-1.9.jar",
     "hiddenrecipebook_1.18.2-2.4.jar",
     "itemzoom-1.18.1-2.5.0.jar",
+    "justzoom_forge_1.0.1_MC_1.18-1.18.1.jar",
     "namepain-1.4.1 forge-1.18.x.jar",
     "notenoughanimations-forge-1.5.0-mc1.18.2.jar",
     "oculus-mc1.18.2-1.2.4.jar",
     "replanter-forge-1.3.jar",
     "rubidium-0.5.2a.jar",
-    "screenscale-1.18.2-2.0.jar"
+    "screenscale-1.18.2-2.0.jar",
+    "spyglass_improvements-1.2+mc1.18.x+forge.jar"
   // @formatter:on
   );
 
