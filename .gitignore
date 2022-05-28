@@ -36,12 +36,13 @@ forge*changelog.txt
 # Other
 .DS_Store
 generated
+logs
 *.clip
 *.stackdump
 *.log
 *.bak
 
-# WIP
+# Launch files
 core/.vscode/launch.json
 gamerules/.vscode/launch.json
 items/.vscode/launch.json

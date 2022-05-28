@@ -22,7 +22,9 @@ package de.markusbordihn.minecraft.adaptiveperformancetweaksmods.utils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -100,7 +102,35 @@ public class DuplicatedMods {
   }
 
   public static File findLatestMod(List<File> modList) {
+    Map<String, File> modListVersions = new HashMap<>();
     modList.sort(Collections.reverseOrder());
-    return modList.get(0);
+
+    // Pre-format version numbers per file.
+    for (File file : modList) {
+      String fileName = file.getName();
+      String versionNumber = getVersionNumber(fileName);
+      String[] versionNumberParts = versionNumber.split("\\.");
+      if (versionNumberParts != null && versionNumberParts.length == 3) {
+        String unifiedVersionNumber =
+            String.format("%03d.%03d.%03d", Integer.parseInt(versionNumberParts[0]),
+                Integer.parseInt(versionNumberParts[1]), Integer.parseInt(versionNumberParts[2]));
+        modListVersions.put(unifiedVersionNumber, file);
+      } else {
+        log.warn("Unable to extract version number from {} got {}, use {} instead!", fileName,
+            versionNumberParts, versionNumber);
+        modListVersions.put(versionNumber, file);
+      }
+    }
+
+    // Sorting files by unified version numbers.
+    List<String> sortedModList = new ArrayList<>(modListVersions.keySet());
+    sortedModList.sort(Collections.reverseOrder());
+
+    return modListVersions.getOrDefault(sortedModList.get(0), modList.get(0));
+  }
+
+  public static String getVersionNumber(String fileName) {
+    return fileName.replaceAll("[a-zA-Z_]", "").replace("1.18-", "").replace("1.18.1-", "")
+        .replace("1.18.2-", "").replace("-", "").replaceAll(".$", "");
   }
 }

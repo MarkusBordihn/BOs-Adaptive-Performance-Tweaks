@@ -5,6 +5,10 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.05.28
+
+- Improved version sorting for duplicated mods detection.
+
 ### 2022.05.21
 
 - Added additional entities to the ignore list for better compatibility to fixing warning messages.
