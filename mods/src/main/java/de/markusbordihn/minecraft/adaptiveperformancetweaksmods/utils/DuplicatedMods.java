@@ -110,7 +110,11 @@ public class DuplicatedMods {
       String fileName = file.getName();
       String versionNumber = getVersionNumber(fileName);
       String[] versionNumberParts = versionNumber.split("\\.");
-      if (versionNumberParts != null && versionNumberParts.length == 3) {
+      if (versionNumberParts != null && versionNumberParts.length == 2) {
+        String unifiedVersionNumber = String.format("%03d.%03d.000",
+            Integer.parseInt(versionNumberParts[0]), Integer.parseInt(versionNumberParts[1]));
+        modListVersions.put(unifiedVersionNumber, file);
+      } else if (versionNumberParts != null && versionNumberParts.length == 3) {
         String unifiedVersionNumber =
             String.format("%03d.%03d.%03d", Integer.parseInt(versionNumberParts[0]),
                 Integer.parseInt(versionNumberParts[1]), Integer.parseInt(versionNumberParts[2]));
