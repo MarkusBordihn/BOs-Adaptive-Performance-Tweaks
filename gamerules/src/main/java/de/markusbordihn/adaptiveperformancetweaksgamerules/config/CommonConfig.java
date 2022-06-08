@@ -75,6 +75,8 @@ public final class CommonConfig {
 
     public final ForgeConfigSpec.BooleanValue traderSpawningEnabled;
 
+    public final ForgeConfigSpec.BooleanValue wardenSpawningEnabled;
+
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
@@ -122,6 +124,11 @@ public final class CommonConfig {
       builder.push("Trader Spawning");
       traderSpawningEnabled = builder.comment("Enable/Disable trader spawning adjustments.")
           .define("traderSpawningEnabled", true);
+      builder.pop();
+
+      builder.push("Warden Spawning");
+      wardenSpawningEnabled = builder.comment("Enable/Disable warden spawning adjustments.")
+              .define("wardenSpawningEnabled", true);
       builder.pop();
     }
   }

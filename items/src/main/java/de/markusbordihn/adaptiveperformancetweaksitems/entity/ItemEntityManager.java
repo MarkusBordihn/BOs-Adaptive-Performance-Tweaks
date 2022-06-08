@@ -154,10 +154,10 @@ public class ItemEntityManager {
       return;
     }
 
-    // All items has the entity minecraft.item, so we are using the translation key
+    // All items has the entity minecraft.item, so we are using the registry name
     // to better distinguish the different types of items and minecraft.item as backup.
     ItemEntity itemEntity = (ItemEntity) entity;
-    String itemName = itemEntity.getItem().getItem().getRegistryName().toString();
+    String itemName = itemEntity.getItem().getItem().getDescriptionId();
     if (itemName == null) {
       itemName = itemEntity.getEncodeId();
     }
@@ -281,7 +281,7 @@ public class ItemEntityManager {
     }
 
     ItemEntity itemEntity = (ItemEntity) entity;
-    String itemName = itemEntity.getItem().getItem().getRegistryName().toString();
+    String itemName = itemEntity.getItem().getItem().getDescriptionId();
     if (itemName == null) {
       itemName = itemEntity.getEncodeId();
     }

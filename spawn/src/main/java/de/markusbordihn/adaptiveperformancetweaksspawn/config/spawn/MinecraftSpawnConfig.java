@@ -114,6 +114,7 @@ public final class MinecraftSpawnConfig {
       minecraftNeutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
           .define("minecraftNeutralMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
+            "minecraft:allay",
             "minecraft:bee",
             "minecraft:cat",
             "minecraft:chicken",
@@ -175,6 +176,7 @@ public final class MinecraftSpawnConfig {
             "minecraft:stray",
             "minecraft:vex",
             "minecraft:vindicator",
+            "minecraft:warden",
             "minecraft:witch",
             "minecraft:wither",
             "minecraft:wither_skeleton",

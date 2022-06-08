@@ -54,6 +54,7 @@ public class GameRuleManager {
   private static boolean raidsEnabled = COMMON.raidsEnabled.get();
   private static boolean randomTickSpeedEnabled = COMMON.randomTickSpeedEnabled.get();
   private static boolean traderSpawningEnabled = COMMON.traderSpawningEnabled.get();
+  private static boolean wardenSpawningEnabled = COMMON.wardenSpawningEnabled.get();
 
   private static int maxEntityCramming = COMMON.maxEntityCramming.get();
   private static int minEntityCramming = COMMON.maxEntityCramming.get();
@@ -73,6 +74,7 @@ public class GameRuleManager {
     raidsEnabled = COMMON.raidsEnabled.get();
     randomTickSpeedEnabled = COMMON.randomTickSpeedEnabled.get();
     traderSpawningEnabled = COMMON.traderSpawningEnabled.get();
+    wardenSpawningEnabled = COMMON.wardenSpawningEnabled.get();
 
     maxEntityCramming = COMMON.maxEntityCramming.get();
     minEntityCramming = COMMON.minEntityCramming.get();
@@ -138,6 +140,10 @@ public class GameRuleManager {
     if (traderSpawningEnabled) {
       log.info("Trader spawning will be automatically disabled during very high server load!");
     }
+
+    if (wardenSpawningEnabled) {
+      log.info("Warden spawning will be automatically disabled during very high server load!");
+    }
   }
 
   @SubscribeEvent
@@ -164,6 +170,9 @@ public class GameRuleManager {
       if (traderSpawningEnabled) {
         disableTraderSpawning();
       }
+      if (wardenSpawningEnabled) {
+        disableWardenSpawning();
+      }
       return;
     }
 
@@ -173,7 +182,7 @@ public class GameRuleManager {
         decreaseRandomTickSpeed();
       }
       if (raidsEnabled) {
-        enableRaids();
+        disableRaids();
       }
       return;
     }
@@ -195,6 +204,9 @@ public class GameRuleManager {
     }
     if (traderSpawningEnabled) {
       enableTraderSpawning();
+    }
+    if (wardenSpawningEnabled) {
+      enableWardenSpawning();
     }
 
     // Specific: Handle normal server load
@@ -272,6 +284,20 @@ public class GameRuleManager {
     }
   }
 
+  public static void enableWardenSpawning() {
+    if (!gameRules.getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING)) {
+      log.debug("Enable WardenSpawning");
+      CommandManager.executeServerCommand(String.format("gamerule doWardenSpawning %s", true));
+    }
+  }
+
+  public static void disableWardenSpawning() {
+    if (gameRules.getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING)) {
+      log.debug("Disable WardenSpawning");
+      CommandManager.executeServerCommand(String.format("gamerule doWardenSpawning %s", false));
+    }
+  }
+
   public static void decreaseRandomTickSpeed() {
     setRandomTickSpeed(gameRules.getInt(GameRules.RULE_RANDOMTICKING) - 1);
   }
@@ -331,6 +357,8 @@ public class GameRuleManager {
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)));
     overview.put("doTraderSpawning",
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_TRADER_SPAWNING)));
+    overview.put("doWardenSpawning",
+        String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING)));
     overview.put("maxEntityCramming",
         String.valueOf(gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING)));
     overview.put("randomTickSpeed", String.valueOf(gameRules.getInt(GameRules.RULE_RANDOMTICKING)));
