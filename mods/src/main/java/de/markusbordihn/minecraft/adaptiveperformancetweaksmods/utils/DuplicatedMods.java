@@ -119,6 +119,11 @@ public class DuplicatedMods {
             String.format("%03d.%03d.%03d", Integer.parseInt(versionNumberParts[0]),
                 Integer.parseInt(versionNumberParts[1]), Integer.parseInt(versionNumberParts[2]));
         modListVersions.put(unifiedVersionNumber, file);
+      } else if (versionNumberParts != null && versionNumberParts.length == 4) {
+        String unifiedVersionNumber = String.format("%03d.%03d.%03d.%03d",
+            Integer.parseInt(versionNumberParts[0]), Integer.parseInt(versionNumberParts[1]),
+            Integer.parseInt(versionNumberParts[2]), Integer.parseInt(versionNumberParts[3]));
+        modListVersions.put(unifiedVersionNumber, file);
       } else {
         log.warn("Unable to extract version number from {} got {}, use {} instead!", fileName,
             versionNumberParts, versionNumber);
@@ -134,8 +139,8 @@ public class DuplicatedMods {
   }
 
   public static String getVersionNumber(String fileName) {
-    return fileName.replace("1.18.2.jar", "").replaceAll("[a-zA-Z_]", "").replace("1.18-", "")
-        .replace("1.18.1-", "").replace("1.18.2-", "").replace("-1.18.2", "").replace("-", "")
-        .replaceAll(".$", "");
+    return fileName.replace("1.18.2.jar", "").replace("mc1.18.2", "").replace("[1.18.2]", "")
+        .replaceAll("[a-zA-Z_]", "").replace("1.18-", "").replace("1.18.1-", "")
+        .replace("1.18.2-", "").replace("-1.18.2", "").replace("-", "").replaceAll(".$", "");
   }
 }
