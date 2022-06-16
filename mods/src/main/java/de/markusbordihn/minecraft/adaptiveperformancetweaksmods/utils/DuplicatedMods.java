@@ -140,7 +140,7 @@ public class DuplicatedMods {
 
   public static String getVersionNumber(String fileName) {
     return fileName.replace("1.18.2.jar", "").replace("mc1.18.2", "").replace("[1.18.2]", "")
-        .replaceAll("[a-zA-Z_]", "").replace("1.18-", "").replace("1.18.1-", "")
+        .replaceAll("[^0-9.-]", "").replace("1.18-", "").replace("1.18.1-", "")
         .replace("1.18.2-", "").replace("-1.18.2", "").replace("-", "").replaceAll(".$", "");
   }
 }
