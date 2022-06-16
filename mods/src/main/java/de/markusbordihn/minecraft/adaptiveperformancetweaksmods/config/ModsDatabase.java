@@ -112,12 +112,12 @@ public class ModsDatabase {
     // Remove version strings with RegExp in several steps.
     // This is needed, because there are two many variants to cover everything with a single check.
     return name.replaceAll("(?i)(-)?(ALPHA|BETA|RELEASE)(-)?", "")
-        .replaceAll("(-(mc)?[^A-Za-z_]+)[a-z]?.jar$", ".jar")
+        .replaceAll("(forge|FORGE|Forge)", "").replaceAll("(-(mc)?[^A-Za-z_]+)[a-z]?.jar$", ".jar")
         .replaceAll("(_(mc)?[^A-Za-z_]+)[a-z]?.jar$", ".jar")
         .replaceAll("(.[^A-Za-z_]+)[a-z]?.jar$", ".jar").replaceAll("(?i)(mc[^A-Z_]+)", "")
         .replaceAll("(-[^A-Za-z_]+)", "-").replaceAll("(_[^A-Za-z_]+)", "_")
-        .replaceAll("(v[^A-Za-z_-]+)", "").replaceAll("(1.19|1.19.1)", "").replace("--", "-")
-        .replace("__", "_").replace("[]", "").replace(" .jar", ".jar")
+        .replaceAll("(v[^A-Za-z_-]+)", "").replaceAll("(1.19|1.19.1)", "").replaceAll("-{2,}", "-")
+        .replaceAll("_{2,}", "_").replace("[]", "").replace(" .jar", ".jar")
         .replaceAll("(-)+jar$", ".jar").replaceAll("(_)+jar$", ".jar")
         .replaceAll("[a-z]{1}jar$", ".jar");
   }

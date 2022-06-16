@@ -123,6 +123,8 @@ public class TestData {
       "adaptive_performance_tweaks_items_1.19-2.2.0.jar",
       "adaptive_performance_tweaks_items_1.19-2.3.4.jar",
       "adaptive_performance_tweaks_items_1.19-2.2.0.jar",
+      "adaptive_performance_tweaks_items_1:.18:.1:-2:.2:.0:.jar",
+      "adaptive_performance_tweaks_items_1+.18+.1+-2+.2+.0+.jar",
       "adaptive_performance_tweaks_items_1.19-2.2.9.jar",
       "adaptive_performance_tweaks_items_1.19-2.2.9a.jar",
       "adaptive_performance_tweaks_items_1.19-2.2.9b.jar",
