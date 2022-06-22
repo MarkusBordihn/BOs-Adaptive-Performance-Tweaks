@@ -96,7 +96,16 @@ public class ModsDatabase {
     "replanter-forge-1.3.jar",
     "rubidium-0.5.2a.jar",
     "screenscale-1.19-2.0.jar",
-    "spyglass_improvements-1.2+mc1.19.x+forge.jar"
+    "spyglass_improvements-1.2+mc1.19.x+forge.jar",
+    "modernworldcreation_forge_1.0.0_MC_1.19.jar",
+    "uiinputundo-1.2.jar",
+    "waveycapes-forge-1.2.0-mc1.19.jar",
+    "betteranimalmodels-1.19-5.6.0-forge.jar",
+    "firstperson-forge-2.1.0-mc1.19.jar",
+    "fm_audio_extension_forge_1.1.0_MC_1.19.jar",
+    "auudio_forge_1.0.3_MC_1.19.jar",
+    "clear-skies-forge-mc119-2.0.94.jar",
+    "loadmyresources_1.0.1_MC_1.19.jar"
   // @formatter:on
   );
 
