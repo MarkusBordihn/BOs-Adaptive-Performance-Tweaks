@@ -20,7 +20,6 @@
 package de.markusbordihn.adaptiveperformancetweaksplayer.player;
 
 import java.util.ConcurrentModificationException;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -46,32 +45,18 @@ import de.markusbordihn.adaptiveperformancetweaksplayer.config.CommonConfig;
 @Mod.EventBusSubscriber
 public class PlayerProtection {
 
-  private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+
+  private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
 
   private static Set<PlayerValidation> playerValidationList = ConcurrentHashMap.newKeySet();
   private static short ticker = 0;
-
-  private static List<String> childPlayerProtectionList = COMMON.childPlayerProtectionList.get();
-  private static boolean enableChildPlayerProtection = COMMON.enableChildPlayerProtection.get();
-  private static boolean protectPlayerDuringLogin = COMMON.protectPlayerDuringLogin.get();
-  private static boolean protectPlayerDuringLoginLogging =
-      COMMON.protectPlayerDuringLoginLogging.get();
-  private static int playerLoginValidationTimeout = COMMON.playerLoginValidationTimeout.get();
-  private static long playerLoginValidationTimeoutMilli =
-      TimeUnit.SECONDS.toMillis(playerLoginValidationTimeout);
 
   protected PlayerProtection() {}
 
   @SubscribeEvent
   public static void onServerAboutToStartEvent(ServerAboutToStartEvent event) {
     playerValidationList = ConcurrentHashMap.newKeySet();
-    childPlayerProtectionList = COMMON.childPlayerProtectionList.get();
-    enableChildPlayerProtection = COMMON.enableChildPlayerProtection.get();
-    playerLoginValidationTimeout = COMMON.playerLoginValidationTimeout.get();
-    protectPlayerDuringLogin = COMMON.protectPlayerDuringLogin.get();
-    protectPlayerDuringLoginLogging = COMMON.protectPlayerDuringLoginLogging.get();
-    playerLoginValidationTimeoutMilli = TimeUnit.SECONDS.toMillis(playerLoginValidationTimeout);
 
     // Additional checks for conflicting mods.
     if (CoreConstants.LOGIN_PROTECTION_LOADED) {
@@ -82,15 +67,15 @@ public class PlayerProtection {
 
   @SubscribeEvent
   public static void handleServerStartingEvent(ServerStartingEvent event) {
-    if (protectPlayerDuringLogin) {
+    if (Boolean.TRUE.equals(COMMON.protectPlayerDuringLogin.get())) {
       log.info("Player will be protected during login for max. of {} secs.",
-          playerLoginValidationTimeout);
+          COMMON.playerLoginValidationTimeout.get());
     }
   }
 
   @SubscribeEvent
   public static void handlePlayerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {
-    if (!protectPlayerDuringLogin) {
+    if (Boolean.FALSE.equals(COMMON.protectPlayerDuringLogin.get())) {
       return;
     }
     String username = event.getPlayer().getName().getString();
@@ -99,9 +84,9 @@ public class PlayerProtection {
           ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
 
       // Player Protection
-      if (protectPlayerDuringLoginLogging) {
+      if (Boolean.TRUE.equals(COMMON.protectPlayerDuringLoginLogging.get())) {
         log.info("Player {} {} logged in and will be protected for {} secs.", username,
-            event.getEntity(), playerLoginValidationTimeout);
+            event.getEntity(), COMMON.playerLoginValidationTimeout.get());
         player.setInvisible(true);
         player.setInvulnerable(true);
         player.heal(1);
@@ -110,7 +95,8 @@ public class PlayerProtection {
       }
 
       // Child Player Protection
-      if (enableChildPlayerProtection && childPlayerProtectionList.contains(username)) {
+      if (Boolean.TRUE.equals(COMMON.enableChildPlayerProtection.get())
+          && COMMON.childPlayerProtectionList.get().contains(username)) {
         log.info(
             "Child Player {} logged-in and game settings adjusted for a better player experience.",
             username);
@@ -128,7 +114,7 @@ public class PlayerProtection {
 
   @SubscribeEvent
   public static void handlePlayerLoggedOutEvent(PlayerEvent.PlayerLoggedOutEvent event) {
-    if (!protectPlayerDuringLogin) {
+    if (Boolean.FALSE.equals(COMMON.protectPlayerDuringLogin.get())) {
       return;
     }
     String username = event.getPlayer().getName().getString();
@@ -153,13 +139,15 @@ public class PlayerProtection {
             long validationTimeInSecs =
                 TimeUnit.MILLISECONDS.toSeconds(playerValidation.getValidationTimeElapsed());
             log.info("{} {} was successful validated after {} secs.",
-                protectPlayerDuringLoginLogging ? "Protected Player" : "Player", username,
-                validationTimeInSecs);
+                Boolean.TRUE.equals(COMMON.protectPlayerDuringLoginLogging.get())
+                    ? "Protected Player"
+                    : "Player",
+                username, validationTimeInSecs);
             addPlayer(username);
-          } else if (playerValidation
-              .getValidationTimeElapsed() >= playerLoginValidationTimeoutMilli) {
+          } else if (playerValidation.getValidationTimeElapsed() >= TimeUnit.SECONDS
+              .toMillis(COMMON.playerLoginValidationTimeout.get())) {
             log.warn("User validation for {} timed out after {} secs.", username,
-                playerLoginValidationTimeout);
+                COMMON.playerLoginValidationTimeout.get());
             addPlayer(username);
           }
         }
@@ -179,9 +167,9 @@ public class PlayerProtection {
           ServerPlayer player =
               ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
           log.debug("Found player {} with player validation {}", player, playerValidation);
-          boolean isChildPlayerAccount =
-              (enableChildPlayerProtection && childPlayerProtectionList.contains(username));
-          if (protectPlayerDuringLoginLogging
+          boolean isChildPlayerAccount = (COMMON.enableChildPlayerProtection.get()
+              && COMMON.childPlayerProtectionList.get().contains(username));
+          if (Boolean.TRUE.equals(COMMON.protectPlayerDuringLoginLogging.get())
               && (player.isInvisible() || player.isInvulnerable())) {
             log.info("Removing player protection from player {}!", username);
             if (player.isInvisible() && !isChildPlayerAccount) {

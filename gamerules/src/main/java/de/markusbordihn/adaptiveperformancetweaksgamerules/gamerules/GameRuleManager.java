@@ -44,62 +44,19 @@ import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLoadEvent;
 public class GameRuleManager {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
 
   private static GameRules gameRules;
 
-  private static boolean entityCrammingEnabled = COMMON.entityCrammingEnabled.get();
-  private static boolean insomniaEnabled = COMMON.insomniaEnabled.get();
-  private static boolean patrolSpawningEnabled = COMMON.patrolSpawningEnabled.get();
-  private static boolean raidsEnabled = COMMON.raidsEnabled.get();
-  private static boolean randomTickSpeedEnabled = COMMON.randomTickSpeedEnabled.get();
-  private static boolean traderSpawningEnabled = COMMON.traderSpawningEnabled.get();
-  private static boolean wardenSpawningEnabled = COMMON.wardenSpawningEnabled.get();
-
-  private static int maxEntityCramming = COMMON.maxEntityCramming.get();
-  private static int minEntityCramming = COMMON.maxEntityCramming.get();
-  private static int minEntityCrammingMineColonies = 16;
-  private static int randomTickSpeed = COMMON.randomTickSpeed.get();
-
-  private static int timeBetweenUpdates = COMMON.timeBetweenUpdates.get() * 1000;
+  private static int timeBetweenUpdates = 10 * 1000;
   private static long lastUpdateTime = System.currentTimeMillis();
 
   protected GameRuleManager() {}
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
-    entityCrammingEnabled = COMMON.entityCrammingEnabled.get();
-    insomniaEnabled = COMMON.insomniaEnabled.get();
-    patrolSpawningEnabled = COMMON.patrolSpawningEnabled.get();
-    raidsEnabled = COMMON.raidsEnabled.get();
-    randomTickSpeedEnabled = COMMON.randomTickSpeedEnabled.get();
-    traderSpawningEnabled = COMMON.traderSpawningEnabled.get();
-    wardenSpawningEnabled = COMMON.wardenSpawningEnabled.get();
-
-    maxEntityCramming = COMMON.maxEntityCramming.get();
-    minEntityCramming = COMMON.minEntityCramming.get();
-    randomTickSpeed = COMMON.randomTickSpeed.get();
-
     timeBetweenUpdates = COMMON.timeBetweenUpdates.get() * 1000;
-
-    // Entity Cramming (max).
-    if (minEntityCramming >= maxEntityCramming) {
-      minEntityCramming = maxEntityCramming - 1;
-    }
-
-    // Additional check for Mine Colonies to make sure we don't kill stucked entities.
-    if (entityCrammingEnabled && ModList.get().isLoaded(CoreConstants.MINECOLONIES_MOD)
-        && minEntityCramming < minEntityCrammingMineColonies) {
-      log.warn(
-          "WARNING: The recommended value for minEntityCramming with {} is min. {} instead of {}!",
-          CoreConstants.MINECOLONIES_NAME, minEntityCrammingMineColonies, minEntityCramming);
-      log.info("The minEntityCramming will be automatically set to {}!",
-          minEntityCrammingMineColonies);
-      minEntityCramming = minEntityCrammingMineColonies;
-      if (maxEntityCramming <= minEntityCramming) {
-        maxEntityCramming = minEntityCramming + 1;
-      }
-    }
   }
 
   @SubscribeEvent
@@ -109,39 +66,40 @@ public class GameRuleManager {
     log.info("Gamerules will be optimized with an {} sec delay between updates.",
         timeBetweenUpdates / 1000);
 
-    if (randomTickSpeedEnabled) {
-      log.info("Random Tick Speed will be optimized between {} and {}", 1, randomTickSpeed);
-      if (gameRules.getInt(GameRules.RULE_RANDOMTICKING) != randomTickSpeed) {
-        setRandomTickSpeed(randomTickSpeed);
+    if (Boolean.TRUE.equals(COMMON.randomTickSpeedEnabled.get())) {
+      log.info("Random Tick Speed will be optimized between {} and {}", 1,
+          COMMON.randomTickSpeed.get());
+      if (gameRules.getInt(GameRules.RULE_RANDOMTICKING) != COMMON.randomTickSpeed.get()) {
+        setRandomTickSpeed(COMMON.randomTickSpeed.get());
       }
     }
 
-    if (entityCrammingEnabled) {
-      log.info("Max Entity Cramming will be optimized between {} and {}", minEntityCramming,
-          maxEntityCramming);
-      if (gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING) != maxEntityCramming) {
-        setMaxEntityCramming(maxEntityCramming);
+    if (Boolean.TRUE.equals(COMMON.entityCrammingEnabled.get())) {
+      log.info("Max Entity Cramming will be optimized between {} and {}",
+          COMMON.minEntityCramming.get(), COMMON.maxEntityCramming.get());
+      if (gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING) != COMMON.maxEntityCramming.get()) {
+        setMaxEntityCramming(COMMON.maxEntityCramming.get());
       }
     }
 
-    if (patrolSpawningEnabled) {
+    if (Boolean.TRUE.equals(COMMON.patrolSpawningEnabled.get())) {
       log.info("Patrol spawning will be automatically disabled during very high server load!");
     }
 
-    if (raidsEnabled) {
+    if (Boolean.TRUE.equals(COMMON.raidsEnabled.get())) {
       log.info("Raids will be automatically disabled during very high server load!");
     }
 
-    if (insomniaEnabled) {
+    if (Boolean.TRUE.equals(COMMON.insomniaEnabled.get())) {
       log.info(
           "Insomnia (phantoms spawn) will be automatically disabled during very high server load!");
     }
 
-    if (traderSpawningEnabled) {
+    if (Boolean.TRUE.equals(COMMON.traderSpawningEnabled.get())) {
       log.info("Trader spawning will be automatically disabled during very high server load!");
     }
 
-    if (wardenSpawningEnabled) {
+    if (Boolean.TRUE.equals(COMMON.wardenSpawningEnabled.get())) {
       log.info("Warden spawning will be automatically disabled during very high server load!");
     }
   }
@@ -152,25 +110,25 @@ public class GameRuleManager {
 
     // Specific: Handle very high server load
     if (event.hasVeryHighServerLoad()) {
-      if (entityCrammingEnabled) {
+      if (Boolean.TRUE.equals(COMMON.entityCrammingEnabled.get())) {
         decreaseMaxEntityCramming();
       }
-      if (randomTickSpeedEnabled) {
+      if (Boolean.TRUE.equals(COMMON.randomTickSpeedEnabled.get())) {
         decreaseRandomTickSpeed();
       }
-      if (patrolSpawningEnabled) {
+      if (Boolean.TRUE.equals(COMMON.patrolSpawningEnabled.get())) {
         disablePatrolSpawning();
       }
-      if (raidsEnabled) {
+      if (Boolean.TRUE.equals(COMMON.raidsEnabled.get())) {
         disableRaids();
       }
-      if (insomniaEnabled) {
+      if (Boolean.TRUE.equals(COMMON.insomniaEnabled.get())) {
         disableInsomnia();
       }
-      if (traderSpawningEnabled) {
+      if (Boolean.TRUE.equals(COMMON.traderSpawningEnabled.get())) {
         disableTraderSpawning();
       }
-      if (wardenSpawningEnabled) {
+      if (Boolean.TRUE.equals(COMMON.wardenSpawningEnabled.get())) {
         disableWardenSpawning();
       }
       return;
@@ -178,10 +136,10 @@ public class GameRuleManager {
 
     // Specific: Handle high server load
     if (event.hasHighServerLoad()) {
-      if (randomTickSpeedEnabled) {
+      if (Boolean.TRUE.equals(COMMON.randomTickSpeedEnabled.get())) {
         decreaseRandomTickSpeed();
       }
-      if (raidsEnabled) {
+      if (Boolean.TRUE.equals(COMMON.raidsEnabled.get())) {
         disableRaids();
       }
       return;
@@ -193,19 +151,19 @@ public class GameRuleManager {
     }
 
     // General: Handle normal and low server load
-    if (patrolSpawningEnabled) {
+    if (Boolean.TRUE.equals(COMMON.patrolSpawningEnabled.get())) {
       enablePatrolSpawning();
     }
-    if (raidsEnabled) {
+    if (Boolean.TRUE.equals(COMMON.raidsEnabled.get())) {
       enableRaids();
     }
-    if (insomniaEnabled) {
+    if (Boolean.TRUE.equals(COMMON.insomniaEnabled.get())) {
       enableInsomnia();
     }
-    if (traderSpawningEnabled) {
+    if (Boolean.TRUE.equals(COMMON.traderSpawningEnabled.get())) {
       enableTraderSpawning();
     }
-    if (wardenSpawningEnabled) {
+    if (Boolean.TRUE.equals(COMMON.wardenSpawningEnabled.get())) {
       enableWardenSpawning();
     }
 
@@ -216,10 +174,10 @@ public class GameRuleManager {
 
     // Specific: Handle low server load
     if (event.hasLowServerLoad()) {
-      if (randomTickSpeedEnabled) {
+      if (Boolean.TRUE.equals(COMMON.randomTickSpeedEnabled.get())) {
         increaseRandomTickSpeed();
       }
-      if (entityCrammingEnabled) {
+      if (Boolean.TRUE.equals(COMMON.entityCrammingEnabled.get())) {
         increaseMaxEntityCramming();
       }
     }
@@ -231,70 +189,70 @@ public class GameRuleManager {
   public static void enablePatrolSpawning() {
     if (!gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)) {
       log.debug("Enable PatrolSpawning");
-      CommandManager.executeServerCommand(String.format("gamerule doPatrolSpawning %s", true));
+      CommandManager.executeGameRuleCommand(GameRules.RULE_DO_PATROL_SPAWNING, true);
     }
   }
 
   public static void disablePatrolSpawning() {
     if (gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)) {
       log.debug("Disable PatrolSpawning");
-      CommandManager.executeServerCommand(String.format("gamerule doPatrolSpawning %s", false));
+      CommandManager.executeGameRuleCommand(GameRules.RULE_DO_PATROL_SPAWNING, false);
     }
   }
 
   public static void enableInsomnia() {
     if (!gameRules.getBoolean(GameRules.RULE_DOINSOMNIA)) {
       log.debug("Enable Insomnia");
-      CommandManager.executeServerCommand(String.format("gamerule doInsomnia %s", true));
+      CommandManager.executeGameRuleCommand(GameRules.RULE_DOINSOMNIA, true);
     }
   }
 
   public static void disableInsomnia() {
     if (gameRules.getBoolean(GameRules.RULE_DOINSOMNIA)) {
       log.debug("Disable Insomnia");
-      CommandManager.executeServerCommand(String.format("gamerule doInsomnia %s", false));
+      CommandManager.executeGameRuleCommand(GameRules.RULE_DOINSOMNIA, false);
     }
   }
 
   public static void enableRaids() {
     if (gameRules.getBoolean(GameRules.RULE_DISABLE_RAIDS)) {
       log.debug("Enable Raids");
-      CommandManager.executeServerCommand(String.format("gamerule disableRaids %s", false));
+      CommandManager.executeGameRuleCommand(GameRules.RULE_DISABLE_RAIDS, false);
     }
   }
 
   public static void disableRaids() {
     if (!gameRules.getBoolean(GameRules.RULE_DISABLE_RAIDS)) {
       log.debug("Disable Raids");
-      CommandManager.executeServerCommand(String.format("gamerule disableRaids %s", true));
+      CommandManager.executeGameRuleCommand(GameRules.RULE_DISABLE_RAIDS, true);
     }
   }
 
   public static void enableTraderSpawning() {
     if (!gameRules.getBoolean(GameRules.RULE_DO_TRADER_SPAWNING)) {
       log.debug("Enable TraderSpawning");
-      CommandManager.executeServerCommand(String.format("gamerule doTraderSpawning %s", true));
+      CommandManager.executeGameRuleCommand(GameRules.RULE_DO_TRADER_SPAWNING, true);
     }
   }
 
   public static void disableTraderSpawning() {
     if (gameRules.getBoolean(GameRules.RULE_DO_TRADER_SPAWNING)) {
       log.debug("Disable TraderSpawning");
-      CommandManager.executeServerCommand(String.format("gamerule doTraderSpawning %s", false));
+      CommandManager.executeGameRuleCommand(GameRules.RULE_DO_TRADER_SPAWNING, false);
     }
   }
 
   public static void enableWardenSpawning() {
     if (!gameRules.getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING)) {
       log.debug("Enable WardenSpawning");
-      CommandManager.executeServerCommand(String.format("gamerule doWardenSpawning %s", true));
+      CommandManager.executeGameRuleCommand(GameRules.RULE_DO_WARDEN_SPAWNING, true);
     }
   }
 
   public static void disableWardenSpawning() {
     if (gameRules.getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING)) {
       log.debug("Disable WardenSpawning");
-      CommandManager.executeServerCommand(String.format("gamerule doWardenSpawning %s", false));
+      CommandManager.executeGameRuleCommand(GameRules.RULE_DO_WARDEN_SPAWNING, false);
     }
   }
 
@@ -310,12 +268,12 @@ public class GameRuleManager {
     int currentTickSpeed = gameRules.getInt(GameRules.RULE_RANDOMTICKING);
     if (tickSpeed < 1) {
       tickSpeed = 1;
-    } else if (tickSpeed > randomTickSpeed) {
-      tickSpeed = randomTickSpeed;
+    } else if (tickSpeed > COMMON.randomTickSpeed.get()) {
+      tickSpeed = COMMON.randomTickSpeed.get();
     }
     if (currentTickSpeed != tickSpeed) {
       log.debug("Changing randomTickSpeed from {} to {}", currentTickSpeed, tickSpeed);
-      CommandManager.executeServerCommand(String.format("gamerule randomTickSpeed %s", tickSpeed));
+      CommandManager.executeGameRuleCommand(GameRules.RULE_RANDOMTICKING, tickSpeed);
     }
   }
 
@@ -328,16 +286,28 @@ public class GameRuleManager {
   }
 
   public static void setMaxEntityCramming(int maxEntity) {
-    if (maxEntity < minEntityCramming) {
-      maxEntity = minEntityCramming;
-    } else if (maxEntity > maxEntityCramming) {
-      maxEntity = maxEntityCramming;
+    if (maxEntity < COMMON.minEntityCramming.get()) {
+      maxEntity = COMMON.minEntityCramming.get();
+    } else if (maxEntity > COMMON.maxEntityCramming.get()) {
+      maxEntity = COMMON.maxEntityCramming.get();
     }
+
+    // Additional check for Mine Colonies to make sure we don't kill stucked entities.
+    if (ModList.get().isLoaded(CoreConstants.MINECOLONIES_MOD)
+        && maxEntity < COMMON.minEntityCrammingMineColonies.get()) {
+      log.warn(
+          "WARNING: The recommended value for minEntityCramming with {} is min. {} instead of {}!",
+          CoreConstants.MINECOLONIES_NAME, COMMON.minEntityCrammingMineColonies.get(),
+          COMMON.minEntityCramming.get());
+      log.info("The minEntityCramming will be automatically set to {}!",
+          COMMON.minEntityCrammingMineColonies.get());
+      maxEntity = COMMON.minEntityCrammingMineColonies.get();
+    }
+
     int currentMaxEntityCramming = gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
     if (currentMaxEntityCramming != maxEntity) {
       log.debug("Changing maxEntityCramming from {} to {}", currentMaxEntityCramming, maxEntity);
-      CommandManager
-          .executeServerCommand(String.format("gamerule maxEntityCramming %s", maxEntity));
+      CommandManager.executeGameRuleCommand(GameRules.RULE_MAX_ENTITY_CRAMMING, maxEntity);
     }
   }
 
@@ -350,18 +320,20 @@ public class GameRuleManager {
 
   public static Map<String, String> getGameRulesOverview() {
     Map<String, String> overview = new ConcurrentHashMap<>();
-    overview.put("disableRaids",
+    overview.put(GameRules.RULE_DISABLE_RAIDS.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DISABLE_RAIDS)));
-    overview.put("doInsomnia", String.valueOf(gameRules.getBoolean(GameRules.RULE_DOINSOMNIA)));
-    overview.put("doPatrolSpawning",
+    overview.put(GameRules.RULE_DOINSOMNIA.getId(),
+        String.valueOf(gameRules.getBoolean(GameRules.RULE_DOINSOMNIA)));
+    overview.put(GameRules.RULE_DO_PATROL_SPAWNING.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)));
-    overview.put("doTraderSpawning",
+    overview.put(GameRules.RULE_DO_TRADER_SPAWNING.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_TRADER_SPAWNING)));
-    overview.put("doWardenSpawning",
+    overview.put(GameRules.RULE_DO_WARDEN_SPAWNING.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING)));
-    overview.put("maxEntityCramming",
+    overview.put(GameRules.RULE_MAX_ENTITY_CRAMMING.getId(),
         String.valueOf(gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING)));
-    overview.put("randomTickSpeed", String.valueOf(gameRules.getInt(GameRules.RULE_RANDOMTICKING)));
+    overview.put(GameRules.RULE_RANDOMTICKING.getId(),
+        String.valueOf(gameRules.getInt(GameRules.RULE_RANDOMTICKING)));
     return overview;
   }
 

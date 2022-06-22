@@ -5,9 +5,17 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.06.22
+
+- Updated client side mods database [thanks to NoShotz]
+
+### 2022.06.18
+
+- Fixed ConfigValue#get() change.
+
 ### 2022.06.08
 
-- Refactored code for version 1.19-41.0.35.
+- Refactored code for version 1.19-41.0.38.
 
 ### 2022.05.28
 

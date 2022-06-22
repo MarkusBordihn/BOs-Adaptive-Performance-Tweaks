@@ -37,8 +37,8 @@ public class ServerLoad {
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
-  private static boolean logServerLoad = CommonConfig.COMMON.logServerLoad.get();
-  private static int timeBetweenUpdates = COMMON.timeBetweenUpdates.get() * 1000;
+
+  private static int timeBetweenUpdates = 10 * 1000;
   private static long lastUpdateTime = System.currentTimeMillis();
 
   private static ServerLoadLevel currentServerLoad = ServerLoadLevel.NORMAL;
@@ -52,7 +52,6 @@ public class ServerLoad {
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
-    logServerLoad = CommonConfig.COMMON.logServerLoad.get();
     timeBetweenUpdates = COMMON.timeBetweenUpdates.get() * 1000;
   }
 
@@ -72,7 +71,8 @@ public class ServerLoad {
     currentServerLoad = getServerLoadLevelFromTickTime(avgTickTime);
 
     // Report change to server log, if enabled.
-    if (currentServerLoad != lastServerLoad && logServerLoad) {
+    if (currentServerLoad != lastServerLoad
+        && Boolean.TRUE.equals(COMMON.logServerLoad.get())) {
       String loadIndicator = lastAvgTickTime > avgTickTime ? "↓" : "↑";
       log.info("{} {} Server load changed from {} (avg. {}) to {} (avg. {})", Constants.LOG_PREFIX,
           loadIndicator, lastServerLoad, lastAvgTickTime, currentServerLoad, avgTickTime);

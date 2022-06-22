@@ -1,7 +1,9 @@
-[![Adaptive Performance Tweaks Downloads](http://cf.way2muchnoise.eu/full_563963_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player)
-[![Adaptive Performance Tweaks Versions](http://cf.way2muchnoise.eu/versions/Minecraft_563963_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player)
+# Adaptive Performance Tweaks: Player
 
 ![Adaptive Performance Tweaks: Player][header]
+
+[![Adaptive Performance Tweaks Downloads](http://cf.way2muchnoise.eu/full_563963_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player)
+[![Adaptive Performance Tweaks Versions](http://cf.way2muchnoise.eu/versions/Minecraft_563963_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player)
 
 Adaptive Performance Tweaks is a collection of Minecraft Forge server-side Mod which automatically adjust specific settings on the server to allow a more balanced TPS/FPS.
 The goal of this mod is to allow a smoother experience on a server with several (=> 180) Mods.

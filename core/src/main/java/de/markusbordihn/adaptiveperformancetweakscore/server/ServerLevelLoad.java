@@ -43,8 +43,8 @@ public class ServerLevelLoad {
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
-  private static boolean logServerLevelLoad = COMMON.logServerLevelLoad.get();
-  private static int timeBetweenUpdates = COMMON.timeBetweenUpdates.get() * 1000;
+
+  private static int timeBetweenUpdates = 10 * 1000;
   private static long lastUpdateTime = System.currentTimeMillis();
 
   private static Map<ServerLevel, Double> levelLoad = new ConcurrentHashMap<>();
@@ -58,7 +58,6 @@ public class ServerLevelLoad {
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
     levelLoad = new ConcurrentHashMap<>();
     levelLoadLevel = new ConcurrentHashMap<>();
-    logServerLevelLoad = COMMON.logServerLevelLoad.get();
     timeBetweenUpdates = COMMON.timeBetweenUpdates.get() * 1000;
   }
 
@@ -86,7 +85,7 @@ public class ServerLevelLoad {
         levelLoadLevel.put(ServerLevel, loadLevel);
 
         // Report change to server log, if enabled.
-        if (loadLevel != lastLoadLevel && logServerLevelLoad) {
+        if (loadLevel != lastLoadLevel && Boolean.TRUE.equals(COMMON.logServerLevelLoad.get())) {
           String loadIndicator = lastAvgTickTime > avgTickTime ? "↓" : "↑";
           log.info("{} {} Level load for {} changed from {} (avg. {}) to {} (avg. {})",
               Constants.LOG_PREFIX, loadIndicator, ServerLevel.dimension().location(),

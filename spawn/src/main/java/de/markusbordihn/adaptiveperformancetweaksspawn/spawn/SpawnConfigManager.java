@@ -63,9 +63,6 @@ public class SpawnConfigManager {
   private static final UntamedWildsSpawnConfig.Config UNTAMED_WILDS_CONFIG =
       UntamedWildsSpawnConfig.COMMON;
 
-  private static int spawnLimitationMaxMobsPerPlayer = COMMON.spawnLimitationMaxMobsPerPlayer.get();
-  private static int spawnLimitationMaxMobsPerWorld = COMMON.spawnLimitationMaxMobsPerWorld.get();
-
   private static Map<String, Integer> spawnConfigPerPlayer = new HashMap<>();
   private static Map<String, Integer> spawnConfigPerWorld = new HashMap<>();
   private static Map<String, Integer> spawnConfigSpecial = new HashMap<>();
@@ -74,9 +71,6 @@ public class SpawnConfigManager {
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
-    spawnLimitationMaxMobsPerPlayer = COMMON.spawnLimitationMaxMobsPerPlayer.get();
-    spawnLimitationMaxMobsPerWorld = COMMON.spawnLimitationMaxMobsPerWorld.get();
-
     clearSpawnRates();
     calculateSpawnRates();
   }
@@ -246,11 +240,13 @@ public class SpawnConfigManager {
   }
 
   public static int getSpawnLimitPerPlayer(String entityName) {
-    return spawnConfigPerPlayer.getOrDefault(entityName, spawnLimitationMaxMobsPerPlayer);
+    return spawnConfigPerPlayer.getOrDefault(entityName,
+        COMMON.spawnLimitationMaxMobsPerPlayer.get());
   }
 
   public static int getSpawnLimitPerWorld(String entityName) {
-    return spawnConfigPerWorld.getOrDefault(entityName, spawnLimitationMaxMobsPerWorld);
+    return spawnConfigPerWorld.getOrDefault(entityName,
+        COMMON.spawnLimitationMaxMobsPerWorld.get());
   }
 
   public static int getSpawnerListSpecial(String entityName) {

@@ -58,10 +58,6 @@ public class ItemEntityManager {
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
-  private static Integer maxNumberOfItems = COMMON.maxNumberOfItems.get();
-  private static Integer maxNumberOfItemsPerType = COMMON.maxNumberOfItemsPerType.get();
-  private static boolean optimizeItems = COMMON.optimizeItems.get();
-  private static int itemClusterRange = COMMON.itemsClusterRange.get();
 
   private static Map<String, Set<ItemEntity>> itemTypeEntityMap = new ConcurrentHashMap<>();
   private static Map<String, Set<ItemEntity>> itemWorldEntityMap = new ConcurrentHashMap<>();
@@ -75,34 +71,28 @@ public class ItemEntityManager {
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
+
     // Reset cache to avoid side effects.
     itemTypeEntityMap = new ConcurrentHashMap<>();
     itemWorldEntityMap = new ConcurrentHashMap<>();
 
-    // Re-load config options.
-    itemClusterRange = COMMON.itemsClusterRange.get();
-    maxNumberOfItems = COMMON.maxNumberOfItems.get();
-    maxNumberOfItemsPerType = COMMON.maxNumberOfItemsPerType.get();
-    optimizeItems = COMMON.optimizeItems.get();
+    // Pre-validate options, if needed.
+    if (Boolean.TRUE.equals(COMMON.optimizeItems.get())) {
+      if (COMMON.maxNumberOfItems.get() < COMMON.maxNumberOfItemsPerType.get()) {
+        log.error("Max number of items could not be lower than max. number of items per type!",
+            COMMON.maxNumberOfItems.get());
+      }
 
-    // Show additional messages, if needed.
-    if (maxNumberOfItems < maxNumberOfItemsPerType) {
-      maxNumberOfItems = maxNumberOfItemsPerType * 2;
-      log.error(
-          "Max number of items could not be lower than max. number of items per type, using {} for maxNumberOfItems instead!",
-          maxNumberOfItems);
-    }
-    if (optimizeItems) {
-      log.info("Max number of Items allowed per world: {} / per type: {}", maxNumberOfItems,
-          maxNumberOfItemsPerType);
-      log.info("Enable clustering of items with a radius of {} blocks.", itemClusterRange);
+      log.info("Max number of Items allowed per world: {} / per type: {}",
+          COMMON.maxNumberOfItems.get(), COMMON.maxNumberOfItemsPerType.get());
+      log.info("Enable clustering of items with a radius of {} blocks.",
+          COMMON.itemsClusterRange.get());
 
       // Additional checks for conflicting mods.
       if (CoreConstants.GET_IT_TOGETHER_LOADED) {
-        log.warn(() -> WarnMessages.conflictingFeaturesModWarning(CoreConstants.GET_IT_TOGETHER_NAME,
-            "clusters items in a specific radius"));
+        log.warn(() -> WarnMessages.conflictingFeaturesModWarning(
+            CoreConstants.GET_IT_TOGETHER_NAME, "clusters items in a specific radius"));
       }
-
     } else {
       log.info("Item Optimization is disabled!");
     }
@@ -127,8 +117,8 @@ public class ItemEntityManager {
   @SubscribeEvent
   public static void handleOptimizationEvent(OptimizationEvent event) {
     if (needsOptimization) {
-      if (optimizeItems) {
-        optimizeItems();
+      if (Boolean.TRUE.equals(COMMON.optimizeItems.get())) {
+        optimizeWorldItems();
       }
       needsOptimization = false;
     }
@@ -179,7 +169,7 @@ public class ItemEntityManager {
     String itemTypeEntityMapKey = '[' + levelName + ']' + itemName;
     itemTypeEntityMap.computeIfAbsent(itemTypeEntityMapKey, k -> new LinkedHashSet<>());
     Set<ItemEntity> itemTypeEntities = itemTypeEntityMap.get(itemTypeEntityMapKey);
-    if (optimizeItems) {
+    if (Boolean.TRUE.equals(COMMON.optimizeItems.get())) {
       ItemStack itemStack = itemEntity.getItem();
       if (itemStack != null && itemStack.isStackable()
           && itemStack.getCount() < itemStack.getMaxStackSize()
@@ -188,13 +178,16 @@ public class ItemEntityManager {
         int x = (int) itemEntity.getX();
         int y = (int) itemEntity.getY();
         int z = (int) itemEntity.getZ();
-        int xStart = x - itemClusterRange;
-        int yStart = y - itemClusterRange;
-        int zStart = z - itemClusterRange;
-        int xEnd = x + itemClusterRange;
-        int yEnd = y + itemClusterRange;
-        int zEnd = z + itemClusterRange;
+        int itemsClusterRange = COMMON.itemsClusterRange.get();
         boolean itemCanSeeSky = level.canSeeSky(itemEntity.blockPosition());
+
+        // Calculate cluster range for x, y and z position.
+        int xStart = x - itemsClusterRange;
+        int yStart = y - itemsClusterRange;
+        int zStart = z - itemsClusterRange;
+        int xEnd = x + itemsClusterRange;
+        int yEnd = y + itemsClusterRange;
+        int zEnd = z + itemsClusterRange;
 
         // Compare information with known items.
         Set<ItemEntity> itemEntities = new HashSet<>(itemTypeEntities);
@@ -229,13 +222,14 @@ public class ItemEntityManager {
     Set<ItemEntity> itemWorldEntities = itemWorldEntityMap.get(levelName);
     itemWorldEntities.add(itemEntity);
 
-    // Optimized items per world regardless of type if they exceeding maxNumberOfItems limit.
-    if (optimizeItems) {
+    // Optimized items per world regardless of type if they exceeding COMMON.maxNumberOfItems.get()
+    // limit.
+    if (Boolean.TRUE.equals(COMMON.optimizeItems.get())) {
       int numberOfItemWorldEntities = itemWorldEntities.size();
-      if (numberOfItemWorldEntities > maxNumberOfItems) {
+      if (numberOfItemWorldEntities > COMMON.maxNumberOfItems.get()) {
         ItemEntity firsItemWorldEntity = itemWorldEntities.iterator().next();
-        log.debug("[Item World Limit {}] Removing item {}", numberOfItemWorldEntities,
-            firsItemWorldEntity);
+        log.debug("[Item World Limit {} exceeded {}] Removing item {}",
+            COMMON.maxNumberOfItems.get(), numberOfItemWorldEntities, firsItemWorldEntity);
         firsItemWorldEntity.remove(RemovalReason.DISCARDED);
         itemWorldEntities.remove(firsItemWorldEntity);
         Set<ItemEntity> itemEntities = itemTypeEntityMap.get('[' + levelName + ']' + itemName);
@@ -249,11 +243,12 @@ public class ItemEntityManager {
     itemTypeEntities.add(itemEntity);
 
     // Optimized items per type and world if exceeding numberOfItemsPerType limit.
-    if (optimizeItems) {
+    if (Boolean.TRUE.equals(COMMON.optimizeItems.get())) {
       int numberOfItemEntities = itemTypeEntities.size();
-      if (numberOfItemEntities > maxNumberOfItemsPerType) {
+      if (numberOfItemEntities > COMMON.maxNumberOfItemsPerType.get()) {
         ItemEntity firstItemEntity = itemTypeEntities.iterator().next();
-        log.debug("[Item Type Limit {}] Removing item {}", numberOfItemEntities, firstItemEntity);
+        log.debug("[Item Type Limit {} exceeded {}] Removing item {}",
+            COMMON.maxNumberOfItemsPerType.get(), numberOfItemEntities, firstItemEntity);
         firstItemEntity.remove(RemovalReason.DISCARDED);
         itemTypeEntities.remove(firstItemEntity);
         itemWorldEntities.remove(firstItemEntity);
@@ -262,7 +257,8 @@ public class ItemEntityManager {
 
     // Lower the lifespan by 0.6 of the item, if the item has any lifespan and
     // server has high server load.
-    if (optimizeItems && hasHighServerLoad && itemEntity.lifespan > 1) {
+    if (Boolean.TRUE.equals(COMMON.optimizeItems.get() && hasHighServerLoad)
+        && itemEntity.lifespan > 1) {
       itemEntity.lifespan = (int) Math.round(itemEntity.lifespan * 0.6);
     }
   }
@@ -315,12 +311,12 @@ public class ItemEntityManager {
     }
   }
 
-  public static int optimizeItems() {
+  public static int optimizeWorldItems() {
     log.debug("[Optimize Items] Received request to optimize items ...");
     int numberOfRemovedItems = 0;
 
     // Optimize Items by World
-    int maxNumberOfOptimizedWorldItems = (int) Math.round(maxNumberOfItems * 0.9);
+    int maxNumberOfOptimizedWorldItems = (int) Math.round(COMMON.maxNumberOfItems.get() * 0.9);
     for (Map.Entry<String, Set<ItemEntity>> itemWorldEntities : itemWorldEntityMap.entrySet()) {
       Set<ItemEntity> itemWorldEntitiesValues = itemWorldEntities.getValue();
       if (itemWorldEntitiesValues.size() > maxNumberOfOptimizedWorldItems) {
@@ -338,7 +334,8 @@ public class ItemEntityManager {
     }
 
     // Optimize Items by Type and World
-    int maxNumberOfOptimizedTypeItems = (int) Math.round(maxNumberOfItemsPerType * 0.9);
+    int maxNumberOfOptimizedTypeItems =
+        (int) Math.round(COMMON.maxNumberOfItemsPerType.get() * 0.9);
     for (Map.Entry<String, Set<ItemEntity>> itemTypeEntities : itemTypeEntityMap.entrySet()) {
       Set<ItemEntity> itemTypeEntitiesValues = itemTypeEntities.getValue();
       if (itemTypeEntitiesValues.size() > maxNumberOfOptimizedTypeItems) {

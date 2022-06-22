@@ -25,7 +25,6 @@ import org.apache.logging.log4j.Logger;
 import net.minecraft.server.level.ServerPlayer;
 
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.server.ServerLifecycleHooks;
@@ -37,24 +36,18 @@ import de.markusbordihn.adaptiveperformancetweaksplayer.config.CommonConfig;
 @EventBusSubscriber
 public class PlayerLogin {
 
-  private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
-  private static boolean optimizePlayerLogin = COMMON.optimizePlayerLogin.get();
+  private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
 
   protected PlayerLogin() {}
-
-  @SubscribeEvent
-  public static void onServerAboutToStartEvent(ServerAboutToStartEvent event) {
-    optimizePlayerLogin = COMMON.optimizePlayerLogin.get();
-  }
 
   @SubscribeEvent
   public static void handlePlayerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {
     String username = event.getPlayer().getName().getString();
 
     // Do nothing if player login optimization is disabled or user has no name.
-    if (!optimizePlayerLogin || username.isEmpty()) {
+    if (Boolean.TRUE.equals(!COMMON.optimizePlayerLogin.get()) || username.isEmpty()) {
       return;
     }
 

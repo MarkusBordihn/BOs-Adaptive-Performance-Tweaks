@@ -53,14 +53,10 @@ public class SpawnManager {
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
-  private static Set<String> allowList = new HashSet<>(COMMON.spawnAllowList.get());
-  private static Set<String> denyList = new HashSet<>(COMMON.spawnDenyList.get());
-  private static Set<String> ignoreDimensionList =
-      new HashSet<>(COMMON.spawnIgnoreDimensionList.get());
-  private static boolean spawnLimitationEnabled = COMMON.spawnLimitationEnabled.get();
-  private static int spawnLimitationLimiter = COMMON.spawnLimitationLimiter.get();
-  private static int spawnLimitationMaxMobsPerPlayer = COMMON.spawnLimitationMaxMobsPerPlayer.get();
-  private static int spawnLimitationMaxMobsPerWorld = COMMON.spawnLimitationMaxMobsPerWorld.get();
+
+  private static Set<String> allowList = new HashSet<>();
+  private static Set<String> denyList = new HashSet<>();
+  private static Set<String> ignoreDimensionList = new HashSet<>();
 
   private static int spawnLimiter = 0;
   private static boolean hasHighServerLoad = false;
@@ -73,10 +69,6 @@ public class SpawnManager {
     allowList = new HashSet<>(COMMON.spawnAllowList.get());
     denyList = new HashSet<>(COMMON.spawnDenyList.get());
     ignoreDimensionList = new HashSet<>(COMMON.spawnIgnoreDimensionList.get());
-    spawnLimitationEnabled = COMMON.spawnLimitationEnabled.get();
-    spawnLimitationLimiter = COMMON.spawnLimitationLimiter.get();
-    spawnLimitationMaxMobsPerPlayer = COMMON.spawnLimitationMaxMobsPerPlayer.get();
-    spawnLimitationMaxMobsPerWorld = COMMON.spawnLimitationMaxMobsPerWorld.get();
   }
 
   @SubscribeEvent
@@ -90,18 +82,18 @@ public class SpawnManager {
     if (!ignoreDimensionList.isEmpty()) {
       log.info("{} Ignore dimension list: {}", Constants.LOG_PREFIX, ignoreDimensionList);
     }
-    if (spawnLimitationEnabled) {
-      if (spawnLimitationLimiter > 0) {
+    if (Boolean.TRUE.equals(COMMON.spawnLimitationEnabled.get())) {
+      if (COMMON.spawnLimitationLimiter.get() > 0) {
         log.info("{} \u2713 Enable limiter and block randomly every {} mob from spawning ...",
-            Constants.LOG_PREFIX, spawnLimitationLimiter);
+            Constants.LOG_PREFIX, COMMON.spawnLimitationLimiter.get());
       }
-      if (spawnLimitationMaxMobsPerWorld > 0) {
+      if (COMMON.spawnLimitationMaxMobsPerWorld.get() > 0) {
         log.info("{} \u2713 Enable spawn rate control with max {} per world ...",
-            Constants.LOG_PREFIX, spawnLimitationMaxMobsPerWorld);
+            Constants.LOG_PREFIX, COMMON.spawnLimitationMaxMobsPerWorld.get());
       }
-      if (spawnLimitationMaxMobsPerPlayer > 0) {
+      if (COMMON.spawnLimitationMaxMobsPerPlayer.get() > 0) {
         log.info("{} \u2713 Enable spawn rate control with max {} per player ...",
-            Constants.LOG_PREFIX, spawnLimitationMaxMobsPerPlayer);
+            Constants.LOG_PREFIX, COMMON.spawnLimitationMaxMobsPerPlayer.get());
       }
     }
 
@@ -190,6 +182,7 @@ public class SpawnManager {
     }
 
     // Limit spawns randomly every x times.
+    int spawnLimitationLimiter = COMMON.spawnLimitationLimiter.get();
     if (spawnLimitationLimiter > 0 && spawnLimiter++ >= spawnLimitationLimiter) {
       log.debug("[Spawn Limiter {}] Blocked spawn event for {} in {}.", spawnLimitationLimiter,
           entity, levelName);
@@ -279,6 +272,7 @@ public class SpawnManager {
     // some custom definitions which could not be easily checked.
     if (CoreConstants.MANA_AND_ARTIFICE_LOADED
         && entityName.equals("mana-and-artifice:residual_magic")) {
+      log.debug("[Ignored Entity] Ignore spawn event for {} in {}", entity, levelName);
       return false;
     }
 

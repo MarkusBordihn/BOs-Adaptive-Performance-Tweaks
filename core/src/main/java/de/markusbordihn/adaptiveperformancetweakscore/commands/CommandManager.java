@@ -27,7 +27,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.MinecraftServer;
-
+import net.minecraft.world.level.GameRules;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -57,14 +57,36 @@ public class CommandManager {
     );
   }
 
+  public static void executeGameRuleCommand(GameRules.Key<?> gameRule, int value) {
+    executeGameRuleCommand(gameRule, String.format("%s", value));
+  }
+
+  public static void executeGameRuleCommand(GameRules.Key<?> gameRule, boolean value) {
+    executeGameRuleCommand(gameRule, value ? "true" : "false");
+  }
+
+  public static void executeGameRuleCommand(GameRules.Key<?> gameRule, String value) {
+    MinecraftServer minecraftServer = ServerLifecycleHooks.getCurrentServer();
+    if (minecraftServer == null || gameRule == null || value == null || value.isEmpty()) {
+      return;
+    }
+    String command = String.format("gamerule %s %s", gameRule.getId(), value);
+    log.debug("Execute GameRule Command: /{}", command);
+    Commands commands = minecraftServer.getCommands();
+    CommandSourceStack commandSourceStack =
+        minecraftServer.createCommandSourceStack().withSuppressedOutput();
+    commands.performCommand(commandSourceStack, command);
+  }
+
   public static void executeServerCommand(String command) {
     MinecraftServer minecraftServer = ServerLifecycleHooks.getCurrentServer();
     if (minecraftServer == null) {
       return;
     }
-    log.debug("Execute Server Command: {}", command);
+    log.debug("Execute Server Command: /{}", command);
     Commands commands = minecraftServer.getCommands();
-    CommandSourceStack commandSourceStack = minecraftServer.createCommandSourceStack().withSuppressedOutput();
+    CommandSourceStack commandSourceStack =
+        minecraftServer.createCommandSourceStack().withSuppressedOutput();
     commands.performCommand(commandSourceStack, command);
   }
 
@@ -73,7 +95,7 @@ public class CommandManager {
     if (minecraftServer == null) {
       return;
     }
-    log.debug("Execute User Command: {}", command);
+    log.debug("Execute User Command: /{}", command);
     Commands commands = minecraftServer.getCommands();
     CommandSourceStack commandSourceStack = minecraftServer.createCommandSourceStack();
     commands.performCommand(commandSourceStack, command);

@@ -20,6 +20,7 @@
 package de.markusbordihn.adaptiveperformancetweaksgamerules.commands;
 
 import java.util.Map;
+import java.util.TreeMap;
 
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -41,7 +42,7 @@ public class GameRuleCommand extends CustomCommand {
 
   @Override
   public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-    Map<String, String> gameRules = GameRuleManager.getGameRulesOverview();
+    Map<String, String> gameRules = new TreeMap<>(GameRuleManager.getGameRulesOverview());
     if (gameRules.isEmpty()) {
       sendFeedback(context, "Unable to get game rules overview!");
     } else {

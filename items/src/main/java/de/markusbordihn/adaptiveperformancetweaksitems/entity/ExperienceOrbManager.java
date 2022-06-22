@@ -48,24 +48,20 @@ import de.markusbordihn.adaptiveperformancetweaksitems.config.CommonConfig;
 @EventBusSubscriber
 public class ExperienceOrbManager {
 
-  private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
+  private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
+
   private static Map<String, Set<ExperienceOrb>> experienceOrbEntityMap = new ConcurrentHashMap<>();
-  private static boolean optimizeExperienceOrbs = COMMON.optimizeExperienceOrbs.get();
-  private static int experienceOrbsClusterRange = COMMON.experienceOrbsClusterRange.get();
 
   protected ExperienceOrbManager() {}
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
     experienceOrbEntityMap = new ConcurrentHashMap<>();
-    experienceOrbsClusterRange = COMMON.experienceOrbsClusterRange.get();
-    optimizeExperienceOrbs = COMMON.optimizeExperienceOrbs.get();
-
-    if (optimizeExperienceOrbs) {
+    if (Boolean.TRUE.equals(COMMON.optimizeExperienceOrbs.get())) {
       log.info("Enable clustering of Experience Orbs with a radius of {} blocks.",
-          experienceOrbsClusterRange);
+          COMMON.experienceOrbsClusterRange.get());
 
       // Additional checks for conflicting mods.
       if (CoreConstants.CLUMPS_LOADED) {
@@ -73,7 +69,6 @@ public class ExperienceOrbManager {
             "WARNING: Clumps groups XP orbs together into a new single entity, which will conflict with the XP Orb feature of this mod!");
         log.warn(
             "Don't use both optimizations together! Clustering of Experience Orbs will be automatically disabled!");
-        optimizeExperienceOrbs = false;
       }
     } else {
       log.info("Disable Experience Orbs clustering ...");
@@ -104,7 +99,8 @@ public class ExperienceOrbManager {
 
     // Get world name and ignore orb if it has 0 xp.
     String levelName = level.dimension().location().toString();
-    if (optimizeExperienceOrbs && experienceOrbEntity.value <= 0) {
+    if (Boolean.TRUE.equals(COMMON.optimizeExperienceOrbs.get() && !CoreConstants.CLUMPS_LOADED)
+        && experienceOrbEntity.value <= 0) {
       log.debug("Remove Experience Orb {} with {} xp from {}.", experienceOrbEntity,
           experienceOrbEntity.value, levelName);
       experienceOrbEntity.remove(RemovalReason.DISCARDED);
@@ -117,18 +113,24 @@ public class ExperienceOrbManager {
     // Check if orb should be merged with existing orbs and ignore orb if it has 0 xp.
     experienceOrbEntityMap.computeIfAbsent(levelName, k -> new LinkedHashSet<>());
     Set<ExperienceOrb> experienceOrbWorldEntities = experienceOrbEntityMap.get(levelName);
-    if (optimizeExperienceOrbs && !experienceOrbWorldEntities.isEmpty()) {
+    if (Boolean.TRUE.equals(COMMON.optimizeExperienceOrbs.get() && !CoreConstants.CLUMPS_LOADED)
+        && !experienceOrbWorldEntities.isEmpty()) {
       Set<ExperienceOrb> experienceOrbsEntities = new HashSet<>(experienceOrbWorldEntities);
       Iterator<ExperienceOrb> experienceOrbsEntitiesIterator = experienceOrbsEntities.iterator();
       int x = (int) experienceOrbEntity.getX();
       int y = (int) experienceOrbEntity.getY();
       int z = (int) experienceOrbEntity.getZ();
+      int experienceOrbsClusterRange = COMMON.experienceOrbsClusterRange.get();
+
+      // Calculate cluster range for x, y and z position.
       int xStart = x - experienceOrbsClusterRange;
       int yStart = y - experienceOrbsClusterRange;
       int zStart = z - experienceOrbsClusterRange;
       int xEnd = x + experienceOrbsClusterRange;
       int yEnd = y + experienceOrbsClusterRange;
       int zEnd = z + experienceOrbsClusterRange;
+
+      // Check all known experience orbs, if they could be merged.
       while (experienceOrbsEntitiesIterator.hasNext()) {
         ExperienceOrb existingExperienceOrb = experienceOrbsEntitiesIterator.next();
         int xSub = (int) existingExperienceOrb.getX();

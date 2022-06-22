@@ -46,10 +46,6 @@ public class ServerManager {
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
-  private static double gameDifficultyFactorEasy = COMMON.gameDifficultyFactorEasy.get();
-  private static double gameDifficultyFactorNormal = COMMON.gameDifficultyFactorNormal.get();
-  private static double gameDifficultyFactorPeaceful = COMMON.gameDifficultyFactorPeaceful.get();
-  private static double gameDifficultyFactorHard = COMMON.gameDifficultyFactorHard.get();
 
   private static short ticks = 0;
   private static final short SERVER_LOAD_TICK = 1 * 20;
@@ -61,7 +57,7 @@ public class ServerManager {
   private static java.lang.Iterable<ServerLevel> serverLevels = null;
 
   private static Difficulty gameDifficulty = Difficulty.NORMAL;
-  private static double gameDifficultyFactor = gameDifficultyFactorNormal;
+  private static double gameDifficultyFactor = 1;
 
   protected ServerManager() {
 
@@ -69,13 +65,10 @@ public class ServerManager {
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
-    gameDifficultyFactorEasy = COMMON.gameDifficultyFactorEasy.get();
-    gameDifficultyFactorNormal = COMMON.gameDifficultyFactorNormal.get();
-    gameDifficultyFactorPeaceful = COMMON.gameDifficultyFactorPeaceful.get();
-    gameDifficultyFactorHard = COMMON.gameDifficultyFactorHard.get();
     log.info("{} Game difficult factors EASY: {}, NORMAL: {}, PEACEFUL: {} and HARD: {}",
-        Constants.LOG_PREFIX, gameDifficultyFactorEasy, gameDifficultyFactorNormal,
-        gameDifficultyFactorPeaceful, gameDifficultyFactorHard);
+        Constants.LOG_PREFIX, COMMON.gameDifficultyFactorEasy.get(),
+        COMMON.gameDifficultyFactorNormal.get(), COMMON.gameDifficultyFactorPeaceful.get(),
+        COMMON.gameDifficultyFactorHard.get());
   }
 
   @SubscribeEvent
@@ -164,19 +157,19 @@ public class ServerManager {
     gameDifficulty = difficulty;
     switch (difficulty) {
       case EASY:
-        gameDifficultyFactor = gameDifficultyFactorEasy;
+        gameDifficultyFactor = COMMON.gameDifficultyFactorEasy.get();
         break;
       case NORMAL:
-        gameDifficultyFactor = gameDifficultyFactorNormal;
+        gameDifficultyFactor = COMMON.gameDifficultyFactorNormal.get();
         break;
       case PEACEFUL:
-        gameDifficultyFactor = gameDifficultyFactorPeaceful;
+        gameDifficultyFactor = COMMON.gameDifficultyFactorPeaceful.get();
         break;
       case HARD:
-        gameDifficultyFactor = gameDifficultyFactorHard;
+        gameDifficultyFactor = COMMON.gameDifficultyFactorHard.get();
         break;
       default:
-        gameDifficultyFactor = gameDifficultyFactorNormal;
+        gameDifficultyFactor = COMMON.gameDifficultyFactorNormal.get();
     }
     log.info("{} Game difficulty is set to {} with a {} factor.", Constants.LOG_PREFIX,
         gameDifficulty, gameDifficultyFactor);

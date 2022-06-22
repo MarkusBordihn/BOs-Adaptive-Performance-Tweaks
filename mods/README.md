@@ -1,7 +1,9 @@
-[![Adaptive Performance Tweaks Downloads](http://cf.way2muchnoise.eu/full_602436_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-mods)
-[![Adaptive Performance Tweaks Versions](http://cf.way2muchnoise.eu/versions/Minecraft_602436_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-mods)
+# Adaptive Performance Tweaks: Mods
 
 ![Adaptive Performance Tweaks: Mods][header]
+
+[![Adaptive Performance Tweaks Downloads](http://cf.way2muchnoise.eu/full_602436_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-mods)
+[![Adaptive Performance Tweaks Versions](http://cf.way2muchnoise.eu/versions/Minecraft_602436_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-mods)
 
 Adaptive Performance Tweaks is a collection of Minecraft Forge server-side Mod which automatically adjust specific settings on the server to allow a more balanced TPS/FPS.
 The goal of this mod is to allow a smoother experience on a server with several (=> 180) Mods.
@@ -30,8 +32,7 @@ The mod is mostly helpful if it is used on the server and the client side.
 
 ## Example Mod Pack
 
-If you want to see this mod in action, please take a look at:
-https://www.curseforge.com/minecraft/modpacks/bos-adventure-world
+If you want to see this mod in action, please take a look at the [Reference Mod Pack][example-mod-pack].
 
 ## 🚀Install additional Optimization
 
@@ -63,6 +64,8 @@ Please report issues over the **Issue** link.
 | Forge 1.19     | ✔️ Active development |
 
 [header]: ../assets/aptweaks-header-only.png
+
+[example-mod-pack]: https://www.curseforge.com/minecraft/modpacks/bos-adventure-world
 
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
 [core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core

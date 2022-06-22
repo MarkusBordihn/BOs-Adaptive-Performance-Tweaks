@@ -63,6 +63,7 @@ public final class CommonConfig {
     public final ForgeConfigSpec.BooleanValue entityCrammingEnabled;
     public final ForgeConfigSpec.IntValue minEntityCramming;
     public final ForgeConfigSpec.IntValue maxEntityCramming;
+    public final ForgeConfigSpec.IntValue minEntityCrammingMineColonies;
 
     public final ForgeConfigSpec.BooleanValue randomTickSpeedEnabled;
     public final ForgeConfigSpec.IntValue randomTickSpeed;
@@ -95,6 +96,9 @@ public final class CommonConfig {
       maxEntityCramming =
           builder.comment("Defines the max. numbers of mob singularity on a single block.")
               .defineInRange("maxEntityCramming", 24, 1, 64);
+      minEntityCrammingMineColonies = builder.comment(
+          "Defines the min. numbers of mob singularity on a single block, in the case MineColonies is installed.")
+          .defineInRange("minEntityCrammingMineColonies", 16, 16, 64);
       builder.pop();
 
       builder.push("Random Tick Speed");
@@ -128,7 +132,7 @@ public final class CommonConfig {
 
       builder.push("Warden Spawning");
       wardenSpawningEnabled = builder.comment("Enable/Disable warden spawning adjustments.")
-              .define("wardenSpawningEnabled", true);
+          .define("wardenSpawningEnabled", true);
       builder.pop();
     }
   }
