@@ -88,7 +88,7 @@ public class ModsDatabase {
     "farsight-1.19.6.jar",
     "flickerfix-2.0.0.jar",
     "fm_audio_extension_forge_1.1.0_MC_1.19.jar",
-    "foreperson-forge-2.1.0-mc1.19.jar",
+    "firstperson-forge-2.1.0-mc1.19.jar",
     "guiclock_1.19-3.1.jar",
     "guicompass_1.19-2.2.jar",
     "guifollowers_1.19-1.9.jar",
