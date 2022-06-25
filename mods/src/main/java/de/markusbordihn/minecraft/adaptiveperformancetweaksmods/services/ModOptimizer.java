@@ -111,7 +111,7 @@ public class ModOptimizer implements IModLocator {
   }
 
   @Override
-  public List<IModFile> scanMods() {
+  public List<ModFileOrException> scanMods() {
     return Collections.emptyList();
   }
 
