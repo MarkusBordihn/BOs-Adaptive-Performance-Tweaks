@@ -117,8 +117,9 @@ public class EntityManager {
     // Skip other checks if unknown entity name, multi-part or custom entity
     if (entityName == null) {
       String entityType = entity.getType().getDescriptionId();
-      if (CoreConstants.ADHOOKS_LOADED && entityType.startsWith("entity.adhooks.")) {
-        log.debug("Ignore {} entity {} in {}", CoreConstants.ADHOOKS_NAME, entity, levelName);
+      if ((CoreConstants.ADHOOKS_LOADED && entityType.startsWith("entity.adhooks."))
+          || (CoreConstants.COFH_CORE_LOADED && entityType.startsWith("entity.cofh_core."))) {
+        log.debug("Ignore modded entity {} in {}", entity, levelName);
       } else if (CoreConstants.MANA_AND_ARTIFICE_LOADED
           && entityType.startsWith("entity.mana-and-artifice.")) {
         log.debug("Ignore {} entity {} in {}", CoreConstants.MANA_AND_ARTIFICE_NAME, entity,

@@ -5,6 +5,10 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.07.02
+
+- Added additional check to handle client crash by loading the config files for the first time.
+
 ### 2022.06.25
 
 - Fixed smaller issues with 1.19-41.0.45. Please report 1.19-41.0.45 issue over the issue link, if there are still any issues.

@@ -51,6 +51,10 @@ public final class CoreConstants {
   public static final String AQUACULTURE_NAME = "Aquaculture 2";
   public static final boolean AQUACULTURE_LOADED = ModList.get().isLoaded(AQUACULTURE_MOD);
 
+  public static final String COFH_CORE_MOD = "cofh_core";
+  public static final String COFH_CORE_NAME = "CoFH Core";
+  public static final boolean COFH_CORE_LOADED = ModList.get().isLoaded(COFH_CORE_MOD);
+
   public static final String CLUMPS_MOD = "clumps";
   public static final String CLUMPS_NAME = "Clumps";
   public static final boolean CLUMPS_LOADED = ModList.get().isLoaded(CLUMPS_MOD);

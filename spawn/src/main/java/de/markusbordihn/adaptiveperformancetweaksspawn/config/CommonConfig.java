@@ -54,8 +54,12 @@ public final class CommonConfig {
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
     log.info("Registering {} common config ...", Constants.MOD_NAME);
-    FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
-        CoreConstants.CONFIG_ID);
+    try {
+      FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
+          CoreConstants.CONFIG_ID);
+    } catch (Exception exception) {
+      log.error("There was an error, creating the directory:", exception);
+    }
     ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec,
         CoreConstants.CONFIG_ID_PREFIX + "spawn.toml");
   }
@@ -81,8 +85,8 @@ public final class CommonConfig {
       spawnDenyList = builder.comment(
           "General deny list for spawn entities (e.g. minecraft:bat) to no longer spawn in all worlds.")
           .define("denyList", new ArrayList<String>(Arrays.asList("")));
-      spawnIgnoreDimensionList = builder.comment("General list of ignored dimensions.")
-          .define("spawnIgnoreDimensionList", new ArrayList<String>(Arrays.asList("minecraft:the_end")));
+      spawnIgnoreDimensionList = builder.comment("General list of ignored dimensions.").define(
+          "spawnIgnoreDimensionList", new ArrayList<String>(Arrays.asList("minecraft:the_end")));
       builder.pop();
 
       builder.push("Spawn Limitations");
