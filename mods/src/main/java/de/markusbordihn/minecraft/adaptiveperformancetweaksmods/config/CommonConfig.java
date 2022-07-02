@@ -50,8 +50,12 @@ public final class CommonConfig {
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
     log.info("Registering {} common config ...", Constants.MOD_NAME);
-    FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
+    try {
+      FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
         CoreConstants.CONFIG_ID);
+    } catch (Exception exception) {
+      log.error("There was an error, creating the directory:", exception);
+    }
     ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec,
         CoreConstants.CONFIG_ID_PREFIX + "mods.toml");
   }

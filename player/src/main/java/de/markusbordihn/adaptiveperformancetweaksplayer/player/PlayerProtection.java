@@ -145,7 +145,7 @@ public class PlayerProtection {
     }
 
     if (!playerValidationList.isEmpty()) {
-      try {
+       try {
         // Check for any un-validated players and try to detect if they logged-in.
         for (PlayerValidation playerValidation : playerValidationList) {
           String username = playerValidation.getUsername();
@@ -173,7 +173,7 @@ public class PlayerProtection {
   }
 
   private static void addPlayer(String username) {
-    try {
+     try {
       for (PlayerValidation playerValidation : playerValidationList) {
         if (username.equals(playerValidation.getUsername())) {
           ServerPlayer player =
@@ -204,7 +204,7 @@ public class PlayerProtection {
   }
 
   private static void removePlayer(String username) {
-    try {
+     try {
       for (PlayerValidation playerValidation : playerValidationList) {
         if (username.equals(playerValidation.getUsername())) {
           playerValidationList.remove(playerValidation);

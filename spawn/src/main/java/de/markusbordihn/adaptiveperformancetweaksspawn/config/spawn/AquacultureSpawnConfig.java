@@ -55,8 +55,12 @@ public final class AquacultureSpawnConfig {
     COMMON = specPair.getLeft();
     log.info("Registering {} {} spawn config ...", Constants.MOD_NAME,
         CoreConstants.AQUACULTURE_NAME);
-    FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
+    try {
+      FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
         CoreConstants.CONFIG_ID);
+    } catch (Exception exception) {
+      log.error("There was an error, creating the directory:", exception);
+    }
     ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec,
         CoreConstants.CONFIG_ID_PREFIX + "/spawn/AquacultureSpawn.toml");
   }

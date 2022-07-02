@@ -1,18 +1,6 @@
 buildscript {
   repositories {
-    maven {
-      url = 'http://revy:49161/repository/MinecraftForge/'
-      allowInsecureProtocol = true
-    }
-    maven {
-      url = 'http://revy:49161/repository/maven-central/'
-      allowInsecureProtocol = true
-    }
-    maven {
-      url = 'http://revy:49161/repository/jcenter/'
-      allowInsecureProtocol = true
-    }
-    maven {
+maven {
       url = 'http://revy:49161/repository/Gradle/'
       allowInsecureProtocol = true
     }
@@ -126,10 +114,6 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 // Curse Maven Plugin
 repositories {
   maven {
-    url "http://revy:49161/repository/CurseMaven/"
-    allowInsecureProtocol = true
-  }
-  maven {
     url "https://www.cursemaven.com"
     content {
       includeGroup "curse.maven"
@@ -148,8 +132,8 @@ dependencies {
   minecraft 'net.minecraftforge:forge:1.18.2-40.1.51'
 
   // Required: Bo's Adaptive Performance Tweaks: Core (dev dependency)
-  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.5.1")
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.5.1")
+  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.9.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.9.0")
 
   // Test Framework
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'

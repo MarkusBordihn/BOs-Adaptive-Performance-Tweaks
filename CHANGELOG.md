@@ -5,6 +5,10 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.07.02
+
+- Added additional check to handle client crash by loading the config files for the first time.
+
 ### 2022.05.28
 
 - Improved version sorting for duplicated mods detection.
