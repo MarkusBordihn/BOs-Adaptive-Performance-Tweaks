@@ -68,6 +68,7 @@ public class ModsDatabase {
     "ReAuth-1.18-Forge-4.0.0.jar",
     "TipTheScales-forge-1.18.2-5.0.5.jar",
     "ToastControl-1.18.2-6.0.2.jar",
+    "advancements_tracker_1.18.2-1.2.0.jar",
     "beautifiedchatclient_1.18.1-1.1.jar",
     "better-loading-screen-1.4.0.jar",
     "betterbiomeblend-1.18.1-1.3.2-forge.jar",

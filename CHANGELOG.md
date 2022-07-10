@@ -5,6 +5,11 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.07.10
+
+- Fixed exotic version strings detection and improved sorting for duplicated mods.
+- Added additional client side mods to the mods database.
+
 ### 2022.07.02
 
 - Added additional check to handle client crash by loading the config files for the first time.

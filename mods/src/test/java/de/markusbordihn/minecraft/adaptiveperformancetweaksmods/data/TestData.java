@@ -136,4 +136,16 @@ public class TestData {
       "adaptive_performance_tweaks_items_1.18.1-2.2.9c.jar",
       "adaptive_performance_tweaks_items_1.18.1-2.2.10.jar"};
 
+  public static String[] modListDuplicatesSpecific01 =
+      {"ProgressiveBosses-3.5.16-mc1.18.2.jar", "ProgressiveBosses-3.5.11-mc1.18.2.jar"};
+
+  public static String[] modListDuplicatesSpecific02 =
+      {"createaddition-1.18.2-20220709a.jar", "createaddition-1.18.2-20220517a.jar"};
+
+  public static String[] modListDuplicatesSpecific03 =
+      {"mcw-trapdoors-1.0.6-mc1.18.2.jar", "mcw-trapdoors-1.0.5-mc1.18.2.jar"};
+
+  public static String[] modListDuplicatesSpecific04 =
+      {"Patchouli-1.18.2-71.1.jar", "Patchouli-1.18.2-70.jar"};
+
 }
