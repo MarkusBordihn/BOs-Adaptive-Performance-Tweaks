@@ -101,6 +101,45 @@ public class DuplicatedMods {
     }
   }
 
+  public static String normalizeVersionNumber(String fileName) {
+    String versionNumber = getVersionNumber(fileName);
+    String unifiedVersionNumber = versionNumber;
+    String[] versionNumberParts = versionNumber.split("\\.");
+
+    // Handle version numbers like 20220709 and 20220517
+    if (versionNumberParts != null && versionNumberParts.length == 1
+        && versionNumberParts[0].length() >= 1) {
+      unifiedVersionNumber = String.format("%03d.000.000", Integer.parseInt(versionNumberParts[0]));
+    }
+
+    // Handle version numbers like 1.0, 1.1, 1.2 ...
+    else if (versionNumberParts != null && versionNumberParts.length == 2) {
+      unifiedVersionNumber = String.format("%03d.%03d.000", Integer.parseInt(versionNumberParts[0]),
+          Integer.parseInt(versionNumberParts[1]));
+    }
+
+    // Handle version numbers like 1.0.0, 1.1.0, 1.2.0 ...
+    else if (versionNumberParts != null && versionNumberParts.length == 3) {
+      unifiedVersionNumber =
+          String.format("%03d.%03d.%03d", Integer.parseInt(versionNumberParts[0]),
+              Integer.parseInt(versionNumberParts[1]), Integer.parseInt(versionNumberParts[2]));
+    }
+
+    // Handle version numbers like 1.0.0.0, 1.1.0.0, 1.2.0.0 ...
+    else if (versionNumberParts != null && versionNumberParts.length == 4) {
+      unifiedVersionNumber = String.format("%03d.%03d.%03d.%03d",
+          Integer.parseInt(versionNumberParts[0]), Integer.parseInt(versionNumberParts[1]),
+          Integer.parseInt(versionNumberParts[2]), Integer.parseInt(versionNumberParts[3]));
+    }
+
+    // Handle unknown version number format
+    else {
+      log.warn("Unable to extract version number from {} got {}, use {} instead!", fileName,
+          versionNumberParts, versionNumber);
+    }
+    return unifiedVersionNumber;
+  }
+
   public static File findLatestMod(List<File> modList) {
     Map<String, File> modListVersions = new HashMap<>();
     modList.sort(Collections.reverseOrder());
@@ -108,22 +147,7 @@ public class DuplicatedMods {
     // Pre-format version numbers per file.
     for (File file : modList) {
       String fileName = file.getName();
-      String versionNumber = getVersionNumber(fileName);
-      String[] versionNumberParts = versionNumber.split("\\.");
-      if (versionNumberParts != null && versionNumberParts.length == 2) {
-        String unifiedVersionNumber = String.format("%03d.%03d.000",
-            Integer.parseInt(versionNumberParts[0]), Integer.parseInt(versionNumberParts[1]));
-        modListVersions.put(unifiedVersionNumber, file);
-      } else if (versionNumberParts != null && versionNumberParts.length == 3) {
-        String unifiedVersionNumber =
-            String.format("%03d.%03d.%03d", Integer.parseInt(versionNumberParts[0]),
-                Integer.parseInt(versionNumberParts[1]), Integer.parseInt(versionNumberParts[2]));
-        modListVersions.put(unifiedVersionNumber, file);
-      } else {
-        log.warn("Unable to extract version number from {} got {}, use {} instead!", fileName,
-            versionNumberParts, versionNumber);
-        modListVersions.put(versionNumber, file);
-      }
+      modListVersions.put(normalizeVersionNumber(fileName), file);
     }
 
     // Sorting files by unified version numbers.
@@ -135,6 +159,6 @@ public class DuplicatedMods {
 
   public static String getVersionNumber(String fileName) {
     return fileName.replace("1.19.jar", "").replaceAll("[^0-9.-]", "").replace("1.19-", "")
-        .replace("-1.19", "").replace("-", "").replaceAll(".$", "");
+        .replace("-1.19", "").replace("-", "").replaceAll("\\.$", "");
   }
 }

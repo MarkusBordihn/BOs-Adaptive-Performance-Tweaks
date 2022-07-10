@@ -28,6 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
+import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.data.TestData;
+
 public class DuplicatedModsTests {
 
   private final String testFilePath = "src/test/resources/testfile/duplicates";
@@ -48,6 +50,48 @@ public class DuplicatedModsTests {
   }
 
   @Test
+  void getVersionNumber() {
+    assertEquals("3.5.16",
+        DuplicatedMods.getVersionNumber(TestData.modListDuplicatesSpecific01[0]));
+    assertEquals("3.5.11",
+        DuplicatedMods.getVersionNumber(TestData.modListDuplicatesSpecific01[1]));
+
+    assertEquals("20220709",
+        DuplicatedMods.getVersionNumber(TestData.modListDuplicatesSpecific02[0]));
+    assertEquals("20220517",
+        DuplicatedMods.getVersionNumber(TestData.modListDuplicatesSpecific02[1]));
+
+    assertEquals("1.0.6", DuplicatedMods.getVersionNumber(TestData.modListDuplicatesSpecific03[0]));
+    assertEquals("1.0.5", DuplicatedMods.getVersionNumber(TestData.modListDuplicatesSpecific03[1]));
+
+    assertEquals("71.1", DuplicatedMods.getVersionNumber(TestData.modListDuplicatesSpecific04[0]));
+    assertEquals("70", DuplicatedMods.getVersionNumber(TestData.modListDuplicatesSpecific04[1]));
+  }
+
+  @Test
+  void normalizeVersionNumber() {
+    assertEquals("003.005.016",
+        DuplicatedMods.normalizeVersionNumber(TestData.modListDuplicatesSpecific01[0]));
+    assertEquals("003.005.011",
+        DuplicatedMods.normalizeVersionNumber(TestData.modListDuplicatesSpecific01[1]));
+
+    assertEquals("20220709.000.000",
+        DuplicatedMods.normalizeVersionNumber(TestData.modListDuplicatesSpecific02[0]));
+    assertEquals("20220517.000.000",
+        DuplicatedMods.normalizeVersionNumber(TestData.modListDuplicatesSpecific02[1]));
+
+    assertEquals("001.000.006",
+        DuplicatedMods.normalizeVersionNumber(TestData.modListDuplicatesSpecific03[0]));
+    assertEquals("001.000.005",
+        DuplicatedMods.normalizeVersionNumber(TestData.modListDuplicatesSpecific03[1]));
+
+    assertEquals("071.001.000",
+        DuplicatedMods.normalizeVersionNumber(TestData.modListDuplicatesSpecific04[0]));
+    assertEquals("070.000.000",
+        DuplicatedMods.normalizeVersionNumber(TestData.modListDuplicatesSpecific04[1]));
+  }
+
+  @Test
   void testSearchDuplicatedMods() {
 
     System.out.printf("Two Test Mod Files: %s\n", twoTestFiles);
@@ -58,4 +102,5 @@ public class DuplicatedModsTests {
     int result = DuplicatedMods.searchDuplicatedMods(testFiles, ".jar", true);
     assertTrue(result > 0);
   }
+
 }
