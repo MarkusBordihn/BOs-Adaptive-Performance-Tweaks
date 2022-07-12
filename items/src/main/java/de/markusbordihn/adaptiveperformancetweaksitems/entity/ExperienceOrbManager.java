@@ -34,8 +34,8 @@ import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.level.Level;
 
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -76,9 +76,9 @@ public class ExperienceOrbManager {
   }
 
   @SubscribeEvent(priority = EventPriority.HIGH)
-  public static void handleExperienceOrbJoinWorldEvent(EntityJoinWorldEvent event) {
+  public static void handleExperienceOrbJoinWorldEvent(EntityJoinLevelEvent event) {
     // Ignore client side world.
-    Level level = event.getWorld();
+    Level level = event.getLevel();
     if (level.isClientSide || event.isCanceled()) {
       return;
     }
@@ -160,10 +160,10 @@ public class ExperienceOrbManager {
   }
 
   @SubscribeEvent
-  public static void handleExperienceOrbLeaveWorldEvent(EntityLeaveWorldEvent event) {
+  public static void handleExperienceOrbLeaveWorldEvent(EntityLeaveLevelEvent event) {
 
     // Ignore client side world.
-    Level level = event.getWorld();
+    Level level = event.getLevel();
     if (level.isClientSide) {
       return;
     }

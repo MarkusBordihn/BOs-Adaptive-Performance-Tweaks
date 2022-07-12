@@ -71,7 +71,7 @@ public class SpawnerManager {
   private static void handleSpawnEvent(LivingSpawnEvent event) {
 
     // Ignore client side.
-    LevelAccessor level = event.getWorld();
+    LevelAccessor level = event.getLevel();
     if (level.isClientSide()) {
       return;
     }

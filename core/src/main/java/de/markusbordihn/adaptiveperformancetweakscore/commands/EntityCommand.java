@@ -75,7 +75,7 @@ public class EntityCommand extends CustomCommand {
   }
 
   public int registry(CommandContext<CommandSourceStack> context) {
-    Set<ResourceLocation> entitiesKeys = ForgeRegistries.ENTITIES.getKeys();
+    Set<ResourceLocation> entitiesKeys = ForgeRegistries.ENTITY_TYPES.getKeys();
     if (entitiesKeys.isEmpty()) {
       sendFeedback(context, "Unable to find any entities. Server / World is not loaded?");
       return 0;

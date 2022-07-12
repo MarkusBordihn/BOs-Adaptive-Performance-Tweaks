@@ -44,7 +44,7 @@ public class PlayerLogin {
 
   @SubscribeEvent
   public static void handlePlayerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {
-    String username = event.getPlayer().getName().getString();
+    String username = event.getEntity().getName().getString();
 
     // Do nothing if player login optimization is disabled or user has no name.
     if (Boolean.TRUE.equals(!COMMON.optimizePlayerLogin.get()) || username.isEmpty()) {

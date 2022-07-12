@@ -25,6 +25,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.NetworkConstants;
 
 import de.markusbordihn.adaptiveperformancetweakscore.debug.DebugManager;
+import de.markusbordihn.adaptiveperformancetweakscore.utils.StopModReposts;
 
 @Mod(Constants.MOD_ID)
 public class AdaptivePerformanceTweaksCore {
@@ -38,6 +39,8 @@ public class AdaptivePerformanceTweaksCore {
 
     // Warn if debugging is enabled and automatically disable debug on prod for performance reasons.
     DebugManager.checkForDebugLogging(Constants.LOG_NAME);
+
+    StopModReposts.checkStopModReposts();
   }
 
 }

@@ -38,8 +38,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -125,9 +125,9 @@ public class ItemEntityManager {
   }
 
   @SubscribeEvent(priority = EventPriority.LOW)
-  public static void handleItemEntityJoinWorldEvent(EntityJoinWorldEvent event) {
+  public static void handleItemEntityJoinLevelEvent(EntityJoinLevelEvent event) {
     // Ignore client side world.
-    Level level = event.getWorld();
+    Level level = event.getLevel();
     if (level.isClientSide) {
       return;
     }
@@ -264,9 +264,9 @@ public class ItemEntityManager {
   }
 
   @SubscribeEvent(priority = EventPriority.LOW)
-  public static void handleItemEntityLeaveWorldEvent(EntityLeaveWorldEvent event) {
+  public static void handleItemEntityLeaveLevelEvent(EntityLeaveLevelEvent event) {
     // Ignore client side world.
-    Level level = event.getWorld();
+    Level level = event.getLevel();
     if (level.isClientSide) {
       return;
     }

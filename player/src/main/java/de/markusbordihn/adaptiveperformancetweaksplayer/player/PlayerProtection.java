@@ -78,7 +78,7 @@ public class PlayerProtection {
     if (Boolean.FALSE.equals(COMMON.protectPlayerDuringLogin.get())) {
       return;
     }
-    String username = event.getPlayer().getName().getString();
+    String username = event.getEntity().getName().getString();
     if (!username.isEmpty()) {
       ServerPlayer player =
           ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
@@ -117,7 +117,7 @@ public class PlayerProtection {
     if (Boolean.FALSE.equals(COMMON.protectPlayerDuringLogin.get())) {
       return;
     }
-    String username = event.getPlayer().getName().getString();
+    String username = event.getEntity().getName().getString();
     if (!username.isEmpty()) {
       log.debug("Player {} logged out.", event.getEntity());
       removePlayer(username);

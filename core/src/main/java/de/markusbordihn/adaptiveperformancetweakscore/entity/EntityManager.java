@@ -51,8 +51,8 @@ import net.minecraft.world.entity.vehicle.MinecartChest;
 import net.minecraft.world.level.Level;
 
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -98,9 +98,9 @@ public class EntityManager {
   }
 
   @SubscribeEvent(priority = EventPriority.HIGH)
-  public static void handleEntityJoinWorldEvent(EntityJoinWorldEvent event) {
+  public static void handleEntityJoinLevelEvent(EntityJoinLevelEvent event) {
     // Ignore client side world and if event is canceled.
-    Level level = event.getWorld();
+    Level level = event.getLevel();
     if (level.isClientSide || event.isCanceled()) {
       return;
     }
@@ -146,9 +146,9 @@ public class EntityManager {
   }
 
   @SubscribeEvent(priority = EventPriority.HIGH)
-  public static void handleEntityLeaveWorldEvent(EntityLeaveWorldEvent event) {
+  public static void handleEntityLeaveLevelEvent(EntityLeaveLevelEvent event) {
     // Ignore client side world.
-    Level level = event.getWorld();
+    Level level = event.getLevel();
     if (level.isClientSide) {
       return;
     }

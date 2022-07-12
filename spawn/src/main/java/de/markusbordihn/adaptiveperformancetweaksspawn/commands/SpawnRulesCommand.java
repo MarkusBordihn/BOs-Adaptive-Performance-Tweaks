@@ -49,7 +49,7 @@ public class SpawnRulesCommand extends CustomCommand {
 
   @Override
   public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-    Set<ResourceLocation> entitiesKeys = ForgeRegistries.ENTITIES.getKeys();
+    Set<ResourceLocation> entitiesKeys = ForgeRegistries.ENTITY_TYPES.getKeys();
     if (entitiesKeys.isEmpty()) {
       sendFeedback(context, "Unable to find any entities. Server / World is not loaded?");
       return 0;

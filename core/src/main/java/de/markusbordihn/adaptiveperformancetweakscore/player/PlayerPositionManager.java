@@ -61,9 +61,9 @@ public class PlayerPositionManager {
 
   @SubscribeEvent
   public static void handlePlayerLoggedOutEvent(PlayerEvent.PlayerLoggedOutEvent event) {
-    String playerUUID = event.getPlayer().getStringUUID();
+    String playerUUID = event.getEntity().getStringUUID();
     if (playerUUID != null) {
-      log.debug("Removing player {} from position tracking.", event.getPlayer());
+      log.debug("Removing player {} from position tracking.", event.getEntity());
       playerPositionMap.remove(playerUUID);
     }
   }
