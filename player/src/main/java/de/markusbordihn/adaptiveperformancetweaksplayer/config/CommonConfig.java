@@ -74,6 +74,10 @@ public final class CommonConfig {
 
     public final ForgeConfigSpec.BooleanValue enableChildPlayerProtection;
     public final ForgeConfigSpec.ConfigValue<List<String>> childPlayerProtectionList;
+    public final ForgeConfigSpec.BooleanValue childPlayerInvisible;
+    public final ForgeConfigSpec.BooleanValue childPlayerInvulnerable;
+    public final ForgeConfigSpec.IntValue childPlayerHurtDamageReduction;
+    public final ForgeConfigSpec.IntValue childPlayerAttackDamageIncrease;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
@@ -103,6 +107,17 @@ public final class CommonConfig {
       childPlayerProtectionList =
           builder.comment("List of child player username for the child player protection.")
               .define("childPlayerProtectionList", new ArrayList<String>(Arrays.asList("")));
+      childPlayerInvisible = builder.comment("Sets the child player to invisible.")
+          .define("childPlayerInvisible", true);
+      childPlayerInvulnerable = builder.comment("Sets the child player to invulnerable.")
+          .define("childPlayerInvulnerable", false);
+      childPlayerHurtDamageReduction = builder
+          .comment("Reduces the hurt damage to a child player by the amount of % (0 = disabled).")
+          .defineInRange("childPlayerHurtDamageReduction", 50, 0, 100);
+      childPlayerAttackDamageIncrease = builder
+          .comment(
+              "Increase the attack damage of a child player by the amount of % (0 = disabled).")
+          .defineInRange("childPlayerAttackDamageIncrease", 50, 0, 1000);
       builder.pop();
     }
   }

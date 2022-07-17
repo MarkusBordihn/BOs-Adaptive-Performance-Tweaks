@@ -16,8 +16,9 @@ Furthermore other smaller optimization will be done to allow a smoother login pr
 
 ## 🛡️🐨Child Player Protection
 
-Changes the game-mode of your Child automatically to a more peaceful / easier mode so that they are more enjoying the game even if you are playing in another mode like hardcore.
-Just add the child player name's to the configuration to automatically activate this mode for them.
+Playing together with less experience player or child's could be a challenge to find the right balance for all players.
+Just add the child player names to the configuration and additional define how much hurt damage should be decreased and if any attack damage should be increased for them.
+This allows are more enjoying the game even if you are playing in hardcore mode or with less experience players or child's.
 
 ## 🚀Install additional Optimization
 
