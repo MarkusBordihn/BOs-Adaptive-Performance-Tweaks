@@ -145,7 +145,7 @@ public class PlayerProtection {
     }
 
     if (!playerValidationList.isEmpty()) {
-       try {
+      try {
         // Check for any un-validated players and try to detect if they logged-in.
         for (PlayerValidation playerValidation : playerValidationList) {
           String username = playerValidation.getUsername();
@@ -173,23 +173,38 @@ public class PlayerProtection {
   }
 
   private static void addPlayer(String username) {
-     try {
+    try {
       for (PlayerValidation playerValidation : playerValidationList) {
         if (username.equals(playerValidation.getUsername())) {
           ServerPlayer player =
               ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
           log.debug("Found player {} with player validation {}", player, playerValidation);
-          boolean isChildPlayerAccount =
-              (enableChildPlayerProtection && childPlayerProtectionList.contains(username));
           if (protectPlayerDuringLoginLogging
               && (player.isInvisible() || player.isInvulnerable())) {
-            log.info("Removing player protection from player {}!", username);
-            if (player.isInvisible() && !isChildPlayerAccount) {
-              player.setInvisible(false);
+
+            if (enableChildPlayerProtection && childPlayerProtectionList.contains(username)) {
+              // Handle child player accounts.
+              if (player.isInvisible() && Boolean.FALSE.equals(COMMON.childPlayerInvisible.get())) {
+                log.info("Removing player protection invisible from child player {}!", username);
+                player.setInvisible(false);
+              }
+              if (player.isInvulnerable()
+                  && Boolean.FALSE.equals(COMMON.childPlayerInvulnerable.get())) {
+                log.info("Removing player protection invulnerable from child player {}!", username);
+                player.setInvulnerable(false);
+              }
+            } else {
+              // Handle normal player accounts.
+              if (player.isInvisible()) {
+                log.info("Removing player protection invisible from player {}!", username);
+                player.setInvisible(false);
+              }
+              if (player.isInvulnerable()) {
+                log.info("Removing player protection invulnerable from player {}!", username);
+                player.setInvulnerable(false);
+              }
             }
-            if (player.isInvulnerable() && !isChildPlayerAccount) {
-              player.setInvulnerable(false);
-            }
+
           }
           playerValidationList.remove(playerValidation);
           break;
@@ -204,7 +219,7 @@ public class PlayerProtection {
   }
 
   private static void removePlayer(String username) {
-     try {
+    try {
       for (PlayerValidation playerValidation : playerValidationList) {
         if (username.equals(playerValidation.getUsername())) {
           playerValidationList.remove(playerValidation);

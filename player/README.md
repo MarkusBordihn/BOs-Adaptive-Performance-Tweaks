@@ -1,7 +1,9 @@
-[![Adaptive Performance Tweaks Downloads](http://cf.way2muchnoise.eu/full_563963_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player)
-[![Adaptive Performance Tweaks Versions](http://cf.way2muchnoise.eu/versions/Minecraft_563963_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player)
+# Adaptive Performance Tweaks: Player
 
 ![Adaptive Performance Tweaks: Player][header]
+
+[![Adaptive Performance Tweaks Downloads](http://cf.way2muchnoise.eu/full_563963_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player)
+[![Adaptive Performance Tweaks Versions](http://cf.way2muchnoise.eu/versions/Minecraft_563963_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player)
 
 Adaptive Performance Tweaks is a collection of Minecraft Forge server-side Mod which automatically adjust specific settings on the server to allow a more balanced TPS/FPS.
 The goal of this mod is to allow a smoother experience on a server with several (=> 180) Mods.
@@ -14,8 +16,11 @@ Furthermore other smaller optimization will be done to allow a smoother login pr
 
 ## 🛡️🐨Child Player Protection
 
-Changes the game-mode of your Child automatically to a more peaceful / easier mode so that they are more enjoying the game even if you are playing in another mode like hardcore.
-Just add the child player name's to the configuration to automatically activate this mode for them.
+Playing together with less experience player or child's could be a challenge to find the right balance for all players.
+
+Just add the child player names to the configuration and additional define how much hurt damage should be decreased and if any attack damage should be increased for them.
+
+This allows are more enjoying the game even if you are playing in hardcore mode or with less experience players or child's.
 
 ## 🚀Install additional Optimization
 
