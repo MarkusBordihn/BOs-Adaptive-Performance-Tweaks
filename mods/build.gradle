@@ -4,20 +4,17 @@ buildscript {
     mavenCentral()
     jcenter()
   }
-  dependencies {
-    classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
-  }
 }
 
 plugins {
   id 'com.matthewprenger.cursegradle' version '1.4.0'
-  id 'nu.studer.credentials' version '1.0.7'
   id 'eclipse'
   id 'maven-publish'
+  id 'net.minecraftforge.gradle' version '5.1.+'
+  id 'nu.studer.credentials' version '1.0.7'
 }
 
 apply plugin: 'net.minecraftforge.gradle'
-
 version = "${version_major}.${version_minor}.${version_patch}"
 archivesBaseName = "${mod_id}_${mc_version}"
 
@@ -31,7 +28,7 @@ minecraft {
   // stable_#            Stables are built at the discretion of the MCP team.
   // Use non-default mappings at your own risk. they may not always work.
   // Simply re-run your setup task after changing the mappings to update your workspace.
-  mappings channel: 'official', version: '1.19'
+  mappings channel: 'official', version: '1.19.1'
   // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
 
   // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
@@ -125,11 +122,11 @@ dependencies {
   // Specify the version of Minecraft to use, If this is any group other then 'net.minecraft' it is assumed
   // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
   // The userdev artifact is a special name and will get all sorts of transformations applied to it.
-  minecraft 'net.minecraftforge:forge:1.19-41.0.99'
+  minecraft 'net.minecraftforge:forge:1.19.1-42.0.0'
 
   // Required: Bo's Adaptive Performance Tweaks: Core (dev dependency)
-  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:4.2.0")
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:4.2.0")
+  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:5.0.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:5.0.0")
 
   // Test Framework
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
@@ -177,7 +174,7 @@ curseforge {
     id = "${curseforge_project_id}"
     changelog = file("../CHANGELOG.md")
     releaseType = 'release'
-    addGameVersion("1.19")
+    addGameVersion("1.19.1")
     addGameVersion("Forge")
     mainArtifact(jar) {
       relations {

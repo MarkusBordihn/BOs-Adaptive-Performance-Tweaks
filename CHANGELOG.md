@@ -5,6 +5,10 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.07.28
+
+- Refactored code for version 1.19.1-42.0.0
+
 ### 2022.07.17
 
 - Improved less experienced and child protection mode for player login module with the option to decrease hurt damage and to increase attack damage.

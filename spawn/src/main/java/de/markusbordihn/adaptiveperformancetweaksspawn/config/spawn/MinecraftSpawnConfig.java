@@ -125,6 +125,7 @@ public final class MinecraftSpawnConfig {
             "minecraft:cow",
             "minecraft:donkey",
             "minecraft:fox",
+            "minecraft:frog",
             "minecraft:goat",
             "minecraft:horse",
             "minecraft:llama",
