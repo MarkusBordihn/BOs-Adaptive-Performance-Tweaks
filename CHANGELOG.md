@@ -5,6 +5,10 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.08.01
+
+- Updated client mods database and improved version detection.
+
 ### 2022.07.10
 
 - Fixed exotic version strings detection and improved sorting for duplicated mods.

@@ -66,9 +66,11 @@ public class ModsDatabase {
     "NekosEnchantedBooks-1.18.2-1.6.1.jar",
     "Notes-1.18.1-1.2.4.jar",
     "ReAuth-1.18-Forge-4.0.0.jar",
+    "StylishEffects-v3.1.0-1.18.2-Forge.jar",
     "TipTheScales-forge-1.18.2-5.0.5.jar",
     "ToastControl-1.18.2-6.0.2.jar",
     "advancements_tracker_1.18.2-1.2.0.jar",
+    "advancementscreenshot_1.18.2-3.2.jar",
     "beautifiedchatclient_1.18.1-1.1.jar",
     "better-loading-screen-1.4.0.jar",
     "betterbiomeblend-1.18.1-1.3.2-forge.jar",
@@ -112,7 +114,7 @@ public class ModsDatabase {
   public static String stripeVersionNumbers(String name) {
     // Remove version strings with RegExp in several steps.
     // This is needed, because there are two many variants to cover everything with a single check.
-    return name.replaceAll("(?i)(-)?(ALPHA|BETA|RELEASE)(-)?", "")
+    return name.replaceAll("(?i)(-)?(ALPHA|BETA|RELEASE)(-)?", "").replace("\\(1\\)", "")
         .replaceAll("(forge|FORGE|Forge)", "").replaceAll("(-(mc)?[^A-Za-z_]+)[a-z]?.jar$", ".jar")
         .replaceAll("(_(mc)?[^A-Za-z_]+)[a-z]?.jar$", ".jar")
         .replaceAll("(.[^A-Za-z_]+)[a-z]?.jar$", ".jar").replaceAll("(?i)(mc[^A-Z_]+)", "")
@@ -120,7 +122,7 @@ public class ModsDatabase {
         .replaceAll("(v[^A-Za-z_-]+)", "").replaceAll("(1.18.1|1.18.2)", "")
         .replaceAll("-{2,}", "-").replaceAll("_{2,}", "_").replace("[]", "")
         .replace(" .jar", ".jar").replaceAll("(-)+jar$", ".jar").replaceAll("(_)+jar$", ".jar")
-        .replaceAll("[a-z]{1}jar$", ".jar");
+        .replaceAll("[a-z]jar$", ".jar");
   }
 
 }
