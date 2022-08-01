@@ -35,7 +35,7 @@ public class ModsDatabase {
   // @formatter:off
     "3dskinlayers-forge-1.4.3-mc1.19.1.2.jar",
     "BetterAdvancements-1.19.1-0.1.2.122.jar",
-    "BetterF3-1.2.2-Forge-1.18.jar",
+    "BetterF3-1.3.2-Forge-1.19.jar",
     "BetterModsButton-v3.2.1-1.19.1-Forge.jar",
     "BetterThirdPerson-Forge-1.19.1.6.0.jar",
     "BetterTitleScreen-1.19.1.12.0.jar",
@@ -66,9 +66,11 @@ public class ModsDatabase {
     "NekosEnchantedBooks-1.19.1-1.6.1.jar",
     "Notes-1.19.1-1.2.4.jar",
     "ReAuth-1.19.1-Forge-4.0.0.jar",
+    "StylishEffects-v3.1.0-1.19.1-Forge.jar",
     "TipTheScales-forge-1.19.1-5.0.5.jar",
     "ToastControl-1.19.1-6.0.2.jar",
     "advancements_tracker_1.19.1-1.2.0.jar",
+    "advancementscreenshot_1.19.1-3.2.jar",
     "auudio_forge_1.0.3_MC_1.19.1.jar",
     "beautifiedchatclient_1.19.1-1.1.jar",
     "better-loading-screen-1.4.0.jar",
@@ -83,6 +85,7 @@ public class ModsDatabase {
     "drawerfps-1.19.1-2.3.jar",
     "drippyloadingscreen_forge_1.5.1_MC_1.18-1.19.1.jar",
     "eatinganimation-1.19.1-2.0.1.jar",
+    "elytra-flight-hud-1.1.3.jar",
     "entityculling-forge-mc1.19.1-1.5.0.jar",
     "extremeSoundMuffler-3.24_Forge-1.19.1.jar",
     "fancymenu_forge_2.6.4_MC_1.19.1.jar",
@@ -121,7 +124,7 @@ public class ModsDatabase {
   public static String stripeVersionNumbers(String name) {
     // Remove version strings with RegExp in several steps.
     // This is needed, because there are two many variants to cover everything with a single check.
-    return name.replaceAll("(?i)(-)?(ALPHA|BETA|RELEASE)(-)?", "")
+    return name.replaceAll("(?i)(-)?(ALPHA|BETA|RELEASE)(-)?", "").replace("\\(1\\)", "")
         .replaceAll("(forge|FORGE|Forge)", "").replaceAll("(-(mc)?[^A-Za-z_]+)[a-z]?.jar$", ".jar")
         .replaceAll("(_(mc)?[^A-Za-z_]+)[a-z]?.jar$", ".jar")
         .replaceAll("(.[^A-Za-z_]+)[a-z]?.jar$", ".jar").replaceAll("(?i)(mc[^A-Z_]+)", "")
@@ -129,7 +132,7 @@ public class ModsDatabase {
         .replaceAll("(v[^A-Za-z_-]+)", "").replaceAll("1.19.1", "").replaceAll("-{2,}", "-")
         .replaceAll("_{2,}", "_").replace("[]", "").replace(" .jar", ".jar")
         .replaceAll("(-)+jar$", ".jar").replaceAll("(_)+jar$", ".jar")
-        .replaceAll("[a-z]{1}jar$", ".jar");
+        .replaceAll("[a-z]jar$", ".jar");
   }
 
 }
