@@ -73,6 +73,7 @@ public class EntityManager {
   private static ConcurrentHashMap<String, Set<Entity>> entityMap = new ConcurrentHashMap<>();
   private static ConcurrentHashMap<String, Set<Entity>> entityMapPerWorld =
       new ConcurrentHashMap<>();
+  private static ConcurrentHashMap<String, Set<Entity>> entityMapGlobal = new ConcurrentHashMap<>();
 
   protected EntityManager() {}
 
@@ -80,6 +81,7 @@ public class EntityManager {
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
     entityMap = new ConcurrentHashMap<>();
     entityMapPerWorld = new ConcurrentHashMap<>();
+    entityMapGlobal = new ConcurrentHashMap<>();
   }
 
   @SubscribeEvent
@@ -200,6 +202,11 @@ public class EntityManager {
         entityMapPerWorld.computeIfAbsent(levelName, key -> ConcurrentHashMap.newKeySet());
     entitiesPerWorld.add(entity);
 
+    // Store entities global.
+    Set<Entity> entitiesGlobal =
+        entityMapGlobal.computeIfAbsent(entityName, key -> ConcurrentHashMap.newKeySet());
+    entitiesGlobal.add(entity);
+
     log.debug("[Joined] Entity {} ({}) joined {}.", entityName, entity, levelName);
   }
 
@@ -210,6 +217,7 @@ public class EntityManager {
   }
 
   public static void removeEntity(Entity entity, String entityName, String levelName) {
+
     // Remove entity from per type and world map.
     Set<Entity> entities = entityMap.get(getEntityMapKey(levelName, entityName));
     if (entities != null) {
@@ -222,6 +230,12 @@ public class EntityManager {
       entitiesPerWorld.remove(entity);
     }
 
+    // Remove entity from global map
+    Set<Entity> entitiesGlobal = entityMapGlobal.get(levelName);
+    if (entitiesGlobal != null) {
+      entitiesGlobal.remove(entity);
+    }
+
     log.debug("[Left] Entity {} ({}) leaved {}.", entityName, entity, levelName);
   }
 
@@ -231,6 +245,10 @@ public class EntityManager {
 
   public static Map<String, Set<Entity>> getEntities() {
     return entityMap;
+  }
+
+  public static Map<String, Set<Entity>> getEntitiesGlobal() {
+    return entityMapGlobal;
   }
 
   public static Map<String, Set<Entity>> getEntities(String dimensionName) {
@@ -259,6 +277,14 @@ public class EntityManager {
 
   public static Integer getNumberOfEntitiesPerWorld(String levelName) {
     Set<Entity> entities = entityMapPerWorld.get(levelName);
+    if (entities == null) {
+      return 0;
+    }
+    return entities.size();
+  }
+
+  public static Integer getNumberOfEntities(String entityName) {
+    Set<Entity> entities = entityMapGlobal.get(entityName);
     if (entities == null) {
       return 0;
     }
@@ -318,15 +344,18 @@ public class EntityManager {
     // Verify Entities from world specific overview
     removedEntries += removeDiscardedEntities(entityMapPerWorld);
 
+    // Verify Entities from global overview
+    removedEntries += removeDiscardedEntities(entityMapGlobal);
+
     if (removedEntries > 0) {
-      log.debug("Removed {} entries during the verification", removedEntries);
+      log.debug("🗑 Removed {} entries during the verification ", removedEntries);
     }
   }
 
   private static int removeDiscardedEntities(ConcurrentMap<String, Set<Entity>> entityMapToCheck) {
     int removedEntries = 0;
     if (entityMapToCheck != null && entityMapToCheck.size() > 0) {
-      // Remove entities which are no longer valid liked removed onces.
+      // Remove entities which are no longer valid like removed onces.
       for (Set<Entity> entities : entityMapToCheck.values()) {
         Iterator<Entity> entityIterator = entities.iterator();
         while (entityIterator.hasNext()) {
