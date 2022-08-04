@@ -111,9 +111,9 @@ public final class MekanismAdditionsSpawnConfig {
           )));
 
       mekanismAdditionsMaxHostileMobsPerPlayer =
-          builder.defineInRange("mekanismAdditionsMaxHostileMobsPerPlayer", 2, 1, 64);
+          builder.defineInRange("mekanismAdditionsMaxHostileMobsPerPlayer", 4, 1, 64);
       mekanismAdditionsMaxHostileMobsPerWorld =
-          builder.defineInRange("mekanismAdditionsMaxHostileMobsPerWorld", 8, 1, 512);
+          builder.defineInRange("mekanismAdditionsMaxHostileMobsPerWorld", 16, 1, 512);
       mekanismAdditionsHostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
           .define("mekanismAdditionsHostileMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off

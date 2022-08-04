@@ -49,6 +49,7 @@ public class ServerLevelLoad {
 
   private static Map<ServerLevel, Double> levelLoad = new ConcurrentHashMap<>();
   private static Map<ServerLevel, ServerLevelLoadLevel> levelLoadLevel = new ConcurrentHashMap<>();
+  private static Map<String, ServerLevelLoadLevel> levelNameLoadLevel = new ConcurrentHashMap<>();
 
   public enum ServerLevelLoadLevel {
     VERY_LOW, LOW, NORMAL, MEDIUM, HIGH, VERY_HIGH
@@ -58,43 +59,46 @@ public class ServerLevelLoad {
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
     levelLoad = new ConcurrentHashMap<>();
     levelLoadLevel = new ConcurrentHashMap<>();
+    levelNameLoadLevel = new ConcurrentHashMap<>();
     logServerLevelLoad = COMMON.logServerLevelLoad.get();
     timeBetweenUpdates = COMMON.timeBetweenUpdates.get() * 1000;
   }
 
   public static void measureLoadAndPost(Dist dist) {
-    for (ServerLevel ServerLevel : ServerManager.getAllLevels()) {
+    for (ServerLevel serverLevel : ServerManager.getAllLevels()) {
       // Calculate current average tick times.
-      long[] tickTimes = ServerManager.getMinecraftServer().getTickTime(ServerLevel.dimension());
+      long[] tickTimes = ServerManager.getMinecraftServer().getTickTime(serverLevel.dimension());
       if (tickTimes != null) {
         double avgTickTime = Arrays.stream(tickTimes).average().orElse(Double.NaN) / 1000000;
 
         // Restrict and smoother high to low server load updates
-        double lastAvgTickTime = levelLoad.getOrDefault(ServerLevel, 45.0);
+        double lastAvgTickTime = levelLoad.getOrDefault(serverLevel, 45.0);
         if (lastAvgTickTime >= avgTickTime
             && System.currentTimeMillis() - lastUpdateTime < timeBetweenUpdates) {
           continue;
         }
 
         // Cache avg. tick time
-        levelLoad.put(ServerLevel, avgTickTime);
+        levelLoad.put(serverLevel, avgTickTime);
 
         // Cache former load level and calculate current load level.
+        String serverLevelName = serverLevel.dimension().location().toString();
         ServerLevelLoadLevel lastLoadLevel =
-            levelLoadLevel.getOrDefault(ServerLevel, ServerLevelLoadLevel.NORMAL);
+            levelLoadLevel.getOrDefault(serverLevel, ServerLevelLoadLevel.NORMAL);
         ServerLevelLoadLevel loadLevel = getServerLevelLoadLevelFromTickTime(avgTickTime);
-        levelLoadLevel.put(ServerLevel, loadLevel);
+        levelLoadLevel.put(serverLevel, loadLevel);
+        levelNameLoadLevel.put(serverLevelName, loadLevel);
 
         // Report change to server log, if enabled.
         if (loadLevel != lastLoadLevel && logServerLevelLoad) {
           String loadIndicator = lastAvgTickTime > avgTickTime ? "↓" : "↑";
           log.info("{} {} Level load for {} changed from {} (avg. {}) to {} (avg. {})",
-              Constants.LOG_PREFIX, loadIndicator, ServerLevel.dimension().location(),
-              lastLoadLevel, lastAvgTickTime, loadLevel, avgTickTime);
+              Constants.LOG_PREFIX, loadIndicator, serverLevelName, lastLoadLevel, lastAvgTickTime,
+              loadLevel, avgTickTime);
         }
 
         // Post result to the event bus.
-        MinecraftForge.EVENT_BUS.post(new ServerLevelLoadEvent(ServerLevel, loadLevel,
+        MinecraftForge.EVENT_BUS.post(new ServerLevelLoadEvent(serverLevel, loadLevel,
             lastLoadLevel, avgTickTime, lastAvgTickTime, dist));
       }
     }
@@ -126,6 +130,24 @@ public class ServerLevelLoad {
 
   public static Map<ServerLevel, ServerLevelLoadLevel> getLevelLoadLevel() {
     return levelLoadLevel;
+  }
+
+  public static Map<String, ServerLevelLoadLevel> getLevelNameLoadLevel() {
+    return levelNameLoadLevel;
+  }
+
+  public static boolean hasHighLevelLoad(ServerLevelLoadLevel serverLevelLoadLevel) {
+    if (serverLevelLoadLevel == null) {
+      return false;
+    }
+    switch (serverLevelLoadLevel) {
+      case MEDIUM:
+      case HIGH:
+      case VERY_HIGH:
+        return true;
+      default:
+        return false;
+    }
   }
 
 }

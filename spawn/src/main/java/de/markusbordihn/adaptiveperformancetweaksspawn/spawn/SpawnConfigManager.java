@@ -39,6 +39,7 @@ import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.AquacultureS
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.CustomSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.MekanismAdditionsSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.MinecraftSpawnConfig;
+import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.PanthalassaSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.QuarkSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.TinkersConstructConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.UntamedWildsSpawnConfig;
@@ -57,6 +58,8 @@ public class SpawnConfigManager {
   private static final MekanismAdditionsSpawnConfig.Config MEKANISM_ADDITIONS_CONFIG =
       MekanismAdditionsSpawnConfig.COMMON;
   private static final MinecraftSpawnConfig.Config MINECRAFT_CONFIG = MinecraftSpawnConfig.COMMON;
+  private static final PanthalassaSpawnConfig.Config PANTHALASSA_CONFIG =
+      PanthalassaSpawnConfig.COMMON;
   private static final QuarkSpawnConfig.Config QUARK_CONFIG = QuarkSpawnConfig.COMMON;
   private static final TinkersConstructConfig.Config TINKERS_CONSTRUCT_CONFIG =
       TinkersConstructConfig.COMMON;
@@ -155,6 +158,23 @@ public class SpawnConfigManager {
           new HashSet<>(MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsHostileMobsList.get()),
           MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsMaxHostileMobsPerPlayer.get(),
           MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsMaxHostileMobsPerWorld.get());
+    }
+
+    // Panthalassa
+    if (Boolean.TRUE.equals(PANTHALASSA_CONFIG.panthalassaEnabled.get())
+        && modList.isLoaded(PANTHALASSA_CONFIG.panthalassaId.get())) {
+      addSpawnRatesForPassiveMobs(PANTHALASSA_CONFIG.panthalassaId.get(),
+          new HashSet<>(PANTHALASSA_CONFIG.panthalassaPassiveMobsList.get()),
+          PANTHALASSA_CONFIG.panthalassaMaxPassiveMobsPerPlayer.get(),
+          PANTHALASSA_CONFIG.panthalassaMaxPassiveMobsPerWorld.get());
+      addSpawnRatesForNeutralMobs(PANTHALASSA_CONFIG.panthalassaId.get(),
+          new HashSet<>(PANTHALASSA_CONFIG.panthalassaNeutralMobsList.get()),
+          PANTHALASSA_CONFIG.panthalassaMaxNeutralMobsPerPlayer.get(),
+          PANTHALASSA_CONFIG.panthalassaMaxNeutralMobsPerWorld.get());
+      addSpawnRatesForHostileMobs(PANTHALASSA_CONFIG.panthalassaId.get(),
+          new HashSet<>(PANTHALASSA_CONFIG.panthalassaHostileMobsList.get()),
+          PANTHALASSA_CONFIG.panthalassaMaxHostileMobsPerPlayer.get(),
+          PANTHALASSA_CONFIG.panthalassaMaxHostileMobsPerWorld.get());
     }
 
     // Quark

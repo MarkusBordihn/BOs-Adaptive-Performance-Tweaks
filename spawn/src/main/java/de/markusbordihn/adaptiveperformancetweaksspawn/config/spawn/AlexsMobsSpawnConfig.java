@@ -140,9 +140,9 @@ public final class AlexsMobsSpawnConfig {
           )));
 
       alexsMobsMaxHostileMobsPerPlayer =
-          builder.defineInRange("alexsMobsMaxHostileMobsPerPlayer", 2, 1, 64);
+          builder.defineInRange("alexsMobsMaxHostileMobsPerPlayer", 4, 1, 64);
       alexsMobsMaxHostileMobsPerWorld =
-          builder.defineInRange("alexsMobsMaxHostileMobsPerWorld", 8, 1, 512);
+          builder.defineInRange("alexsMobsMaxHostileMobsPerWorld", 16, 1, 512);
       alexsMobsHostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
           .define("alexsMobsHostileMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off

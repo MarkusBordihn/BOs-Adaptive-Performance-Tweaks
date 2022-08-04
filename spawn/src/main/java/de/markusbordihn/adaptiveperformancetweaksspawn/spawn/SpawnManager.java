@@ -21,7 +21,9 @@ package de.markusbordihn.adaptiveperformancetweaksspawn.spawn;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -42,8 +44,11 @@ import de.markusbordihn.adaptiveperformancetweakscore.entity.EntityManager;
 import de.markusbordihn.adaptiveperformancetweakscore.message.WarnMessages;
 import de.markusbordihn.adaptiveperformancetweakscore.player.PlayerPosition;
 import de.markusbordihn.adaptiveperformancetweakscore.player.PlayerPositionManager;
+import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLevelLoad;
+import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLevelLoadEvent;
 import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweakscore.server.ServerManager;
+import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLevelLoad.ServerLevelLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.CommonConfig;
 
@@ -53,6 +58,7 @@ public class SpawnManager {
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
+  private static Map<String, ServerLevelLoadLevel> serverLevelLoadLevel = new ConcurrentHashMap<>();
   private static Set<String> allowList = new HashSet<>(COMMON.spawnAllowList.get());
   private static Set<String> denyList = new HashSet<>(COMMON.spawnDenyList.get());
   private static Set<String> ignoreDimensionList =
@@ -89,6 +95,12 @@ public class SpawnManager {
     }
     if (!ignoreDimensionList.isEmpty()) {
       log.info("{} Ignore dimension list: {}", Constants.LOG_PREFIX, ignoreDimensionList);
+    }
+    if (Boolean.TRUE.equals(COMMON.spawnAggressiveMode.get())) {
+      log.warn("Enable more aggressive spawn optimizations!");
+    } else {
+      log.info(
+          "If you want to use a more aggressive spawn optimization, please set 'spawnAggressiveMode' to 'true'");
     }
     if (spawnLimitationEnabled) {
       if (spawnLimitationLimiter > 0) {
@@ -128,6 +140,13 @@ public class SpawnManager {
   public static void handleServerLoadEvent(ServerLoadEvent event) {
     if (event.hasChanged()) {
       hasHighServerLoad = event.hasHighServerLoad();
+    }
+  }
+
+  @SubscribeEvent
+  public static void handleServerLevelLoadEvent(ServerLevelLoadEvent event) {
+    if (event.hasChanged()) {
+      serverLevelLoadLevel.put(event.getServerLevelName(), event.getServerLevelLoadLevel());
     }
   }
 
@@ -198,46 +217,64 @@ public class SpawnManager {
       return;
     }
 
-    // Get current game difficult to define spawn factor.
-    double spawnFactor = ServerManager.getGameDifficultyFactor();
-
     // Get the number of current entities for this world.
     int numberOfEntities = EntityManager.getNumberOfEntities(levelName, entityName);
 
-    // Limit spawn based on world limits.
-    int limitPerWorld = SpawnConfigManager.getSpawnLimitPerWorld(entityName);
-    if (limitPerWorld > 0 && numberOfEntities >= limitPerWorld * spawnFactor) {
-      log.debug("[World limit] Blocked spawn event for {} ({} >= {} * {}f) in {}", entityName,
-          numberOfEntities, limitPerWorld, spawnFactor, levelName);
-      event.setResult(Event.Result.DENY);
+    // Numbers of entities inside view area.
+    int numberOfEntitiesInsideViewArea = 0;
+
+    // Get the current level load for supporting less aggressive mode.
+    ServerLevelLoadLevel levelLoadLevel =
+        serverLevelLoadLevel.computeIfAbsent(levelName, key -> ServerLevelLoad
+            .getLevelNameLoadLevel().getOrDefault(key, ServerLevelLoadLevel.NORMAL));
+
+    // Use more aggressive spawn limitation in the case user has enabled aggressive mode or
+    // if the general server load or the specific level load of the entity is high.
+    if (Boolean.TRUE.equals(COMMON.spawnAggressiveMode.get() || hasHighServerLoad
+        || ServerLevelLoad.hasHighLevelLoad(levelLoadLevel))) {
+
+      // Get current game difficult to define spawn factor.
+      double spawnFactor = ServerManager.getGameDifficultyFactor();
+
+      // Limit spawn based on world limits.
+      int limitPerWorld = SpawnConfigManager.getSpawnLimitPerWorld(entityName);
+      if (limitPerWorld > 0 && numberOfEntities >= limitPerWorld * spawnFactor) {
+        log.debug("[World limit] Blocked spawn event for {} ({} >= {} * {}f) in {}", entityName,
+            numberOfEntities, limitPerWorld, spawnFactor, levelName);
+        event.setResult(Event.Result.DENY);
+        return;
+      }
+
+      // Cheap and fast calculation to limit spawn based on possible entities within player limits
+      // for high server load.
+      int limitPerPlayer = SpawnConfigManager.getSpawnLimitPerPlayer(entityName);
+      if (hasHighServerLoad && limitPerPlayer > 0 && numberOfEntities >= limitPerPlayer
+          * limitPerPlayer * numOfPlayersInsideViewArea * spawnFactor) {
+        log.debug(
+            "[High Server Load] Blocked spawn event for {} ({} >= {}m * {}m * {}p * {}f) in {}",
+            entityName, numberOfEntities, limitPerPlayer, numOfPlayersInsideViewArea, spawnFactor,
+            levelName);
+        event.setResult(Event.Result.DENY);
+        return;
+      }
+
+      // Expensive calculation to Limit spawn based on real entities within player position.
+      numberOfEntitiesInsideViewArea = EntityManager.getNumberOfEntitiesInPlayerPositions(levelName,
+          entityName, playersPositionsInsideViewArea);
+      if (limitPerPlayer > 0 && numberOfEntitiesInsideViewArea >= limitPerPlayer
+          * numOfPlayersInsideViewArea * spawnFactor) {
+        log.debug("[View Area Limit] Blocked spawn event for {} ({} >= {}l * {}p * {}f) in {}",
+            entityName, numberOfEntitiesInsideViewArea, limitPerPlayer, numOfPlayersInsideViewArea,
+            spawnFactor, levelName);
+        event.setResult(Event.Result.DENY);
+        return;
+      }
+    } else {
+      log.debug("[Allow Spawn (low load)] For {} in {} and {} in world", entity, levelName,
+          numberOfEntities);
       return;
     }
 
-    // Cheap and fast calculation to limit spawn based on possible entities within player limits for
-    // high server load.
-    int limitPerPlayer = SpawnConfigManager.getSpawnLimitPerPlayer(entityName);
-    if (hasHighServerLoad && limitPerPlayer > 0 && numberOfEntities >= limitPerPlayer
-        * limitPerPlayer * numOfPlayersInsideViewArea * spawnFactor) {
-      log.debug("[High Server Load] Blocked spawn event for {} ({} >= {}m * {}m * {}p * {}f) in {}",
-          entityName, numberOfEntities, limitPerPlayer, numOfPlayersInsideViewArea, spawnFactor,
-          levelName);
-      event.setResult(Event.Result.DENY);
-      return;
-    }
-
-    // Expensive calculation to Limit spawn based on real entities within player position.
-    int numberOfEntitiesInsideViewArea = EntityManager.getNumberOfEntitiesInPlayerPositions(
-        levelName, entityName, playersPositionsInsideViewArea);
-    if (limitPerPlayer > 0 && numberOfEntitiesInsideViewArea >= limitPerPlayer
-        * numOfPlayersInsideViewArea * spawnFactor) {
-      log.debug("[View Area Limit] Blocked spawn event for {} ({} >= {}l * {}p * {}f) in {}",
-          entityName, numberOfEntitiesInsideViewArea, limitPerPlayer, numOfPlayersInsideViewArea,
-          spawnFactor, levelName);
-      event.setResult(Event.Result.DENY);
-      return;
-    }
-
-    // Allow spawn is no rule is matching.
     log.debug("[Allow Spawn] For {} in {} with {} in view and {} in world", entity, levelName,
         numberOfEntitiesInsideViewArea, numberOfEntities);
 
