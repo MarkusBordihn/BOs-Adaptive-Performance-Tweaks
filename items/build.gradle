@@ -128,8 +128,8 @@ dependencies {
   minecraft 'net.minecraftforge:forge:1.19-41.1.0'
 
   // Required: Bo's Adaptive Performance Tweaks: Core (dev dependency)
-  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:4.2.0")
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:4.2.0")
+  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:4.3.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:4.3.0")
 
   // Testing (runtime depenedency)
 
