@@ -115,7 +115,7 @@ public final class QuarkSpawnConfig {
           )));
 
       quarkMaxHostileMobsPerPlayer =
-          builder.defineInRange("quarkMaxHostileMobsPerPlayer", 2, 1, 64);
+          builder.defineInRange("quarkMaxHostileMobsPerPlayer", 4, 1, 64);
       quarkMaxHostileMobsPerWorld =
           builder.defineInRange("quarkMaxHostileMobsPerWorld", 16, 1, 512);
       quarkHostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)

@@ -34,6 +34,7 @@ public class PlayerPosition {
   private static final int OVERGROUND_Y = 63;
   private static final int OVERGROUND_Y_MIN_VIEW = OVERGROUND_Y - 12;
   private static final int WATER_Y_MAX_VIEW = OVERGROUND_Y + 12;
+  private static final int MAX_VIEW_AREA_DISTANCE = 240; // 240x240 = 15x15 chunks max.
 
   private ServerPlayer player;
   private String playerName = "";
@@ -140,9 +141,10 @@ public class PlayerPosition {
     } else {
       this.viewAreaDistance = this.viewDistance * CHUNK_SIZE;
     }
-    if (this.viewAreaDistance > 240) {
-      // This 240x240 (15x15 chunks) is the max. mob spawn radius for any natural spawn
-      this.viewAreaDistance = 240;
+
+    // Limit max view area distance to consider mods which changes the factors.
+    if (this.viewAreaDistance > MAX_VIEW_AREA_DISTANCE) {
+      this.viewAreaDistance = MAX_VIEW_AREA_DISTANCE;
     }
 
     // Simple calculation for X, Y and Z

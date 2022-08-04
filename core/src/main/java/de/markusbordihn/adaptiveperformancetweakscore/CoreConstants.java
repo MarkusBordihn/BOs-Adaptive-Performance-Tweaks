@@ -102,6 +102,10 @@ public final class CoreConstants {
   public static final String RUBIDIUM_NAME = "Rubidium";
   public static final boolean RUBIDIUM_LOADED = ModList.get().isLoaded(RUBIDIUM_MOD);
 
+  public static final String PANTHALASSA_MOD = "panthalassa";
+  public static final String PANTHALASSA_NAME = "Panthalassa";
+  public static final boolean PANTHALASSA_LOADED = ModList.get().isLoaded(PANTHALASSA_MOD);
+
   public static final String PERFORMANT_MOD = "performant";
   public static final String PERFORMANT_NAME = "Performant";
   public static final boolean PERFORMANT_LOADED = ModList.get().isLoaded(PERFORMANT_MOD);
