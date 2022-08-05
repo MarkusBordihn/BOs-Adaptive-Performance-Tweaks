@@ -44,10 +44,13 @@ public class EntityCommand extends CustomCommand {
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static final EntityCommand command = new EntityCommand();
+  private static final String NO_ENTITIES_TEXT =
+      "Unable to find any entities. Server / World is not loaded?";
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
     return Commands.literal("entities").requires(cs -> cs.hasPermission(2)).executes(command)
         .then(Commands.literal("overview").executes(command::overview))
+        .then(Commands.literal("overview_per_level").executes(command::overviewPerLevel))
         .then(Commands.literal("registry").executes(command::registry));
   }
 
@@ -61,9 +64,23 @@ public class EntityCommand extends CustomCommand {
   }
 
   public int overview(CommandContext<CommandSourceStack> context) {
+    Map<String, Set<Entity>> entities = EntityManager.getEntitiesGlobal();
+    if (entities.isEmpty()) {
+      sendFeedback(context, NO_ENTITIES_TEXT);
+      return 0;
+    }
+    sendFeedback(context, String.format("Entity overview (%s types)\n===", entities.size()));
+    log.info("Entity overview: {}", entities);
+    for (Map.Entry<String, Set<Entity>> entity : entities.entrySet()) {
+      sendFeedback(context, String.format("%s x %s", entity.getValue().size(), entity.getKey()));
+    }
+    return 0;
+  }
+
+  public int overviewPerLevel(CommandContext<CommandSourceStack> context) {
     Map<String, Set<Entity>> entities = EntityManager.getEntities();
     if (entities.isEmpty()) {
-      sendFeedback(context, "Unable to find any entities. Server / World is not loaded?");
+      sendFeedback(context, NO_ENTITIES_TEXT);
       return 0;
     }
     sendFeedback(context, String.format("Entity overview (%s types)\n===", entities.size()));
@@ -77,7 +94,7 @@ public class EntityCommand extends CustomCommand {
   public int registry(CommandContext<CommandSourceStack> context) {
     Set<ResourceLocation> entitiesKeys = ForgeRegistries.ENTITY_TYPES.getKeys();
     if (entitiesKeys.isEmpty()) {
-      sendFeedback(context, "Unable to find any entities. Server / World is not loaded?");
+      sendFeedback(context, NO_ENTITIES_TEXT);
       return 0;
     }
     sendFeedback(context, String.format("Entity registry (%s types)\n===", entitiesKeys.size()));

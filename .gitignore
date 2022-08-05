@@ -37,10 +37,11 @@ forge*changelog.txt
 .DS_Store
 generated
 logs
-*.clip
-*.stackdump
-*.log
 *.bak
+*.clip
+*.log
+*.patch.txt
+*.stackdump
 
 # Launch files
 core/.vscode/launch.json
