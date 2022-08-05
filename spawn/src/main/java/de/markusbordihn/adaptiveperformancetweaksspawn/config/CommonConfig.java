@@ -76,6 +76,7 @@ public final class CommonConfig {
     public final ForgeConfigSpec.IntValue spawnLimitationLimiter;
     public final ForgeConfigSpec.IntValue spawnLimitationMaxMobsPerPlayer;
     public final ForgeConfigSpec.IntValue spawnLimitationMaxMobsPerWorld;
+    public final ForgeConfigSpec.IntValue spawnLimitationMaxMobsPerServer;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
@@ -93,18 +94,21 @@ public final class CommonConfig {
           .define("spawnAggressiveMode", false);
       builder.pop();
 
-      builder.push("Spawn Limitations");
+      builder.push("Global Spawn Limitations");
       spawnLimitationEnabled = builder.comment("Enable/Disable general spawn limitations.")
           .define("spawnLimitationEnabled", true);
       spawnLimitationLimiter = builder.comment(
           "Blocks every x spawn to avoid an over population with the limited spawn area. Use 0 to disable this optimization.")
-          .defineInRange("spawnLimitationLimiter", 10, 0, 100);
+          .defineInRange("spawnLimitationLimiter", 16, 0, 100);
       spawnLimitationMaxMobsPerPlayer = builder.comment(
           "Defines the max. number of entities of a specific type, which could spawn within the player view area. Use 0 to disable this optimization.")
-          .defineInRange("spawnLimitationMaxMobsPerPlayer", 8, 0, 256);
+          .defineInRange("spawnLimitationMaxMobsPerPlayer", 32, 0, 256);
       spawnLimitationMaxMobsPerWorld = builder.comment(
           "Defines the max. number of entities of a specific type, which could spawn within a single world. Use 0 to disable this optimization.")
           .defineInRange("spawnLimitationMaxMobsPerWorld", 128, 0, 1024);
+      spawnLimitationMaxMobsPerServer = builder.comment(
+          "Defines the max. number of entities of a specific type, which could spawn within a single world. Use 0 to disable this optimization.")
+          .defineInRange("spawnLimitationMaxMobsPerServer", 512, 0, 1024);
       builder.pop();
     }
   }

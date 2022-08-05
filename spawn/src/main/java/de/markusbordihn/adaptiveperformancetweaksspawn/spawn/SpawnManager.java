@@ -31,6 +31,8 @@ import org.apache.logging.log4j.Logger;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 
+import net.minecraftforge.event.entity.EntityEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
@@ -99,13 +101,17 @@ public class SpawnManager {
         log.info("{} \u2713 Enable limiter and block randomly every {} mob from spawning ...",
             Constants.LOG_PREFIX, COMMON.spawnLimitationLimiter.get());
       }
+      if (COMMON.spawnLimitationMaxMobsPerPlayer.get() > 0) {
+        log.info("{} \u2713 Enable spawn rate control with max {} per player ...",
+            Constants.LOG_PREFIX, COMMON.spawnLimitationMaxMobsPerPlayer.get());
+      }
       if (COMMON.spawnLimitationMaxMobsPerWorld.get() > 0) {
         log.info("{} \u2713 Enable spawn rate control with max {} per world ...",
             Constants.LOG_PREFIX, COMMON.spawnLimitationMaxMobsPerWorld.get());
       }
-      if (COMMON.spawnLimitationMaxMobsPerPlayer.get() > 0) {
-        log.info("{} \u2713 Enable spawn rate control with max {} per player ...",
-            Constants.LOG_PREFIX, COMMON.spawnLimitationMaxMobsPerPlayer.get());
+      if (COMMON.spawnLimitationMaxMobsPerServer.get() > 0) {
+        log.info("{} \u2713 Enable spawn rate control with max {} per server ...",
+            Constants.LOG_PREFIX, COMMON.spawnLimitationMaxMobsPerServer.get());
       }
     }
 
@@ -142,17 +148,26 @@ public class SpawnManager {
     }
   }
 
+  // CheckSpawn is fired when an Entity is about to be spawned.
   @SubscribeEvent(priority = EventPriority.HIGHEST)
   public static void handleLivingCheckSpawnEvent(LivingSpawnEvent.CheckSpawn event) {
     handleSpawnEvent(event);
   }
 
+  // SpecialSpawn is fired when an Entity is to be spawned.
   @SubscribeEvent(priority = EventPriority.HIGHEST)
   public static void handleLivingSpecialSpawnEvent(LivingSpawnEvent.SpecialSpawn event) {
     handleSpawnEvent(event);
   }
 
-  private static void handleSpawnEvent(LivingSpawnEvent event) {
+  // EntityJoinWorldEvent is fired when an Entity joins the world.
+  // This event is cancelable and does not have a result.
+  @SubscribeEvent(priority = EventPriority.HIGHEST)
+  public static void handleEntityJoinWorldEvent(EntityJoinLevelEvent event) {
+    handleSpawnEvent(event);
+  }
+
+  private static void handleSpawnEvent(EntityEvent event) {
     // Ignore events which are already canceled or denied.
     if (event.isCanceled() || event.getResult() == Event.Result.DENY) {
       log.debug("[Canceled / denied Spawn Event] Ignore spawn event {}!", event);
@@ -163,6 +178,8 @@ public class SpawnManager {
     String entityName = entity.getEncodeId();
     Level level = entity.level;
     String levelName = level.dimension().location().toString();
+    boolean isSpawnEvent = event instanceof LivingSpawnEvent;
+    String eventType = isSpawnEvent ? "spawn" : "join";
 
     // Pre-check for relevant entities.
     if (!isRelevantEntity(entity, entityName, levelName)) {
@@ -176,45 +193,96 @@ public class SpawnManager {
 
     // Pre-check for denied entities to avoid expensive calculations.
     if (denyList.contains(entityName)) {
-      log.debug("[Denied Entity] Denied spawn event for {} in {} ", entity, levelName);
-      event.setResult(Event.Result.DENY);
+      log.debug("[Denied Entity] Denied {} event for {} in {} ", eventType, entity, levelName);
+      if (isSpawnEvent) {
+        event.setResult(Event.Result.DENY);
+      } else {
+        event.setCanceled(true);
+      }
       return;
     }
 
     // Ignore entities with custom name (e.g. name tags) regardless of type
     if (entity.hasCustomName()) {
-      log.debug("[Custom Entity] Skip spawn event for {} in {} ", entity, levelName);
+      log.debug("[Custom Entity] Skip {} event for {} in {} ", eventType, entity, levelName);
       return;
     }
 
     // Get current players positions for later calculations
-    List<PlayerPosition> playersPositionsInsideViewArea =
-        PlayerPositionManager.getPlayerPositionsInsideViewArea(levelName, (int) event.getX(),
-            (int) event.getY(), (int) event.getZ());
+    List<PlayerPosition> playersPositionsInsideViewArea = null;
+    int numOfPlayersInsideViewArea = 0;
+    if (event instanceof LivingSpawnEvent livingSpawnEvent) {
+      playersPositionsInsideViewArea = PlayerPositionManager.getPlayerPositionsInsideViewArea(
+          levelName, (int) livingSpawnEvent.getX(), (int) livingSpawnEvent.getY(),
+          (int) livingSpawnEvent.getZ());
 
-    // Limit spawns to optimized players view area for all mods.
-    Integer numOfPlayersInsideViewArea = playersPositionsInsideViewArea.size();
-    if (numOfPlayersInsideViewArea == 0) {
-      log.debug("[View Area Visibility] Blocked spawn event for {} in {}.", entity, levelName);
-      event.setResult(Event.Result.DENY);
-      return;
+      // Limit spawns to optimized players view area for all mods.
+      numOfPlayersInsideViewArea = playersPositionsInsideViewArea.size();
+      if (numOfPlayersInsideViewArea == 0) {
+        log.debug("[View Area Visibility] Blocked spawn event for {} in {}.", entity, levelName);
+        event.setResult(Event.Result.DENY);
+        return;
+      }
     }
 
     // Limit spawns randomly every x times.
     int spawnLimitationLimiter = COMMON.spawnLimitationLimiter.get();
     if (spawnLimitationLimiter > 0 && spawnLimiter++ >= spawnLimitationLimiter) {
-      log.debug("[Spawn Limiter {}] Blocked spawn event for {} in {}.", spawnLimitationLimiter,
-          entity, levelName);
-      event.setResult(Event.Result.DENY);
+      log.debug("[Spawn Limiter {}] Blocked {} event for {} in {}.", spawnLimitationLimiter,
+          eventType, entity, levelName);
+      if (isSpawnEvent) {
+        event.setResult(Event.Result.DENY);
+      } else {
+        event.setCanceled(true);
+      }
       spawnLimiter = 0;
       return;
     }
 
-    // Get the number of current entities for this world.
-    int numberOfEntities = EntityManager.getNumberOfEntities(levelName, entityName);
+    // Spawn Limitations: Max mobs per Server
+    int numberOfEntities = EntityManager.getNumberOfEntities(entityName);
+    int spawnLimitationMaxMobsPerServer = COMMON.spawnLimitationMaxMobsPerServer.get();
+    if (spawnLimitationMaxMobsPerServer > 0
+        && numberOfEntities >= spawnLimitationMaxMobsPerServer) {
+      log.debug("[Spawn Limitations Server: {}] Blocked {} event for {} in {}.", numberOfEntities,
+          eventType, entity, levelName);
+      if (isSpawnEvent) {
+        event.setResult(Event.Result.DENY);
+      } else {
+        event.setCanceled(true);
+      }
+      return;
+    }
 
-    // Numbers of entities inside view area.
+    // Spawn Limitations: Max mobs per World
+    int numberOfEntitiesPerWorld = EntityManager.getNumberOfEntities(levelName, entityName);
+    int spawnLimitationMaxMobsPerWorld = COMMON.spawnLimitationMaxMobsPerWorld.get();
+    if (spawnLimitationMaxMobsPerWorld > 0
+        && numberOfEntitiesPerWorld >= spawnLimitationMaxMobsPerWorld) {
+      log.debug("[Spawn Limitations World: {}] Blocked {} event for {} in {}.",
+          numberOfEntitiesPerWorld, eventType, entity, levelName);
+      if (isSpawnEvent) {
+        event.setResult(Event.Result.DENY);
+      } else {
+        event.setCanceled(true);
+      }
+      return;
+    }
+
+    // Spawn Limitations: Max mobs per player
     int numberOfEntitiesInsideViewArea = 0;
+    int spawnLimitationMaxMobsPerPlayer = COMMON.spawnLimitationMaxMobsPerPlayer.get();
+    if (playersPositionsInsideViewArea != null) {
+      numberOfEntitiesInsideViewArea = EntityManager.getNumberOfEntitiesInPlayerPositions(levelName,
+          entityName, playersPositionsInsideViewArea);
+      if (spawnLimitationMaxMobsPerPlayer > 0
+          && numberOfEntitiesInsideViewArea >= spawnLimitationMaxMobsPerPlayer) {
+        log.debug("[Spawn Limitations Player: {}] Blocked spawn event for {} in {}.",
+            numberOfEntitiesInsideViewArea, entity, levelName);
+        event.setResult(Event.Result.DENY);
+        return;
+      }
+    }
 
     // Get the current level load for supporting less aggressive mode.
     ServerLevelLoadLevel levelLoadLevel =
@@ -231,31 +299,35 @@ public class SpawnManager {
 
       // Limit spawn based on world limits.
       int limitPerWorld = SpawnConfigManager.getSpawnLimitPerWorld(entityName);
-      if (limitPerWorld > 0 && numberOfEntities >= limitPerWorld * spawnFactor) {
-        log.debug("[World limit] Blocked spawn event for {} ({} >= {} * {}f) in {}", entityName,
-            numberOfEntities, limitPerWorld, spawnFactor, levelName);
-        event.setResult(Event.Result.DENY);
+      if (limitPerWorld > 0 && numberOfEntitiesPerWorld >= limitPerWorld * spawnFactor) {
+        log.debug("[World limit] Blocked {} event for {} ({} >= {} * {}f) in {}", eventType,
+            entityName, numberOfEntitiesPerWorld, limitPerWorld, spawnFactor, levelName);
+        if (isSpawnEvent) {
+          event.setResult(Event.Result.DENY);
+        } else {
+          event.setCanceled(true);
+        }
         return;
       }
 
       // Cheap and fast calculation to limit spawn based on possible entities within player limits
       // for high server load.
       int limitPerPlayer = SpawnConfigManager.getSpawnLimitPerPlayer(entityName);
-      if (hasHighServerLoad && limitPerPlayer > 0 && numberOfEntities >= limitPerPlayer
-          * limitPerPlayer * numOfPlayersInsideViewArea * spawnFactor) {
+      if (hasHighServerLoad && limitPerPlayer > 0 && numOfPlayersInsideViewArea > 0
+          && numberOfEntitiesPerWorld >= limitPerPlayer * limitPerPlayer
+              * numOfPlayersInsideViewArea * spawnFactor) {
         log.debug(
             "[High Server Load] Blocked spawn event for {} ({} >= {}m * {}m * {}p * {}f) in {}",
-            entityName, numberOfEntities, limitPerPlayer, numOfPlayersInsideViewArea, spawnFactor,
-            levelName);
+            entityName, numberOfEntitiesPerWorld, limitPerPlayer, numOfPlayersInsideViewArea,
+            spawnFactor, levelName);
         event.setResult(Event.Result.DENY);
         return;
       }
 
       // Expensive calculation to Limit spawn based on real entities within player position.
-      numberOfEntitiesInsideViewArea = EntityManager.getNumberOfEntitiesInPlayerPositions(levelName,
-          entityName, playersPositionsInsideViewArea);
-      if (limitPerPlayer > 0 && numberOfEntitiesInsideViewArea >= limitPerPlayer
-          * numOfPlayersInsideViewArea * spawnFactor) {
+      if (limitPerPlayer > 0 && numberOfEntitiesInsideViewArea > 0
+          && numberOfEntitiesInsideViewArea >= limitPerPlayer * numOfPlayersInsideViewArea
+              * spawnFactor) {
         log.debug("[View Area Limit] Blocked spawn event for {} ({} >= {}l * {}p * {}f) in {}",
             entityName, numberOfEntitiesInsideViewArea, limitPerPlayer, numOfPlayersInsideViewArea,
             spawnFactor, levelName);
@@ -263,13 +335,14 @@ public class SpawnManager {
         return;
       }
     } else {
-      log.debug("[Allow Spawn (low load)] For {} in {} and {} in world", entity, levelName,
-          numberOfEntities);
+      log.debug("[Allow {} (low load)] For {} in {} and {} in world", eventType, entity, levelName,
+          numberOfEntitiesPerWorld);
+      lastAllowedSpawnEntity = entity;
       return;
     }
 
-    log.debug("[Allow Spawn] For {} in {} with {} in view and {} in world", entity, levelName,
-        numberOfEntitiesInsideViewArea, numberOfEntities);
+    log.debug("[Allow {}] For {} in {} with {} in view and {} in world", eventType, entity,
+        levelName, numberOfEntitiesInsideViewArea, numberOfEntitiesPerWorld);
 
     // Cache result for avoid duplicated checks.
     lastAllowedSpawnEntity = entity;
