@@ -5,6 +5,10 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.08.07
+
+- Refactored code for version 1.19.2-43.0.0
+
 ### 2022.08.06
 
 - Added option to disable view area optimization.
@@ -29,7 +33,7 @@ For the full changelog, please go to the [Git Hub History][history] instead.
 
 ### 2022.07.12
 
-- Refactored code for version 1.19-41.0.99.
+- Refactored code for version 1.19-41.0.99
 
 ### 2022.07.10
 
@@ -42,7 +46,7 @@ For the full changelog, please go to the [Git Hub History][history] instead.
 
 ### 2022.06.25
 
-- Fixed smaller issues with 1.19-41.0.45. Please report 1.19-41.0.45 issue over the issue link, if there are still any issues.
+- Fixed smaller issues with 1.19-41.0.45 Please report 1.19-41.0.45 issue over the issue link, if there are still any issues.
 
 ### 2022.06.22
 
@@ -54,7 +58,7 @@ For the full changelog, please go to the [Git Hub History][history] instead.
 
 ### 2022.06.08
 
-- Refactored code for version 1.19-41.0.38.
+- Refactored code for version 1.19-41.0.38
 
 ### 2022.05.28
 

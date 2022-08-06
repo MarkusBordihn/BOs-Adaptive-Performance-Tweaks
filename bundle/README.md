@@ -16,9 +16,7 @@ If you want to pick and choose your optimization mod, take a look at the core pa
 
 **➡️ [Install separate modules][core]**
 
-## Version and Status Overview 🛠️
-
-### 🚀 Version 1.18.1 and higher 🛠️
+## 🚀 Version and Status Overview 🛠️
 
 The next-gen version of Adaptive Performance Tweaks is separated by functionally to allow an easier mix with other optimization mods.
 This mod includes the bundle version of all optimization modules.
@@ -26,19 +24,6 @@ This mod includes the bundle version of all optimization modules.
 **Note: Please make sure that you are install all the modules separate in the case you are not using the CurseForge launcher.**
 
 The full list of included modules is available at the [dependencies overview][dependencies].
-
-### 🚀 Version 1.16.5 ⚠️
-
-The next-gen version of Adaptive Performance Tweaks is only supporting 1.18.1 and higher.
-
-The former 1.16.5 version will only be receiving maintaining updates and has some backported feature from the next-gen version.
-But there will be no other backports of features and you should switch to 1.18.1, to get the latest features.
-
-**➡️ [1.16.5 Documentation][adaptive_performance_tweaks_legacy]**
-
-### 🚀 Version 1.17.1 ❌
-
-This version is deprecated and will no longer receive and updates of fixes. Use it on your own risk.
 
 ## Version Status Overview 🛠️
 
