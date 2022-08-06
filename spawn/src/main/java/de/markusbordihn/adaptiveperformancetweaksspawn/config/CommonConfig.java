@@ -69,8 +69,9 @@ public final class CommonConfig {
     public final ForgeConfigSpec.ConfigValue<List<String>> spawnAllowList;
     public final ForgeConfigSpec.ConfigValue<List<String>> spawnDenyList;
     public final ForgeConfigSpec.ConfigValue<List<String>> spawnIgnoreDimensionList;
-
     public final ForgeConfigSpec.BooleanValue spawnAggressiveMode;
+
+    public final ForgeConfigSpec.BooleanValue viewAreaEnabled;
 
     public final ForgeConfigSpec.BooleanValue spawnLimitationEnabled;
     public final ForgeConfigSpec.IntValue spawnLimitationLimiter;
@@ -92,6 +93,11 @@ public final class CommonConfig {
           .define("spawnIgnoreDimensionList", new ArrayList<String>(Arrays.asList("minecraft:the_end")));
       spawnAggressiveMode = builder.comment("Enable/Disable more aggressive spawn limitations.")
           .define("spawnAggressiveMode", false);
+      builder.pop();
+
+      builder.push("View Area");
+      viewAreaEnabled = builder.comment("Enable/Disable view area optimization.")
+          .define("viewAreaEnabled", true);
       builder.pop();
 
       builder.push("Global Spawn Limitations");

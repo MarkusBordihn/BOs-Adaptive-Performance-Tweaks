@@ -136,21 +136,15 @@ public class ItemEntityManager {
 
   @SubscribeEvent(priority = EventPriority.LOW)
   public static void handleItemEntityJoinWorldEvent(EntityJoinWorldEvent event) {
-    // Ignore client side world.
+    // Ignore client side world and if event is canceled.
     Level level = event.getWorld();
-    if (level.isClientSide) {
+    if (level.isClientSide || event.isCanceled()) {
       return;
     }
 
     // Ignore everything else besides Items or items which are removed.
     Entity entity = event.getEntity();
     if (!(entity instanceof ItemEntity) || entity.isRemoved()) {
-      return;
-    }
-
-    // Ignore events which are already canceled
-    if (event.isCanceled()) {
-      log.debug("Ignore canceled Item event {}!", event);
       return;
     }
 

@@ -5,6 +5,11 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.08.06
+
+- Added option to disable view area optimization.
+- Fixed issues with possible invisible entities on the client side.
+
 ### 2022.08.04
 
 - Added default spawn config for Panthalassa.

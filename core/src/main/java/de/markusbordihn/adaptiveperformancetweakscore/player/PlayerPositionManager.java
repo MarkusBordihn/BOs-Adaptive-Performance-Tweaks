@@ -36,14 +36,14 @@ import net.minecraft.server.players.PlayerList;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.server.ServerLifecycleHooks;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 
 import de.markusbordihn.adaptiveperformancetweakscore.Constants;
 import de.markusbordihn.adaptiveperformancetweakscore.dimension.DimensionManager;
 
-@Mod.EventBusSubscriber
+@EventBusSubscriber
 public class PlayerPositionManager {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
