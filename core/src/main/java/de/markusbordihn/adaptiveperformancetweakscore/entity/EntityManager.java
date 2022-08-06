@@ -93,7 +93,7 @@ public class EntityManager {
     }
 
     // Verify entities to consider removed and unloaded entities.
-    if (ticks >= VERIFICATION_TICK) {
+    if (ticks >= VERIFICATION_TICK && event.haveTime()) {
       verifyEntities();
       ticks = 0;
     }
@@ -161,7 +161,7 @@ public class EntityManager {
       return;
     }
 
-    // Skip other checks if unknown entity name
+    // Skip other checks if unknown entity name.
     String entityName = entity.getEncodeId();
     if (entityName == null) {
       return;
@@ -172,11 +172,14 @@ public class EntityManager {
 
   @SubscribeEvent(priority = EventPriority.HIGH)
   public static void handleLivingDeathEvent(LivingDeathEvent event) {
+    // Ignore client side world.
     Entity entity = event.getEntity();
     Level level = entity.getLevel();
     if (level.isClientSide) {
       return;
     }
+
+    // Skip if unknown entity name.
     String entityName = entity.getEncodeId();
     if (entityName == null) {
       return;

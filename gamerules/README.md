@@ -37,12 +37,13 @@ Please report issues over the **Issue** link.
 | Fabric Version | ❌ Not planned        |
 | Forge 1.16.5   | ❌ Not planned        |
 | Forge 1.17.1   | ❌ Not planned        |
-| Forge 1.18.1   | ⚠️ Maintenance only   |
+| Forge 1.18.1   | ⚠️ Deprecated         |
 | Forge 1.18.2   | ⚠️ Maintenance only   |
-| Forge 1.19     | ✔️ Active development |
+| Forge 1.19     | ⚠️ Deprecated         |
+| Forge 1.19.1   | ⚠️ Deprecated         |
+| Forge 1.19.2   | ✔️ Active development |
 
 [header]: ../assets/aptweaks-header-only.png
-
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
 [core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
 [gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules

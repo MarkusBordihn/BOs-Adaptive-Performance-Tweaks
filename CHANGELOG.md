@@ -5,6 +5,11 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.08.06
+
+- Added option to disable view area optimization.
+- Fixed issues with possible invisible entities on the client side.
+
 ### 2022.08.04
 
 - Added default spawn config for Panthalassa.
@@ -172,7 +177,6 @@ For the full changelog, please go to the [Git Hub History][history] instead.
 - Initial check-in of next gen-version of Adaptive Performance Tweaks.
 
 [history]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/commits/main
-
 [better-fps-render-distance]: https://www.curseforge.com/minecraft/mc-mods/better-fps-render-distance
 [dynamic-view]: https://www.curseforge.com/minecraft/mc-mods/dynamic-view/
 [farsight]: https://www.curseforge.com/minecraft/mc-mods/farsight
