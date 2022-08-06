@@ -29,7 +29,7 @@ license="MIT"
 [[dependencies.adaptive_performance_tweaks]]
   modId="forge"
   mandatory=true
-  versionRange="[41.0.94,)"
+  versionRange="[41.1.0,)"
   ordering="NONE"
   side="BOTH"
 
@@ -43,34 +43,34 @@ license="MIT"
 [[dependencies.adaptive_performance_tweaks]]
   modId="adaptive_performance_tweaks_core"
   mandatory=true
-  versionRange="[4.4.0,5.0.0)"
+  versionRange="[4.5.0,5.0.0)"
   ordering="NONE"
   side="SERVER"
 
 [[dependencies.adaptive_performance_tweaks]]
   modId="adaptive_performance_tweaks_gamerules"
   mandatory=true
-  versionRange="[4.4.0,5.0.0)"
+  versionRange="[4.5.0,5.0.0)"
   ordering="NONE"
   side="SERVER"
 
 [[dependencies.adaptive_performance_tweaks]]
   modId="adaptive_performance_tweaks_items"
   mandatory=true
-  versionRange="[4.4.0,5.0.0)"
+  versionRange="[4.5.0,5.0.0)"
   ordering="NONE"
   side="SERVER"
 
 [[dependencies.adaptive_performance_tweaks]]
   modId="adaptive_performance_tweaks_player"
   mandatory=true
-  versionRange="[4.4.0,5.0.0)"
+  versionRange="[4.5.0,5.0.0)"
   ordering="NONE"
   side="SERVER"
 
 [[dependencies.adaptive_performance_tweaks]]
   modId="adaptive_performance_tweaks_spawn"
   mandatory=true
-  versionRange="[4.4.0,5.0.0)"
+  versionRange="[4.5.0,5.0.0)"
   ordering="NONE"
   side="SERVER"
