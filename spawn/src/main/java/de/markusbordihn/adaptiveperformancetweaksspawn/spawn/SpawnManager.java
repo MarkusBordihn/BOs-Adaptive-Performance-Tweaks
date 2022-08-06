@@ -96,6 +96,9 @@ public class SpawnManager {
       log.info(
           "If you want to use a more aggressive spawn optimization, please set 'spawnAggressiveMode' to 'true'");
     }
+    if (Boolean.FALSE.equals(COMMON.viewAreaEnabled.get())) {
+      log.info("Disable view area optimizations!");
+    }
     if (Boolean.TRUE.equals(COMMON.spawnLimitationEnabled.get())) {
       if (COMMON.spawnLimitationLimiter.get() > 0) {
         log.info("{} \u2713 Enable limiter and block randomly every {} mob from spawning ...",
@@ -174,9 +177,14 @@ public class SpawnManager {
       return;
     }
 
+    // Ignore client side events.
     Entity entity = event.getEntity();
-    String entityName = entity.getEncodeId();
     Level level = entity.level;
+    if (level.isClientSide()) {
+      return;
+    }
+
+    String entityName = entity.getEncodeId();
     String levelName = level.dimension().location().toString();
     boolean isSpawnEvent = event instanceof LivingSpawnEvent;
     String eventType = isSpawnEvent ? "spawn" : "join";
@@ -211,7 +219,8 @@ public class SpawnManager {
     // Get current players positions for later calculations
     List<PlayerPosition> playersPositionsInsideViewArea = null;
     int numOfPlayersInsideViewArea = 0;
-    if (event instanceof LivingSpawnEvent livingSpawnEvent) {
+    if (event instanceof LivingSpawnEvent livingSpawnEvent
+        && Boolean.TRUE.equals(COMMON.viewAreaEnabled.get())) {
       playersPositionsInsideViewArea = PlayerPositionManager.getPlayerPositionsInsideViewArea(
           levelName, (int) livingSpawnEvent.getX(), (int) livingSpawnEvent.getY(),
           (int) livingSpawnEvent.getZ());
@@ -291,9 +300,9 @@ public class SpawnManager {
 
     // Use more aggressive spawn limitation in the case user has enabled aggressive mode or
     // if the general server load or the specific level load of the entity is high.
-    if (Boolean.TRUE.equals(COMMON.spawnAggressiveMode.get() || hasHighServerLoad
-        || ServerLevelLoad.hasHighLevelLoad(levelLoadLevel))) {
-
+    boolean limitSpawnPerLimits = Boolean.TRUE.equals(hasHighServerLoad
+        || ServerLevelLoad.hasHighLevelLoad(levelLoadLevel) || COMMON.spawnAggressiveMode.get());
+    if (limitSpawnPerLimits) {
       // Get current game difficult to define spawn factor.
       double spawnFactor = ServerManager.getGameDifficultyFactor();
 
@@ -334,15 +343,19 @@ public class SpawnManager {
         event.setResult(Event.Result.DENY);
         return;
       }
-    } else {
-      log.debug("[Allow {} (low load)] For {} in {} and {} in world", eventType, entity, levelName,
-          numberOfEntitiesPerWorld);
-      lastAllowedSpawnEntity = entity;
-      return;
     }
 
-    log.debug("[Allow {}] For {} in {} with {} in view and {} in world", eventType, entity,
-        levelName, numberOfEntitiesInsideViewArea, numberOfEntitiesPerWorld);
+    // Debug messages
+    if (!limitSpawnPerLimits) {
+      log.debug("[Allow {} (low load)] For {} in {} and {} in world", eventType, entity, levelName,
+          numberOfEntitiesPerWorld);
+    } else if (numberOfEntitiesInsideViewArea > 0) {
+      log.debug("[Allow {}] For {} in {} with {} in view area and {} in world", eventType, entity,
+          levelName, numberOfEntitiesInsideViewArea, numberOfEntitiesPerWorld);
+    } else {
+      log.debug("[Allow {}] For {} in {} with {} in world", eventType, entity, levelName,
+          numberOfEntitiesPerWorld);
+    }
 
     // Cache result for avoid duplicated checks.
     lastAllowedSpawnEntity = entity;
