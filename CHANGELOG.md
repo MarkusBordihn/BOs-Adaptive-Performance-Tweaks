@@ -5,6 +5,12 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.09.03
+
+- Added configuration file `config/adaptive_performance_tweaks/client_side_mods.list` to customize client side mods for the mod module with auto-update feature.
+- Added additional client side mods to the list based on information provided by [Modrinth][modrinth].
+- Improved client side mods version extraction and normalization.
+
 ### 2022.08.06
 
 - Added option to disable view area optimization.
@@ -177,3 +183,4 @@ For the full changelog, please go to the [Git Hub History][history] instead.
 [better-fps-render-distance]: https://www.curseforge.com/minecraft/mc-mods/better-fps-render-distance
 [dynamic-view]: https://www.curseforge.com/minecraft/mc-mods/dynamic-view/
 [farsight]: https://www.curseforge.com/minecraft/mc-mods/farsight
+[modrinth]: https://modrinth.com/

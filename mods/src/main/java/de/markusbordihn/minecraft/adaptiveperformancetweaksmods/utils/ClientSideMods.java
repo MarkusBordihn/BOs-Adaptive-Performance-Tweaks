@@ -48,16 +48,16 @@ public class ClientSideMods {
       if (modFileName.endsWith(CLIENT_MOD_EXTENSION) && isClientSide(modFileName)) {
         File clientFile = new File(
             modFile.getAbsoluteFile().toString().replace(".jar" + CLIENT_MOD_EXTENSION, ".jar"));
-        log.info("{} ✔️ Try to enable client side mod {} ...", LOG_PREFIX, modFileName);
+        log.info("{} ✔ Try to enable client side mod {} ...", LOG_PREFIX, modFileName);
         if (clientFile.exists()) {
-          if (!modFile.delete()) {
-            log.error("{} ⚠️ Was unable to remove duplicated client side mod {}!", LOG_PREFIX,
+          if (!ModFileUtils.deleteModFile(modFile)) {
+            log.error("{} ⚠ Was unable to remove duplicated client side mod {}!", LOG_PREFIX,
                 modFile);
           } else {
             result++;
           }
         } else if (!modFile.renameTo(clientFile)) {
-          log.error("{} ⚠️ Was unable to enable client side mod {}!", LOG_PREFIX, modFile);
+          log.error("{} ⚠ Was unable to enable client side mod {}!", LOG_PREFIX, modFile);
         } else {
           result++;
         }
@@ -78,16 +78,16 @@ public class ClientSideMods {
       if (!modFileName.endsWith(CLIENT_MOD_EXTENSION) && modFileName.endsWith(".jar")
           && isClientSide(modFileName)) {
         File clientFile = new File(modFile.getAbsoluteFile() + CLIENT_MOD_EXTENSION);
-        log.info("{} ❌ Try to disable client side mod {} ...", LOG_PREFIX, modFileName);
+        log.info("{} X Try to disable client side mod {} ...", LOG_PREFIX, modFileName);
         if (clientFile.exists()) {
-          if (!modFile.delete()) {
-            log.error("{} ⚠️ Was unable to remove duplicated client side mod {}!", LOG_PREFIX,
+          if (!ModFileUtils.deleteModFile(modFile)) {
+            log.error("{} ⚠ Was unable to remove duplicated client side mod {}!", LOG_PREFIX,
                 modFile);
           } else {
             result++;
           }
         } else if (!modFile.renameTo(clientFile)) {
-          log.error("{} ⚠️ Was unable to disable client side mod {}!", LOG_PREFIX, modFile);
+          log.error("{} ⚠ Was unable to disable client side mod {}!", LOG_PREFIX, modFile);
         } else {
           result++;
         }
@@ -98,7 +98,7 @@ public class ClientSideMods {
 
   public static boolean isClientSide(String name) {
     String shortedModName = ModsDatabase.stripeVersionNumbers(name);
-    return ModsDatabase.clientSideMods.contains(shortedModName);
+    return ClientSideModsConfig.containsClientSideMode(shortedModName);
   }
 
 }

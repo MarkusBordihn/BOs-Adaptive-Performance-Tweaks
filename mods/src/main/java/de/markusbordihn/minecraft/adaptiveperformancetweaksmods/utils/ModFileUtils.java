@@ -19,26 +19,41 @@
 
 package de.markusbordihn.minecraft.adaptiveperformancetweaksmods.utils;
 
-import org.junit.jupiter.api.Test;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.data.TestData;
+import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.Constants;
 
-public class ClientSideModsTests {
+public class ModFileUtils {
 
-  @Test
-  void testIsClientSide() {
-    for (String clientMod : TestData.clientModList) {
-      boolean isClientSide = ClientSideMods.isClientSide(clientMod);
-      System.out.printf("Client Mod: %s = %s\n", clientMod, isClientSide);
-      assertTrue(isClientSide);
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+
+  private static final String LOG_PREFIX = "[Mod File Utils]";
+
+  protected ModFileUtils() {
+
+  }
+
+  public static boolean deleteModFile(File file) {
+    if (file == null) {
+      return false;
     }
-    for (String generalMod : TestData.modList) {
-      boolean isClientSide = ClientSideMods.isClientSide(generalMod);
-      System.out.printf("General Mod: %s = %s\n", generalMod, isClientSide);
-      assertFalse(isClientSide);
+    if (file.isDirectory()) {
+      log.error("{} ⚠ Was unable to delete mod file {}, because it's an directory!", LOG_PREFIX,
+          file);
+      return false;
+    }
+    Path filePath = file.toPath();
+    try {
+      return Files.deleteIfExists(filePath);
+    } catch (IOException e) {
+      log.error("{} ⚠ Was unable to delete mod file {}, because of: {}", LOG_PREFIX, file, e);
+      return false;
     }
   }
 

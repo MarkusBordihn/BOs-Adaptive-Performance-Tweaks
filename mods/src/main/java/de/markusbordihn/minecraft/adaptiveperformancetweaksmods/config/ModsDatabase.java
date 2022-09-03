@@ -20,18 +20,18 @@
 package de.markusbordihn.minecraft.adaptiveperformancetweaksmods.config;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class ModsDatabase {
+
+  public static final String VERSION = "1.0.0";
 
   protected ModsDatabase() {}
 
   /**
    * List of client side mods, which are confirmed to be client-side only!
    */
-  public static final List<String> clientSideModsList = Arrays.asList(
+  private static final List<String> clientSideModsList = Arrays.asList(
   // @formatter:off
     "3dskinlayers-forge-1.4.3-mc1.19.2.jar",
     "BetterAdvancements-1.19-0.1.2.122.jar",
@@ -42,6 +42,8 @@ public class ModsDatabase {
     "Blur-1.1.0-1.jar",
     "ChunkAnimator-1.19.3.3.jar",
     "Controlling-forge-1.19-9.0+15.jar",
+    "CraftPresence-1.19-Release-1.8.11-universal.jar",
+    "DailyDad-forge-1.19-1.3.2.jar",
     "Ding-1.19.3.0.jar",
     "EnchantmentDescriptions-Forge-1.19-10.0.2.jar",
     "EquipmentCompare-1.19-1.2.12.jar",
@@ -60,15 +62,19 @@ public class ModsDatabase {
     "ItemPhysicLite_v1.4.8_mc1.19.jar",
     "ItemsDontBreak-1.19-0.5.0.jar",
     "LegendaryTooltips-1.19-1.2.4.jar",
+    "LetSleepingDogsLie-1.19-1.1.1.jar",
     "MouseTweaks-forge-mc1.19-2.21.jar",
     "MyServerIsCompatible-1.19.0.jar",
     "Neat 1.8-30.jar",
-    "NekosEnchantedBooks-1.19-1.6.1.jar",
+    "NekosEnchantedBooks-1.19-1.7.0.jar",
     "Notes-1.19-1.2.4.jar",
     "ReAuth-1.19-Forge-4.0.0.jar",
     "StylishEffects-v3.1.0-1.19-Forge.jar",
+    "Textbook-Forge-2.2.1+1.19.jar",
     "TipTheScales-forge-1.19-5.0.5.jar",
     "ToastControl-1.19-6.0.2.jar",
+    "TravelersTitles-1.19-Forge-2.1.1.jar",
+    "WaveyCapes-forge-1.2.0-mc1.19.jar",
     "advancements_tracker_1.19-1.2.0.jar",
     "advancementscreenshot_1.19-3.2.jar",
     "auudio_forge_1.0.3_MC_1.19.jar",
@@ -78,18 +84,22 @@ public class ModsDatabase {
     "betterbiomeblend-1.19-1.3.2-forge.jar",
     "betterfpsdist-1.19-1.4.jar",
     "bettersigns-1.0.jar",
+    "bettertaskbar-forge-mc1.19-mc1.19.2-1.5.jar",
+    "brb-1.19-forge-1.5.6.jar",
     "catalogue-1.6.0-1.19.jar",
     "chat_heads-0.6.0-forge-1.19.jar",
     "clear-skies-forge-mc119-2.0.94.jar",
     "clienttweaks-forge-1.19-7.1.0.jar",
     "drawerfps-1.19-2.3.jar",
     "drippyloadingscreen_forge_1.5.1_MC_1.18-1.19.jar",
+    "ears-forge-1.19-1.4.5.jar",
     "eatinganimation-1.19-2.0.1.jar",
     "entityculling-forge-mc1.19-1.5.0.jar",
+    "extendedclouds-1.1.1-forge.jar",
     "extremeSoundMuffler-3.24_Forge-1.19.jar",
     "fancymenu_forge_2.6.4_MC_1.19.jar",
     "farsight-1.19.6.jar",
-    "firstperson-forge-2.1.0-mc1.19.jar",
+    "firstperson-forge-2.1.2-mc1.19.jar",
     "flickerfix-2.0.0.jar",
     "fm_audio_extension_forge_1.1.0_MC_1.19.jar",
     "guiclock_1.19-3.1.jar",
@@ -98,27 +108,39 @@ public class ModsDatabase {
     "hiddenrecipebook_1.19-2.4.jar",
     "itemzoom-1.19-2.5.0.jar",
     "justzoom_forge_1.0.1_MC_1.18-1.19.jar",
+    "light-overlay-6.0.5-forge.jar",
     "loadmyresources_1.0.1_MC_1.19.jar",
     "modernworldcreation_forge_1.0.0_MC_1.19.jar",
+    "modnametooltip-1.19-1.19.0.jar",
+    "moreoverlays-1.20.9-mc1.19.jar",
     "namepain-1.4.1 forge-1.18.x.jar",
+    "no-telemetry-1.4.0.jar",
     "notenoughanimations-forge-1.5.0-mc1.19.2.jar",
     "oculus-mc1.19.2-1.2.4.jar",
+    "paperdoll-forge-1.1.0-mc1.19.jar",
     "replanter-forge-1.3.jar",
     "rubidium-0.5.2a.jar",
+    "rubidium-0.5.3a.jar",
     "screenscale-1.19-2.0.jar",
+    "shutupexperimentalsettings-1.0.5.jar",
+    "smoothboot-mc1.19-1.0.1.jar",
     "spyglass_improvements-1.2+mc1.19.x+forge.jar",
+    "tooltipscroller-1.19-1.0.0.jar",
+    "transparent-4.1.0+1.19-forge.jar",
     "uiinputundo-1.2.jar",
-    "waveycapes-forge-1.2.0-mc1.19.jar"
+    "waveycapes-forge-1.2.0-mc1.19.jar",
+    "whats-that-slot-forge-1.2.3+1.19.jar",
+    "worldtime-1.19-forge39.0.9-1.3.1.jar"
   // @formatter:on
   );
 
-  /**
-   * Aggregated list of client side modes, without version numbers to make them compatible across
-   * versions. It could be that in the future this needs to be splitted to the different version
-   * numbers.
-   */
-  public static final Set<String> clientSideMods =
-      new HashSet<>(clientSideModsList.stream().map(ModsDatabase::stripeVersionNumbers).toList());
+  public static String getVersion() {
+    return VERSION;
+  }
+
+  public static List<String> getClientSideModsList() {
+    return clientSideModsList;
+  }
 
   public static String stripeVersionNumbers(String name) {
     // Remove version strings with RegExp in several steps.
