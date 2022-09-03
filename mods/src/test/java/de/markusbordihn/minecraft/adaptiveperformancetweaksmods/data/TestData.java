@@ -103,11 +103,10 @@ public class TestData {
       "supermartijn642corelib-1.0.16b-mc1.19.2.jar", "supplementaries-1.19.2-1.2.4.jar",
       "swingthroughgrass-1.19.2-1.8.0.jar", "TConstruct-1.19.2-3.4.2.60.jar",
       "tetra-1.19.2-4.8.1.jar", "the-conjurer-1.19.2-1.1.1.jar", "The_Undergarden-1.19.2-0.6.3.jar",
-      "token_coins_1.19.2-2.3.1.jar", "TravelersTitles-Forge-1.19.2-1.0.jar", "Uppers-0.4.0.jar",
-      "valhelsia_core-1.19.2-0.3.2.jar", "valhelsia_structures-1.19.2-0.1.1.jar",
-      "villagerdeathmessages_1.19.2-2.2.jar", "VisualWorkbench-v3.1.0-1.19.2-Forge.jar",
-      "WaterStrainer-1.19.2-12.1.0.jar", "waystones-forge-1.19.2-9.0.4.jar",
-      "witchesbrew-1.19.2-1.0.jar", "worldedit-mod-7.2.9.jar",
+      "token_coins_1.19.2-2.3.1.jar", "Uppers-0.4.0.jar", "valhelsia_core-1.19.2-0.3.2.jar",
+      "valhelsia_structures-1.19.2-0.1.1.jar", "villagerdeathmessages_1.19.2-2.2.jar",
+      "VisualWorkbench-v3.1.0-1.19.2-Forge.jar", "WaterStrainer-1.19.2-12.1.0.jar",
+      "waystones-forge-1.19.2-9.0.4.jar", "witchesbrew-1.19.2-1.0.jar", "worldedit-mod-7.2.9.jar",
       "Xaeros_Minimap_22.3.0_Forge_1.19.2.jar", "YungsApi-1.19.2-Forge-26.jar",
       "YungsBridges-Forge-1.19.2-1.0.jar", "YungsExtras-Forge-1.19.2-1.0.jar",
       "[1.19.2] SecurityCraft v1.9.0.2-beta1.jar", "Xaeros_Minimap_22.4.0_Forge_1.19.2.jar"};
@@ -148,5 +147,7 @@ public class TestData {
   public static String[] modListDuplicatesSpecific04 =
       {"Patchouli-1.19.2-71.1.jar", "Patchouli-1.19.2-70.jar"};
 
-
+  public static String[] modListDuplicatesSpecific05 =
+      {"pneumaticcraft-repressurized-1.19.2-3.4.1-131.jar",
+          "pneumaticcraft-repressurized-1.19.2-3.4.0-124.jar"};
 }

@@ -77,9 +77,8 @@ public class DuplicatedMods {
         }
         if (!duplicatedMods.isEmpty()) {
           duplicatedMods.add(modFile);
-          log.info("{} ⚠️ Found duplicated Mods: {}", LOG_PREFIX, duplicatedMods);
-          log.info("{} ✔️ Will keep most recent Mod: {}", LOG_PREFIX,
-              findLatestMod(duplicatedMods));
+          log.info("{} ⚠ Found duplicated Mods: {}", LOG_PREFIX, duplicatedMods);
+          log.info("{} ✔ Will keep most recent Mod: {}", LOG_PREFIX, findLatestMod(duplicatedMods));
           archiveDuplicatedMods(duplicatedMods, testMode);
           result++;
         }
@@ -94,8 +93,8 @@ public class DuplicatedMods {
       if (modFile != newestMod) {
         if (testMode) {
           log.info("{} Would remove duplicated mod {} ...", LOG_PREFIX, modFile);
-        } else if (!modFile.delete()) {
-          log.error("{} ⚠️ Was unable to remove outdated mod {}!", LOG_PREFIX, modFile);
+        } else if (!ModFileUtils.deleteModFile(modFile)) {
+          log.error("{} ⚠ Was unable to remove outdated mod {}!", LOG_PREFIX, modFile);
         }
       }
     }
@@ -158,7 +157,8 @@ public class DuplicatedMods {
   }
 
   public static String getVersionNumber(String fileName) {
-    return fileName.replace("1.19.2.jar", "").replaceAll("[^0-9.-]", "").replace("1.19.2-", "")
-        .replace("-1.19.2", "").replace("-", "").replaceAll("\\.$", "");
+    return fileName.replace("1.19.2.jar", "").replace("mc1.19.2", "").replace("[1.19.2]", "")
+        .replaceAll("[^0-9.-]", "").replace("1.19.2-", "").replace("-1.19.2", "")
+        .replaceAll("(\\d)-(\\d)", "$1.$2").replace("-", "").replaceAll("\\.$", "");
   }
 }
