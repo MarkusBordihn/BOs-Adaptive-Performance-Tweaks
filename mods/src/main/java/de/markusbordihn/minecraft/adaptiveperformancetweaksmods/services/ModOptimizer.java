@@ -43,6 +43,7 @@ import net.minecraftforge.forgespi.locating.IModLocator;
 
 import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.Constants;
 import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.utils.ClientSideMods;
+import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.utils.ClientSideModsConfig;
 import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.utils.DuplicatedMods;
 
 @Mod(Constants.MOD_ID)
@@ -57,6 +58,9 @@ public class ModOptimizer implements IModLocator {
   private boolean isClient = true;
 
   public ModOptimizer() {
+
+    ClientSideModsConfig.prepareConfigFile();
+
     Environment environment = Launcher.INSTANCE.environment();
     Optional<String> launchTarget = environment.getProperty(IEnvironment.Keys.LAUNCHTARGET.get());
     if (launchTarget.isPresent()) {
@@ -64,7 +68,7 @@ public class ModOptimizer implements IModLocator {
         isClient = false;
       }
     } else if (GAME_DIR != null) {
-      log.warn("{} ⚠️ Unable to detect environment will check game dir for additional hints ...",
+      log.warn("{} ⚠ Unable to detect environment will check game dir for additional hints ...",
           LOG_PREFIX);
       File[] gameFiles = GAME_DIR.listFiles();
       for (File gameFile : gameFiles) {
@@ -74,15 +78,15 @@ public class ModOptimizer implements IModLocator {
       }
     } else {
       log.error(
-          "{} ⚠️ Unable to detected running environment, will stop here to avoid any possible damage!",
+          "{} ⚠ Unable to detected running environment, will stop here to avoid any possible damage!",
           LOG_PREFIX);
       return;
     }
 
-    log.info("{} ♻️ init with game dir {} and mods dir {} for target {}", LOG_PREFIX, GAME_DIR,
+    log.info("{} ♻ init with game dir {} and mods dir {} for target {}", LOG_PREFIX, GAME_DIR,
         MODS_DIR, isClient ? "CLIENT" : "SERVER");
 
-    log.info("{} 🚀 optimize Duplicated Mods ...", LOG_PREFIX);
+    log.info("{} ♻ Optimizing Duplicated Mods ...", LOG_PREFIX);
     long start = System.nanoTime();
     int numDuplicatedMods = DuplicatedMods.searchDuplicatedMods(MODS_DIR);
     if (numDuplicatedMods > 0) {
@@ -92,19 +96,19 @@ public class ModOptimizer implements IModLocator {
 
     if (isClient) {
       start = System.nanoTime();
-      log.info("{} ✔️ Re-Enable possible client side mods ...", LOG_PREFIX);
+      log.info("{} ✔ Re-Enable possible client side mods ...", LOG_PREFIX);
       int numClientSideModsEnabled = ClientSideMods.enable(MODS_DIR);
       if (numClientSideModsEnabled > 0) {
-        log.info("{} ✔️ Re-Enabled {} possible client side mods in {} ms.", LOG_PREFIX,
+        log.info("{} ✔ Re-Enabled {} possible client side mods in {} ms.", LOG_PREFIX,
             numClientSideModsEnabled, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));
       }
     } else {
       start = System.nanoTime();
-      log.info("{} ❌ Disable possible client side mods ...", LOG_PREFIX);
+      log.info("{} X Disable possible client side mods ...", LOG_PREFIX);
       int numClientSideModsDisabled = ClientSideMods.disable(MODS_DIR);
       if (numClientSideModsDisabled > 0) {
         DuplicatedMods.searchDuplicatedClientMods(MODS_DIR);
-        log.info("{} ❌ Disabled {} possible client side mods in {} ms.", LOG_PREFIX,
+        log.info("{} X Disabled {} possible client side mods in {} ms.", LOG_PREFIX,
             numClientSideModsDisabled, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));
       }
     }

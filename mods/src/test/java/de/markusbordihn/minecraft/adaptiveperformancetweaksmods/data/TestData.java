@@ -148,4 +148,8 @@ public class TestData {
   public static String[] modListDuplicatesSpecific04 =
       {"Patchouli-1.18.2-71.1.jar", "Patchouli-1.18.2-70.jar"};
 
+  public static String[] modListDuplicatesSpecific05 =
+      {"pneumaticcraft-repressurized-1.18.2-3.4.1-131.jar",
+          "pneumaticcraft-repressurized-1.18.2-3.4.0-124.jar"};
+
 }
