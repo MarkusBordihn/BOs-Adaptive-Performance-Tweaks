@@ -31,12 +31,14 @@ public class ClientSideModsTests {
   @Test
   void testIsClientSide() {
     for (String clientMod : TestData.clientModList) {
-      System.out.printf("Client Mod: %s\n", clientMod);
-      assertTrue(ClientSideMods.isClientSide(clientMod));
+      boolean isClientSide = ClientSideMods.isClientSide(clientMod);
+      System.out.printf("Client Mod: %s = %s\n", clientMod, isClientSide);
+      assertTrue(isClientSide);
     }
     for (String generalMod : TestData.modList) {
-      System.out.printf("General Mod: %s\n", generalMod);
-      assertFalse(ClientSideMods.isClientSide(generalMod));
+      boolean isClientSide = ClientSideMods.isClientSide(generalMod);
+      System.out.printf("General Mod: %s = %s\n", generalMod, isClientSide);
+      assertFalse(isClientSide);
     }
   }
 

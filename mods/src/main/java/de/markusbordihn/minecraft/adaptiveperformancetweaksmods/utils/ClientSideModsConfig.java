@@ -99,7 +99,6 @@ public class ClientSideModsConfig {
     for (String clientSideMod : ModsDatabase.getClientSideModsList()) {
       textContent.append(clientSideMod + System.lineSeparator());
     }
-    parseClientSideMods(ModsDatabase.getClientSideModsList());
 
     // Create config file
     try {
