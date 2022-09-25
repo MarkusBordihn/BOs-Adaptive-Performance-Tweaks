@@ -5,6 +5,10 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.09.25
+
+- Added compatibility mode for [Pokecube AIO][pokecube_aio].
+
 ### 2022.09.03
 
 - Added configuration file `config/adaptive_performance_tweaks/client_side_mods.list` to customize client side mods for the mod module with auto-update feature.
@@ -160,3 +164,4 @@ For the full changelog, please go to the [Git Hub History][history] instead.
 [dynamic-view]: https://www.curseforge.com/minecraft/mc-mods/dynamic-view/
 [farsight]: https://www.curseforge.com/minecraft/mc-mods/farsight
 [modrinth]: https://modrinth.com/
+[pokecube_aio]: https://www.curseforge.com/minecraft/mc-mods/pokecube-aoi

@@ -64,7 +64,8 @@ public class CommandManager {
     }
     log.debug("Execute Server Command: {}", command);
     Commands commands = minecraftServer.getCommands();
-    CommandSourceStack commandSourceStack = minecraftServer.createCommandSourceStack().withSuppressedOutput();
+    CommandSourceStack commandSourceStack =
+        minecraftServer.createCommandSourceStack().withSuppressedOutput();
     commands.performCommand(commandSourceStack, command);
   }
 

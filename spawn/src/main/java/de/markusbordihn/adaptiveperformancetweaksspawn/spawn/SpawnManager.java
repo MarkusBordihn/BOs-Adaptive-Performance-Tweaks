@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
@@ -125,6 +126,10 @@ public class SpawnManager {
 
     if (CoreConstants.PERFORMANT_LOADED) {
       log.warn(() -> WarnMessages.coreModWarning(CoreConstants.PERFORMANT_NAME));
+    }
+
+    if (CoreConstants.POKECUBE_AIO_LOADED) {
+      log.warn(() -> WarnMessages.knownIssuesSpawnModWarning(CoreConstants.POKECUBE_AIO_NAME));
     }
 
     if (CoreConstants.SODIUM_LOADED) {
@@ -396,6 +401,13 @@ public class SpawnManager {
     // some custom definitions which could not be easily checked.
     if (CoreConstants.MANA_AND_ARTIFICE_LOADED
         && entityName.equals("mana-and-artifice:residual_magic")) {
+      log.debug("[Ignore Specific Entity] Allow spawn event for {} in {}", entity, levelName);
+      return false;
+    }
+
+    // Ignore specific entities from mods which implements their own spawn handling and logic.
+    if (CoreConstants.POKECUBE_AIO_LOADED && entityName.startsWith(CoreConstants.POKECUBE_AIO_MOD)) {
+      log.debug("[Ignore Mod Entity] Allow spawn event for {} in {}", entity, levelName);
       return false;
     }
 

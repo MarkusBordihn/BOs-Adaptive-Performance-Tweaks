@@ -52,7 +52,7 @@ public final class CommonConfig {
     log.info("{} common config ...", Constants.LOG_REGISTER_PREFIX);
     try {
       FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
-        CoreConstants.CONFIG_ID);
+          CoreConstants.CONFIG_ID);
     } catch (Exception exception) {
       log.error("There was an error, creating the directory:", exception);
     }
