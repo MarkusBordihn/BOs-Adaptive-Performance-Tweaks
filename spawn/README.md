@@ -89,6 +89,7 @@ Please report issues over the **Issue** link.
 [gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules
 [items]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-items
 [player]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player
+
 [alexmobs]: https://www.curseforge.com/minecraft/mc-mods/alexs-mobs
 [aquaculture]: https://www.curseforge.com/minecraft/mc-mods/aquaculture
 [mekanismadditions]: https://www.curseforge.com/minecraft/mc-mods/mekanism-additions

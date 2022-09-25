@@ -40,13 +40,13 @@ public abstract class CustomCommand implements Command<CommandSourceStack> {
     CommandSourceStack commandSource = context.getSource();
     String commandName = module.toLowerCase();
     if (enabled) {
-      commandSource.sendSuccess(Component.literal("\u25BA Enable debug for the " + module
-          + " module, please check debug.log for the full output.").withStyle(ChatFormatting.GREEN),
-          false);
-      commandSource.sendSuccess(Component.literal(
-          "> Use '/aptweaks debug " + commandName + " false' to disable the debug!")
-              .withStyle(ChatFormatting.WHITE),
-          false);
+      commandSource.sendSuccess(Component
+          .literal("\u25BA Enable debug for the " + module
+              + " module, please check debug.log for the full output.")
+          .withStyle(ChatFormatting.GREEN), false);
+      commandSource.sendSuccess(Component
+          .literal("> Use '/aptweaks debug " + commandName + " false' to disable the debug!")
+          .withStyle(ChatFormatting.WHITE), false);
     } else {
       commandSource
           .sendSuccess(Component.literal("\u25A0 Disable debug for the " + commandName + " module!")

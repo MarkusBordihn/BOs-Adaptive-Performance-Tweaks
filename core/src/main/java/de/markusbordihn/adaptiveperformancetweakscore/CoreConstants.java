@@ -110,6 +110,10 @@ public final class CoreConstants {
   public static final String PERFORMANT_NAME = "Performant";
   public static final boolean PERFORMANT_LOADED = ModList.get().isLoaded(PERFORMANT_MOD);
 
+  public static final String POKECUBE_AIO_MOD = "pokecube";
+  public static final String POKECUBE_AIO_NAME = "Pokecube AIO";
+  public static final boolean POKECUBE_AIO_LOADED = ModList.get().isLoaded(POKECUBE_AIO_MOD);
+
   public static final String SUPPLEMENTARIES_MOD = "supplementaries";
   public static final String SUPPLEMENTARIES_NAME = "Supplementaries";
   public static final boolean SUPPLEMENTARIES_LOADED = ModList.get().isLoaded(SUPPLEMENTARIES_MOD);

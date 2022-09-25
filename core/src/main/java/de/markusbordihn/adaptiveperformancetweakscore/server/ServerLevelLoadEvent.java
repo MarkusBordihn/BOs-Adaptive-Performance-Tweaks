@@ -38,7 +38,8 @@ public class ServerLevelLoadEvent extends Event {
   private double lastAvgTickTime = 45.0;
 
   public ServerLevelLoadEvent(ServerLevel serverLevel, ServerLevelLoadLevel serverLevelLoadLevel,
-      ServerLevelLoadLevel lastServerLevelLoadLevel,  double avgTickTime, double lastAvgTickTim, Dist dist) {
+      ServerLevelLoadLevel lastServerLevelLoadLevel, double avgTickTime, double lastAvgTickTim,
+      Dist dist) {
     super();
     this.avgTickTime = avgTickTime;
     this.dist = dist;

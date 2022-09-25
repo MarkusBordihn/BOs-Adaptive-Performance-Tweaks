@@ -122,6 +122,10 @@ public class SpawnManager {
       log.warn(() -> WarnMessages.coreModWarning(CoreConstants.PERFORMANT_NAME));
     }
 
+    if (CoreConstants.POKECUBE_AIO_LOADED) {
+      log.warn(() -> WarnMessages.knownIssuesSpawnModWarning(CoreConstants.POKECUBE_AIO_NAME));
+    }
+
     if (CoreConstants.SODIUM_LOADED) {
       log.error(() -> WarnMessages.coreModWarning(CoreConstants.SODIUM_NAME));
     }
@@ -395,9 +399,15 @@ public class SpawnManager {
     // some custom definitions which could not be easily checked.
     if (CoreConstants.MANA_AND_ARTIFICE_LOADED
         && entityName.equals("mana-and-artifice:residual_magic")) {
-      log.debug("[Ignored Entity] Ignore spawn event for {} in {}", entity, levelName);
+      log.debug("[Ignored Specific Entity] Ignore spawn event for {} in {}", entity, levelName);
       return false;
     }
+
+    // Ignore specific entities from mods which implements their own spawn handling and logic.
+    if (CoreConstants.POKECUBE_AIO_LOADED && entityName.startsWith(CoreConstants.POKECUBE_AIO_MOD)) {
+      log.debug("[Ignored Mod Entity] Ignore spawn event for {} in {}", entity, levelName);
+      return false;
+     }
 
     return true;
   }
