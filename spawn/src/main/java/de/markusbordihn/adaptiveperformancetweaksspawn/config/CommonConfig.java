@@ -113,7 +113,7 @@ public final class CommonConfig {
           "Defines the max. number of entities of a specific type, which could spawn within a single world. Use 0 to disable this optimization.")
           .defineInRange("spawnLimitationMaxMobsPerWorld", 128, 0, 1024);
       spawnLimitationMaxMobsPerServer = builder.comment(
-          "Defines the max. number of entities of a specific type, which could spawn within a single world. Use 0 to disable this optimization.")
+          "Defines the max. number of entities of a specific type, which could spawn within the server. Use 0 to disable this optimization.")
           .defineInRange("spawnLimitationMaxMobsPerServer", 512, 0, 1024);
       builder.pop();
     }

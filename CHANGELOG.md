@@ -5,6 +5,10 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.10.03
+
+- Improved compatibility for bees, [Productive Bees][productive_bees] and tamed entities.
+
 ### 2022.09.25
 
 - Added compatibility mode for [Pokecube AIO][pokecube_aio].
@@ -196,3 +200,4 @@ For the full changelog, please go to the [Git Hub History][history] instead.
 [farsight]: https://www.curseforge.com/minecraft/mc-mods/farsight
 [modrinth]: https://modrinth.com/
 [pokecube_aio]: https://www.curseforge.com/minecraft/mc-mods/pokecube-aoi
+[productive_bees]: https://www.curseforge.com/minecraft/mc-mods/productivebees

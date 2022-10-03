@@ -107,13 +107,15 @@ public class SpawnerManager {
     // Only do expensive lookup for debugging.
     if (log.isDebugEnabled()) {
       BlockEntity blockEntity = spawner.getSpawnerBlockEntity();
-      BlockPos blockPos = blockEntity.getBlockPos();
-      String levelName = blockEntity.getLevel().dimension().location().toString();
-      CompoundTag spawnerData = blockEntity.serializeNBT();
-      String spawnerId = spawnerData.getString("id");
-      String spawnEntityId =
-          spawnerData.getCompound("SpawnData").getCompound("entity").getString("id");
-      log.debug("[Spawner] Found {}({}) at {} in {}", spawnerId, spawnEntityId, blockPos, levelName);
+      if (blockEntity != null) {
+        BlockPos blockPos = blockEntity.getBlockPos();
+        String levelName = blockEntity.getLevel().dimension().location().toString();
+        CompoundTag spawnerData = blockEntity.serializeNBT();
+        String spawnerId = spawnerData.getString("id");
+        String spawnEntityId =
+            spawnerData.getCompound("SpawnData").getCompound("entity").getString("id");
+        log.debug("[Spawner] Found {}({}) at {} in {}", spawnerId, spawnEntityId, blockPos, levelName);
+      }
     }
   }
 
