@@ -56,7 +56,7 @@ public final class MinecraftSpawnConfig {
     log.info("Registering {} Minecraft Spawn config ...", Constants.MOD_NAME);
     try {
       FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
-        CoreConstants.CONFIG_ID);
+          CoreConstants.CONFIG_ID);
     } catch (Exception exception) {
       log.error("There was an error, creating the directory:", exception);
     }

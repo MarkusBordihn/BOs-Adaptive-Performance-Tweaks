@@ -56,7 +56,7 @@ public final class CommonConfig {
     log.info("Registering {} common config ...", Constants.MOD_NAME);
     try {
       FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
-        CoreConstants.CONFIG_ID);
+          CoreConstants.CONFIG_ID);
     } catch (Exception exception) {
       log.error("There was an error, creating the directory:", exception);
     }
@@ -89,15 +89,15 @@ public final class CommonConfig {
       spawnDenyList = builder.comment(
           "General deny list for spawn entities (e.g. minecraft:bat) to no longer spawn in all worlds.")
           .define("denyList", new ArrayList<String>(Arrays.asList("")));
-      spawnIgnoreDimensionList = builder.comment("General list of ignored dimensions.")
-          .define("spawnIgnoreDimensionList", new ArrayList<String>(Arrays.asList("minecraft:the_end")));
+      spawnIgnoreDimensionList = builder.comment("General list of ignored dimensions.").define(
+          "spawnIgnoreDimensionList", new ArrayList<String>(Arrays.asList("minecraft:the_end")));
       spawnAggressiveMode = builder.comment("Enable/Disable more aggressive spawn limitations.")
           .define("spawnAggressiveMode", false);
       builder.pop();
 
       builder.push("View Area");
-      viewAreaEnabled = builder.comment("Enable/Disable view area optimization.")
-          .define("viewAreaEnabled", true);
+      viewAreaEnabled =
+          builder.comment("Enable/Disable view area optimization.").define("viewAreaEnabled", true);
       builder.pop();
 
       builder.push("Global Spawn Limitations");
@@ -113,7 +113,7 @@ public final class CommonConfig {
           "Defines the max. number of entities of a specific type, which could spawn within a single world. Use 0 to disable this optimization.")
           .defineInRange("spawnLimitationMaxMobsPerWorld", 128, 0, 1024);
       spawnLimitationMaxMobsPerServer = builder.comment(
-          "Defines the max. number of entities of a specific type, which could spawn within a single world. Use 0 to disable this optimization.")
+          "Defines the max. number of entities of a specific type, which could spawn within the server. Use 0 to disable this optimization.")
           .defineInRange("spawnLimitationMaxMobsPerServer", 512, 0, 1024);
       builder.pop();
     }

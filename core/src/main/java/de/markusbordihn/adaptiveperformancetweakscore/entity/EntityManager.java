@@ -37,6 +37,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.Marker;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.decoration.HangingEntity;
@@ -382,7 +384,8 @@ public class EntityManager {
         || entity instanceof Boat || entity instanceof ArmorStand
         || entity instanceof AreaEffectCloud || entity instanceof EndCrystal
         || entity instanceof Marker || entity instanceof HangingEntity || entity instanceof Npc
-        || entity.isRemoved());
+        || (entity instanceof TamableAnimal tamableAnimal && tamableAnimal.getOwner() != null)
+        || (entity instanceof Bee bee && bee.hasHive()) || entity.isRemoved());
   }
 
 }

@@ -128,11 +128,12 @@ dependencies {
   minecraft 'net.minecraftforge:forge:1.18.2-40.1.80'
 
   // Required: Bo's Adaptive Performance Tweaks: Core (dev dependency)
-  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.14.0")
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.14.0")
+  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.15.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.15.0")
 
   // Testing (runtime depenedency)
   runtimeOnly fg.deobf("curse.maven:aquaculture-60028:3707130")
+  runtimeOnly fg.deobf("curse.maven:productivebees-377897:4012712")
 
   // Additional helpful Mods for development (runtime depenedency)
   runtimeOnly fg.deobf("curse.maven:xaeros_minimap-263420:3712760")
