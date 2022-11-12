@@ -121,7 +121,7 @@ dependencies {
   // Specify the version of Minecraft to use, If this is any group other then 'net.minecraft' it is assumed
   // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
   // The userdev artifact is a special name and will get all sorts of transformations applied to it.
-  minecraft 'net.minecraftforge:forge:1.18.2-40.1.80'
+  minecraft 'net.minecraftforge:forge:1.18.2-40.1.84'
 
   // Additional helpful Mods for development (dev depenedency)
   runtimeOnly fg.deobf("curse.maven:xaeros_minimap-263420:3712760")
@@ -169,6 +169,15 @@ curseforge {
     releaseType = 'release'
     addGameVersion("1.18.2")
     addGameVersion("Forge")
+    mainArtifact(jar) {
+      relations {
+        optionalDependency 'adaptive-performance-tweaks-gamerules'
+        optionalDependency 'adaptive-performance-tweaks-items'
+        optionalDependency 'adaptive-performance-tweaks-mods'
+        optionalDependency 'adaptive-performance-tweaks-player'
+        optionalDependency 'adaptive-performance-tweaks-spawn'
+      }
+    }
   }
 }
 

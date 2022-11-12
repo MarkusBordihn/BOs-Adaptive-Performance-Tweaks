@@ -128,8 +128,8 @@ dependencies {
   minecraft 'net.minecraftforge:forge:1.18.2-40.1.84'
 
   // Required: Bo's Adaptive Performance Tweaks: Core (dev dependency)
-  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.15.0")
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.15.0")
+  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.16.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.16.0")
 
   // Testing (runtime depenedency)
   runtimeOnly fg.deobf("curse.maven:aquaculture-60028:3707130")
@@ -184,6 +184,10 @@ curseforge {
     mainArtifact(jar) {
       relations {
         requiredDependency 'adaptive-performance-tweaks-core'
+        optionalDependency 'adaptive-performance-tweaks-gamerules'
+        optionalDependency 'adaptive-performance-tweaks-items'
+        optionalDependency 'adaptive-performance-tweaks-mods'
+        optionalDependency 'adaptive-performance-tweaks-player'
         optionalDependency 'configured'
       }
     }

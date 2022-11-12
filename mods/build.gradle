@@ -125,11 +125,11 @@ dependencies {
   // Specify the version of Minecraft to use, If this is any group other then 'net.minecraft' it is assumed
   // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
   // The userdev artifact is a special name and will get all sorts of transformations applied to it.
-  minecraft 'net.minecraftforge:forge:1.18.2-40.1.74'
+  minecraft 'net.minecraftforge:forge:1.18.2-40.1.84'
 
   // Required: Bo's Adaptive Performance Tweaks: Core (dev dependency)
-  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.14.0")
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.14.0")
+  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.16.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.16.0")
 
   // Test Framework
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
@@ -182,6 +182,10 @@ curseforge {
     mainArtifact(jar) {
       relations {
         requiredDependency 'adaptive-performance-tweaks-core'
+        optionalDependency 'adaptive-performance-tweaks-gamerules'
+        optionalDependency 'adaptive-performance-tweaks-items'
+        optionalDependency 'adaptive-performance-tweaks-player'
+        optionalDependency 'adaptive-performance-tweaks-spawn'
       }
     }
   }

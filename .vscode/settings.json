@@ -15,6 +15,7 @@
     "adaptiveperformancetweaksitems",
     "adaptiveperformancetweaksplayer",
     "adaptiveperformancetweaksspawn",
+    "ADHOOKS",
     "Alexmobs",
     "Alexs",
     "alexsmobs",
@@ -36,6 +37,7 @@
     "boulti",
     "broodling",
     "capitaine",
+    "COFH",
     "Configurator",
     "Crepper",
     "curseforge",
@@ -148,5 +150,6 @@
   "java.format.settings.url": "./java-google-style.xml",
   "java.format.settings.profile": "GoogleStyle",
   "java.dependency.showMembers": true,
-  "java.dependency.packagePresentation": "flat"
+  "java.dependency.packagePresentation": "flat",
+  "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx2G -Xms100m -Xlog:disable"
 }
