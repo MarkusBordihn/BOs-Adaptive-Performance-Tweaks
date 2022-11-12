@@ -5,6 +5,10 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.11.12
+
+- Fixed issue with world data still referring to no longer existing block entities.
+
 ### 2022.10.03
 
 - Improved compatibility for bees, [Productive Bees][productive_bees] and tamed entities.

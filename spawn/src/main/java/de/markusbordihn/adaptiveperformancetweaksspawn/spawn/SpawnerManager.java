@@ -109,12 +109,15 @@ public class SpawnerManager {
       BlockEntity blockEntity = spawner.getSpawnerBlockEntity();
       if (blockEntity != null) {
         BlockPos blockPos = blockEntity.getBlockPos();
-        String levelName = blockEntity.getLevel().dimension().location().toString();
+        String levelName = blockEntity.getLevel() != null
+            ? blockEntity.getLevel().dimension().location().toString()
+            : "";
         CompoundTag spawnerData = blockEntity.serializeNBT();
         String spawnerId = spawnerData.getString("id");
         String spawnEntityId =
             spawnerData.getCompound("SpawnData").getCompound("entity").getString("id");
-        log.debug("[Spawner] Found {}({}) at {} in {}", spawnerId, spawnEntityId, blockPos, levelName);
+        log.debug("[Spawner] Found {}({}) at {} in {}", spawnerId, spawnEntityId, blockPos,
+            levelName);
       }
     }
   }
@@ -130,7 +133,8 @@ public class SpawnerManager {
     Iterator<BaseSpawner> spawnerIterator = spawnerList.iterator();
     while (spawnerIterator.hasNext()) {
       BaseSpawner spawner = spawnerIterator.next();
-      if (spawner != null && spawner.getSpawnerBlockEntity().isRemoved()) {
+      if (spawner != null && spawner.getSpawnerBlockEntity() != null
+          && spawner.getSpawnerBlockEntity().isRemoved()) {
         spawnerIterator.remove();
         removedEntries++;
       }

@@ -62,14 +62,18 @@ public class SpawnerCommand extends CustomCommand {
       Map<String, Integer> spawnerCounter = new HashMap<>();
       for (BaseSpawner spawner : spawnerList) {
         BlockEntity blockEntity = spawner.getSpawnerBlockEntity();
-        String worldName =  blockEntity.getLevel().dimension().location().toString();
-        CompoundTag spawnerData =  blockEntity.serializeNBT();
-        String spawnerId = spawnerData.getString("id");
-        String spawnEntityId = spawnerData.getCompound("SpawnData").getCompound("entity").getString("id");
-        log.info("[Mob Spawner] {}({}) at {} in {} with {}",
-            spawnerId, spawnEntityId, blockEntity.getBlockPos(),
-            worldName, spawnerData);
-        spawnerCounter.put(spawnEntityId, spawnerCounter.getOrDefault(spawnEntityId, 0) + 1);
+        if (blockEntity != null) {
+          String worldName = blockEntity.getLevel() != null
+              ? blockEntity.getLevel().dimension().location().toString()
+              : "";
+          CompoundTag spawnerData = blockEntity.serializeNBT();
+          String spawnerId = spawnerData.getString("id");
+          String spawnEntityId =
+              spawnerData.getCompound("SpawnData").getCompound("entity").getString("id");
+          log.info("[Mob Spawner] {}({}) at {} in {} with {}", spawnerId, spawnEntityId,
+              blockEntity.getBlockPos(), worldName, spawnerData);
+          spawnerCounter.put(spawnEntityId, spawnerCounter.getOrDefault(spawnEntityId, 0) + 1);
+        }
       }
       for (Map.Entry<String, Integer> spawnerEntry : spawnerCounter.entrySet()) {
         sendFeedback(context,
