@@ -5,6 +5,11 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.11.29
+
+- Added client and server loading time logger.
+- Updated client mods database.
+
 ### 2022.11.12
 
 - Fixed issue with world data still referring to no longer existing block entities.
