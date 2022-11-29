@@ -24,7 +24,7 @@ import java.util.List;
 
 public class ModsDatabase {
 
-  public static final String VERSION = "1.0.0";
+  public static final String VERSION = "1.0.1";
 
   protected ModsDatabase() {}
 
@@ -34,6 +34,7 @@ public class ModsDatabase {
   private static final List<String> clientSideModsList = Arrays.asList(
   // @formatter:off
     "3dskinlayers-forge-1.4.3-mc1.18.2.jar",
+    "AmbientSounds_FORGE_v5.0.16_mc1.18.2.jar",
     "BetterAdvancements-1.18.1-0.1.2.122.jar",
     "BetterF3-1.2.2-Forge-1.18.jar",
     "BetterModsButton-v3.2.1-1.18.2-Forge.jar",
@@ -43,6 +44,8 @@ public class ModsDatabase {
     "ChunkAnimator-1.18-1.3.3.jar",
     "Controlling-forge-1.18.1-9.0+15.jar",
     "CraftPresence-1.18.2-Release-1.8.11-universal.jar",
+    "CustomSkinLoader_ForgeActive-14.15-SNAPSHOT-348.jar",
+    "CustomSkinLoader_ForgeLegacy-14.15-SNAPSHOT-348.jar",
     "DailyDad-forge-1.18.2-1.3.2.jar",
     "Ding-1.18-1.3.0.jar",
     "EnchantmentDescriptions-Forge-1.18.2-10.0.2.jar",
@@ -67,6 +70,7 @@ public class ModsDatabase {
     "MyServerIsCompatible-1.18-1.0.jar",
     "Neat 1.8-30.jar",
     "NekosEnchantedBooks-1.18.2-1.7.0.jar",
+    "NoFog-1.3.1_1.18.2-forge.jar",
     "Notes-1.18.1-1.2.4.jar",
     "ReAuth-1.18-Forge-4.0.0.jar",
     "StylishEffects-v3.1.0-1.18.2-Forge.jar",
@@ -88,10 +92,12 @@ public class ModsDatabase {
     "chat_heads-0.6.0-forge-1.18.1.jar",
     "clear-skies-forge-mc118-2.0.92.jar",
     "clienttweaks-forge-1.18.1-7.1.0.jar",
+    "cullleaves-2.3.2.jar",
     "drawerfps-1.18.2-2.3.jar",
     "drippyloadingscreen_forge_1.5.1_MC_1.18-1.18.1.jar",
     "ears-forge-1.18-1.4.5.jar",
     "eatinganimation-1.18.1-2.0.1.jar",
+    "entity_texture_features_forge_1.18.2-4.2.0.jar",
     "entityculling-forge-mc1.18-1.5.0.jar",
     "extendedclouds-1.1.1-forge.jar",
     "extremeSoundMuffler-3.24_Forge-1.18.1.jar",
@@ -107,13 +113,16 @@ public class ModsDatabase {
     "itemzoom-1.18.1-2.5.0.jar",
     "justzoom_forge_1.0.1_MC_1.18-1.18.1.jar",
     "light-overlay-6.0.5-forge.jar",
+    "mcwifipnp-1.5.9-1.18.2-forge.jar",
     "modnametooltip-1.18.1-1.18.0.jar",
     "moreoverlays-1.20.9-mc1.18.2.jar",
     "namepain-1.4.1 forge-1.18.x.jar",
     "no-telemetry-1.4.0.jar",
     "notenoughanimations-forge-1.5.0-mc1.18.2.jar",
     "oculus-mc1.18.2-1.2.4.jar",
+    "oculus-1.4.3.jar",
     "paperdoll-forge-1.1.0-mc1.18.jar",
+    "raised-forge-1.18.2-1.1.4.jar",
     "replanter-forge-1.3.jar",
     "rubidium-0.5.3a.jar",
     "screenscale-1.18.2-2.0.jar",

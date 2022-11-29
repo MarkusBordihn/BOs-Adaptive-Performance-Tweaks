@@ -21,6 +21,11 @@ There is no longer the need to have a separated "server" and "client" mod pack o
 This mod automatically clean up duplicated files, by removing older versions.
 This is helpful to avoid duplication issues and manual deleting of older versions.
 
+## ⏱️ Total Start Time Logging
+
+Measure and logs the total start time of the client and server inside the log.
+This makes it ideal to optimize the loading time of mods packs without using a manual stop clock.
+
 ## How to use the mod ?
 
 Just add the mod to your mod pack and during the start on a Minecraft Client or a Minecraft Server it will automatically optimize the mods in the mod folder.
