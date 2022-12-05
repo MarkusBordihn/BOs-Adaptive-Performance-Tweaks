@@ -59,6 +59,10 @@ public final class CoreConstants {
   public static final String CLUMPS_NAME = "Clumps";
   public static final boolean CLUMPS_LOADED = ModList.get().isLoaded(CLUMPS_MOD);
 
+  public static final String CREATE_MOD = "create";
+  public static final String CREATE_NAME = "Create";
+  public static final boolean CREATE_LOADED = ModList.get().isLoaded(CREATE_MOD);
+
   public static final String DYNVIEW_MOD = "dynview";
   public static final String DYNVIEW_NAME = "Dynview";
   public static final boolean DYNVIEW_LOADED = ModList.get().isLoaded(DYNVIEW_MOD);

@@ -66,7 +66,7 @@ import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweakscore.player.PlayerPosition;
 
 @EventBusSubscriber
-public class EntityManager {
+public class CoreEntityManager {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
@@ -78,7 +78,7 @@ public class EntityManager {
       new ConcurrentHashMap<>();
   private static ConcurrentHashMap<String, Set<Entity>> entityMapGlobal = new ConcurrentHashMap<>();
 
-  protected EntityManager() {}
+  protected CoreEntityManager() {}
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
@@ -140,12 +140,6 @@ public class EntityManager {
       return;
     }
 
-    // Ignore entity with custom name
-    if (entity.hasCustomName()) {
-      log.debug("Ignore custom entity {} with name {} in {}", entityName,
-          entity.getCustomName().getString(), levelName);
-      return;
-    }
     addEntity(entity, entityName, levelName);
   }
 
@@ -174,8 +168,14 @@ public class EntityManager {
 
   @SubscribeEvent(priority = EventPriority.HIGH)
   public static void handleLivingDeathEvent(LivingDeathEvent event) {
-    // Ignore client side world.
+
+    // Ignore entities which are handled by other instances or not relevant.
     Entity entity = event.getEntity();
+    if (!isRelevantEntity(entity)) {
+      return;
+    }
+
+    // Ignore client side world.
     Level level = entity.getLevel();
     if (level.isClientSide) {
       return;
@@ -377,15 +377,45 @@ public class EntityManager {
   }
 
   public static boolean isRelevantEntity(Entity entity) {
-    return !(entity instanceof ExperienceOrb || entity instanceof ItemEntity
-        || entity instanceof LightningBolt || entity instanceof FallingBlockEntity
-        || entity instanceof Projectile || entity instanceof MinecartChest
-        || entity instanceof AbstractMinecartContainer || entity instanceof Player
-        || entity instanceof Boat || entity instanceof ArmorStand
+    return !(entity == null || entity.isRemoved() || entity instanceof ExperienceOrb
+        || entity instanceof ItemEntity || entity instanceof LightningBolt
+        || entity instanceof FallingBlockEntity || entity instanceof Projectile
+        || entity instanceof MinecartChest || entity instanceof AbstractMinecartContainer
+        || entity instanceof Player || entity instanceof Boat || entity instanceof ArmorStand
         || entity instanceof AreaEffectCloud || entity instanceof EndCrystal
         || entity instanceof Marker || entity instanceof HangingEntity || entity instanceof Npc
         || (entity instanceof TamableAnimal tamableAnimal && tamableAnimal.getOwner() != null)
-        || (entity instanceof Bee bee && bee.hasHive()) || entity.isRemoved());
+        || (entity instanceof Bee bee && bee.hasHive()) || entity.hasCustomName());
+  }
+
+  @SuppressWarnings("java:S1126")
+  public static boolean isRelevantEntity(Entity entity, String entityName) {
+
+    // Entity instance checks to ignore specific and short living entities like projectiles.
+    if (!isRelevantEntity(entity)) {
+      return false;
+    }
+
+    // Skip other checks if unknown entity name.
+    if (entityName == null) {
+      return false;
+    }
+
+    // Ignore specific entities from other mods which are not extending the right classes or using
+    // some custom definitions which could not be easily checked.
+    if (CoreConstants.MANA_AND_ARTIFICE_LOADED
+        && entityName.equals("mana-and-artifice:residual_magic")) {
+      return false;
+    }
+
+    // Ignore specific entities from mods which implements their own spawn handling, logic or using
+    // pseudo mobs for interactive blocks.
+    if ((CoreConstants.POKECUBE_AIO_LOADED && entityName.startsWith(CoreConstants.POKECUBE_AIO_MOD))
+        || (CoreConstants.CREATE_LOADED && entityName.startsWith(CoreConstants.CREATE_MOD))) {
+      return false;
+    }
+
+    return true;
   }
 
 }

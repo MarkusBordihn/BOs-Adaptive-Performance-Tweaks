@@ -42,7 +42,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
-import de.markusbordihn.adaptiveperformancetweakscore.entity.EntityManager;
+import de.markusbordihn.adaptiveperformancetweakscore.entity.CoreEntityManager;
 import de.markusbordihn.adaptiveperformancetweakscore.message.WarnMessages;
 import de.markusbordihn.adaptiveperformancetweakscore.player.PlayerPosition;
 import de.markusbordihn.adaptiveperformancetweakscore.player.PlayerPositionManager;
@@ -124,6 +124,10 @@ public class SpawnManager {
       }
     }
 
+    if (CoreConstants.CREATE_LOADED) {
+      log.warn(() -> WarnMessages.disabledOptimizationModWarning(CoreConstants.CREATE_NAME));
+    }
+
     if (CoreConstants.PERFORMANT_LOADED) {
       log.warn(() -> WarnMessages.coreModWarning(CoreConstants.PERFORMANT_NAME));
     }
@@ -196,11 +200,23 @@ public class SpawnManager {
 
     String entityName = entity.getEncodeId();
     String levelName = level.dimension().location().toString();
-    boolean isSpawnEvent = event instanceof LivingSpawnEvent;
-    String eventType = isSpawnEvent ? "spawn" : "join";
+    boolean isLivingSpawnEvent = event instanceof LivingSpawnEvent;
+    String eventType = isLivingSpawnEvent ? "spawn" : "join";
 
-    // Pre-check for relevant entities.
-    if (!isRelevantEntity(entity, entityName, levelName)) {
+    // Pre-check for ignored dimension to avoid further checks
+    if (ignoreDimensionList.contains(levelName)) {
+      log.debug("[Ignored Dimension] Allow spawn event for {} in {} ", entity, levelName);
+      return;
+    }
+
+    // Entity instance checks to ignore specific and short living entities like projectiles.
+    if (!CoreEntityManager.isRelevantEntity(entity, entityName)) {
+      return;
+    }
+
+    // Pre-check for allowed entities to avoid expensive calculations
+    if (allowList.contains(entityName)) {
+      log.debug("[Allowed Entity] Allow spawn event for {} in {} ", entity, levelName);
       return;
     }
 
@@ -212,7 +228,7 @@ public class SpawnManager {
     // Pre-check for denied entities to avoid expensive calculations.
     if (denyList.contains(entityName)) {
       log.debug("[Denied Entity] Denied {} event for {} in {} ", eventType, entity, levelName);
-      if (isSpawnEvent) {
+      if (isLivingSpawnEvent) {
         event.setResult(Event.Result.DENY);
       } else {
         event.setCanceled(true);
@@ -248,7 +264,7 @@ public class SpawnManager {
     if (spawnLimitationLimiter > 0 && spawnLimiter++ >= spawnLimitationLimiter) {
       log.debug("[Spawn Limiter {}] Blocked {} event for {} in {}.", spawnLimitationLimiter,
           eventType, entity, levelName);
-      if (isSpawnEvent) {
+      if (isLivingSpawnEvent) {
         event.setResult(Event.Result.DENY);
       } else {
         event.setCanceled(true);
@@ -258,12 +274,12 @@ public class SpawnManager {
     }
 
     // Spawn Limitations: Max mobs per Server
-    int numberOfEntities = EntityManager.getNumberOfEntities(entityName);
+    int numberOfEntities = CoreEntityManager.getNumberOfEntities(entityName);
     if (spawnLimitationMaxMobsPerServer > 0
         && numberOfEntities >= spawnLimitationMaxMobsPerServer) {
       log.debug("[Spawn Limitations Server: {}] Blocked {} event for {} in {}.", numberOfEntities,
           eventType, entity, levelName);
-      if (isSpawnEvent) {
+      if (isLivingSpawnEvent) {
         event.setResult(Event.Result.DENY);
       } else {
         event.setCanceled(true);
@@ -272,12 +288,12 @@ public class SpawnManager {
     }
 
     // Spawn Limitations: Max mobs per World
-    int numberOfEntitiesPerWorld = EntityManager.getNumberOfEntities(levelName, entityName);
+    int numberOfEntitiesPerWorld = CoreEntityManager.getNumberOfEntities(levelName, entityName);
     if (spawnLimitationMaxMobsPerWorld > 0
         && numberOfEntitiesPerWorld >= spawnLimitationMaxMobsPerWorld) {
       log.debug("[Spawn Limitations World: {}] Blocked {} event for {} in {}.",
           numberOfEntitiesPerWorld, eventType, entity, levelName);
-      if (isSpawnEvent) {
+      if (isLivingSpawnEvent) {
         event.setResult(Event.Result.DENY);
       } else {
         event.setCanceled(true);
@@ -288,8 +304,8 @@ public class SpawnManager {
     // Spawn Limitations: Max mobs per player
     int numberOfEntitiesInsideViewArea = 0;
     if (playersPositionsInsideViewArea != null) {
-      numberOfEntitiesInsideViewArea = EntityManager.getNumberOfEntitiesInPlayerPositions(levelName,
-          entityName, playersPositionsInsideViewArea);
+      numberOfEntitiesInsideViewArea = CoreEntityManager.getNumberOfEntitiesInPlayerPositions(
+          levelName, entityName, playersPositionsInsideViewArea);
       if (spawnLimitationMaxMobsPerPlayer > 0
           && numberOfEntitiesInsideViewArea >= spawnLimitationMaxMobsPerPlayer) {
         log.debug("[Spawn Limitations Player: {}] Blocked spawn event for {} in {}.",
@@ -317,7 +333,7 @@ public class SpawnManager {
       if (limitPerWorld > 0 && numberOfEntitiesPerWorld >= limitPerWorld * spawnFactor) {
         log.debug("[World limit] Blocked {} event for {} ({} >= {} * {}f) in {}", eventType,
             entityName, numberOfEntitiesPerWorld, limitPerWorld, spawnFactor, levelName);
-        if (isSpawnEvent) {
+        if (isLivingSpawnEvent) {
           event.setResult(Event.Result.DENY);
         } else {
           event.setCanceled(true);
@@ -365,53 +381,6 @@ public class SpawnManager {
 
     // Cache result for avoid duplicated checks.
     lastAllowedSpawnEntity = entity;
-  }
-
-  private static boolean isRelevantEntity(Entity entity, String entityName, String levelName) {
-
-    // Pre-check for ignored dimension to avoid further checks
-    if (ignoreDimensionList.contains(levelName)) {
-      log.debug("[Ignored Dimension] Allow spawn event for {} in {} ", entity, levelName);
-      return false;
-    }
-
-    // Entity instance checks to ignore specific and short living entities like projectiles.
-    if (!EntityManager.isRelevantEntity(entity)) {
-      return false;
-    }
-
-    // Skip other checks if unknown entity name
-    if (entityName == null) {
-      if (entity.isMultipartEntity() || entity.getType().toString().contains("body_part")) {
-        log.debug("[Multipart Entity] Allow spawn event for {} in {}", entity, levelName);
-      } else {
-        log.warn("[Unknown Entity] Name for spawn entity {} ({}) in {} is unknown!", entity,
-            entity.getType(), levelName);
-      }
-      return false;
-    }
-
-    // Pre-check for allowed entities to avoid expensive calculations
-    if (allowList.contains(entityName)) {
-      log.debug("[Allowed Entity] Allow spawn event for {} in {} ", entity, levelName);
-      return false;
-    }
-
-    // Ignore specific entities from other mods which are not extending the right classes or using
-    // some custom definitions which could not be easily checked.
-    if (CoreConstants.MANA_AND_ARTIFICE_LOADED
-        && entityName.equals("mana-and-artifice:residual_magic")) {
-      log.debug("[Ignore Specific Entity] Allow spawn event for {} in {}", entity, levelName);
-      return false;
-    }
-
-    // Ignore specific entities from mods which implements their own spawn handling and logic.
-    if (CoreConstants.POKECUBE_AIO_LOADED && entityName.startsWith(CoreConstants.POKECUBE_AIO_MOD)) {
-      log.debug("[Ignore Mod Entity] Allow spawn event for {} in {}", entity, levelName);
-      return false;
-    }
-
-    return true;
   }
 
 }

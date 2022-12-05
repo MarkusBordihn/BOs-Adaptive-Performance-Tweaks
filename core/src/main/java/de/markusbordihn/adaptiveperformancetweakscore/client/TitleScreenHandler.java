@@ -17,37 +17,48 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.minecraft.adaptiveperformancetweaksmods.server;
+package de.markusbordihn.adaptiveperformancetweakscore.client;
 
-import java.util.concurrent.TimeUnit;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.server.ServerAboutToStartEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraft.client.gui.screens.TitleScreen;
 
-import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.Constants;
+import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.client.event.ScreenOpenEvent;
 
-@EventBusSubscriber(Dist.DEDICATED_SERVER)
-public class ServerHandler {
+import de.markusbordihn.adaptiveperformancetweakscore.Constants;
+
+public class TitleScreenHandler {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
-  private static final long START_TIME = System.nanoTime();
   private static boolean showed = false;
 
-  protected ServerHandler() {}
+  protected TitleScreenHandler() {}
 
-  @SubscribeEvent
-  public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
-    if (!showed) {
-      log.info("{} ⏲ Server took about {} sec to start ...", Constants.LOG_PREFIX,
-          TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - START_TIME) / 1000f);
-      showed = true;
+  public static void handleInitScreenEvent(ScreenEvent.InitScreenEvent.Post event) {
+    if (event.getScreen() instanceof TitleScreen && !showed) {
+      log.debug("Found title screen for InitScreenEvent: {}", event.getScreen());
+      logMessage();
     }
+  }
+
+  public static void handleScreenOpenEvent(ScreenOpenEvent event) {
+    if (event.getScreen() instanceof TitleScreen && !showed) {
+      log.debug("Found title screen for ScreenOpenEvent: {}", event.getScreen());
+      logMessage();
+    }
+  }
+
+  public static void logMessage() {
+    RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+    log.info("{} ⏲ Client took about {} sec to start ...", Constants.LOG_PREFIX,
+        (System.currentTimeMillis() - runtimeMXBean.getStartTime()) / 1000f);
+    showed = true;
   }
 
 }

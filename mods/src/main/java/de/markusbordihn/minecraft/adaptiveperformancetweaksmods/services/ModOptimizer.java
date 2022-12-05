@@ -36,7 +36,6 @@ import cpw.mods.modlauncher.Environment;
 import cpw.mods.modlauncher.Launcher;
 import cpw.mods.modlauncher.api.IEnvironment;
 
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.forgespi.locating.IModFile;
 import net.minecraftforge.forgespi.locating.IModLocator;
@@ -46,7 +45,6 @@ import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.utils.ClientSide
 import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.utils.ClientSideModsConfig;
 import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.utils.DuplicatedMods;
 
-@Mod(Constants.MOD_ID)
 public class ModOptimizer implements IModLocator {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
@@ -58,7 +56,6 @@ public class ModOptimizer implements IModLocator {
   private boolean isClient = true;
 
   public ModOptimizer() {
-
     ClientSideModsConfig.prepareConfigFile();
 
     Environment environment = Launcher.INSTANCE.environment();
@@ -116,12 +113,13 @@ public class ModOptimizer implements IModLocator {
 
   @Override
   public List<IModFile> scanMods() {
+    log.debug("scanMods");
     return Collections.emptyList();
   }
 
   @Override
   public String name() {
-    return "aptweaks_mods";
+    return "adaptive_performance_tweaks_mod_optimizer";
   }
 
   @Override
@@ -131,7 +129,7 @@ public class ModOptimizer implements IModLocator {
 
   @Override
   public void initArguments(Map<String, ?> arguments) {
-    log.debug("Env: {}", arguments);
+    log.debug("initArguments: {}", arguments);
   }
 
   @Override

@@ -37,7 +37,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import de.markusbordihn.adaptiveperformancetweakscore.Constants;
-import de.markusbordihn.adaptiveperformancetweakscore.entity.EntityManager;
+import de.markusbordihn.adaptiveperformancetweakscore.entity.CoreEntityManager;
 
 public class EntityCommand extends CustomCommand {
 
@@ -64,7 +64,7 @@ public class EntityCommand extends CustomCommand {
   }
 
   public int overview(CommandContext<CommandSourceStack> context) {
-    Map<String, Set<Entity>> entities = EntityManager.getEntitiesGlobal();
+    Map<String, Set<Entity>> entities = CoreEntityManager.getEntitiesGlobal();
     if (entities.isEmpty()) {
       sendFeedback(context, NO_ENTITIES_TEXT);
       return 0;
@@ -78,7 +78,7 @@ public class EntityCommand extends CustomCommand {
   }
 
   public int overviewPerLevel(CommandContext<CommandSourceStack> context) {
-    Map<String, Set<Entity>> entities = EntityManager.getEntities();
+    Map<String, Set<Entity>> entities = CoreEntityManager.getEntities();
     if (entities.isEmpty()) {
       sendFeedback(context, NO_ENTITIES_TEXT);
       return 0;

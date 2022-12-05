@@ -57,6 +57,10 @@ minecraft {
             source sourceSets.main
         }
       }
+
+      // Required: Mixin Support
+      property 'mixin.env.remapRefMap', 'true'
+      property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
     }
 
     server {
@@ -77,6 +81,10 @@ minecraft {
             source sourceSets.main
         }
       }
+
+      // Required: Mixin Support
+      property 'mixin.env.remapRefMap', 'true'
+      property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
     }
 
     data {
@@ -125,11 +133,19 @@ dependencies {
   // Specify the version of Minecraft to use, If this is any group other then 'net.minecraft' it is assumed
   // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
   // The userdev artifact is a special name and will get all sorts of transformations applied to it.
-  minecraft 'net.minecraftforge:forge:1.18.2-40.1.85'
+  minecraft 'net.minecraftforge:forge:1.18.2-40.1.86'
 
   // Required: Bo's Adaptive Performance Tweaks: Core (dev dependency)
-  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.16.0")
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.16.0")
+  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.17.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:3.17.0")
+
+  // Rubidium: Integration
+  compileOnly fg.deobf("curse.maven:rubidium-574856:4024781")
+  runtimeOnly fg.deobf("curse.maven:rubidium-574856:4024781")
+
+  // Oculus: Integration
+  compileOnly fg.deobf("curse.maven:oculus-581495:4110355")
+  runtimeOnly fg.deobf("curse.maven:oculus-581495:4110355")
 
   // Test Framework
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
@@ -141,6 +157,7 @@ dependencies {
 jar {
   manifest {
     attributes([
+      "Automatic-Module-Name": "${group}",
       "Specification-Title": "${mod_name}",
       "Specification-Vendor": "${vendor_name}",
       "Specification-Version": "1", // We are version 1 of ourselves
