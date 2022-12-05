@@ -100,14 +100,34 @@ public final class MinecraftSpawnConfig {
       minecraftEnabled = builder.define("minecraftEnabled", true);
       minecraftId = builder.define("minecraftId", "minecraft");
 
-      minecraftMaxPassiveMobsPerPlayer = builder.comment("e.g. mostly bats")
-          .defineInRange("minecraftMaxPassiveMobsPerPlayer", 3, 1, 64);
+      minecraftMaxPassiveMobsPerPlayer = builder.comment("mobs which will not attack you")
+          .defineInRange("minecraftMaxPassiveMobsPerPlayer", 8, 1, 64);
       minecraftMaxPassiveMobsPerWorld =
-          builder.defineInRange("minecraftMaxPassiveMobsPerWorld", 12, 1, 512);
+          builder.defineInRange("minecraftMaxPassiveMobsPerWorld", 32, 1, 512);
       minecraftPassiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
           .define("minecraftPassiveMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
-            "minecraft:bat"
+            "minecraft:allay",
+            "minecraft:axolotl",
+            "minecraft:bat",
+            "minecraft:cat",
+            "minecraft:chicken",
+            "minecraft:cow",
+            "minecraft:donkey",
+            "minecraft:fox",
+            "minecraft:frog",
+            "minecraft:horse",
+            "minecraft:mooshroom",
+            "minecraft:mule",
+            "minecraft:ocelot",
+            "minecraft:parrot",
+            "minecraft:pig",
+            "minecraft:rabbit",
+            "minecraft:sheep",
+            "minecraft:skeleton_horse",
+            "minecraft:snow_golem",
+            "minecraft:strider",
+            "minecraft:turtle"
           // @formatter:on
           )));
 
@@ -118,33 +138,20 @@ public final class MinecraftSpawnConfig {
       minecraftNeutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
           .define("minecraftNeutralMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
-            "minecraft:allay",
             "minecraft:bee",
-            "minecraft:cat",
-            "minecraft:chicken",
-            "minecraft:cow",
-            "minecraft:donkey",
-            "minecraft:fox",
-            "minecraft:frog",
+            "minecraft:cave_spider",
+            "minecraft:enderman",
             "minecraft:goat",
-            "minecraft:horse",
+            "minecraft:iron_golem",
             "minecraft:llama",
-            "minecraft:mooshroom",
-            "minecraft:mule",
-            "minecraft:ocelot",
             "minecraft:panda",
-            "minecraft:parrot",
-            "minecraft:pig",
             "minecraft:polar_bear",
-            "minecraft:rabbit",
-            "minecraft:sheep",
-            "minecraft:skeleton_horse",
-            "minecraft:strider",
+            "minecraft:spider",
             "minecraft:trader_llama",
-            "minecraft:turtle",
             "minecraft:wandering_trader",
             "minecraft:wolf",
-            "minecraft:zombie_horse"
+            "minecraft:zombie_horse",
+            "minecraft:zombified_piglin"
           // @formatter:on
           )));
 
@@ -156,10 +163,9 @@ public final class MinecraftSpawnConfig {
           .define("minecraftHostileMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "minecraft:blaze",
-            "minecraft:cave_spider",
+            "minecraft:chicken_jockey",
             "minecraft:creeper",
             "minecraft:ender_dragon",
-            "minecraft:enderman",
             "minecraft:endermite",
             "minecraft:evoker",
             "minecraft:ghast",
@@ -173,11 +179,12 @@ public final class MinecraftSpawnConfig {
             "minecraft:piglin_brute",
             "minecraft:pillager",
             "minecraft:ravager",
+            "minecraft:ravager_jockey",
             "minecraft:shulker",
             "minecraft:silverfish",
             "minecraft:skeleton",
+            "minecraft:skeleton_horseman",
             "minecraft:slime",
-            "minecraft:spider",
             "minecraft:stray",
             "minecraft:vex",
             "minecraft:vindicator",
@@ -187,8 +194,7 @@ public final class MinecraftSpawnConfig {
             "minecraft:wither_skeleton",
             "minecraft:zoglin",
             "minecraft:zombie",
-            "minecraft:zombie_villager",
-            "minecraft:zombified_piglin"
+            "minecraft:zombie_villager"
           // @formatter:on
           )));
 

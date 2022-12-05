@@ -19,6 +19,9 @@
 
 package de.markusbordihn.minecraft.adaptiveperformancetweaksmods;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -28,6 +31,8 @@ import de.markusbordihn.adaptiveperformancetweakscore.debug.DebugManager;
 
 @Mod(Constants.MOD_ID)
 public class AdaptivePerformanceTweaksMods {
+
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   public AdaptivePerformanceTweaksMods() {
     // Make sure the mod being absent on the other network side does not cause the client to display

@@ -5,6 +5,12 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.12.05
+
+- Improved compatibility for [Create][create].
+- Improved entity / items checks for better performance.
+- Improved logging to log only relevant entities for debugging.
+
 ### 2022.11.29
 
 - Added client and server loading time logger.
@@ -204,7 +210,9 @@ For the full changelog, please go to the [Git Hub History][history] instead.
 - Initial check-in of next gen-version of Adaptive Performance Tweaks.
 
 [history]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/commits/main
+
 [better-fps-render-distance]: https://www.curseforge.com/minecraft/mc-mods/better-fps-render-distance
+[create]: https://www.curseforge.com/minecraft/mc-mods/create
 [dynamic-view]: https://www.curseforge.com/minecraft/mc-mods/dynamic-view/
 [farsight]: https://www.curseforge.com/minecraft/mc-mods/farsight
 [modrinth]: https://modrinth.com/

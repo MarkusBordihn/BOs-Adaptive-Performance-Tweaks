@@ -33,9 +33,9 @@ public final class Constants {
 
   // Config Descriptions
   public static final String CONFIG_LIST_PASSIVE_MOBS =
-      "List of passive Mobs to optimize in the format [\"minecraft:bat\", ..]";
+      "List of passive Mobs to optimize in the format [\"minecraft:bat\", \"minecraft:cat\", ..]";
   public static final String CONFIG_LIST_NEUTRAL_MOBS =
-      "List of neutral Mobs to optimize in the format [\"minecraft:bee\", \"minecraft:cat\", ..]";
+      "List of neutral Mobs to optimize in the format [\"minecraft:bee\", \"minecraft:wolf\", ..]";
   public static final String CONFIG_LIST_HOSTILE_MOBS =
       "List of hostile Mobs to optimize in the format [\"minecraft:blaze\", \"minecraft:cave_spider\", ..]";
 }

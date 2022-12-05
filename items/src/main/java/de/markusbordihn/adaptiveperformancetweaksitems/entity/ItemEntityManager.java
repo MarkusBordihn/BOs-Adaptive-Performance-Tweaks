@@ -31,8 +31,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Entity.RemovalReason;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -40,12 +40,13 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.event.server.ServerAboutToStartEvent;
 
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import de.markusbordihn.adaptiveperformancetweakscore.entity.CoreItemEntityManager;
 import de.markusbordihn.adaptiveperformancetweakscore.message.WarnMessages;
 import de.markusbordihn.adaptiveperformancetweakscore.server.OptimizationEvent;
 import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLoadEvent;
@@ -138,18 +139,17 @@ public class ItemEntityManager {
       return;
     }
 
+    // Make sure the Item is relevant for our use case.
+    ItemEntity itemEntity = (ItemEntity) entity;
+    if (!CoreItemEntityManager.isRelevantItemEntity(itemEntity)) {
+      return;
+    }
+
     // All items has the entity minecraft.item, so we are using the registry name
     // to better distinguish the different types of items and minecraft.item as backup.
-    ItemEntity itemEntity = (ItemEntity) entity;
     String itemName = itemEntity.getItem().getItem().getDescriptionId();
     if (itemName == null) {
       itemName = itemEntity.getEncodeId();
-    }
-
-    // Ignore dropped air blocks because these are not used at all by the players.
-    // Warning: Removing the air block is a bad idea, because it's used to pre-reserve the space.
-    if (itemName.equals("block.minecraft.air") || itemName.equals("minecraft:air")) {
-      return;
     }
 
     // Get world name and start processing of data
@@ -270,16 +270,17 @@ public class ItemEntityManager {
       return;
     }
 
+    // Make sure the Item is relevant for our use case.
     ItemEntity itemEntity = (ItemEntity) entity;
+    if (!CoreItemEntityManager.isRelevantItemEntity(itemEntity)) {
+      return;
+    }
+
+    // All items has the entity minecraft.item, so we are using the translation key
+    // to better distinguish the different types of items and minecraft.item as backup.
     String itemName = itemEntity.getItem().getItem().getDescriptionId();
     if (itemName == null) {
       itemName = itemEntity.getEncodeId();
-    }
-
-    // Ignore dropped air blocks because these are not used at all by the players.
-    // Warning: Removing the air block is a bad idea, because it's used to pre-reserve the space.
-    if (itemName.equals("block.minecraft.air") || itemName.equals("minecraft:air")) {
-      return;
     }
 
     // Get world name and start processing of data
