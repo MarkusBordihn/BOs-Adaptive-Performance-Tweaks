@@ -30,8 +30,6 @@ import java.util.concurrent.ConcurrentMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.mojang.math.Vector3d;
-
 import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
@@ -313,28 +311,6 @@ public class CoreEntityManager {
           if (playerPosition.isInsidePlayerViewArea(entity, levelName)) {
             counter++;
           }
-        }
-      }
-    }
-    return counter;
-  }
-
-  public static Integer getNumberOfEntitiesInChunkPosition(String levelName, Vector3d position) {
-    if (!entityMapPerWorld.containsKey(levelName)) {
-      return 0;
-    }
-    int counter = 0;
-    int chunkX = (int) position.x >> 4;
-    int chunkZ = (int) position.z >> 4;
-    Set<Entity> entities = new HashSet<>(entityMapPerWorld.get(levelName));
-    Iterator<Entity> entityIterator = entities.iterator();
-    while (entityIterator.hasNext()) {
-      Entity entity = entityIterator.next();
-      if (entity != null) {
-        int entityChunkX = (int) entity.getX() >> 4;
-        int entityChunkZ = (int) entity.getY() >> 4;
-        if (chunkX == entityChunkX && chunkZ == entityChunkZ) {
-          counter++;
         }
       }
     }

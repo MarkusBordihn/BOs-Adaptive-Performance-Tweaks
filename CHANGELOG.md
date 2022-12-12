@@ -5,6 +5,11 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2022.12.12
+
+- Refactored code for version 1.19.3-44.0.11
+- Added new game rule adjustments for blockExplosionDropDecay, mobExplosionDropDecay and tntExplosionDropDecay
+
 ### 2022.12.05
 
 - Improved compatibility for [Create][create].

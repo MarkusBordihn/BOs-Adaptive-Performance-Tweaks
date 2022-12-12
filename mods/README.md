@@ -68,12 +68,10 @@ Please report issues over the **Issue** link.
 | Forge 1.18.2   | ⚠️ Maintenance only   |
 | Forge 1.19     | ⚠️ Deprecated         |
 | Forge 1.19.1   | ⚠️ Deprecated         |
-| Forge 1.19.2   | ✔️ Active development |
+| Forge 1.19.2   | ⚠️ Maintenance only   |
+| Forge 1.19.3   | ✔️ Active development |
 
 [header]: ../assets/aptweaks-header-only.png
 [example-mod-pack]: https://www.curseforge.com/minecraft/modpacks/bos-adventure-world
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
 [core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
-[gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules
-[items]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-items
-[player]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player

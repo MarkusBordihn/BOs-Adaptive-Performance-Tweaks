@@ -82,6 +82,24 @@ public class GameRuleManager {
       }
     }
 
+    if (Boolean.TRUE.equals(COMMON.blockExplodesEnabled.get())) {
+      log.info("Block explosions will be automatically disabled during very high server load!");
+    }
+
+    if (Boolean.TRUE.equals(COMMON.elytraMovementCheckEnabled.get())) {
+      log.info(
+          "Elytra movement check will be automatically disabled during very high server load!");
+    }
+
+    if (Boolean.TRUE.equals(COMMON.insomniaEnabled.get())) {
+      log.info(
+          "Insomnia (phantoms spawn) will be automatically disabled during very high server load!");
+    }
+
+    if (Boolean.TRUE.equals(COMMON.mobExplodesEnabled.get())) {
+      log.info("Mob explosions will be automatically disabled during very high server load!");
+    }
+
     if (Boolean.TRUE.equals(COMMON.patrolSpawningEnabled.get())) {
       log.info("Patrol spawning will be automatically disabled during very high server load!");
     }
@@ -90,13 +108,12 @@ public class GameRuleManager {
       log.info("Raids will be automatically disabled during very high server load!");
     }
 
-    if (Boolean.TRUE.equals(COMMON.insomniaEnabled.get())) {
-      log.info(
-          "Insomnia (phantoms spawn) will be automatically disabled during very high server load!");
-    }
-
     if (Boolean.TRUE.equals(COMMON.traderSpawningEnabled.get())) {
       log.info("Trader spawning will be automatically disabled during very high server load!");
+    }
+
+    if (Boolean.TRUE.equals(COMMON.tntExplodesEnabled.get())) {
+      log.info("TNT explosions will be automatically disabled during very high server load!");
     }
 
     if (Boolean.TRUE.equals(COMMON.wardenSpawningEnabled.get())) {
@@ -116,17 +133,29 @@ public class GameRuleManager {
       if (Boolean.TRUE.equals(COMMON.randomTickSpeedEnabled.get())) {
         decreaseRandomTickSpeed();
       }
-      if (Boolean.TRUE.equals(COMMON.patrolSpawningEnabled.get())) {
-        disablePatrolSpawning();
+      if (Boolean.TRUE.equals(COMMON.blockExplodesEnabled.get())) {
+        enableBlockExplosionDropDecay();
       }
-      if (Boolean.TRUE.equals(COMMON.raidsEnabled.get())) {
-        disableRaids();
+      if (Boolean.TRUE.equals(COMMON.elytraMovementCheckEnabled.get())) {
+        disableElytraMovementCheck();
       }
       if (Boolean.TRUE.equals(COMMON.insomniaEnabled.get())) {
         disableInsomnia();
       }
+      if (Boolean.TRUE.equals(COMMON.blockExplodesEnabled.get())) {
+        enableMobExplosionDropDecay();
+      }
+      if (Boolean.TRUE.equals(COMMON.raidsEnabled.get())) {
+        disableRaids();
+      }
+      if (Boolean.TRUE.equals(COMMON.patrolSpawningEnabled.get())) {
+        disablePatrolSpawning();
+      }
       if (Boolean.TRUE.equals(COMMON.traderSpawningEnabled.get())) {
         disableTraderSpawning();
+      }
+      if (Boolean.TRUE.equals(COMMON.tntExplodesEnabled.get())) {
+        enableTntExplosionDropDecay();
       }
       if (Boolean.TRUE.equals(COMMON.wardenSpawningEnabled.get())) {
         disableWardenSpawning();
@@ -151,17 +180,23 @@ public class GameRuleManager {
     }
 
     // General: Handle normal and low server load
-    if (Boolean.TRUE.equals(COMMON.patrolSpawningEnabled.get())) {
-      enablePatrolSpawning();
+    if (Boolean.TRUE.equals(COMMON.elytraMovementCheckEnabled.get())) {
+      enableElytraMovementCheck();
     }
     if (Boolean.TRUE.equals(COMMON.raidsEnabled.get())) {
       enableRaids();
+    }
+    if (Boolean.TRUE.equals(COMMON.patrolSpawningEnabled.get())) {
+      enablePatrolSpawning();
     }
     if (Boolean.TRUE.equals(COMMON.insomniaEnabled.get())) {
       enableInsomnia();
     }
     if (Boolean.TRUE.equals(COMMON.traderSpawningEnabled.get())) {
       enableTraderSpawning();
+    }
+    if (Boolean.TRUE.equals(COMMON.tntExplodesEnabled.get())) {
+      disableTntExplosionDropDecay();
     }
     if (Boolean.TRUE.equals(COMMON.wardenSpawningEnabled.get())) {
       enableWardenSpawning();
@@ -186,17 +221,31 @@ public class GameRuleManager {
     lastUpdateTime = System.currentTimeMillis();
   }
 
-  public static void enablePatrolSpawning() {
-    if (!gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)) {
-      log.debug("Enable PatrolSpawning");
-      CommandManager.executeGameRuleCommand(GameRules.RULE_DO_PATROL_SPAWNING, true);
+  public static void enableBlockExplosionDropDecay() {
+    if (!gameRules.getBoolean(GameRules.RULE_BLOCK_EXPLOSION_DROP_DECAY)) {
+      log.debug("Enable blockExplosionDropDecay");
+      CommandManager.executeGameRuleCommand(GameRules.RULE_BLOCK_EXPLOSION_DROP_DECAY, true);
     }
   }
 
-  public static void disablePatrolSpawning() {
-    if (gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)) {
-      log.debug("Disable PatrolSpawning");
-      CommandManager.executeGameRuleCommand(GameRules.RULE_DO_PATROL_SPAWNING, false);
+  public static void disableBlockExplosionDropDecay() {
+    if (gameRules.getBoolean(GameRules.RULE_BLOCK_EXPLOSION_DROP_DECAY)) {
+      log.debug("Disable blockExplosionDropDecay");
+      CommandManager.executeGameRuleCommand(GameRules.RULE_BLOCK_EXPLOSION_DROP_DECAY, false);
+    }
+  }
+
+  public static void enableElytraMovementCheck() {
+    if (gameRules.getBoolean(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK)) {
+      log.debug("Enable ElytraMovementCheck");
+      CommandManager.executeGameRuleCommand(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK, false);
+    }
+  }
+
+  public static void disableElytraMovementCheck() {
+    if (!gameRules.getBoolean(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK)) {
+      log.debug("Disable ElytraMovementCheck");
+      CommandManager.executeGameRuleCommand(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK, true);
     }
   }
 
@@ -211,6 +260,34 @@ public class GameRuleManager {
     if (gameRules.getBoolean(GameRules.RULE_DOINSOMNIA)) {
       log.debug("Disable Insomnia");
       CommandManager.executeGameRuleCommand(GameRules.RULE_DOINSOMNIA, false);
+    }
+  }
+
+  public static void enableMobExplosionDropDecay() {
+    if (!gameRules.getBoolean(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY)) {
+      log.debug("Enable mobExplosionDropDecay");
+      CommandManager.executeGameRuleCommand(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY, true);
+    }
+  }
+
+  public static void disableMobExplosionDropDecay() {
+    if (gameRules.getBoolean(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY)) {
+      log.debug("Disable mobExplosionDropDecay");
+      CommandManager.executeGameRuleCommand(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY, false);
+    }
+  }
+
+  public static void enablePatrolSpawning() {
+    if (!gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)) {
+      log.debug("Enable PatrolSpawning");
+      CommandManager.executeGameRuleCommand(GameRules.RULE_DO_PATROL_SPAWNING, true);
+    }
+  }
+
+  public static void disablePatrolSpawning() {
+    if (gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)) {
+      log.debug("Disable PatrolSpawning");
+      CommandManager.executeGameRuleCommand(GameRules.RULE_DO_PATROL_SPAWNING, false);
     }
   }
 
@@ -239,6 +316,20 @@ public class GameRuleManager {
     if (gameRules.getBoolean(GameRules.RULE_DO_TRADER_SPAWNING)) {
       log.debug("Disable TraderSpawning");
       CommandManager.executeGameRuleCommand(GameRules.RULE_DO_TRADER_SPAWNING, false);
+    }
+  }
+
+  public static void enableTntExplosionDropDecay() {
+    if (!gameRules.getBoolean(GameRules.RULE_TNT_EXPLOSION_DROP_DECAY)) {
+      log.debug("Enable tntExplosionDropDecay");
+      CommandManager.executeGameRuleCommand(GameRules.RULE_TNT_EXPLOSION_DROP_DECAY, true);
+    }
+  }
+
+  public static void disableTntExplosionDropDecay() {
+    if (gameRules.getBoolean(GameRules.RULE_TNT_EXPLOSION_DROP_DECAY)) {
+      log.debug("Disable tntExplosionDropDecay");
+      CommandManager.executeGameRuleCommand(GameRules.RULE_TNT_EXPLOSION_DROP_DECAY, false);
     }
   }
 
@@ -320,20 +411,29 @@ public class GameRuleManager {
 
   public static Map<String, String> getGameRulesOverview() {
     Map<String, String> overview = new ConcurrentHashMap<>();
-    overview.put(GameRules.RULE_DISABLE_RAIDS.getId(),
-        String.valueOf(gameRules.getBoolean(GameRules.RULE_DISABLE_RAIDS)));
-    overview.put(GameRules.RULE_DOINSOMNIA.getId(),
-        String.valueOf(gameRules.getBoolean(GameRules.RULE_DOINSOMNIA)));
-    overview.put(GameRules.RULE_DO_PATROL_SPAWNING.getId(),
-        String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)));
-    overview.put(GameRules.RULE_DO_TRADER_SPAWNING.getId(),
-        String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_TRADER_SPAWNING)));
-    overview.put(GameRules.RULE_DO_WARDEN_SPAWNING.getId(),
-        String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING)));
     overview.put(GameRules.RULE_MAX_ENTITY_CRAMMING.getId(),
         String.valueOf(gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING)));
     overview.put(GameRules.RULE_RANDOMTICKING.getId(),
         String.valueOf(gameRules.getInt(GameRules.RULE_RANDOMTICKING)));
+
+    overview.put(GameRules.RULE_BLOCK_EXPLOSION_DROP_DECAY.getId(),
+        String.valueOf(gameRules.getBoolean(GameRules.RULE_BLOCK_EXPLOSION_DROP_DECAY)));
+    overview.put(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK.getId(),
+        String.valueOf(gameRules.getBoolean(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK)));
+    overview.put(GameRules.RULE_DOINSOMNIA.getId(),
+        String.valueOf(gameRules.getBoolean(GameRules.RULE_DOINSOMNIA)));
+    overview.put(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY.getId(),
+        String.valueOf(gameRules.getBoolean(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY)));
+    overview.put(GameRules.RULE_DO_PATROL_SPAWNING.getId(),
+        String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)));
+    overview.put(GameRules.RULE_DISABLE_RAIDS.getId(),
+        String.valueOf(gameRules.getBoolean(GameRules.RULE_DISABLE_RAIDS)));
+    overview.put(GameRules.RULE_TNT_EXPLOSION_DROP_DECAY.getId(),
+        String.valueOf(gameRules.getBoolean(GameRules.RULE_TNT_EXPLOSION_DROP_DECAY)));
+    overview.put(GameRules.RULE_DO_TRADER_SPAWNING.getId(),
+        String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_TRADER_SPAWNING)));
+    overview.put(GameRules.RULE_DO_WARDEN_SPAWNING.getId(),
+        String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING)));
     return overview;
   }
 

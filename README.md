@@ -31,12 +31,10 @@ If you want to pick and choose your optimization mod, take a look at the core pa
 | Forge 1.18.2   | ⚠️ Maintenance only   |
 | Forge 1.19     | ⚠️ Deprecated         |
 | Forge 1.19.1   | ⚠️ Deprecated         |
-| Forge 1.19.2   | ✔️ Active development |
+| Forge 1.19.2   | ⚠️ Maintenance only   |
+| Forge 1.19.3   | ✔️ Active development |
 
 [header]: assets/aptweaks-header.png
 [core-readme]: ./core/README.md
-[core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
-[gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules
-[items]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-items
 [adaptive_performance_tweaks_legacy]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/tree/1.16.5

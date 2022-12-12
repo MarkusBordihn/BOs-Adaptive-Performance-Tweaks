@@ -36,12 +36,9 @@ The full list of included modules is available at the [dependencies overview][de
 | Forge 1.18.2   | ⚠️ Maintenance only   |
 | Forge 1.19     | ⚠️ Deprecated         |
 | Forge 1.19.1   | ⚠️ Deprecated         |
-| Forge 1.19.2   | ✔️ Active development |
+| Forge 1.19.2   | ⚠️ Maintenance only   |
+| Forge 1.19.3   | ✔️ Active development |
 
 [header]: ../assets/aptweaks-header.png
-[adaptive_performance_tweaks_legacy]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/tree/1.16.5
-[bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
 [core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
-[gamerules]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules
-[items]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-items
 [dependencies]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks/relations/dependencies

@@ -72,14 +72,14 @@ public final class CommonConfig {
     public final ForgeConfigSpec.BooleanValue randomTickSpeedEnabled;
     public final ForgeConfigSpec.IntValue randomTickSpeed;
 
-    public final ForgeConfigSpec.BooleanValue raidsEnabled;
-
+    public final ForgeConfigSpec.BooleanValue blockExplodesEnabled;
+    public final ForgeConfigSpec.BooleanValue elytraMovementCheckEnabled;
     public final ForgeConfigSpec.BooleanValue insomniaEnabled;
-
+    public final ForgeConfigSpec.BooleanValue mobExplodesEnabled;
     public final ForgeConfigSpec.BooleanValue patrolSpawningEnabled;
-
+    public final ForgeConfigSpec.BooleanValue raidsEnabled;
+    public final ForgeConfigSpec.BooleanValue tntExplodesEnabled;
     public final ForgeConfigSpec.BooleanValue traderSpawningEnabled;
-
     public final ForgeConfigSpec.BooleanValue wardenSpawningEnabled;
 
     Config(ForgeConfigSpec.Builder builder) {
@@ -114,6 +114,17 @@ public final class CommonConfig {
           .defineInRange("randomTickSpeed", 3, 1, 256);
       builder.pop();
 
+      builder.push("Block Explodes");
+      blockExplodesEnabled = builder.comment("Enable/Disable block explodes adjustments.")
+              .define("blockExplodesEnabled", true);
+      builder.pop();
+
+      builder.push("Elytra Movement Check");
+      elytraMovementCheckEnabled =
+          builder.comment("Enable/Disable dynamic elytra movement check adjustments.")
+              .define("elytraMovementCheckEnabled", true);
+      builder.pop();
+
       builder.push("Raids");
       raidsEnabled =
           builder.comment("Enable/Disable dynamic raids adjustments.").define("raidsEnabled", true);
@@ -124,6 +135,11 @@ public final class CommonConfig {
           .define("insomniaEnabled", true);
       builder.pop();
 
+      builder.push("Mob Explodes");
+      mobExplodesEnabled = builder.comment("Enable/Disable mob explodes adjustments.")
+              .define("mobExplodesEnabled", true);
+      builder.pop();
+
       builder.push("Patrol Spawning");
       patrolSpawningEnabled = builder.comment("Enable/Disable patrol spawning adjustments.")
           .define("patrolSpawningEnabled", true);
@@ -132,6 +148,11 @@ public final class CommonConfig {
       builder.push("Trader Spawning");
       traderSpawningEnabled = builder.comment("Enable/Disable trader spawning adjustments.")
           .define("traderSpawningEnabled", true);
+      builder.pop();
+
+      builder.push("TNT Explodes");
+      tntExplodesEnabled = builder.comment("Enable/Disable tnt explodes adjustments.")
+          .define("tntExplodesEnabled", true);
       builder.pop();
 
       builder.push("Warden Spawning");

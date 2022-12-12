@@ -52,7 +52,7 @@ public class ClientSideModsConfig {
   protected static final String CONFIG_FILE_VERSION_HEADER = "## Client Side Mods - Version:";
 
   protected static final String CONFIG_FILE_HEADER =
-      "## Disable existing entries by comment out like # client-side-mod-1.18.2.jar";
+      "## Disable existing entries by comment out like # client-side-mod-1.19.3.jar";
 
   protected static final String CONFIG_FILE_TEXT = "client side mods config file";
 
