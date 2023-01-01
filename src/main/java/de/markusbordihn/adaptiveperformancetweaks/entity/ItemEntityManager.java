@@ -34,6 +34,7 @@ import org.apache.logging.log4j.Logger;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
 import net.minecraftforge.event.TickEvent;
@@ -132,14 +133,16 @@ public class ItemEntityManager extends Manager {
     // All items has the entity minecraft.item, so we are using the translation key
     // to better distinguish the different types of items and minecraft.item as backup.
     ItemEntity itemEntity = (ItemEntity) entity;
-    String itemName = itemEntity.getItem().getItem().getRegistryName().toString();
+    ResourceLocation resourceLocation = itemEntity.getItem().getItem().getRegistryName();
+    String itemName = resourceLocation != null ? resourceLocation.toString() : null;
     if (itemName == null) {
       itemName = itemEntity.getEncodeId();
     }
 
     // Ignore dropped air blocks because these are not used at all by the players.
     // Warning: Removing the air block is a bad idea, because it's used to pre-reserve the space.
-    if (itemName.equals("block.minecraft.air") || itemName.equals("minecraft:air")) {
+    if (itemName != null
+        && (itemName.equals("block.minecraft.air") || itemName.equals("minecraft:air"))) {
       return;
     }
 
@@ -253,14 +256,16 @@ public class ItemEntityManager extends Manager {
     }
 
     ItemEntity itemEntity = (ItemEntity) entity;
-    String itemName = itemEntity.getItem().getItem().getRegistryName().toString();
+    ResourceLocation resourceLocation = itemEntity.getItem().getItem().getRegistryName();
+    String itemName = resourceLocation != null ? resourceLocation.toString() : null;
     if (itemName == null) {
       itemName = itemEntity.getEncodeId();
     }
 
     // Ignore dropped air blocks because these are not used at all by the players.
     // Warning: Removing the air block is a bad idea, because it's used to pre-reserve the space.
-    if (itemName.equals("block.minecraft.air") || itemName.equals("minecraft:air")) {
+    if (itemName != null
+        && (itemName.equals("block.minecraft.air") || itemName.equals("minecraft:air"))) {
       return;
     }
 

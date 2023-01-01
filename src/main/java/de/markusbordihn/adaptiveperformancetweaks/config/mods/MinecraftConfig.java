@@ -70,17 +70,19 @@ public class MinecraftConfig extends SpawnConfigModSupport {
     for (ResourceLocation registryName : ForgeRegistries.ENTITIES.getKeys()) {
       if (registryName.toString().startsWith("minecraft:")) {
         EntityType<?> entityType = ForgeRegistries.ENTITIES.getValue(registryName);
-        EntityClassification entityClassification = entityType.getCategory();
-        if (entityClassification == EntityClassification.AMBIENT) {
-          passiveMobList.add(registryName.toString());
-        } else if (entityClassification == EntityClassification.CREATURE) {
-          neutralMobList.add(registryName.toString());
-        } else if (entityClassification == EntityClassification.MONSTER) {
-          hostileMobList.add(registryName.toString());
-        } else if (entityClassification == EntityClassification.WATER_AMBIENT) {
-          passiveWaterMobList.add(registryName.toString());
-        } else if (entityClassification == EntityClassification.WATER_CREATURE) {
-          neutralWaterMobList.add(registryName.toString());
+        if (entityType != null) {
+          EntityClassification entityClassification = entityType.getCategory();
+          if (entityClassification == EntityClassification.AMBIENT) {
+            passiveMobList.add(registryName.toString());
+          } else if (entityClassification == EntityClassification.CREATURE) {
+            neutralMobList.add(registryName.toString());
+          } else if (entityClassification == EntityClassification.MONSTER) {
+            hostileMobList.add(registryName.toString());
+          } else if (entityClassification == EntityClassification.WATER_AMBIENT) {
+            passiveWaterMobList.add(registryName.toString());
+          } else if (entityClassification == EntityClassification.WATER_CREATURE) {
+            neutralWaterMobList.add(registryName.toString());
+          }
         }
       }
     }

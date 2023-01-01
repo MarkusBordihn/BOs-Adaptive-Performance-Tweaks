@@ -40,6 +40,8 @@ public final class Constants {
   public static final String ARTIFACTS_NAME = "Artifacts";
   public static final String CLUMPS_MOD = "clumps";
   public static final String CLUMPS_NAME = "Clumps";
+  public static final String CREATE_MOD = "create";
+  public static final String CREATE_NAME = "Create";
   public static final String DUNGEONSMOD_MOD = "dungeonsmod";
   public static final String DUNGEONSMOD_NAME = "Dungeons Mod";
   public static final String DYNVIEW_MOD = "dynview";
@@ -49,6 +51,8 @@ public final class Constants {
   public static final String INCONTROL_NAME = "InControl";
   public static final String LAZYDFU_MOD = "lazydfu";
   public static final String LAZYDFU_NAME = "Lazy DataFixerUpper";
+  public static final String MANA_AND_ARTIFICE_MOD = "mana-and-artifice";
+  public static final String MANA_AND_ARTIFICE_NAME = "Mana and Artifice";
   public static final String MEKANISMADDITIONS_MOD = "mekanismadditions";
   public static final String MEKANISMADDITIONS_NAME = "Mekanism Additions";
   public static final String MINECOLONIES_MOD = "minecolonies";

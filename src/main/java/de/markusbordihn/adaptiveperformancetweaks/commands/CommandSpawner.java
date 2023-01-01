@@ -31,6 +31,7 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.MobSpawnerTileEntity;
+import net.minecraft.world.World;
 
 import de.markusbordihn.adaptiveperformancetweaks.spawn.SpawnerManager;
 
@@ -53,7 +54,8 @@ public class CommandSpawner extends CustomCommand {
           "Spawner Overview (please check latest.log for full output with positions)\n===");
       Map<String, Integer> spawnerCounter = new HashMap<>();
       for (MobSpawnerTileEntity spawner : spawnerList) {
-        String worldName = spawner.getLevel().dimension().location().toString();
+        World level = spawner.getLevel();
+        String worldName = level != null ? level.dimension().location().toString() : "unknown";
         CompoundNBT spawnerData = spawner.serializeNBT();
         String spawnEntityId = spawnerData.getCompound("SpawnData").getString("id");
         log.info("[Mob Spawner] {} at {} in {} with {}", spawnEntityId, spawner.getBlockPos(),

@@ -39,6 +39,12 @@ public class PlayerOptimization extends Optimization {
     if (!username.isEmpty() && Boolean.TRUE.equals(COMMON.optimizePlayerLogin.get())) {
       ServerPlayerEntity player =
           ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
+
+      if (player == null) {
+        log.error("Unable to resolve username {} to a valid player!", username);
+        return;
+      }
+
       log.debug("Optimize Player Login for {} {}", username, player);
 
       if (PlayerManager.getNumberOfPlayers() == 0

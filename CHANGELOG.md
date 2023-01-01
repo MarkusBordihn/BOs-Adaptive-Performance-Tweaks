@@ -5,6 +5,11 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2023.01.01
+
+- Improved compatibility for [Create][create].
+- Fixed potential null pointers.
+
 ### 2022.04.13
 
 - Added additional checks to avoid mixin/core-modding issues caused by unexpected behavior.
@@ -156,4 +161,5 @@ For the full changelog, please go to the [Git Hub History][history] instead.
 
 - First public release of the working developer versions.
 
+[create]: https://www.curseforge.com/minecraft/mc-mods/create
 [history]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/commits/1.16.5

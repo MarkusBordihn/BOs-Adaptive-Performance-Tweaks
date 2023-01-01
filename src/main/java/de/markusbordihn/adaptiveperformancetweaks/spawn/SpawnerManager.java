@@ -162,7 +162,8 @@ public class SpawnerManager extends Manager {
     if (tileEntity instanceof MobSpawnerTileEntity) {
       addSpawner((MobSpawnerTileEntity) tileEntity);
     } else if (!unknownSpawnerList.contains(tileEntity)) {
-      String worldName = tileEntity.getLevel().dimension().location().toString();
+      World level = tileEntity.getLevel();
+      String worldName = level != null ? level.dimension().location().toString() : "NULL";
       log.debug(
           "[Unknown Custom Spawner] Found unsupported spawner {} at {} in {} which is not from type net.minecraft.tileentity.MobSpawnerTileEntity!",
           tileEntity, tileEntity.getBlockPos(), worldName);
@@ -179,7 +180,8 @@ public class SpawnerManager extends Manager {
     if (spawnerList.contains(mobSpawnerTileEntity)) {
       return;
     }
-    String worldName = mobSpawnerTileEntity.getLevel().dimension().location().toString();
+    World level = mobSpawnerTileEntity.getLevel();
+    String worldName = level != null ? level.dimension().location().toString() : "NULL";
     CompoundNBT spawnerData = mobSpawnerTileEntity.serializeNBT();
     String spawnEntityId = spawnerData.getCompound("SpawnData").getString("id");
     log.debug("[Spawner] {} at {} in {} with {}", spawnEntityId, mobSpawnerTileEntity.getBlockPos(),

@@ -39,6 +39,7 @@ import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 
 import net.minecraftforge.event.TickEvent;
@@ -47,6 +48,7 @@ import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 
@@ -69,12 +71,23 @@ public class EntityManager extends Manager {
   private static short ticks = 0;
   private static final short VERIFICATION_TICK = 60 * 20; // Every 1 minutes.
 
+  private static boolean isCreateLoaded = ModList.get().isLoaded(Constants.CREATE_MOD);
+  private static boolean isManaAndArtificeLoaded =
+      ModList.get().isLoaded(Constants.MANA_AND_ARTIFICE_MOD);
+
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
     entityMap = new ConcurrentHashMap<>();
     entityMapPerWorld = new ConcurrentHashMap<>();
     allowList = new HashSet<>(COMMON.spawnAllowList.get());
     denyList = new HashSet<>(COMMON.spawnDenyList.get());
+
+    if (isCreateLoaded) {
+      log.info("Ignoring any {} related entity!", Constants.CREATE_NAME);
+    }
+    if (isManaAndArtificeLoaded) {
+      log.info("Ignoring any {} related entity!", Constants.MANA_AND_ARTIFICE_NAME);
+    }
   }
 
   @SubscribeEvent
@@ -117,8 +130,9 @@ public class EntityManager extends Manager {
         log.debug("Ignore multipart entity {} in {}.", entity, worldName);
       } else if (entity.hasCustomName()) {
         if (log.isDebugEnabled()) {
+          ITextComponent customNameComponent = entity.getCustomName();
           String customName =
-              entity.getCustomName() == null ? "NULL" : entity.getCustomName().getString();
+              customNameComponent == null ? "NULL" : customNameComponent.getString();
           log.debug("Unknown entity name for entity {} ({}) with custom name {} in {}.", entity,
               entity.getType(), customName, worldName);
         }
@@ -126,7 +140,7 @@ public class EntityManager extends Manager {
         String entityType = entity.getType().toString();
 
         // Avoid warning message for specific mods
-        if (!entityType.startsWith("entity.mana-and-artifice.")) {
+        if (!isManaAndArtificeLoaded || !entityType.startsWith("entity.mana-and-artifice.")) {
           log.warn(
               "Unknown entity name for entity {} ({}) in {}. Please report this issue under {}!",
               entity, entity.getType(), worldName, Constants.ISSUE_REPORT);
@@ -136,7 +150,8 @@ public class EntityManager extends Manager {
     }
 
     // Skip entities from specific mods
-    if (entityName.equals("mana-and-artifice:residual_magic")) {
+    if ((isManaAndArtificeLoaded && entityName.equals("mana-and-artifice:residual_magic"))
+        || (isCreateLoaded && entityName.startsWith("create:"))) {
       return;
     }
 
@@ -152,8 +167,8 @@ public class EntityManager extends Manager {
       return;
     } else if (entity.hasCustomName()) {
       if (log.isDebugEnabled()) {
-        String customName =
-            entity.getCustomName() == null ? "NULL" : entity.getCustomName().getString();
+        ITextComponent customNameComponent = entity.getCustomName();
+        String customName = customNameComponent == null ? "NULL" : customNameComponent.getString();
         log.debug("Ignore custom entity {} with custom name {} in {}", entityName, customName,
             worldName);
       }
@@ -189,10 +204,16 @@ public class EntityManager extends Manager {
       return;
     }
 
+    // Skip entities from specific mods
+    if ((isManaAndArtificeLoaded && entityName.equals("mana-and-artifice:residual_magic"))
+        || (isCreateLoaded && entityName.startsWith("create:"))) {
+      return;
+    }
+
     if (entity.hasCustomName()) {
       if (log.isDebugEnabled()) {
-        String customName =
-            entity.getCustomName() == null ? "NULL" : entity.getCustomName().getString();
+        ITextComponent customNameComponent = entity.getCustomName();
+        String customName = customNameComponent == null ? "NULL" : customNameComponent.getString();
         log.debug("Ignore custom entity {} with name {} in {}", entityName, customName, worldName);
       }
     } else if (entity instanceof MonsterEntity) {

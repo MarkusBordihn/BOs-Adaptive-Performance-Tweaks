@@ -72,6 +72,11 @@ public class PlayerManager extends Manager {
       ServerPlayerEntity player =
           ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
 
+      if (player == null) {
+        log.error("Unable to resolve username {} to a valid player!", username);
+        return;
+      }
+
       // Add protection during login process and give 1 heal
       if (optimizePlayerLogin) {
         player.setInvisible(true);
@@ -122,6 +127,12 @@ public class PlayerManager extends Manager {
   private static void addPlayer(String username) {
     ServerPlayerEntity player =
         ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
+
+    if (player == null) {
+      log.error("Unable to resolve username {} to a valid player!", username);
+      return;
+    }
+
     try {
       for (PlayerValidation playerValidation : playerValidationList) {
         if (username.equals(playerValidation.getUsername())) {
