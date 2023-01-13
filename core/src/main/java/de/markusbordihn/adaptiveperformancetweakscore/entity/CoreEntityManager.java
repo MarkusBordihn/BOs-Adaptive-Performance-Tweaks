@@ -32,6 +32,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.mojang.math.Vector3d;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
@@ -121,21 +122,27 @@ public class CoreEntityManager {
     // Skip other checks if unknown entity name, multi-part or custom entity
     if (entityName == null) {
       String entityType = entity.getType().getDescriptionId();
-      if ((CoreConstants.ADHOOKS_LOADED && entityType.startsWith("entity.adhooks."))
-          || (CoreConstants.COFH_CORE_LOADED && entityType.startsWith("entity.cofh_core."))) {
-        log.debug("Ignore modded entity {} in {}", entity, levelName);
-      } else if (CoreConstants.MANA_AND_ARTIFICE_LOADED
-          && entityType.startsWith("entity.mana-and-artifice.")) {
-        log.debug("Ignore {} entity {} in {}", CoreConstants.MANA_AND_ARTIFICE_NAME, entity,
-            levelName);
-      } else if (entity.isMultipartEntity() || entityType.contains("body_part")) {
-        log.debug("Ignore multipart entity {} in {}.", entity, levelName);
-      } else if (entity.hasCustomName()) {
-        log.debug("Unknown entity name for entity {} ({}) with custom name {} in {}.", entity,
-            entityType, entity.getCustomName().getString(), levelName);
-      } else {
-        log.warn("Unknown entity name for entity {} ({}) in {}. Please report this issue under {}!",
-            entity, entityType, levelName, CoreConstants.ISSUE_REPORT);
+
+      // Only if debug is enabled we wan't to know more about the details.
+      if (log.isDebugEnabled()) {
+        if ((CoreConstants.ADHOOKS_LOADED && entityType.startsWith("entity.adhooks."))
+            || (CoreConstants.COFH_CORE_LOADED && entityType.startsWith("entity.cofh_core."))) {
+          log.debug("Ignore modded entity {} in {}", entity, levelName);
+        } else if (CoreConstants.MANA_AND_ARTIFICE_LOADED
+            && entityType.startsWith("entity.mana-and-artifice.")) {
+          log.debug("Ignore {} entity {} in {}", CoreConstants.MANA_AND_ARTIFICE_NAME, entity,
+              levelName);
+        } else if (entity.isMultipartEntity() || entityType.contains("body_part")) {
+          log.debug("Ignore multipart entity {} in {}.", entity, levelName);
+        } else if (entity.hasCustomName()) {
+          Component component = entity.getCustomName();
+          log.debug("Unknown entity name for entity {} ({}) with custom name {} in {}.", entity,
+              entityType, component != null ? component.getString() : "", levelName);
+        } else {
+          log.warn(
+              "Unknown entity name for entity {} ({}) in {}. Please report this issue under {}!",
+              entity, entityType, levelName, CoreConstants.ISSUE_REPORT);
+        }
       }
       return;
     }
@@ -384,6 +391,8 @@ public class CoreEntityManager {
         || entity instanceof Player || entity instanceof Boat || entity instanceof ArmorStand
         || entity instanceof AreaEffectCloud || entity instanceof EndCrystal
         || entity instanceof Marker || entity instanceof HangingEntity || entity instanceof Npc
+        || entity.isSpectator() || entity.isInvisible() || entity.isInvulnerable()
+        || entity.isVehicle() || entity.isPassenger()
         || (entity instanceof TamableAnimal tamableAnimal && tamableAnimal.getOwner() != null)
         || (entity instanceof Bee bee && bee.hasHive()) || entity.hasCustomName());
   }
@@ -410,8 +419,23 @@ public class CoreEntityManager {
 
     // Ignore specific entities from mods which implements their own spawn handling, logic or using
     // pseudo mobs for interactive blocks.
-    if ((CoreConstants.POKECUBE_AIO_LOADED && entityName.startsWith(CoreConstants.POKECUBE_AIO_MOD))
-        || (CoreConstants.CREATE_LOADED && entityName.startsWith(CoreConstants.CREATE_MOD))) {
+    if ((CoreConstants.BIGGER_REACTORS_LOADED
+        && entityName.startsWith(CoreConstants.BIGGER_REACTORS_MOD))
+        || (CoreConstants.BOTANIA_LOADED && entityName.startsWith(CoreConstants.BOTANIA_MOD))
+        || (CoreConstants.CREATE_LOADED && entityName.startsWith(CoreConstants.CREATE_MOD))
+        || (CoreConstants.INDUSTRIAL_FOREGOING_LOADED
+            && entityName.startsWith(CoreConstants.INDUSTRIAL_FOREGOING_MOD))
+        || (CoreConstants.MEKANISM_LOADED && entityName.startsWith(CoreConstants.MEKANISM_FILTER))
+        || (CoreConstants.PIPEZ_LOADED && entityName.startsWith(CoreConstants.PIPEZ_MOD))
+        || (CoreConstants.POKECUBE_AIO_LOADED
+            && entityName.startsWith(CoreConstants.POKECUBE_AIO_MOD))
+        || (CoreConstants.REFINED_STORAGE_LOADED
+            && entityName.startsWith(CoreConstants.REFINED_STORAGE_MOD))
+        || (CoreConstants.ULTIMATE_CAR_LOADED
+            && entityName.startsWith(CoreConstants.ULTIMATE_CAR_MOD))
+        || (CoreConstants.VIESCRAFT_MACHINES_LOADED
+            && entityName.startsWith(CoreConstants.VIESCRAFT_MACHINES_MOD))
+        || (CoreConstants.XNET_LOADED && entityName.startsWith(CoreConstants.XNET_MOD))) {
       return false;
     }
 

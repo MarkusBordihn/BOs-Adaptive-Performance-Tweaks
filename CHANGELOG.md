@@ -5,6 +5,11 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2023.01.13
+
+- Improved compatibility with Bigger Reactors, Botania, Industrial Foregoing, Mekanism, Pipez, Refined Storage, Ultimate Car, Viescraft and Xnet.
+- Improved performance by 5% with enable more specific checks only in debug mode.
+
 ### 2022.12.05
 
 - Improved compatibility for [Create][create].
@@ -210,7 +215,6 @@ For the full changelog, please go to the [Git Hub History][history] instead.
 - Initial check-in of next gen-version of Adaptive Performance Tweaks.
 
 [history]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/commits/main
-
 [better-fps-render-distance]: https://www.curseforge.com/minecraft/mc-mods/better-fps-render-distance
 [create]: https://www.curseforge.com/minecraft/mc-mods/create
 [dynamic-view]: https://www.curseforge.com/minecraft/mc-mods/dynamic-view/

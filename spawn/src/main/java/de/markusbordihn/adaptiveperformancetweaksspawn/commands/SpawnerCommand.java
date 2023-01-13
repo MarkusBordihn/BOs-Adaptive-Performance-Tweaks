@@ -34,6 +34,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.BaseSpawner;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
@@ -63,9 +64,8 @@ public class SpawnerCommand extends CustomCommand {
       for (BaseSpawner spawner : spawnerList) {
         BlockEntity blockEntity = spawner.getSpawnerBlockEntity();
         if (blockEntity != null) {
-          String worldName = blockEntity.getLevel() != null
-              ? blockEntity.getLevel().dimension().location().toString()
-              : "";
+          Level level = blockEntity.getLevel();
+          String worldName = level != null ? level.dimension().location().toString() : "";
           CompoundTag spawnerData = blockEntity.serializeNBT();
           String spawnerId = spawnerData.getString("id");
           String spawnEntityId =
