@@ -19,6 +19,7 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.entity;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 
@@ -46,7 +47,8 @@ public class CoreItemEntityManager {
 
     // All items has the entity minecraft.item, so we are using the translation key
     // to better distinguish the different types of items and minecraft.item as backup.
-    String itemName = itemEntity.getItem().getItem().getRegistryName().toString();
+    ResourceLocation registryName = itemEntity.getItem().getItem().getRegistryName();
+    String itemName = registryName != null ? registryName.toString() : itemEntity.getEncodeId();
     if (itemName == null || itemName.isEmpty()) {
       // Use encode id as item name.
       itemName = itemEntity.getEncodeId();

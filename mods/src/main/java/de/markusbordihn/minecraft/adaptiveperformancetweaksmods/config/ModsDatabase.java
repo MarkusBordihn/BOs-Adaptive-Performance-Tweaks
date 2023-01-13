@@ -119,8 +119,8 @@ public class ModsDatabase {
     "namepain-1.4.1 forge-1.18.x.jar",
     "no-telemetry-1.4.0.jar",
     "notenoughanimations-forge-1.5.0-mc1.18.2.jar",
-    "oculus-mc1.18.2-1.2.4.jar",
     "oculus-1.4.3.jar",
+    "oculus-mc1.18.2-1.2.4.jar",
     "paperdoll-forge-1.1.0-mc1.18.jar",
     "raised-forge-1.18.2-1.1.4.jar",
     "replanter-forge-1.3.jar",
@@ -132,7 +132,8 @@ public class ModsDatabase {
     "tooltipscroller-1.18-1.0.0.jar",
     "transparent-4.1.0+1.18.2-forge.jar",
     "whats-that-slot-forge-1.2.3+1.18.1.jar",
-    "worldtime-1.18.1-forge39.0.9-1.3.1.jar"
+    "worldtime-1.18.1-forge39.0.9-1.3.1.jar",
+    "zmedievalmusic-1.18.2-1.4.jar"
   // @formatter:on
   );
 

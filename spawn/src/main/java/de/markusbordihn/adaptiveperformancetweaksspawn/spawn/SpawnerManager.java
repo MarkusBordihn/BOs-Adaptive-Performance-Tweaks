@@ -31,6 +31,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.BaseSpawner;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -109,9 +110,8 @@ public class SpawnerManager {
       BlockEntity blockEntity = spawner.getSpawnerBlockEntity();
       if (blockEntity != null) {
         BlockPos blockPos = blockEntity.getBlockPos();
-        String levelName = blockEntity.getLevel() != null
-            ? blockEntity.getLevel().dimension().location().toString()
-            : "";
+        Level level = blockEntity.getLevel();
+        String levelName = level != null ? level.dimension().location().toString() : "";
         CompoundTag spawnerData = blockEntity.serializeNBT();
         String spawnerId = spawnerData.getString("id");
         String spawnEntityId =
@@ -133,8 +133,8 @@ public class SpawnerManager {
     Iterator<BaseSpawner> spawnerIterator = spawnerList.iterator();
     while (spawnerIterator.hasNext()) {
       BaseSpawner spawner = spawnerIterator.next();
-      if (spawner != null && spawner.getSpawnerBlockEntity() != null
-          && spawner.getSpawnerBlockEntity().isRemoved()) {
+      BlockEntity spawnerBlockEntity = spawner != null ? spawner.getSpawnerBlockEntity() : null;
+      if (spawner != null && spawnerBlockEntity != null && spawnerBlockEntity.isRemoved()) {
         spawnerIterator.remove();
         removedEntries++;
       }

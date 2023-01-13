@@ -56,7 +56,7 @@ public class WarnMessages {
   public static String disabledOptimizationModWarning(String modName) {
     return String.format(
         "🛈 There are known issue with the %s mod!"
-            + " For this reasons all optimizations for related %s entities and items are disabled!",
+            + " For this reasons all optimizations for related %s entities and/or items are disabled!",
         modName, modName);
   }
 

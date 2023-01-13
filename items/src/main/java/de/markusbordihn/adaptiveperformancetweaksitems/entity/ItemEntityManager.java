@@ -31,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -157,10 +158,9 @@ public class ItemEntityManager {
 
     // All items has the entity minecraft.item, so we are using the translation key
     // to better distinguish the different types of items and minecraft.item as backup.
-    String itemName = itemEntity.getItem().getItem().getRegistryName().toString();
-    if (itemName == null) {
-      itemName = itemEntity.getEncodeId();
-    }
+    ResourceLocation itemRegistryName = itemEntity.getItem().getItem().getRegistryName();
+    String itemName =
+        itemRegistryName != null ? itemRegistryName.toString() : itemEntity.getEncodeId();
 
     // Get world name and start processing of data
     String levelName = level.dimension().location().toString();
@@ -207,9 +207,11 @@ public class ItemEntityManager {
               && (xStart < xSub && xSub < xEnd)
               && ((itemCanSeeSky && existingItemCanSeeSky) || (yStart < ySub && ySub < yEnd))
               && (zStart < zSub && zSub < zEnd)) {
-            int newItemCount = existingItemStack.getCount() + itemStack.getCount();
-            log.debug("[Merge Item] {} + {} = {} items", itemEntity, existingItemEntity,
-                newItemCount);
+            if (log.isDebugEnabled()) {
+              int newItemCount = existingItemStack.getCount() + itemStack.getCount();
+              log.debug("[Merge Item] {} + {} = {} items", itemEntity, existingItemEntity,
+                  newItemCount);
+            }
             ItemStack combinedItemStack = ItemEntity.merge(existingItemStack, itemStack, 64);
             existingItemEntity.setItem(combinedItemStack);
             return;
@@ -282,10 +284,9 @@ public class ItemEntityManager {
 
     // All items has the entity minecraft.item, so we are using the translation key
     // to better distinguish the different types of items and minecraft.item as backup.
-    String itemName = itemEntity.getItem().getItem().getRegistryName().toString();
-    if (itemName == null) {
-      itemName = itemEntity.getEncodeId();
-    }
+    ResourceLocation itemRegistryName = itemEntity.getItem().getItem().getRegistryName();
+    String itemName =
+        itemRegistryName != null ? itemRegistryName.toString() : itemEntity.getEncodeId();
 
     // Get world name and start processing of data
     String levelName = level.dimension().location().toString();

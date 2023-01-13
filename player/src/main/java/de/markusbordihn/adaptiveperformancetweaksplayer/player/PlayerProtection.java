@@ -98,6 +98,12 @@ public class PlayerProtection {
       ServerPlayer player =
           ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
 
+      // Warn if we unable to find server player by username.
+      if (player == null) {
+        log.info("Unable to match username {} to server player!", username);
+        return;
+      }
+
       // Player Protection
       if (protectPlayerDuringLoginLogging) {
         log.info("Player {} {} logged in and will be protected for {} secs.", username,
@@ -178,6 +184,13 @@ public class PlayerProtection {
         if (username.equals(playerValidation.getUsername())) {
           ServerPlayer player =
               ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
+
+          // Warn if we unable to find server player by username.
+          if (player == null) {
+            log.info("Unable to match username {} to server player!", username);
+            return;
+          }
+
           log.debug("Found player {} with player validation {}", player, playerValidation);
           if (protectPlayerDuringLoginLogging
               && (player.isInvisible() || player.isInvulnerable())) {
