@@ -6,7 +6,14 @@
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
   "cSpell.words": [],
-  "cSpell.ignorePaths": ["*.yml", ".gradle", ".vscode", "build", "run"],
+  "cSpell.ignorePaths": [
+    "*.yml",
+    ".gradle",
+    ".vscode",
+    "build",
+    "run",
+    "templates"
+  ],
   "cSpell.customDictionaries": {
     "workspaceWords": {
       "name": "workspaceWords",
@@ -20,5 +27,16 @@
   "java.format.settings.url": "./java-google-style.xml",
   "java.format.settings.profile": "GoogleStyle",
   "java.dependency.showMembers": true,
-  "java.dependency.packagePresentation": "flat"
+  "java.dependency.packagePresentation": "flat",
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.compile.nullAnalysis.nullable": [
+    "org.springframework.lang.Nullable",
+    "javax.annotation.Nullable",
+    "org.eclipse.jdt.annotation.Nullable"
+  ],
+  "java.compile.nullAnalysis.nonnull": [
+    "org.springframework.lang.NonNull",
+    "javax.annotation.Nonnull",
+    "org.eclipse.jdt.annotation.NonNull"
+  ]
 }

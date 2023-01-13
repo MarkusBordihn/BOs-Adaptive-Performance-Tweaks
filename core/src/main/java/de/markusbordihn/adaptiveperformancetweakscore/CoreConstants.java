@@ -51,6 +51,14 @@ public final class CoreConstants {
   public static final String AQUACULTURE_NAME = "Aquaculture 2";
   public static final boolean AQUACULTURE_LOADED = ModList.get().isLoaded(AQUACULTURE_MOD);
 
+  public static final String BIGGER_REACTORS_MOD = "biggerreactors";
+  public static final String BIGGER_REACTORS_NAME = "Bigger Reactors";
+  public static final boolean BIGGER_REACTORS_LOADED = ModList.get().isLoaded(BIGGER_REACTORS_MOD);
+
+  public static final String BOTANIA_MOD = "botania";
+  public static final String BOTANIA_NAME = "Botania";
+  public static final boolean BOTANIA_LOADED = ModList.get().isLoaded(BOTANIA_MOD);
+
   public static final String COFH_CORE_MOD = "cofh_core";
   public static final String COFH_CORE_NAME = "CoFH Core";
   public static final boolean COFH_CORE_LOADED = ModList.get().isLoaded(COFH_CORE_MOD);
@@ -66,6 +74,11 @@ public final class CoreConstants {
   public static final String DYNVIEW_MOD = "dynview";
   public static final String DYNVIEW_NAME = "Dynview";
   public static final boolean DYNVIEW_LOADED = ModList.get().isLoaded(DYNVIEW_MOD);
+
+  public static final String INDUSTRIAL_FOREGOING_MOD = "industrialforegoing";
+  public static final String INDUSTRIAL_FOREGOING_NAME = "Industrial Foregoing";
+  public static final boolean INDUSTRIAL_FOREGOING_LOADED =
+      ModList.get().isLoaded(INDUSTRIAL_FOREGOING_MOD);
 
   public static final String FTB_ULTIMINE_MOD = "ftbultimine";
   public static final String FTB_ULTIMINE_NAME = "FTB Ultimine";
@@ -93,6 +106,11 @@ public final class CoreConstants {
   public static final boolean MANA_AND_ARTIFICE_LOADED =
       ModList.get().isLoaded(MANA_AND_ARTIFICE_MOD);
 
+  public static final String MEKANISM_MOD = "mekanism";
+  public static final String MEKANISM_FILTER = MEKANISM_MOD + ":";
+  public static final String MEKANISM_NAME = "Mekanism";
+  public static final boolean MEKANISM_LOADED = ModList.get().isLoaded(MEKANISM_MOD);
+
   public static final String MEKANISMADDITIONS_MOD = "mekanismadditions";
   public static final String MEKANISMADDITIONS_NAME = "Mekanism Additions";
   public static final boolean MEKANISMADDITIONS_LOADED =
@@ -102,10 +120,6 @@ public final class CoreConstants {
   public static final String MINECOLONIES_NAME = "MineColonies";
   public static final boolean MINECOLONIES_LOADED = ModList.get().isLoaded(MINECOLONIES_MOD);
 
-  public static final String RUBIDIUM_MOD = "rubidium";
-  public static final String RUBIDIUM_NAME = "Rubidium";
-  public static final boolean RUBIDIUM_LOADED = ModList.get().isLoaded(RUBIDIUM_MOD);
-
   public static final String PANTHALASSA_MOD = "panthalassa";
   public static final String PANTHALASSA_NAME = "Panthalassa";
   public static final boolean PANTHALASSA_LOADED = ModList.get().isLoaded(PANTHALASSA_MOD);
@@ -114,9 +128,21 @@ public final class CoreConstants {
   public static final String PERFORMANT_NAME = "Performant";
   public static final boolean PERFORMANT_LOADED = ModList.get().isLoaded(PERFORMANT_MOD);
 
+  public static final String PIPEZ_MOD = "pipez";
+  public static final String PIPEZ_NAME = "Pipez";
+  public static final boolean PIPEZ_LOADED = ModList.get().isLoaded(PIPEZ_MOD);
+
   public static final String POKECUBE_AIO_MOD = "pokecube";
   public static final String POKECUBE_AIO_NAME = "Pokecube AIO";
   public static final boolean POKECUBE_AIO_LOADED = ModList.get().isLoaded(POKECUBE_AIO_MOD);
+
+  public static final String RUBIDIUM_MOD = "rubidium";
+  public static final String RUBIDIUM_NAME = "Rubidium";
+  public static final boolean RUBIDIUM_LOADED = ModList.get().isLoaded(RUBIDIUM_MOD);
+
+  public static final String REFINED_STORAGE_MOD = "refinedstorage";
+  public static final String REFINED_STORAGE_NAME = "Refined Storage";
+  public static final boolean REFINED_STORAGE_LOADED = ModList.get().isLoaded(REFINED_STORAGE_MOD);
 
   public static final String SUPPLEMENTARIES_MOD = "supplementaries";
   public static final String SUPPLEMENTARIES_NAME = "Supplementaries";
@@ -141,7 +167,20 @@ public final class CoreConstants {
   public static final String UNTAMED_WILDS_NAME = "Untamed Wilds";
   public static final boolean UNTAMED_WILDS_LOADED = ModList.get().isLoaded(UNTAMED_WILDS_MOD);
 
+  public static final String ULTIMATE_CAR_MOD = "car";
+  public static final String ULTIMATE_CAR_NAME = "Ultimate Car Mod";
+  public static final boolean ULTIMATE_CAR_LOADED = ModList.get().isLoaded(ULTIMATE_CAR_MOD);
+
+  public static final String VIESCRAFT_MACHINES_MOD = "viescraftmachines";
+  public static final String VIESCRAFT_MACHINES_NAME = "ViesCraft Machines";
+  public static final boolean VIESCRAFT_MACHINES_LOADED =
+      ModList.get().isLoaded(VIESCRAFT_MACHINES_MOD);
+
   public static final String WHISPERWOODS_MOD = "whisperwoods";
   public static final String WHISPERWOODS_NAME = "Whisperwoods";
   public static final boolean WHISPERWOODS_LOADED = ModList.get().isLoaded(WHISPERWOODS_MOD);
+
+  public static final String XNET_MOD = "xnet";
+  public static final String XNET_NAME = "XNet";
+  public static final boolean XNET_LOADED = ModList.get().isLoaded(XNET_MOD);
 }

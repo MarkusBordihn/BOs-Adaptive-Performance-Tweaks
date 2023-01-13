@@ -24,7 +24,7 @@ import java.util.List;
 
 public class ModsDatabase {
 
-  public static final String VERSION = "1.0.1";
+  public static final String VERSION = "1.0.3";
 
   protected ModsDatabase() {}
 
@@ -140,7 +140,8 @@ public class ModsDatabase {
     "uiinputundo-1.2.jar",
     "waveycapes-forge-1.2.0-mc1.19.3.jar",
     "whats-that-slot-forge-1.2.3+1.19.3.jar",
-    "worldtime-1.19.3-forge39.0.9-1.3.1.jar"
+    "worldtime-1.19.3-forge39.0.9-1.3.1.jar",
+    "zmedievalmusic-1.19.3-1.5.jar"
   // @formatter:on
   );
 

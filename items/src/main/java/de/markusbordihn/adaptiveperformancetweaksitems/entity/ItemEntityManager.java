@@ -200,9 +200,11 @@ public class ItemEntityManager {
               && (xStart < xSub && xSub < xEnd)
               && ((itemCanSeeSky && existingItemCanSeeSky) || (yStart < ySub && ySub < yEnd))
               && (zStart < zSub && zSub < zEnd)) {
-            int newItemCount = existingItemStack.getCount() + itemStack.getCount();
-            log.debug("[Merge Item] {} + {} = {} items", itemEntity, existingItemEntity,
-                newItemCount);
+            if (log.isDebugEnabled()) {
+              int newItemCount = existingItemStack.getCount() + itemStack.getCount();
+              log.debug("[Merge Item] {} + {} = {} items", itemEntity, existingItemEntity,
+                  newItemCount);
+            }
             ItemStack combinedItemStack = ItemEntity.merge(existingItemStack, itemStack, 64);
             existingItemEntity.setItem(combinedItemStack);
             return;
