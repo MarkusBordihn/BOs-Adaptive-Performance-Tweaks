@@ -33,7 +33,6 @@ import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
-import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.Manager;
 
 @Mod.EventBusSubscriber
@@ -152,8 +151,8 @@ public class PlayerManager extends Manager {
       }
     } catch (ConcurrentModificationException error) {
       log.error(
-          "Unexpected error during adding player. Please report the following error under {} .\n{}",
-          Constants.ISSUE_REPORT, error);
+          "Unexpected error during adding player.\n{}",
+          error);
     }
     playerCount = ServerLifecycleHooks.getCurrentServer().getPlayerCount();
     hasPlayers = true;
@@ -170,8 +169,8 @@ public class PlayerManager extends Manager {
       }
     } catch (ConcurrentModificationException error) {
       log.error(
-          "Unexpected error during removing player. Please report the following error under {} .\n{}",
-          Constants.ISSUE_REPORT, error);
+          "Unexpected error during removing player.\n{}",
+          error);
     }
     playerCount--;
     hasPlayers = playerCount > 0;

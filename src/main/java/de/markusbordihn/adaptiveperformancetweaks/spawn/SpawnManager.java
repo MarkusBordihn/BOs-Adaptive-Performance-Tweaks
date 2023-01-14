@@ -162,12 +162,14 @@ public class SpawnManager extends Manager {
 
     // Skip other checks if unknown entity name
     if (entityName == null) {
-      if (entity.isMultipartEntity() || entity.getType().toString().contains("body_part")) {
-        log.debug("[Multipart Entity] Allow spawn event for {} in {}", entity, worldName);
-      } else {
-        log.warn(
-            "Unknown entity name for spawn entity {} ({}) in {}. Please report this issue under {}]!",
-            entity, entity.getType(), worldName, Constants.ISSUE_REPORT);
+      if (log.isDebugEnabled()) {
+        if (entity.isMultipartEntity() || entity.getType().toString().contains("body_part")) {
+          log.debug("[Multipart Entity] Allow spawn event for {} in {}", entity, worldName);
+        } else {
+          log.debug(
+              "Unknown entity name for spawn entity {} ({}) in {}!",
+              entity, entity.getType(), worldName);
+        }
       }
       return;
     }

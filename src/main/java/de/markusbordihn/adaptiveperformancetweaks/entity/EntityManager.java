@@ -28,16 +28,23 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.Logger;
 
+import net.minecraft.entity.AreaEffectCloudEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.LightningBoltEntity;
+import net.minecraft.entity.item.ArmorStandEntity;
+import net.minecraft.entity.item.BoatEntity;
+import net.minecraft.entity.item.EnderCrystalEntity;
 import net.minecraft.entity.item.ExperienceOrbEntity;
 import net.minecraft.entity.item.FallingBlockEntity;
+import net.minecraft.entity.item.HangingEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.item.minecart.AbstractMinecartEntity;
 import net.minecraft.entity.item.minecart.MinecartEntity;
 import net.minecraft.entity.monster.MonsterEntity;
+import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.entity.projectile.ProjectileItemEntity;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
@@ -48,7 +55,6 @@ import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 
@@ -71,10 +77,6 @@ public class EntityManager extends Manager {
   private static short ticks = 0;
   private static final short VERIFICATION_TICK = 60 * 20; // Every 1 minutes.
 
-  private static boolean isCreateLoaded = ModList.get().isLoaded(Constants.CREATE_MOD);
-  private static boolean isManaAndArtificeLoaded =
-      ModList.get().isLoaded(Constants.MANA_AND_ARTIFICE_MOD);
-
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(FMLServerAboutToStartEvent event) {
     entityMap = new ConcurrentHashMap<>();
@@ -82,10 +84,10 @@ public class EntityManager extends Manager {
     allowList = new HashSet<>(COMMON.spawnAllowList.get());
     denyList = new HashSet<>(COMMON.spawnDenyList.get());
 
-    if (isCreateLoaded) {
+    if (Constants.CREATE_LOADED) {
       log.info("Ignoring any {} related entity!", Constants.CREATE_NAME);
     }
-    if (isManaAndArtificeLoaded) {
+    if (Constants.MANA_AND_ARTIFICE_LOADED) {
       log.info("Ignoring any {} related entity!", Constants.MANA_AND_ARTIFICE_NAME);
     }
   }
@@ -126,32 +128,32 @@ public class EntityManager extends Manager {
 
     // Skip other checks if unknown entity name
     if (entityName == null) {
-      if (entity.isMultipartEntity() || entity.getType().toString().contains("body_part")) {
-        log.debug("Ignore multipart entity {} in {}.", entity, worldName);
-      } else if (entity.hasCustomName()) {
-        if (log.isDebugEnabled()) {
+      if (log.isDebugEnabled()) {
+        if (entity.isMultipartEntity() || entity.getType().toString().contains("body_part")) {
+          log.debug("Ignore multipart entity {} in {}.", entity, worldName);
+        } else if (entity.hasCustomName()) {
           ITextComponent customNameComponent = entity.getCustomName();
           String customName =
               customNameComponent == null ? "NULL" : customNameComponent.getString();
           log.debug("Unknown entity name for entity {} ({}) with custom name {} in {}.", entity,
               entity.getType(), customName, worldName);
-        }
-      } else {
-        String entityType = entity.getType().toString();
+        } else {
+          String entityType = entity.getType().toString();
 
-        // Avoid warning message for specific mods
-        if (!isManaAndArtificeLoaded || !entityType.startsWith("entity.mana-and-artifice.")) {
-          log.warn(
-              "Unknown entity name for entity {} ({}) in {}. Please report this issue under {}!",
-              entity, entity.getType(), worldName, Constants.ISSUE_REPORT);
+          // Avoid debug message for specific mods
+          if ((!Constants.MANA_AND_ARTIFICE_LOADED
+              || !entityType.startsWith("entity.mana-and-artifice."))
+              && (!entityType.startsWith("entity.cofh_core."))) {
+            log.debug("Unknown entity name for entity {} ({}) in {}!", entity, entity.getType(),
+                worldName);
+          }
         }
       }
       return;
     }
 
-    // Skip entities from specific mods
-    if ((isManaAndArtificeLoaded && entityName.equals("mana-and-artifice:residual_magic"))
-        || (isCreateLoaded && entityName.startsWith("create:"))) {
+    // Skip entities from specific mods for better compatibility.
+    if (!isRelevantEntity(entity, entityName)) {
       return;
     }
 
@@ -205,17 +207,14 @@ public class EntityManager extends Manager {
     }
 
     // Skip entities from specific mods
-    if ((isManaAndArtificeLoaded && entityName.equals("mana-and-artifice:residual_magic"))
-        || (isCreateLoaded && entityName.startsWith("create:"))) {
+    if (!isRelevantEntity(entity, entityName)) {
       return;
     }
 
-    if (entity.hasCustomName()) {
-      if (log.isDebugEnabled()) {
-        ITextComponent customNameComponent = entity.getCustomName();
-        String customName = customNameComponent == null ? "NULL" : customNameComponent.getString();
-        log.debug("Ignore custom entity {} with name {} in {}", entityName, customName, worldName);
-      }
+    if (entity.hasCustomName() && log.isDebugEnabled()) {
+      ITextComponent customNameComponent = entity.getCustomName();
+      String customName = customNameComponent == null ? "NULL" : customNameComponent.getString();
+      log.debug("Ignore custom entity {} with name {} in {}", entityName, customName, worldName);
     } else if (entity instanceof MonsterEntity) {
       MonsterEntityManager.handleMonsterEntityLeaveWorldEvent(event);
     }
@@ -359,10 +358,55 @@ public class EntityManager extends Manager {
   }
 
   public static boolean isRelevantEntity(Entity entity) {
-    return !(entity instanceof ExperienceOrbEntity || entity instanceof ItemEntity
-        || entity instanceof LightningBoltEntity || entity instanceof FallingBlockEntity
-        || entity instanceof ProjectileEntity || entity instanceof MinecartEntity
-        || entity instanceof AbstractMinecartEntity || !entity.isAlive());
+    return !(entity == null || entity instanceof AbstractMinecartEntity
+        || entity instanceof AreaEffectCloudEntity || entity instanceof ArmorStandEntity
+        || entity instanceof BoatEntity || entity instanceof EnderCrystalEntity
+        || entity instanceof ExperienceOrbEntity || entity instanceof FallingBlockEntity
+        || entity instanceof HangingEntity || entity instanceof ItemEntity
+        || entity instanceof LightningBoltEntity || entity instanceof MinecartEntity
+        || entity instanceof PlayerEntity || entity instanceof ProjectileEntity
+        || entity instanceof ProjectileItemEntity || entity.isSpectator() || entity.isInvisible()
+        || entity.isInvulnerable() || entity.isVehicle() || entity.isPassenger()
+        || (entity instanceof TameableEntity && ((TameableEntity) entity).getOwner() != null)
+        || !entity.isAlive());
+  }
+
+  @SuppressWarnings("java:S1126")
+  public static boolean isRelevantEntity(Entity entity, String entityName) {
+
+    // Skip other checks if unknown entity name.
+    if (entityName == null) {
+      return false;
+    }
+
+    // Ignore specific entities from other mods which are not extending the right classes or using
+    // some custom definitions which could not be easily checked.
+    if (Constants.MANA_AND_ARTIFICE_LOADED
+        && entityName.equals("mana-and-artifice:residual_magic")) {
+      return false;
+    }
+
+    // Ignore specific entities from mods which implements their own spawn handling, logic or using
+    // pseudo mobs for interactive blocks.
+    if ((Constants.BIGGER_REACTORS_LOADED && entityName.startsWith(Constants.BIGGER_REACTORS_MOD))
+        || (Constants.BOTANIA_LOADED && entityName.startsWith(Constants.BOTANIA_MOD))
+        || (Constants.CREATE_LOADED && entityName.startsWith(Constants.CREATE_MOD))
+        || (Constants.INDUSTRIAL_FOREGOING_LOADED
+            && entityName.startsWith(Constants.INDUSTRIAL_FOREGOING_MOD))
+        || (Constants.MEKANISM_LOADED && entityName.startsWith(Constants.MEKANISM_FILTER))
+        || (Constants.PIPEZ_LOADED && entityName.startsWith(Constants.PIPEZ_MOD))
+        || (Constants.PIXELMON_LOADED && entityName.startsWith(Constants.PIXELMON_MOD))
+        || (Constants.POKECUBE_AIO_LOADED && entityName.startsWith(Constants.POKECUBE_AIO_MOD))
+        || (Constants.REFINED_STORAGE_LOADED
+            && entityName.startsWith(Constants.REFINED_STORAGE_MOD))
+        || (Constants.ULTIMATE_CAR_LOADED && entityName.startsWith(Constants.ULTIMATE_CAR_MOD))
+        || (Constants.VIESCRAFT_MACHINES_LOADED
+            && entityName.startsWith(Constants.VIESCRAFT_MACHINES_MOD))
+        || (Constants.XNET_LOADED && entityName.startsWith(Constants.XNET_MOD))) {
+      return false;
+    }
+
+    return true;
   }
 
 }

@@ -5,6 +5,11 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2023.01.14
+
+- Improved compability for a lot of mods based on the current 1.19.3 version to fix #33.
+- Improved performance by 2-3% with enable more specific checks only in debug mode.
+
 ### 2023.01.01
 
 - Improved compatibility for [Create][create].
