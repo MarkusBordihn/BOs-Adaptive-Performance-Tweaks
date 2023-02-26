@@ -109,7 +109,8 @@ public class TestData {
       "waystones-forge-1.19.2-9.0.4.jar", "witchesbrew-1.19.2-1.0.jar", "worldedit-mod-7.2.9.jar",
       "Xaeros_Minimap_22.3.0_Forge_1.19.2.jar", "YungsApi-1.19.2-Forge-26.jar",
       "YungsBridges-Forge-1.19.2-1.0.jar", "YungsExtras-Forge-1.19.2-1.0.jar",
-      "[1.19.2] SecurityCraft v1.9.0.2-beta1.jar", "Xaeros_Minimap_22.4.0_Forge_1.19.2.jar"};
+      "rubidium-extra-0.4.16+mc1.19.2-build.57.jar", "[1.19.2] SecurityCraft v1.9.0.2-beta1.jar",
+      "Xaeros_Minimap_22.4.0_Forge_1.19.2.jar"};
 
   public static String[] clientModList = {"BetterAdvancements-1.19.2-0.1.2.122.jar",
       "BetterF3-1.2.2-Forge-1.19.2.jar", "Controlling-forge-1.19.2-9.0+15.jar",
