@@ -33,10 +33,10 @@ public class ModsDatabaseTests {
       String stripedModName = ModsDatabase.stripeVersionNumbers(mod);
       System.out.printf("%s -> %s\n", mod, stripedModName);
       assertNotEquals(stripedModName, mod);
-      assertFalse(stripedModName.contains("0."));
-      assertFalse(stripedModName.contains(".0"));
-      assertFalse(stripedModName.contains("1."));
-      assertFalse(stripedModName.contains(".1"));
+      for (int i = 0; i < 10; i++) {
+        assertFalse(stripedModName.contains(String.format(".%d", i)));
+        assertFalse(stripedModName.contains(String.format("%d.", i)));
+      }
     }
   }
 }
