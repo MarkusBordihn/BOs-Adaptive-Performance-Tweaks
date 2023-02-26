@@ -19,6 +19,10 @@
 
 package de.markusbordihn.adaptiveperformancetweaksitems.config;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,7 +56,7 @@ public final class CommonConfig {
     log.info("Registering {} common config ...", Constants.MOD_NAME);
     try {
       FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
-        CoreConstants.CONFIG_ID);
+          CoreConstants.CONFIG_ID);
     } catch (Exception exception) {
       log.error("There was an error, creating the directory:", exception);
     }
@@ -66,6 +70,8 @@ public final class CommonConfig {
     public final ForgeConfigSpec.IntValue maxNumberOfItems;
     public final ForgeConfigSpec.IntValue maxNumberOfItemsPerType;
     public final ForgeConfigSpec.IntValue itemsClusterRange;
+    public final ForgeConfigSpec.ConfigValue<List<String>> itemsAllowList;
+    public final ForgeConfigSpec.ConfigValue<List<String>> itemsDenyList;
 
     public final ForgeConfigSpec.BooleanValue optimizeExperienceOrbs;
     public final ForgeConfigSpec.IntValue experienceOrbsClusterRange;
@@ -86,6 +92,13 @@ public final class CommonConfig {
           .comment(
               "Defines the radius in blocks which items / item stacks will be clustered together.")
           .defineInRange("itemsClusterRange", 3, 1, 16);
+      itemsAllowList = builder.comment(
+          "Defines a list of items which will be optimized and all other items will be ignored by the optimization.")
+          .define("itemsAllowList", new ArrayList<String>(Arrays.asList()));
+      itemsDenyList = builder.comment(
+          "Defines a list of items which will be ignored by the optimization and all other relevant items will be optimized.")
+          .define("itemsDenyList",
+              new ArrayList<String>(Arrays.asList("minecraft:diamond", "minecraft:diamond_block")));
       builder.pop();
 
       builder.push("Experience Orbs");

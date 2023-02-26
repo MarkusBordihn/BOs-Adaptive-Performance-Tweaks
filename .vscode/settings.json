@@ -12,7 +12,8 @@
     ".vscode",
     "build",
     "run",
-    "templates"
+    "templates",
+    "mods/src/main/java/de/markusbordihn/minecraft/adaptiveperformancetweaksmods/config/ModsDatabase.java"
   ],
   "cSpell.customDictionaries": {
     "workspaceWords": {

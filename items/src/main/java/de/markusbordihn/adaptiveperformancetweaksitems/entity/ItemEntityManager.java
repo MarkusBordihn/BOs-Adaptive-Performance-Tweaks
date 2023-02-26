@@ -62,6 +62,8 @@ public class ItemEntityManager {
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
   private static Integer maxNumberOfItems = COMMON.maxNumberOfItems.get();
   private static Integer maxNumberOfItemsPerType = COMMON.maxNumberOfItemsPerType.get();
+  private static List<String> itemsAllowList = COMMON.itemsAllowList.get();
+  private static List<String> itemsDenyList = COMMON.itemsDenyList.get();
   private static boolean optimizeItems = COMMON.optimizeItems.get();
   private static int itemClusterRange = COMMON.itemsClusterRange.get();
 
@@ -69,6 +71,8 @@ public class ItemEntityManager {
   private static Map<String, Set<ItemEntity>> itemWorldEntityMap = new ConcurrentHashMap<>();
   private static boolean hasHighServerLoad = false;
   private static boolean needsOptimization = false;
+  private static boolean hasItemsAllowList = false;
+  private static boolean hasItemsDenyList = false;
 
   private static short ticks = 0;
   private static final short VERIFICATION_TICK = 30 * 20;
@@ -83,9 +87,15 @@ public class ItemEntityManager {
 
     // Re-load config options.
     itemClusterRange = COMMON.itemsClusterRange.get();
+    itemsAllowList = COMMON.itemsAllowList.get();
+    itemsDenyList = COMMON.itemsDenyList.get();
     maxNumberOfItems = COMMON.maxNumberOfItems.get();
     maxNumberOfItemsPerType = COMMON.maxNumberOfItemsPerType.get();
     optimizeItems = COMMON.optimizeItems.get();
+
+    // Cache
+    hasItemsAllowList = !itemsAllowList.isEmpty();
+    hasItemsDenyList = !itemsDenyList.isEmpty();
 
     // Show additional messages, if needed.
     if (maxNumberOfItems < maxNumberOfItemsPerType) {
@@ -98,6 +108,12 @@ public class ItemEntityManager {
       log.info("Max number of Items allowed per world: {} / per type: {}", maxNumberOfItems,
           maxNumberOfItemsPerType);
       log.info("Enable clustering of items with a radius of {} blocks.", itemClusterRange);
+
+      if (hasItemsAllowList) {
+        log.info("Optimize only items from allow list: {}", itemsAllowList);
+      } else if (hasItemsDenyList) {
+        log.info("Optimize all items except from deny list: {}", itemsDenyList);
+      }
 
       // Additional checks for conflicting mods.
       if (CoreConstants.GET_IT_TOGETHER_LOADED) {
@@ -161,6 +177,18 @@ public class ItemEntityManager {
     ResourceLocation itemRegistryName = itemEntity.getItem().getItem().getRegistryName();
     String itemName =
         itemRegistryName != null ? itemRegistryName.toString() : itemEntity.getEncodeId();
+
+    // Check if item is allowed to be optimized.
+    if (hasItemsAllowList && !itemsAllowList.contains(itemName)) {
+      log.debug("[Item Allow List] {} is not on the allow list!", itemName);
+      return;
+    }
+
+    // Check if item is denied to be optimized.
+    if (hasItemsDenyList && itemsDenyList.contains(itemName)) {
+      log.debug("[Item Deny List] {} will not be optimized!", itemName);
+      return;
+    }
 
     // Get world name and start processing of data
     String levelName = level.dimension().location().toString();
@@ -287,6 +315,16 @@ public class ItemEntityManager {
     ResourceLocation itemRegistryName = itemEntity.getItem().getItem().getRegistryName();
     String itemName =
         itemRegistryName != null ? itemRegistryName.toString() : itemEntity.getEncodeId();
+
+    // Check if item is allowed to be optimized.
+    if (hasItemsAllowList && !itemsAllowList.contains(itemName)) {
+      return;
+    }
+
+    // Check if item is denied to be optimized.
+    if (hasItemsDenyList && itemsDenyList.contains(itemName)) {
+      return;
+    }
 
     // Get world name and start processing of data
     String levelName = level.dimension().location().toString();
