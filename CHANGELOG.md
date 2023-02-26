@@ -5,6 +5,11 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2023.02.26
+
+- Added allow and deny list to the item module to allow individual fine tuning for specific items.
+  You can now easily add or remove specific items over the item list in the items.toml config file.
+
 ### 2023.01.13
 
 - Improved compatibility with Bigger Reactors, Botania, Industrial Foregoing, Mekanism, Pipez, Refined Storage, Ultimate Car, Viescraft and Xnet.

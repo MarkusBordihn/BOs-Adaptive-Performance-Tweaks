@@ -19,6 +19,7 @@
 
 package de.markusbordihn.adaptiveperformancetweaksitems.entity;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -62,8 +63,12 @@ public class ItemEntityManager {
 
   private static Map<String, Set<ItemEntity>> itemTypeEntityMap = new ConcurrentHashMap<>();
   private static Map<String, Set<ItemEntity>> itemWorldEntityMap = new ConcurrentHashMap<>();
+  private static List<String> itemsAllowList = new ArrayList<>();
+  private static List<String> itemsDenyList = new ArrayList<>();
   private static boolean hasHighServerLoad = false;
   private static boolean needsOptimization = false;
+  private static boolean hasItemsAllowList = false;
+  private static boolean hasItemsDenyList = false;
 
   private static short ticks = 0;
   private static final short VERIFICATION_TICK = 30 * 20;
@@ -77,6 +82,12 @@ public class ItemEntityManager {
     itemTypeEntityMap = new ConcurrentHashMap<>();
     itemWorldEntityMap = new ConcurrentHashMap<>();
 
+    // Cache items allow and deny list.
+    itemsAllowList = COMMON.itemsAllowList.get();
+    itemsDenyList = COMMON.itemsDenyList.get();
+    hasItemsAllowList = !itemsAllowList.isEmpty();
+    hasItemsDenyList = !itemsDenyList.isEmpty();
+
     // Pre-validate options, if needed.
     if (Boolean.TRUE.equals(COMMON.optimizeItems.get())) {
       if (COMMON.maxNumberOfItems.get() < COMMON.maxNumberOfItemsPerType.get()) {
@@ -88,6 +99,12 @@ public class ItemEntityManager {
           COMMON.maxNumberOfItems.get(), COMMON.maxNumberOfItemsPerType.get());
       log.info("Enable clustering of items with a radius of {} blocks.",
           COMMON.itemsClusterRange.get());
+
+      if (hasItemsAllowList) {
+        log.info("Optimize only items from allow list: {}", itemsAllowList);
+      } else if (hasItemsDenyList) {
+        log.info("Optimize all items except from deny list: {}", itemsDenyList);
+      }
 
       // Additional checks for conflicting mods.
       if (CoreConstants.GET_IT_TOGETHER_LOADED) {
@@ -146,10 +163,23 @@ public class ItemEntityManager {
     }
 
     // All items has the entity minecraft.item, so we are using the registry name
-    // to better distinguish the different types of items and minecraft.item as backup.
+    // to better distinguish the different types of items and minecraft.item as
+    // backup.
     String itemName = itemEntity.getItem().getItem().getDescriptionId();
     if (itemName == null) {
       itemName = itemEntity.getEncodeId();
+    }
+
+    // Check if item is allowed to be optimized.
+    if (hasItemsAllowList && !itemsAllowList.contains(itemName)) {
+      log.debug("[Item Allow List] {} is not on the allow list!", itemName);
+      return;
+    }
+
+    // Check if item is denied to be optimized.
+    if (hasItemsDenyList && itemsDenyList.contains(itemName)) {
+      log.debug("[Item Deny List] {} will not be optimized!", itemName);
+      return;
     }
 
     // Get world name and start processing of data
@@ -194,7 +224,8 @@ public class ItemEntityManager {
           boolean existingItemCanSeeSky = level.canSeeSky(existingItemEntity.blockPosition());
           ItemStack existingItemStack = existingItemEntity.getItem();
 
-          // Check if they are in an equal position, if both could see the sky, ignore the y values.
+          // Check if they are in an equal position, if both could see the sky, ignore the
+          // y values.
           if (itemEntity.getId() != existingItemEntity.getId() && existingItemEntity.isAlive()
               && ItemEntity.areMergable(itemStack, existingItemStack)
               && (xStart < xSub && xSub < xEnd)
@@ -218,7 +249,8 @@ public class ItemEntityManager {
     Set<ItemEntity> itemWorldEntities = itemWorldEntityMap.get(levelName);
     itemWorldEntities.add(itemEntity);
 
-    // Optimized items per world regardless of type if they exceeding COMMON.maxNumberOfItems.get()
+    // Optimized items per world regardless of type if they exceeding
+    // COMMON.maxNumberOfItems.get()
     // limit.
     if (Boolean.TRUE.equals(COMMON.optimizeItems.get())) {
       int numberOfItemWorldEntities = itemWorldEntities.size();
@@ -279,10 +311,21 @@ public class ItemEntityManager {
     }
 
     // All items has the entity minecraft.item, so we are using the translation key
-    // to better distinguish the different types of items and minecraft.item as backup.
+    // to better distinguish the different types of items and minecraft.item as
+    // backup.
     String itemName = itemEntity.getItem().getItem().getDescriptionId();
     if (itemName == null) {
       itemName = itemEntity.getEncodeId();
+    }
+
+    // Check if item is allowed to be optimized.
+    if (hasItemsAllowList && !itemsAllowList.contains(itemName)) {
+      return;
+    }
+
+    // Check if item is denied to be optimized.
+    if (hasItemsDenyList && itemsDenyList.contains(itemName)) {
+      return;
     }
 
     // Get world name and start processing of data
