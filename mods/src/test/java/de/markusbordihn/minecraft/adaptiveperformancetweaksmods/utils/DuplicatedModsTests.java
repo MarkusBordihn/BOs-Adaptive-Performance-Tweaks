@@ -71,6 +71,9 @@ public class DuplicatedModsTests {
         DuplicatedMods.getVersionNumber(TestData.modListDuplicatesSpecific05[0]));
     assertEquals("3.4.0.124",
         DuplicatedMods.getVersionNumber(TestData.modListDuplicatesSpecific05[1]));
+
+    assertEquals("1.4.2", DuplicatedMods.getVersionNumber(TestData.modListDuplicatesSpecific06[0]));
+    assertEquals("1.4.0", DuplicatedMods.getVersionNumber(TestData.modListDuplicatesSpecific06[1]));
   }
 
   @Test
@@ -99,6 +102,11 @@ public class DuplicatedModsTests {
         DuplicatedMods.normalizeVersionNumber(TestData.modListDuplicatesSpecific05[0]));
     assertEquals("003.004.000.124",
         DuplicatedMods.normalizeVersionNumber(TestData.modListDuplicatesSpecific05[1]));
+
+    assertEquals("001.004.002",
+        DuplicatedMods.normalizeVersionNumber(TestData.modListDuplicatesSpecific06[0]));
+    assertEquals("001.004.000",
+        DuplicatedMods.normalizeVersionNumber(TestData.modListDuplicatesSpecific06[1]));
   }
 
   @Test
