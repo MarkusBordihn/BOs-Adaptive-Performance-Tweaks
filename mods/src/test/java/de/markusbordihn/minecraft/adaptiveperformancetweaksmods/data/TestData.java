@@ -109,8 +109,7 @@ public class TestData {
       "waystones-forge-1.18.1-9.0.4.jar", "witchesbrew-1.18.1-1.0.jar", "worldedit-mod-7.2.9.jar",
       "Xaeros_Minimap_22.3.0_Forge_1.18.jar", "YungsApi-1.18.1-Forge-26. jar",
       "YungsBridges-Forge-1.18.1-1.0.jar", "YungsExtras-Forge-1.18.1-1.0.jar",
-      "rubidium-extra-0.4.16+mc1.18.2-build.57.jar", "[1.18.1] SecurityCraft v1.9.0.2-beta1.jar",
-      "Xaeros_Minimap_22.4.0_Forge_1.18.2.jar"};
+      "[1.18.1] SecurityCraft v1.9.0.2-beta1.jar", "Xaeros_Minimap_22.4.0_Forge_1.18.2.jar"};
 
   public static String[] clientModList = {"BetterAdvancements-1.18.1-0.1.2.122.jar",
       "BetterF3-1.2.2-Forge-1.18.jar", "Controlling-forge-1.18.1-9.0+15.jar", "Ding-1.18-1.3.0.jar",
@@ -120,7 +119,8 @@ public class TestData {
       "LegendaryTooltips-1.18.1-1.2.4.jar", "bettersigns-1.0.jar",
       "InventoryProfilesNext-forge-1.18-1.3.5.jar", "chat_heads-0.6.0-forge-1.18.1.jar",
       "notenoughanimations-forge-1.5.0-mc1.18.2.jar", "eatinganimation-1.18.1-2.0.1.jar",
-      "farsight-1.18-1.6.jar", "itemzoom-1.18.1-2.5.0.jar"};
+      "farsight-1.18-1.6.jar", "itemzoom-1.18.1-2.5.0.jar",
+      "rubidium-extra-0.4.16+mc1.18.2-build.57.jar"};
 
   public static String[] modListDuplicates = {"adaptive_performance_tweaks_items_1.18.1-2.2.0.jar",
       "adaptive_performance_tweaks_items_1.18.1-2.3.0.jar",
@@ -151,5 +151,8 @@ public class TestData {
   public static String[] modListDuplicatesSpecific05 =
       {"pneumaticcraft-repressurized-1.18.2-3.4.1-131.jar",
           "pneumaticcraft-repressurized-1.18.2-3.4.0-124.jar"};
+
+  public static String[] modListDuplicatesSpecific06 =
+      {"Lexicon-1.18.2-(v.1.4.2).jar,", "Lexicon-1.18.2-(v.1.4.0).jar"};
 
 }

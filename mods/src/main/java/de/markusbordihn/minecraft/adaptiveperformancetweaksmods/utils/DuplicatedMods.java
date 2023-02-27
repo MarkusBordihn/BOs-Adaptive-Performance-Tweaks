@@ -160,6 +160,6 @@ public class DuplicatedMods {
     return fileName.replace("1.18.2.jar", "").replace("mc1.18.2", "").replace("[1.18.2]", "")
         .replaceAll("[^0-9.-]", "").replace("1.18-", "").replace("1.18.1-", "")
         .replace("1.18.2-", "").replace("-1.18.2", "").replaceAll("(\\d)-(\\d)", "$1.$2")
-        .replace("-", "").replaceAll("\\.$", "");
+        .replace("-", "").replaceAll("\\.$", "").replaceAll("^\\.", "");
   }
 }
