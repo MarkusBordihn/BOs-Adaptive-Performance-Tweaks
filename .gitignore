@@ -36,12 +36,14 @@ forge*changelog.txt
 # Other
 .DS_Store
 generated
-*.clip
-*.stackdump
-*.log
+logs
 *.bak
+*.clip
+*.log
+*.patch.txt
+*.stackdump
 
-# VSCode Launch definitions
+# Launch files
 core/.vscode/launch.json
 gamerules/.vscode/launch.json
 items/.vscode/launch.json
