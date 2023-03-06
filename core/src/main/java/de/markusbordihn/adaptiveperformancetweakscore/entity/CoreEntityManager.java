@@ -40,15 +40,20 @@ import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.Marker;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Bee;
+import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.ElderGuardian;
 import net.minecraft.world.entity.npc.Npc;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.entity.vehicle.AbstractMinecartContainer;
+import net.minecraft.world.entity.raid.Raider;
+import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.entity.vehicle.MinecartChest;
 import net.minecraft.world.level.Level;
@@ -387,12 +392,14 @@ public class CoreEntityManager {
     return !(entity == null || entity.isRemoved() || entity instanceof ExperienceOrb
         || entity instanceof ItemEntity || entity instanceof LightningBolt
         || entity instanceof FallingBlockEntity || entity instanceof Projectile
-        || entity instanceof MinecartChest || entity instanceof AbstractMinecartContainer
+        || entity instanceof MinecartChest || entity instanceof AbstractMinecart
         || entity instanceof Player || entity instanceof Boat || entity instanceof ArmorStand
         || entity instanceof AreaEffectCloud || entity instanceof EndCrystal
         || entity instanceof Marker || entity instanceof HangingEntity || entity instanceof Npc
-        || entity.isSpectator() || entity.isInvisible() || entity.isInvulnerable()
-        || entity.isVehicle() || entity.isPassenger()
+        || entity instanceof Raider || entity instanceof EnderDragon
+        || entity instanceof EnderDragonPart || entity instanceof WitherBoss
+        || entity instanceof ElderGuardian || entity.isSpectator() || entity.isInvisible()
+        || entity.isInvulnerable() || entity.isVehicle() || entity.isPassenger()
         || (entity instanceof TamableAnimal tamableAnimal && tamableAnimal.getOwner() != null)
         || (entity instanceof Bee bee && bee.hasHive()) || entity.hasCustomName());
   }

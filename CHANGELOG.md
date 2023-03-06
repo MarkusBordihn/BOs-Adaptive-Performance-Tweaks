@@ -5,6 +5,10 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2023.03.06
+
+- Fixed issue with higher level raids which are not spawning correctly.
+
 ### 2023.02.26
 
 - Added allow and deny list to the item module to allow individual fine tuning for specific items.
