@@ -116,6 +116,10 @@ public class GameRuleManager {
       log.info("TNT explosions will be automatically disabled during very high server load!");
     }
 
+    if (Boolean.TRUE.equals(COMMON.vinesSpreadEnabled.get())) {
+      log.info("Vines spread will be automatically disabled during very high server load!");
+    }
+
     if (Boolean.TRUE.equals(COMMON.wardenSpawningEnabled.get())) {
       log.info("Warden spawning will be automatically disabled during very high server load!");
     }
@@ -157,6 +161,9 @@ public class GameRuleManager {
       if (Boolean.TRUE.equals(COMMON.tntExplodesEnabled.get())) {
         enableTntExplosionDropDecay();
       }
+      if (Boolean.TRUE.equals(COMMON.vinesSpreadEnabled.get())) {
+        disableVinesSpread();
+      }
       if (Boolean.TRUE.equals(COMMON.wardenSpawningEnabled.get())) {
         disableWardenSpawning();
       }
@@ -197,6 +204,9 @@ public class GameRuleManager {
     }
     if (Boolean.TRUE.equals(COMMON.tntExplodesEnabled.get())) {
       disableTntExplosionDropDecay();
+    }
+    if (Boolean.TRUE.equals(COMMON.vinesSpreadEnabled.get())) {
+      enableVinesSpread();
     }
     if (Boolean.TRUE.equals(COMMON.wardenSpawningEnabled.get())) {
       enableWardenSpawning();
@@ -333,6 +343,20 @@ public class GameRuleManager {
     }
   }
 
+  public static void enableVinesSpread() {
+    if (!gameRules.getBoolean(GameRules.RULE_DO_VINES_SPREAD)) {
+      log.debug("Enable VinesSpread");
+      CommandManager.executeGameRuleCommand(GameRules.RULE_DO_VINES_SPREAD, true);
+    }
+  }
+
+  public static void disableVinesSpread() {
+    if (gameRules.getBoolean(GameRules.RULE_DO_VINES_SPREAD)) {
+      log.debug("Disable VinesSpread");
+      CommandManager.executeGameRuleCommand(GameRules.RULE_DO_VINES_SPREAD, false);
+    }
+  }
+
   public static void enableWardenSpawning() {
     if (!gameRules.getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING)) {
       log.debug("Enable WardenSpawning");
@@ -432,6 +456,8 @@ public class GameRuleManager {
         String.valueOf(gameRules.getBoolean(GameRules.RULE_TNT_EXPLOSION_DROP_DECAY)));
     overview.put(GameRules.RULE_DO_TRADER_SPAWNING.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_TRADER_SPAWNING)));
+    overview.put(GameRules.RULE_DO_VINES_SPREAD.getId(),
+        String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_VINES_SPREAD)));
     overview.put(GameRules.RULE_DO_WARDEN_SPAWNING.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING)));
     return overview;

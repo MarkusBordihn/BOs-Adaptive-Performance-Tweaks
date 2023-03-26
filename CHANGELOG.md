@@ -5,6 +5,11 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2023.03.26
+
+- Refactored code for version 1.19.4-45.0.25
+- Added new game rule adjustments for disableElytraMovementCheck, doVinesSpread and doWardenSpawning
+
 ### 2023.03.06
 
 - Fixed issue with higher level raids which are not spawning correctly.

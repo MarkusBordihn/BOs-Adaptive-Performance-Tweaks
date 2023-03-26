@@ -36,7 +36,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingSpawnEvent;
+import net.minecraftforge.event.entity.living.MobSpawnEvent.FinalizeSpawn;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -56,11 +56,6 @@ public class SpawnerManager {
 
   protected SpawnerManager() {}
 
-  @SubscribeEvent(priority = EventPriority.NORMAL)
-  public static void handleLivingCheckSpawnEvent(LivingSpawnEvent.CheckSpawn event) {
-    handleSpawnEvent(event);
-  }
-
   @SubscribeEvent
   public static void handleClientServerTickEvent(TickEvent.ServerTickEvent event) {
     if (event.phase == TickEvent.Phase.END && ticks++ >= VERIFICATION_TICK) {
@@ -69,7 +64,8 @@ public class SpawnerManager {
     }
   }
 
-  private static void handleSpawnEvent(LivingSpawnEvent event) {
+  @SubscribeEvent(priority = EventPriority.NORMAL)
+  public static void handleFinalizeSpawnEvent(FinalizeSpawn event) {
 
     // Ignore client side.
     LevelAccessor level = event.getLevel();
@@ -83,8 +79,7 @@ public class SpawnerManager {
       return;
     }
 
-    if (event instanceof LivingSpawnEvent.CheckSpawn checkSpawn
-        && checkSpawn.getSpawner() != null) {
+    if (event.getSpawner() != null) {
 
       // Ignore events which are already canceled or denied.
       if (event.isCanceled() || event.getResult() == Event.Result.DENY) {
@@ -92,7 +87,7 @@ public class SpawnerManager {
         return;
       }
 
-      BaseSpawner spawner = checkSpawn.getSpawner();
+      BaseSpawner spawner = event.getSpawner();
       addSpawner(spawner);
     }
 

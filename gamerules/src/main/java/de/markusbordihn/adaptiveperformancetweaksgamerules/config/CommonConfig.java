@@ -80,6 +80,7 @@ public final class CommonConfig {
     public final ForgeConfigSpec.BooleanValue raidsEnabled;
     public final ForgeConfigSpec.BooleanValue tntExplodesEnabled;
     public final ForgeConfigSpec.BooleanValue traderSpawningEnabled;
+    public final ForgeConfigSpec.BooleanValue vinesSpreadEnabled;
     public final ForgeConfigSpec.BooleanValue wardenSpawningEnabled;
 
     Config(ForgeConfigSpec.Builder builder) {
@@ -153,6 +154,11 @@ public final class CommonConfig {
       builder.push("TNT Explodes");
       tntExplodesEnabled = builder.comment("Enable/Disable tnt explodes adjustments.")
           .define("tntExplodesEnabled", true);
+      builder.pop();
+
+      builder.push("Vines Spread");
+      vinesSpreadEnabled = builder.comment("Enable/Disable vines spread adjustments.")
+          .define("vinesSpreadEnabled", true);
       builder.pop();
 
       builder.push("Warden Spawning");

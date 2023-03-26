@@ -20,6 +20,7 @@ Automatically adjust game rules like the random tick speed, entity cramming, rai
 | doInsomnia                 |
 | doPatrolSpawning           |
 | doTraderSpawning           |
+| doVinesSpread              |
 | doWardenSpawning           |
 | maxEntityCramming          |
 | mobExplosionDropDecay      |

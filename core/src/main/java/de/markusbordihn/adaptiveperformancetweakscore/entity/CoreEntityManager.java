@@ -376,7 +376,7 @@ public class CoreEntityManager {
         || entity instanceof EnderDragonPart || entity instanceof WitherBoss
         || entity instanceof ElderGuardian || entity.isSpectator() || entity.isInvisible()
         || entity.isInvulnerable() || entity.isVehicle() || entity.isPassenger()
-        || (entity instanceof TamableAnimal tamableAnimal && tamableAnimal.getOwner() != null)
+        || (entity instanceof TamableAnimal tamableAnimal && tamableAnimal.getOwnerUUID() != null)
         || (entity instanceof Bee bee && bee.hasHive()) || entity.hasCustomName());
   }
 

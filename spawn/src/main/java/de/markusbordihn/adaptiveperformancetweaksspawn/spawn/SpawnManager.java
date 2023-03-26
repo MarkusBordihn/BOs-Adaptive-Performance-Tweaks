@@ -33,7 +33,8 @@ import net.minecraft.world.level.Level;
 
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.entity.living.LivingSpawnEvent;
+import net.minecraftforge.event.entity.living.MobSpawnEvent;
+import net.minecraftforge.event.entity.living.MobSpawnEvent.FinalizeSpawn;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.Event;
@@ -197,15 +198,15 @@ public class SpawnManager {
     }
   }
 
-  // CheckSpawn is fired when an Entity is about to be spawned.
+  // MobSpawnEvent is fired when an Entity is about to be spawned.
   @SubscribeEvent(priority = EventPriority.HIGHEST)
-  public static void handleLivingCheckSpawnEvent(LivingSpawnEvent.CheckSpawn event) {
+  public static void handleMobSpawnEvent(MobSpawnEvent event) {
     handleSpawnEvent(event);
   }
 
-  // SpecialSpawn is fired when an Entity is to be spawned.
+  // FinalizeSpawn is fired before a entity is finalized.
   @SubscribeEvent(priority = EventPriority.HIGHEST)
-  public static void handleLivingSpecialSpawnEvent(LivingSpawnEvent.SpecialSpawn event) {
+  public static void handleFinalizeSpawnEvent(FinalizeSpawn event) {
     handleSpawnEvent(event);
   }
 
@@ -232,8 +233,8 @@ public class SpawnManager {
 
     String entityName = entity.getEncodeId();
     String levelName = level.dimension().location().toString();
-    boolean isLivingSpawnEvent = event instanceof LivingSpawnEvent;
-    String eventType = isLivingSpawnEvent ? "spawn" : "join";
+    boolean isFinalizeSpawn = event instanceof FinalizeSpawn;
+    String eventType = isFinalizeSpawn ? "spawn" : "join";
 
     // Pre-check for ignored dimension to avoid further checks
     if (ignoreDimensionList.contains(levelName)) {
@@ -260,7 +261,7 @@ public class SpawnManager {
     // Pre-check for denied entities to avoid expensive calculations.
     if (denyList.contains(entityName)) {
       log.debug("[Denied Entity] Denied {} event for {} in {} ", eventType, entity, levelName);
-      if (isLivingSpawnEvent) {
+      if (isFinalizeSpawn) {
         event.setResult(Event.Result.DENY);
       } else {
         event.setCanceled(true);
@@ -277,7 +278,7 @@ public class SpawnManager {
     // Get current players positions for later calculations
     List<PlayerPosition> playersPositionsInsideViewArea = null;
     int numOfPlayersInsideViewArea = 0;
-    if (event instanceof LivingSpawnEvent livingSpawnEvent
+    if (event instanceof MobSpawnEvent livingSpawnEvent
         && Boolean.TRUE.equals(COMMON.viewAreaEnabled.get())) {
       playersPositionsInsideViewArea = PlayerPositionManager.getPlayerPositionsInsideViewArea(
           levelName, (int) livingSpawnEvent.getX(), (int) livingSpawnEvent.getY(),
@@ -297,7 +298,7 @@ public class SpawnManager {
     if (spawnLimitationLimiter > 0 && spawnLimiter++ >= spawnLimitationLimiter) {
       log.debug("[Spawn Limiter {}] Blocked {} event for {} in {}.", spawnLimitationLimiter,
           eventType, entity, levelName);
-      if (isLivingSpawnEvent) {
+      if (isFinalizeSpawn) {
         event.setResult(Event.Result.DENY);
       } else {
         event.setCanceled(true);
@@ -313,7 +314,7 @@ public class SpawnManager {
         && numberOfEntities >= spawnLimitationMaxMobsPerServer) {
       log.debug("[Spawn Limitations Server: {}] Blocked {} event for {} in {}.", numberOfEntities,
           eventType, entity, levelName);
-      if (isLivingSpawnEvent) {
+      if (isFinalizeSpawn) {
         event.setResult(Event.Result.DENY);
       } else {
         event.setCanceled(true);
@@ -328,7 +329,7 @@ public class SpawnManager {
         && numberOfEntitiesPerWorld >= spawnLimitationMaxMobsPerWorld) {
       log.debug("[Spawn Limitations World: {}] Blocked {} event for {} in {}.",
           numberOfEntitiesPerWorld, eventType, entity, levelName);
-      if (isLivingSpawnEvent) {
+      if (isFinalizeSpawn) {
         event.setResult(Event.Result.DENY);
       } else {
         event.setCanceled(true);
@@ -369,7 +370,7 @@ public class SpawnManager {
       if (limitPerWorld > 0 && numberOfEntitiesPerWorld >= limitPerWorld * spawnFactor) {
         log.debug("[World limit] Blocked {} event for {} ({} >= {} * {}f) in {}", eventType,
             entityName, numberOfEntitiesPerWorld, limitPerWorld, spawnFactor, levelName);
-        if (isLivingSpawnEvent) {
+        if (isFinalizeSpawn) {
           event.setResult(Event.Result.DENY);
         } else {
           event.setCanceled(true);

@@ -46,7 +46,7 @@ public class DuplicatedModsTests {
       testFileList.add(testFile);
     }
     File result = DuplicatedMods.findLatestMod(testFileList);
-    assertEquals("adaptive_performance_tweaks_items_1.19.3-2.20.9.jar", result.getName());
+    assertEquals("adaptive_performance_tweaks_items_1.19.4-2.20.9.jar", result.getName());
   }
 
   @Test
