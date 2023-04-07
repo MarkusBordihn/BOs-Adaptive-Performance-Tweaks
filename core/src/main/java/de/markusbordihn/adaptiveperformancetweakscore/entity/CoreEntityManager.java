@@ -39,6 +39,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.Marker;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.boss.EnderDragonPart;
@@ -410,6 +411,7 @@ public class CoreEntityManager {
         || entity.isPassenger()
         || (entity instanceof TamableAnimal tamableAnimal
             && (tamableAnimal.getOwner() != null || tamableAnimal.getOwnerUUID() != null))
+        || (entity instanceof Mob mob && mob.isLeashed())
         || (entity instanceof Bee bee && bee.hasHive()) || entity.hasCustomName());
   }
 
