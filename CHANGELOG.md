@@ -5,6 +5,12 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2023.04.03
+
+- Improved compatibility with Ars Nouveau, Applied Energistics 2, Easy NPC, Flux Networks, Guard Villagers, Human Companions, Immersive Engineering, Modular Routers, Mining Colonies and Storage Drawers.
+- Improved owner detection for modded entities which are not extending the `TamableAnimal` class.
+- Improved performance by 5% by skipping mods specific checks for standard entities.
+
 ### 2023.03.26
 
 - Refactored code for version 1.19.4-45.0.25

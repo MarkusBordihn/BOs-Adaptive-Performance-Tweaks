@@ -43,6 +43,6 @@ license="MIT"
 [[dependencies.adaptive_performance_tweaks_items]]
   modId="adaptive_performance_tweaks_core"
   mandatory=true
-  versionRange="[8.0.0,9.0.0)"
+  versionRange="[8.1.0,9.0.0)"
   ordering="NONE"
   side="SERVER"

@@ -53,6 +53,10 @@ minecraft {
             source sourceSets.main
         }
       }
+
+      // Mixin Support only for mod testing.
+      property 'mixin.env.remapRefMap', 'true'
+      property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
     }
 
     server {
@@ -73,6 +77,10 @@ minecraft {
             source sourceSets.main
         }
       }
+
+      // Mixin Support only for mod testing.
+      property 'mixin.env.remapRefMap', 'true'
+      property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
     }
 
     data {
@@ -117,7 +125,7 @@ dependencies {
   // Specify the version of Minecraft to use, If this is any group other then 'net.minecraft' it is assumed
   // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
   // The userdev artifact is a special name and will get all sorts of transformations applied to it.
-  minecraft 'net.minecraftforge:forge:1.19.4-45.0.25'
+  minecraft 'net.minecraftforge:forge:1.19.4-45.0.43'
 
   // Additional helpful Mods for development (dev depenedency)
   runtimeOnly fg.deobf("curse.maven:xaeros_minimap-263420:4440702")
