@@ -53,6 +53,10 @@ minecraft {
             source sourceSets.main
         }
       }
+
+      // Mixin Support only for mod testing.
+      property 'mixin.env.remapRefMap', 'true'
+      property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
     }
 
     server {
@@ -73,6 +77,10 @@ minecraft {
             source sourceSets.main
         }
       }
+
+      // Mixin Support only for mod testing.
+      property 'mixin.env.remapRefMap', 'true'
+      property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
     }
 
     data {

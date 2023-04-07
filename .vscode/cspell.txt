@@ -9,6 +9,7 @@ adaptiveperformancetweaksmods
 adaptiveperformancetweaksplayer
 adaptiveperformancetweaksspawn
 ADHOOKS
+advancementscreenshot
 Alexmobs
 Alexs
 alexsmobs
@@ -48,10 +49,13 @@ enderiophage
 enderman
 enderminion
 endspider
+ENERGISTICS
+Fallingleaves
 fanmade
 farlander
 farlanders
 Farsight
+fluxnetworks
 foliaath
 frostmaw
 ftbultimine
@@ -61,13 +65,16 @@ gradlew
 Grandle
 griefer
 grottol
+guardvillagers
 guster
 hidebehind
 hippogryph
 hirschgeist
+humancompanions
 iceandfire
 iceologer
 IGNORESERVERONLY
+immersiveengineering
 incontrol
 industrialforegoing
 ironslime
@@ -76,13 +83,14 @@ LAZYDFU
 leafcutter
 lich
 logprot
-LOOTR
+Lootr
 lordskeleton
 Markus
 markusbordihn
 mbordihn
 Mekanism
 Mekanismadditions
+Milli
 mimicube
 Minecart
 minecolonies
@@ -90,6 +98,7 @@ minecraft
 minecraftforge
 minoshroom
 modid
+modularrouters
 mosco
 Mowzie's
 Mowzies
@@ -106,7 +115,6 @@ piglin
 Pipez
 Pokecube
 refinedstorage
-Reposts
 roka
 Savageandravage
 server
@@ -121,6 +129,7 @@ spawnrules
 sporel
 starshell
 stoneling
+storagedrawers
 stradpole
 stucked
 stymphalian
@@ -136,7 +145,7 @@ trevally
 twilightforest
 Ultimine
 untamedwilds
-Viescraft
+VIESCRAFT
 viescraftmachines
 voidmaster
 Whisperwoods

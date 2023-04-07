@@ -39,13 +39,22 @@ public final class CoreConstants {
   public static final String ALEXSMOBS_NAME = "Alex's Mobs";
   public static final boolean ALEXSMOBS_LOADED = ModList.get().isLoaded(ALEXSMOBS_MOD);
 
+  public static final String ADHOOKS_MOD = "adhooks";
+  public static final String ADHOOKS_NAME = "Advanced Hook Launchers";
+  public static final boolean ADHOOKS_LOADED = ModList.get().isLoaded(ADHOOKS_MOD);
+
   public static final String ARTIFACTS_MOD = "artifacts";
   public static final String ARTIFACTS_NAME = "Artifacts";
   public static final boolean ARTIFACTS_LOADED = ModList.get().isLoaded(ARTIFACTS_MOD);
 
-  public static final String ADHOOKS_MOD = "adhooks";
-  public static final String ADHOOKS_NAME = "Advanced Hook Launchers";
-  public static final boolean ADHOOKS_LOADED = ModList.get().isLoaded(ADHOOKS_MOD);
+  public static final String ARS_NOUVEAU_MOD = "ars_nouveau";
+  public static final String ARS_NOUVEAU_NAME = "Ars Nouveau";
+  public static final boolean ARS_NOUVEAU_LOADED = ModList.get().isLoaded(ARS_NOUVEAU_MOD);
+
+  public static final String APPLIED_ENERGISTICS_2_MOD = "ae2";
+  public static final String APPLIED_ENERGISTICS_2_NAME = "Applied Energistics 2";
+  public static final boolean APPLIED_ENERGISTICS_2_LOADED =
+      ModList.get().isLoaded(APPLIED_ENERGISTICS_2_MOD);
 
   public static final String AQUACULTURE_MOD = "aquaculture";
   public static final String AQUACULTURE_NAME = "Aquaculture 2";
@@ -75,18 +84,40 @@ public final class CoreConstants {
   public static final String DYNVIEW_NAME = "Dynview";
   public static final boolean DYNVIEW_LOADED = ModList.get().isLoaded(DYNVIEW_MOD);
 
-  public static final String INDUSTRIAL_FOREGOING_MOD = "industrialforegoing";
-  public static final String INDUSTRIAL_FOREGOING_NAME = "Industrial Foregoing";
-  public static final boolean INDUSTRIAL_FOREGOING_LOADED =
-      ModList.get().isLoaded(INDUSTRIAL_FOREGOING_MOD);
+  public static final String EASY_NPC_MOD = "easy_npc";
+  public static final String EASY_NPC_NAME = "Easy NPC";
+  public static final boolean EASY_NPC_LOADED = ModList.get().isLoaded(EASY_NPC_MOD);
 
   public static final String FTB_ULTIMINE_MOD = "ftbultimine";
   public static final String FTB_ULTIMINE_NAME = "FTB Ultimine";
   public static final boolean FTB_ULTIMINE_LOADED = ModList.get().isLoaded(FTB_ULTIMINE_MOD);
 
+  public static final String FLUX_NETWORKS_MOD = "fluxnetworks";
+  public static final String FLUX_NETWORKS_NAME = "Flux Networks";
+  public static final boolean FLUX_NETWORKS_LOADED = ModList.get().isLoaded(FLUX_NETWORKS_MOD);
+
   public static final String GET_IT_TOGETHER_MOD = "getittogetherdrops";
   public static final String GET_IT_TOGETHER_NAME = "Get It Together, Drops!";
   public static final boolean GET_IT_TOGETHER_LOADED = ModList.get().isLoaded(GET_IT_TOGETHER_MOD);
+
+  public static final String GUARD_VILLAGERS_MOD = "guardvillagers";
+  public static final String GUARD_VILLAGERS_NAME = "Guard Villagers";
+  public static final boolean GUARD_VILLAGERS_LOADED = ModList.get().isLoaded(GUARD_VILLAGERS_MOD);
+
+  public static final String HUMAN_COMPANIONS_MOD = "humancompanions";
+  public static final String HUMAN_COMPANIONS_NAME = "Human Companions";
+  public static final boolean HUMAN_COMPANIONS_LOADED =
+      ModList.get().isLoaded(HUMAN_COMPANIONS_MOD);
+
+  public static final String INDUSTRIAL_FOREGOING_MOD = "industrialforegoing";
+  public static final String INDUSTRIAL_FOREGOING_NAME = "Industrial Foregoing";
+  public static final boolean INDUSTRIAL_FOREGOING_LOADED =
+      ModList.get().isLoaded(INDUSTRIAL_FOREGOING_MOD);
+
+  public static final String IMMERSIVE_ENGINEERING_MOD = "immersiveengineering";
+  public static final String IMMERSIVE_ENGINEERING_NAME = "Immersive Engineering";
+  public static final boolean IMMERSIVE_ENGINEERING_LOADED =
+      ModList.get().isLoaded(IMMERSIVE_ENGINEERING_MOD);
 
   public static final String INCONTROL_MOD = "incontrol";
   public static final String INCONTROL_NAME = "InControl";
@@ -116,6 +147,10 @@ public final class CoreConstants {
   public static final boolean MEKANISMADDITIONS_LOADED =
       ModList.get().isLoaded(MEKANISMADDITIONS_MOD);
 
+  public static final String MODULAR_ROUTERS_MOD = "modularrouters";
+  public static final String MODULAR_ROUTERS_NAME = "Modular Routers";
+  public static final boolean MODULAR_ROUTERS_LOADED = ModList.get().isLoaded(MODULAR_ROUTERS_MOD);
+
   public static final String MINECOLONIES_MOD = "minecolonies";
   public static final String MINECOLONIES_NAME = "MineColonies";
   public static final boolean MINECOLONIES_LOADED = ModList.get().isLoaded(MINECOLONIES_MOD);
@@ -143,6 +178,10 @@ public final class CoreConstants {
   public static final String REFINED_STORAGE_MOD = "refinedstorage";
   public static final String REFINED_STORAGE_NAME = "Refined Storage";
   public static final boolean REFINED_STORAGE_LOADED = ModList.get().isLoaded(REFINED_STORAGE_MOD);
+
+  public static final String STORAGE_DRAWERS_MOD = "storagedrawers";
+  public static final String STORAGE_DRAWERS_NAME = "Storage Drawers";
+  public static final boolean STORAGE_DRAWERS_LOADED = ModList.get().isLoaded(STORAGE_DRAWERS_MOD);
 
   public static final String SUPPLEMENTARIES_MOD = "supplementaries";
   public static final String SUPPLEMENTARIES_NAME = "Supplementaries";
