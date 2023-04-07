@@ -32,6 +32,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.mojang.math.Vector3d;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.Entity;
@@ -49,8 +50,11 @@ import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.ElderGuardian;
+import net.minecraft.world.entity.monster.PatrollingMonster;
 import net.minecraft.world.entity.npc.Npc;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.EvokerFangs;
+import net.minecraft.world.entity.projectile.EyeOfEnder;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
@@ -78,7 +82,9 @@ public class CoreEntityManager {
 
   private static short ticks = 0;
   private static final short VERIFICATION_TICK = 25 * 20;
+  private static final String ENTITY_OWNER_TAG = "Owner";
 
+  // Entity map to store all entities per world and global.
   private static ConcurrentHashMap<String, Set<Entity>> entityMap = new ConcurrentHashMap<>();
   private static ConcurrentHashMap<String, Set<Entity>> entityMapPerWorld =
       new ConcurrentHashMap<>();
@@ -392,15 +398,18 @@ public class CoreEntityManager {
     return !(entity == null || entity.isRemoved() || entity instanceof ExperienceOrb
         || entity instanceof ItemEntity || entity instanceof LightningBolt
         || entity instanceof FallingBlockEntity || entity instanceof Projectile
-        || entity instanceof MinecartChest || entity instanceof AbstractMinecart
-        || entity instanceof Player || entity instanceof Boat || entity instanceof ArmorStand
-        || entity instanceof AreaEffectCloud || entity instanceof EndCrystal
-        || entity instanceof Marker || entity instanceof HangingEntity || entity instanceof Npc
-        || entity instanceof Raider || entity instanceof EnderDragon
-        || entity instanceof EnderDragonPart || entity instanceof WitherBoss
-        || entity instanceof ElderGuardian || entity.isSpectator() || entity.isInvisible()
-        || entity.isInvulnerable() || entity.isVehicle() || entity.isPassenger()
-        || (entity instanceof TamableAnimal tamableAnimal && tamableAnimal.getOwner() != null)
+        || entity instanceof EvokerFangs || entity instanceof EyeOfEnder
+        || entity instanceof PatrollingMonster || entity instanceof MinecartChest
+        || entity instanceof AbstractMinecart || entity instanceof Player || entity instanceof Boat
+        || entity instanceof ArmorStand || entity instanceof AreaEffectCloud
+        || entity instanceof EndCrystal || entity instanceof Marker
+        || entity instanceof HangingEntity || entity instanceof Npc || entity instanceof Raider
+        || entity instanceof EnderDragon || entity instanceof EnderDragonPart
+        || entity instanceof WitherBoss || entity instanceof ElderGuardian || entity.isSpectator()
+        || entity.isInvisible() || entity.isInvulnerable() || entity.isVehicle()
+        || entity.isPassenger()
+        || (entity instanceof TamableAnimal tamableAnimal
+            && (tamableAnimal.getOwner() != null || tamableAnimal.getOwnerUUID() != null))
         || (entity instanceof Bee bee && bee.hasHive()) || entity.hasCustomName());
   }
 
@@ -417,6 +426,11 @@ public class CoreEntityManager {
       return false;
     }
 
+    // Skip checks for known default entities starting with "minecraft:".
+    if (entityName.startsWith("minecraft:")) {
+      return true;
+    }
+
     // Ignore specific entities from other mods which are not extending the right classes or using
     // some custom definitions which could not be easily checked.
     if (CoreConstants.MANA_AND_ARTIFICE_LOADED
@@ -426,16 +440,35 @@ public class CoreEntityManager {
 
     // Ignore specific entities from mods which implements their own spawn handling, logic or using
     // pseudo mobs for interactive blocks.
-    if ((CoreConstants.BIGGER_REACTORS_LOADED
-        && entityName.startsWith(CoreConstants.BIGGER_REACTORS_MOD))
+    if ((CoreConstants.ARS_NOUVEAU_LOADED && entityName.startsWith(CoreConstants.ARS_NOUVEAU_MOD))
+        || (CoreConstants.APPLIED_ENERGISTICS_2_LOADED
+            && entityName.startsWith(CoreConstants.APPLIED_ENERGISTICS_2_MOD))
+        || (CoreConstants.BIGGER_REACTORS_LOADED
+            && entityName.startsWith(CoreConstants.BIGGER_REACTORS_MOD))
         || (CoreConstants.BOTANIA_LOADED && entityName.startsWith(CoreConstants.BOTANIA_MOD))
         || (CoreConstants.CREATE_LOADED && entityName.startsWith(CoreConstants.CREATE_MOD))
+        || (CoreConstants.EASY_NPC_LOADED && entityName.startsWith(CoreConstants.EASY_NPC_MOD))
+        || (CoreConstants.FLUX_NETWORKS_LOADED
+            && entityName.startsWith(CoreConstants.FLUX_NETWORKS_MOD))
+        || (CoreConstants.GUARD_VILLAGERS_LOADED
+            && entityName.startsWith(CoreConstants.GUARD_VILLAGERS_MOD))
+        || (CoreConstants.HUMAN_COMPANIONS_LOADED
+            && entityName.startsWith(CoreConstants.HUMAN_COMPANIONS_MOD))
         || (CoreConstants.INDUSTRIAL_FOREGOING_LOADED
             && entityName.startsWith(CoreConstants.INDUSTRIAL_FOREGOING_MOD))
+        || (CoreConstants.IMMERSIVE_ENGINEERING_LOADED
+            && entityName.startsWith(CoreConstants.IMMERSIVE_ENGINEERING_MOD))
+        || (CoreConstants.LOOTR_LOADED && entityName.startsWith(CoreConstants.LOOTR_MOD))
         || (CoreConstants.MEKANISM_LOADED && entityName.startsWith(CoreConstants.MEKANISM_FILTER))
+        || (CoreConstants.MODULAR_ROUTERS_LOADED
+            && entityName.startsWith(CoreConstants.MODULAR_ROUTERS_MOD))
+        || (CoreConstants.MINECOLONIES_LOADED
+            && entityName.startsWith(CoreConstants.MINECOLONIES_MOD))
         || (CoreConstants.PIPEZ_LOADED && entityName.startsWith(CoreConstants.PIPEZ_MOD))
         || (CoreConstants.POKECUBE_AIO_LOADED
             && entityName.startsWith(CoreConstants.POKECUBE_AIO_MOD))
+        || (CoreConstants.STORAGE_DRAWERS_LOADED
+            && entityName.startsWith(CoreConstants.STORAGE_DRAWERS_MOD))
         || (CoreConstants.REFINED_STORAGE_LOADED
             && entityName.startsWith(CoreConstants.REFINED_STORAGE_MOD))
         || (CoreConstants.ULTIMATE_CAR_LOADED
@@ -443,6 +476,13 @@ public class CoreEntityManager {
         || (CoreConstants.VIESCRAFT_MACHINES_LOADED
             && entityName.startsWith(CoreConstants.VIESCRAFT_MACHINES_MOD))
         || (CoreConstants.XNET_LOADED && entityName.startsWith(CoreConstants.XNET_MOD))) {
+      return false;
+    }
+
+    // Checking entity NBT data to catch custom entities which are not extending the right classes
+    // or using some custom definitions which could not be easily checked.
+    CompoundTag compoundTag = entity.getPersistentData();
+    if (compoundTag.contains(ENTITY_OWNER_TAG) && compoundTag.get(ENTITY_OWNER_TAG) != null) {
       return false;
     }
 

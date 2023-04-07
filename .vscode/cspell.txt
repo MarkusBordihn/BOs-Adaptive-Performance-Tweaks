@@ -49,11 +49,13 @@ enderiophage
 enderman
 enderminion
 endspider
+ENERGISTICS
 Fallingleaves
 fanmade
 farlander
 farlanders
 Farsight
+fluxnetworks
 foliaath
 frostmaw
 ftbultimine
@@ -63,13 +65,16 @@ gradlew
 Grandle
 griefer
 grottol
+guardvillagers
 guster
 hidebehind
 hippogryph
 hirschgeist
+humancompanions
 iceandfire
 iceologer
 IGNORESERVERONLY
+immersiveengineering
 incontrol
 industrialforegoing
 ironslime
@@ -93,6 +98,7 @@ minecraft
 minecraftforge
 minoshroom
 modid
+modularrouters
 mosco
 Mowzie's
 Mowzies
@@ -123,6 +129,7 @@ spawnrules
 sporel
 starshell
 stoneling
+storagedrawers
 stradpole
 stucked
 stymphalian
@@ -145,4 +152,4 @@ Whisperwoods
 winterhunter
 wroughtnaut
 zombified
-zotzpyre"
+zotzpyre
