@@ -38,11 +38,11 @@ import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
-public final class AlexsMobsSpawnConfig {
+public final class FriendsAndFoesSpawnConfig {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
-  private AlexsMobsSpawnConfig() {}
+  private FriendsAndFoesSpawnConfig() {}
 
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
@@ -54,7 +54,7 @@ public final class AlexsMobsSpawnConfig {
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
     log.info("Registering {} {} spawn config ...", Constants.MOD_NAME,
-        CoreConstants.ALEXSMOBS_NAME);
+        CoreConstants.FRIENDS_AND_FOES_NAME);
     try {
       FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
           CoreConstants.CONFIG_ID);
@@ -62,7 +62,7 @@ public final class AlexsMobsSpawnConfig {
       log.error("There was an error, creating the directory:", exception);
     }
     ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec,
-        CoreConstants.CONFIG_ID_PREFIX + "/spawn/AlexsMobsSpawn.toml");
+        CoreConstants.CONFIG_ID_PREFIX + "/spawn/FriendsAndFoesSpawn.toml");
   }
 
   public static class Config {
@@ -74,88 +74,19 @@ public final class AlexsMobsSpawnConfig {
     public final ForgeConfigSpec.IntValue passiveMobsPerWorld;
     public final ForgeConfigSpec.ConfigValue<List<String>> passiveMobsList;
 
-    public final ForgeConfigSpec.IntValue neutralMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue neutralMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> neutralMobsList;
-
-    public final ForgeConfigSpec.IntValue hostileMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue hostileMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> hostileMobsList;
-
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
-      builder.push("Alexs Mobs Spawn Config");
+      builder.push("Friends and Foes Spawn Config");
       enabled = builder.define("Enabled", true);
-      id = builder.define("Id", CoreConstants.ALEXSMOBS_MOD);
+      id = builder.define("Id", CoreConstants.FRIENDS_AND_FOES_MOD);
 
-      passiveMobsPerPlayer = builder.defineInRange("MaxPassiveMobsPerPlayer", 4, 1, 64);
-      passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 16, 1, 512);
+      passiveMobsPerPlayer = builder.defineInRange("MaxPassiveMobsPerPlayer", 8, 1, 64);
+      passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 64, 1, 512);
       passiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
           .define("PassiveMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
-            "alexsmobs:blobfish",
-            "alexsmobs:endergrade",
-            "alexsmobs:fly",
-            "alexsmobs:gazelle",
-            "alexsmobs:hummingbird",
-            "alexsmobs:mungus",
-            "alexsmobs:seal",
-            "alexsmobs:spectre",
-            "alexsmobs:stradpole",
-            "alexsmobs:sunbird"
-          // @formatter:on
-          )));
-
-      neutralMobsPerPlayer = builder.defineInRange("MaxNeutralMobsPerPlayer", 4, 1, 64);
-      neutralMobsPerWorld = builder.defineInRange("MaxNeutralMobsPerWorld", 16, 1, 512);
-      neutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
-          .define("NeutralMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-            "alexsmobs:cachalot_whale",
-            "alexsmobs:capuchin_monkey",
-            "alexsmobs:cockroach",
-            "alexsmobs:crow",
-            "alexsmobs:elephant",
-            "alexsmobs:emu",
-            "alexsmobs:gorilla",
-            "alexsmobs:kangaroo",
-            "alexsmobs:lobster",
-            "alexsmobs:mantis_shrimp",
-            "alexsmobs:moose",
-            "alexsmobs:orca",
-            "alexsmobs:platypus",
-            "alexsmobs:raccoon",
-            "alexsmobs:roadrunner",
-            "alexsmobs:shoebill",
-            "alexsmobs:snow_leopard",
-            "alexsmobs:tasmanian_devil",
-            "alexsmobs:warped_toad"
-          // @formatter:on
-          )));
-
-      hostileMobsPerPlayer = builder.defineInRange("MaxHostileMobsPerPlayer", 4, 1, 64);
-      hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 16, 1, 512);
-      hostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
-          .define("HostileMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-            "alexsmobs:alligator_snapping_turtle",
-            "alexsmobs:bone_serpent",
-            "alexsmobs:centipede_head",
-            "alexsmobs:crimson_mosquito",
-            "alexsmobs:crocodile",
-            "alexsmobs:dropbear",
-            "alexsmobs:enderiophage",
-            "alexsmobs:grizzly_bear",
-            "alexsmobs:guster",
-            "alexsmobs:hammerhead_shark",
-            "alexsmobs:komodo_dragon",
-            "alexsmobs:leafcutter_ant",
-            "alexsmobs:mimicube",
-            "alexsmobs:rattlesnake",
-            "alexsmobs:soul_vulture",
-            "alexsmobs:straddler",
-            "alexsmobs:warped_mosco"
+            "friendsandfoes:glare"
           // @formatter:on
           )));
 

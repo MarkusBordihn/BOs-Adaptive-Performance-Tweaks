@@ -64,6 +64,10 @@ public final class CoreConstants {
   public static final String BIGGER_REACTORS_NAME = "Bigger Reactors";
   public static final boolean BIGGER_REACTORS_LOADED = ModList.get().isLoaded(BIGGER_REACTORS_MOD);
 
+  public static final String BORN_IN_CHAOS_MOD = "born_in_chaos_v1";
+  public static final String BORN_IN_CHAOS_NAME = "Born in Chaos";
+  public static final boolean BORN_IN_CHAOS_LOADED = ModList.get().isLoaded(BORN_IN_CHAOS_MOD);
+
   public static final String BOTANIA_MOD = "botania";
   public static final String BOTANIA_NAME = "Botania";
   public static final boolean BOTANIA_LOADED = ModList.get().isLoaded(BOTANIA_MOD);
@@ -87,6 +91,15 @@ public final class CoreConstants {
   public static final String EASY_NPC_MOD = "easy_npc";
   public static final String EASY_NPC_NAME = "Easy NPC";
   public static final boolean EASY_NPC_LOADED = ModList.get().isLoaded(EASY_NPC_MOD);
+
+  public static final String FISH_OF_THIEVES_MOD = "fishofthieves";
+  public static final String FISH_OF_THIEVES_NAME = "Fish's Undead Rising";
+  public static final boolean FISH_OF_THIEVES_LOADED = ModList.get().isLoaded(FISH_OF_THIEVES_MOD);
+
+  public static final String FRIENDS_AND_FOES_MOD = "friendsandfoes";
+  public static final String FRIENDS_AND_FOES_NAME = "Friends and Foes";
+  public static final boolean FRIENDS_AND_FOES_LOADED =
+      ModList.get().isLoaded(FRIENDS_AND_FOES_MOD);
 
   public static final String FTB_ULTIMINE_MOD = "ftbultimine";
   public static final String FTB_ULTIMINE_NAME = "FTB Ultimine";
@@ -113,6 +126,11 @@ public final class CoreConstants {
   public static final String INDUSTRIAL_FOREGOING_NAME = "Industrial Foregoing";
   public static final boolean INDUSTRIAL_FOREGOING_LOADED =
       ModList.get().isLoaded(INDUSTRIAL_FOREGOING_MOD);
+
+  public static final String INFERNAL_EXPANSION_MOD = "infernalexp";
+  public static final String INFERNAL_EXPANSION_NAME = "Infernal Expansion";
+  public static final boolean INFERNAL_EXPANSION_LOADED =
+      ModList.get().isLoaded(INFERNAL_EXPANSION_MOD);
 
   public static final String IMMERSIVE_ENGINEERING_MOD = "immersiveengineering";
   public static final String IMMERSIVE_ENGINEERING_NAME = "Immersive Engineering";
@@ -193,6 +211,7 @@ public final class CoreConstants {
 
   public static final String RATS_MOD = "rats";
   public static final String RATS_NAME = "Rats";
+  public static final boolean RATS_LOADED = ModList.get().isLoaded(RATS_MOD);
 
   public static final String SODIUM_MOD = "sodium";
   public static final String SODIUM_NAME = "Sodium";
@@ -205,6 +224,10 @@ public final class CoreConstants {
   public static final String UNTAMED_WILDS_MOD = "untamedwilds";
   public static final String UNTAMED_WILDS_NAME = "Untamed Wilds";
   public static final boolean UNTAMED_WILDS_LOADED = ModList.get().isLoaded(UNTAMED_WILDS_MOD);
+
+  public static final String UNTITLED_DUCK_MOD = "untitledduckmod";
+  public static final String UNTITLED_DUCK_NAME = "Untitled Duck Mod";
+  public static final boolean UNTITLED_DUCK_LOADED = ModList.get().isLoaded(UNTITLED_DUCK_MOD);
 
   public static final String ULTIMATE_CAR_MOD = "car";
   public static final String ULTIMATE_CAR_NAME = "Ultimate Car Mod";

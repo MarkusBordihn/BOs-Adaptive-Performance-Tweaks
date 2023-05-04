@@ -5,6 +5,10 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2023.05.04
+
+- Added custom spawn configuration for Born in Chaos, Fish fo Thieves, Friends and Foes, Infernal Expansion and Untitled Duck. Thanks to pewblaze for providing the example spawn configs.
+
 ### 2023.04.03
 
 - Improved compatibility with Ars Nouveau, Applied Energistics 2, Easy NPC, Flux Networks, Guard Villagers, Human Companions, Immersive Engineering, Modular Routers, Mining Colonies and Storage Drawers.

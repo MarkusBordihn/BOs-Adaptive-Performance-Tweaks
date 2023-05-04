@@ -57,7 +57,7 @@ public final class TinkersConstructConfig {
         CoreConstants.TCONSTRUCT_NAME);
     try {
       FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
-        CoreConstants.CONFIG_ID);
+          CoreConstants.CONFIG_ID);
     } catch (Exception exception) {
       log.error("There was an error, creating the directory:", exception);
     }
@@ -67,26 +67,24 @@ public final class TinkersConstructConfig {
 
   public static class Config {
 
-    public final ForgeConfigSpec.BooleanValue tinkersConstructEnabled;
-    public final ForgeConfigSpec.ConfigValue<String> tinkersConstructId;
+    public final ForgeConfigSpec.BooleanValue enabled;
+    public final ForgeConfigSpec.ConfigValue<String> id;
 
-    public final ForgeConfigSpec.IntValue tinkersConstructMaxHostileMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue tinkersConstructMaxHostileMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> tinkersConstructHostileMobsList;
+    public final ForgeConfigSpec.IntValue hostileMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue hostileMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> hostileMobsList;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
       builder.push("Tinkers Construct Spawn Config");
-      tinkersConstructEnabled = builder.define("tinkersConstructEnabled", true);
-      tinkersConstructId = builder.define("tinkersConstructId", CoreConstants.TCONSTRUCT_MOD);
+      enabled = builder.define("Enabled", true);
+      id = builder.define("Id", CoreConstants.TCONSTRUCT_MOD);
 
-      tinkersConstructMaxHostileMobsPerPlayer =
-          builder.defineInRange("tinkersConstructMaxHostileMobsPerPlayer", 4, 1, 64);
-      tinkersConstructMaxHostileMobsPerWorld =
-          builder.defineInRange("tinkersConstructMaxHostileMobsPerWorld", 16, 1, 512);
-      tinkersConstructHostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
-          .define("tinkersConstructHostileMobsList", new ArrayList<String>(Arrays.asList(
+      hostileMobsPerPlayer = builder.defineInRange("MaxHostileMobsPerPlayer", 6, 1, 64);
+      hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 24, 1, 512);
+      hostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
+          .define("HostileMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "tconstruct:earth_slime",
             "tconstruct:sky_slime",
