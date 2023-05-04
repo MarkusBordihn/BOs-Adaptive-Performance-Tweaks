@@ -36,13 +36,18 @@ import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.CommonConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.AlexsMobsSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.AquacultureSpawnConfig;
+import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.BornInChaosSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.CustomSpawnConfig;
+import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.FishOfThievesSpawnConfig;
+import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.InfernalExpansionSpawnConfig;
+import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.FriendsAndFoesSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.MekanismAdditionsSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.MinecraftSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.PanthalassaSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.QuarkSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.TinkersConstructConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.UntamedWildsSpawnConfig;
+import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.UntitledDuckSpawnConfig;
 
 @Mod.EventBusSubscriber
 public class SpawnConfigManager {
@@ -54,7 +59,15 @@ public class SpawnConfigManager {
   private static final AlexsMobsSpawnConfig.Config ALEXS_MOBS_CONFIG = AlexsMobsSpawnConfig.COMMON;
   private static final AquacultureSpawnConfig.Config AQUACULTURE_CONFIG =
       AquacultureSpawnConfig.COMMON;
+  private static final BornInChaosSpawnConfig.Config BORN_IN_CHAOS_CONFIG =
+      BornInChaosSpawnConfig.COMMON;
   private static final CustomSpawnConfig.Config CUSTOM_CONFIG = CustomSpawnConfig.COMMON;
+  private static final FishOfThievesSpawnConfig.Config FISH_OF_THIEVES_CONFIG =
+      FishOfThievesSpawnConfig.COMMON;
+  private static final FriendsAndFoesSpawnConfig.Config FRIENDS_AND_FOES_CONFIG =
+      FriendsAndFoesSpawnConfig.COMMON;
+  private static final InfernalExpansionSpawnConfig.Config INFERNAL_EXPANSION_CONFIG =
+      InfernalExpansionSpawnConfig.COMMON;
   private static final MekanismAdditionsSpawnConfig.Config MEKANISM_ADDITIONS_CONFIG =
       MekanismAdditionsSpawnConfig.COMMON;
   private static final MinecraftSpawnConfig.Config MINECRAFT_CONFIG = MinecraftSpawnConfig.COMMON;
@@ -65,6 +78,8 @@ public class SpawnConfigManager {
       TinkersConstructConfig.COMMON;
   private static final UntamedWildsSpawnConfig.Config UNTAMED_WILDS_CONFIG =
       UntamedWildsSpawnConfig.COMMON;
+  private static final UntitledDuckSpawnConfig.Config UNTITLED_DUCK_CONFIG =
+      UntitledDuckSpawnConfig.COMMON;
 
   private static Map<String, Integer> spawnConfigPerPlayer = new HashMap<>();
   private static Map<String, Integer> spawnConfigPerWorld = new HashMap<>();
@@ -83,151 +98,200 @@ public class SpawnConfigManager {
     ModList modList = ModList.get();
 
     // Minecraft Vanilla Mobs
-    if (Boolean.TRUE.equals(MINECRAFT_CONFIG.minecraftEnabled.get())) {
-      addSpawnRatesForPassiveMobs(MINECRAFT_CONFIG.minecraftId.get(),
-          new HashSet<>(MINECRAFT_CONFIG.minecraftPassiveMobsList.get()),
-          MINECRAFT_CONFIG.minecraftMaxPassiveMobsPerPlayer.get(),
-          MINECRAFT_CONFIG.minecraftMaxPassiveMobsPerWorld.get());
-      addSpawnRatesForNeutralMobs(MINECRAFT_CONFIG.minecraftId.get(),
-          new HashSet<>(MINECRAFT_CONFIG.minecraftNeutralMobsList.get()),
-          MINECRAFT_CONFIG.minecraftMaxNeutralMobsPerPlayer.get(),
-          MINECRAFT_CONFIG.minecraftMaxNeutralMobsPerWorld.get());
-      addSpawnRatesForHostileMobs(MINECRAFT_CONFIG.minecraftId.get(),
-          new HashSet<>(MINECRAFT_CONFIG.minecraftHostileMobsList.get()),
-          MINECRAFT_CONFIG.minecraftMaxHostileMobsPerPlayer.get(),
-          MINECRAFT_CONFIG.minecraftMaxHostileMobsPerWorld.get());
+    if (Boolean.TRUE.equals(MINECRAFT_CONFIG.enabled.get())) {
+      // Normal vanilla mobs
+      addSpawnRatesForPassiveMobs(MINECRAFT_CONFIG.id.get(),
+          new HashSet<>(MINECRAFT_CONFIG.passiveMobsList.get()),
+          MINECRAFT_CONFIG.passiveMobsPerPlayer.get(), MINECRAFT_CONFIG.passiveMobsPerWorld.get());
+      addSpawnRatesForNeutralMobs(MINECRAFT_CONFIG.id.get(),
+          new HashSet<>(MINECRAFT_CONFIG.neutralMobsList.get()),
+          MINECRAFT_CONFIG.neutralMobsPerPlayer.get(), MINECRAFT_CONFIG.neutralMobsPerWorld.get());
+      addSpawnRatesForHostileMobs(MINECRAFT_CONFIG.id.get(),
+          new HashSet<>(MINECRAFT_CONFIG.hostileMobsList.get()),
+          MINECRAFT_CONFIG.hostileMobsPerPlayer.get(), MINECRAFT_CONFIG.hostileMobsPerWorld.get());
 
-      addSpawnRatesForPassiveMobs(MINECRAFT_CONFIG.minecraftId.get(),
-          new HashSet<>(MINECRAFT_CONFIG.minecraftWaterPassiveMobsList.get()),
-          MINECRAFT_CONFIG.minecraftMaxWaterPassiveMobsPerPlayer.get(),
-          MINECRAFT_CONFIG.minecraftMaxWaterPassiveMobsPerWorld.get());
-      addSpawnRatesForNeutralMobs(MINECRAFT_CONFIG.minecraftId.get(),
-          new HashSet<>(MINECRAFT_CONFIG.minecraftWaterNeutralMobsList.get()),
-          MINECRAFT_CONFIG.minecraftMaxWaterNeutralMobsPerPlayer.get(),
-          MINECRAFT_CONFIG.minecraftMaxWaterNeutralMobsPerWorld.get());
-      addSpawnRatesForHostileMobs(MINECRAFT_CONFIG.minecraftId.get(),
-          new HashSet<>(MINECRAFT_CONFIG.minecraftWaterHostileMobsList.get()),
-          MINECRAFT_CONFIG.minecraftMaxWaterHostileMobsPerPlayer.get(),
-          MINECRAFT_CONFIG.minecraftMaxWaterHostileMobsPerWorld.get());
+      // Water vanilla mobs
+      addSpawnRatesForPassiveMobs(MINECRAFT_CONFIG.id.get(),
+          new HashSet<>(MINECRAFT_CONFIG.waterPassiveMobsList.get()),
+          MINECRAFT_CONFIG.waterPassiveMobsPerPlayer.get(),
+          MINECRAFT_CONFIG.waterPassiveMobsPerWorld.get());
+      addSpawnRatesForNeutralMobs(MINECRAFT_CONFIG.id.get(),
+          new HashSet<>(MINECRAFT_CONFIG.waterNeutralMobsList.get()),
+          MINECRAFT_CONFIG.waterNeutralMobsPerPlayer.get(),
+          MINECRAFT_CONFIG.waterNeutralMobsPerWorld.get());
+      addSpawnRatesForHostileMobs(MINECRAFT_CONFIG.id.get(),
+          new HashSet<>(MINECRAFT_CONFIG.waterHostileMobsList.get()),
+          MINECRAFT_CONFIG.waterHostileMobsPerPlayer.get(),
+          MINECRAFT_CONFIG.waterHostileMobsPerWorld.get());
     }
 
     // Aquaculture Mobs
-    if (Boolean.TRUE.equals(AQUACULTURE_CONFIG.modAquacultureEnabled.get())
-        && modList.isLoaded(AQUACULTURE_CONFIG.modAquacultureId.get())) {
-      addSpawnRatesForPassiveMobs(AQUACULTURE_CONFIG.modAquacultureId.get(),
-          new HashSet<>(AQUACULTURE_CONFIG.modAquacultureFishList.get()),
-          AQUACULTURE_CONFIG.modAquacultureMaxFishPerPlayer.get(),
-          AQUACULTURE_CONFIG.modAquacultureMaxFishPerWorld.get());
+    if (Boolean.TRUE.equals(AQUACULTURE_CONFIG.enabled.get())
+        && modList.isLoaded(AQUACULTURE_CONFIG.id.get())) {
+      addSpawnRatesForPassiveMobs(AQUACULTURE_CONFIG.id.get(),
+          new HashSet<>(AQUACULTURE_CONFIG.fishList.get()), AQUACULTURE_CONFIG.fishPerPlayer.get(),
+          AQUACULTURE_CONFIG.fishPerWorld.get());
+    }
+
+    // Born in Chaos Mobs
+    if (Boolean.TRUE.equals(BORN_IN_CHAOS_CONFIG.enabled.get())
+        && modList.isLoaded(BORN_IN_CHAOS_CONFIG.id.get())) {
+      addSpawnRatesForHostileMobs(BORN_IN_CHAOS_CONFIG.id.get(),
+          new HashSet<>(BORN_IN_CHAOS_CONFIG.hostileMobsList.get()),
+          BORN_IN_CHAOS_CONFIG.hostileMobsPerPlayer.get(),
+          BORN_IN_CHAOS_CONFIG.hostileMobsPerWorld.get());
     }
 
     // Alex's Mobs
-    if (Boolean.TRUE.equals(ALEXS_MOBS_CONFIG.alexsMobsEnabled.get())
-        && modList.isLoaded(ALEXS_MOBS_CONFIG.alexsMobsId.get())) {
-      addSpawnRatesForPassiveMobs(ALEXS_MOBS_CONFIG.alexsMobsId.get(),
-          new HashSet<>(ALEXS_MOBS_CONFIG.alexsMobsPassiveMobsList.get()),
-          ALEXS_MOBS_CONFIG.alexsMobsMaxPassiveMobsPerPlayer.get(),
-          ALEXS_MOBS_CONFIG.alexsMobsMaxPassiveMobsPerWorld.get());
-      addSpawnRatesForNeutralMobs(ALEXS_MOBS_CONFIG.alexsMobsId.get(),
-          new HashSet<>(ALEXS_MOBS_CONFIG.alexsMobsNeutralMobsList.get()),
-          ALEXS_MOBS_CONFIG.alexsMobsMaxNeutralMobsPerPlayer.get(),
-          ALEXS_MOBS_CONFIG.alexsMobsMaxNeutralMobsPerWorld.get());
-      addSpawnRatesForHostileMobs(ALEXS_MOBS_CONFIG.alexsMobsId.get(),
-          new HashSet<>(ALEXS_MOBS_CONFIG.alexsMobsHostileMobsList.get()),
-          ALEXS_MOBS_CONFIG.alexsMobsMaxHostileMobsPerPlayer.get(),
-          ALEXS_MOBS_CONFIG.alexsMobsMaxHostileMobsPerWorld.get());
+    if (Boolean.TRUE.equals(ALEXS_MOBS_CONFIG.enabled.get())
+        && modList.isLoaded(ALEXS_MOBS_CONFIG.id.get())) {
+      addSpawnRatesForPassiveMobs(ALEXS_MOBS_CONFIG.id.get(),
+          new HashSet<>(ALEXS_MOBS_CONFIG.passiveMobsList.get()),
+          ALEXS_MOBS_CONFIG.passiveMobsPerPlayer.get(),
+          ALEXS_MOBS_CONFIG.passiveMobsPerWorld.get());
+      addSpawnRatesForNeutralMobs(ALEXS_MOBS_CONFIG.id.get(),
+          new HashSet<>(ALEXS_MOBS_CONFIG.neutralMobsList.get()),
+          ALEXS_MOBS_CONFIG.neutralMobsPerPlayer.get(),
+          ALEXS_MOBS_CONFIG.neutralMobsPerWorld.get());
+      addSpawnRatesForHostileMobs(ALEXS_MOBS_CONFIG.id.get(),
+          new HashSet<>(ALEXS_MOBS_CONFIG.hostileMobsList.get()),
+          ALEXS_MOBS_CONFIG.hostileMobsPerPlayer.get(),
+          ALEXS_MOBS_CONFIG.hostileMobsPerWorld.get());
+    }
+
+    // Fish of Thieves Mobs
+    if (Boolean.TRUE.equals(FISH_OF_THIEVES_CONFIG.enabled.get())
+        && modList.isLoaded(FISH_OF_THIEVES_CONFIG.id.get())) {
+      addSpawnRatesForPassiveMobs(FISH_OF_THIEVES_CONFIG.id.get(),
+          new HashSet<>(FISH_OF_THIEVES_CONFIG.fishList.get()),
+          FISH_OF_THIEVES_CONFIG.fishPerPlayer.get(), FISH_OF_THIEVES_CONFIG.fishPerWorld.get());
+    }
+
+    // Friends and Foes
+    if (Boolean.TRUE.equals(FRIENDS_AND_FOES_CONFIG.enabled.get())
+        && modList.isLoaded(FRIENDS_AND_FOES_CONFIG.id.get())) {
+      addSpawnRatesForPassiveMobs(FRIENDS_AND_FOES_CONFIG.id.get(),
+          new HashSet<>(FRIENDS_AND_FOES_CONFIG.passiveMobsList.get()),
+          FRIENDS_AND_FOES_CONFIG.passiveMobsPerPlayer.get(),
+          FRIENDS_AND_FOES_CONFIG.passiveMobsPerWorld.get());
+    }
+
+    // Infernal Expansion
+    if (Boolean.TRUE.equals(INFERNAL_EXPANSION_CONFIG.enabled.get())
+        && modList.isLoaded(INFERNAL_EXPANSION_CONFIG.id.get())) {
+      addSpawnRatesForPassiveMobs(INFERNAL_EXPANSION_CONFIG.id.get(),
+          new HashSet<>(INFERNAL_EXPANSION_CONFIG.passiveMobsList.get()),
+          INFERNAL_EXPANSION_CONFIG.passiveMobsPerPlayer.get(),
+          INFERNAL_EXPANSION_CONFIG.passiveMobsPerWorld.get());
+      addSpawnRatesForNeutralMobs(INFERNAL_EXPANSION_CONFIG.id.get(),
+          new HashSet<>(INFERNAL_EXPANSION_CONFIG.neutralMobsList.get()),
+          INFERNAL_EXPANSION_CONFIG.neutralMobsPerPlayer.get(),
+          INFERNAL_EXPANSION_CONFIG.neutralMobsPerWorld.get());
+      addSpawnRatesForHostileMobs(INFERNAL_EXPANSION_CONFIG.id.get(),
+          new HashSet<>(INFERNAL_EXPANSION_CONFIG.hostileMobsList.get()),
+          INFERNAL_EXPANSION_CONFIG.hostileMobsPerPlayer.get(),
+          INFERNAL_EXPANSION_CONFIG.hostileMobsPerWorld.get());
+
     }
 
     // Mekanism Additions
-    if (Boolean.TRUE.equals(MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsEnabled.get())
-        && modList.isLoaded(MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsId.get())) {
-      addSpawnRatesForPassiveMobs(MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsId.get(),
-          new HashSet<>(MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsPassiveMobsList.get()),
-          MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsMaxPassiveMobsPerPlayer.get(),
-          MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsMaxPassiveMobsPerWorld.get());
-      addSpawnRatesForNeutralMobs(MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsId.get(),
-          new HashSet<>(MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsNeutralMobsList.get()),
-          MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsMaxNeutralMobsPerPlayer.get(),
-          MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsMaxNeutralMobsPerWorld.get());
-      addSpawnRatesForHostileMobs(MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsId.get(),
-          new HashSet<>(MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsHostileMobsList.get()),
-          MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsMaxHostileMobsPerPlayer.get(),
-          MEKANISM_ADDITIONS_CONFIG.mekanismAdditionsMaxHostileMobsPerWorld.get());
+    if (Boolean.TRUE.equals(MEKANISM_ADDITIONS_CONFIG.enabled.get())
+        && modList.isLoaded(MEKANISM_ADDITIONS_CONFIG.id.get())) {
+      addSpawnRatesForPassiveMobs(MEKANISM_ADDITIONS_CONFIG.id.get(),
+          new HashSet<>(MEKANISM_ADDITIONS_CONFIG.passiveMobsList.get()),
+          MEKANISM_ADDITIONS_CONFIG.passiveMobsPerPlayer.get(),
+          MEKANISM_ADDITIONS_CONFIG.passiveMobsPerWorld.get());
+      addSpawnRatesForNeutralMobs(MEKANISM_ADDITIONS_CONFIG.id.get(),
+          new HashSet<>(MEKANISM_ADDITIONS_CONFIG.neutralMobsList.get()),
+          MEKANISM_ADDITIONS_CONFIG.neutralMobsPerPlayer.get(),
+          MEKANISM_ADDITIONS_CONFIG.neutralMobsPerWorld.get());
+      addSpawnRatesForHostileMobs(MEKANISM_ADDITIONS_CONFIG.id.get(),
+          new HashSet<>(MEKANISM_ADDITIONS_CONFIG.hostileMobsList.get()),
+          MEKANISM_ADDITIONS_CONFIG.hostileMobsPerPlayer.get(),
+          MEKANISM_ADDITIONS_CONFIG.hostileMobsPerWorld.get());
     }
 
     // Panthalassa
-    if (Boolean.TRUE.equals(PANTHALASSA_CONFIG.panthalassaEnabled.get())
-        && modList.isLoaded(PANTHALASSA_CONFIG.panthalassaId.get())) {
-      addSpawnRatesForPassiveMobs(PANTHALASSA_CONFIG.panthalassaId.get(),
-          new HashSet<>(PANTHALASSA_CONFIG.panthalassaPassiveMobsList.get()),
-          PANTHALASSA_CONFIG.panthalassaMaxPassiveMobsPerPlayer.get(),
-          PANTHALASSA_CONFIG.panthalassaMaxPassiveMobsPerWorld.get());
-      addSpawnRatesForNeutralMobs(PANTHALASSA_CONFIG.panthalassaId.get(),
-          new HashSet<>(PANTHALASSA_CONFIG.panthalassaNeutralMobsList.get()),
-          PANTHALASSA_CONFIG.panthalassaMaxNeutralMobsPerPlayer.get(),
-          PANTHALASSA_CONFIG.panthalassaMaxNeutralMobsPerWorld.get());
-      addSpawnRatesForHostileMobs(PANTHALASSA_CONFIG.panthalassaId.get(),
-          new HashSet<>(PANTHALASSA_CONFIG.panthalassaHostileMobsList.get()),
-          PANTHALASSA_CONFIG.panthalassaMaxHostileMobsPerPlayer.get(),
-          PANTHALASSA_CONFIG.panthalassaMaxHostileMobsPerWorld.get());
+    if (Boolean.TRUE.equals(PANTHALASSA_CONFIG.enabled.get())
+        && modList.isLoaded(PANTHALASSA_CONFIG.id.get())) {
+      addSpawnRatesForPassiveMobs(PANTHALASSA_CONFIG.id.get(),
+          new HashSet<>(PANTHALASSA_CONFIG.passiveMobsList.get()),
+          PANTHALASSA_CONFIG.passiveMobsPerPlayer.get(),
+          PANTHALASSA_CONFIG.passiveMobsPerWorld.get());
+      addSpawnRatesForNeutralMobs(PANTHALASSA_CONFIG.id.get(),
+          new HashSet<>(PANTHALASSA_CONFIG.neutralMobsList.get()),
+          PANTHALASSA_CONFIG.neutralMobsPerPlayer.get(),
+          PANTHALASSA_CONFIG.neutralMobsPerWorld.get());
+      addSpawnRatesForHostileMobs(PANTHALASSA_CONFIG.id.get(),
+          new HashSet<>(PANTHALASSA_CONFIG.hostileMobsList.get()),
+          PANTHALASSA_CONFIG.hostileMobsPerPlayer.get(),
+          PANTHALASSA_CONFIG.hostileMobsPerWorld.get());
     }
 
     // Quark
-    if (Boolean.TRUE.equals(QUARK_CONFIG.quarkEnabled.get())
-        && modList.isLoaded(QUARK_CONFIG.quarkId.get())) {
-      addSpawnRatesForPassiveMobs(QUARK_CONFIG.quarkId.get(),
-          new HashSet<>(QUARK_CONFIG.quarkPassiveMobsList.get()),
-          QUARK_CONFIG.quarkMaxPassiveMobsPerPlayer.get(),
-          QUARK_CONFIG.quarkMaxPassiveMobsPerWorld.get());
-      addSpawnRatesForNeutralMobs(QUARK_CONFIG.quarkId.get(),
-          new HashSet<>(QUARK_CONFIG.quarkNeutralMobsList.get()),
-          QUARK_CONFIG.quarkMaxNeutralMobsPerPlayer.get(),
-          QUARK_CONFIG.quarkMaxNeutralMobsPerWorld.get());
-      addSpawnRatesForHostileMobs(QUARK_CONFIG.quarkId.get(),
-          new HashSet<>(QUARK_CONFIG.quarkHostileMobsList.get()),
-          QUARK_CONFIG.quarkMaxHostileMobsPerPlayer.get(),
-          QUARK_CONFIG.quarkMaxHostileMobsPerWorld.get());
+    if (Boolean.TRUE.equals(QUARK_CONFIG.enabled.get())
+        && modList.isLoaded(QUARK_CONFIG.id.get())) {
+      addSpawnRatesForPassiveMobs(QUARK_CONFIG.id.get(),
+          new HashSet<>(QUARK_CONFIG.passiveMobsList.get()),
+          QUARK_CONFIG.passiveMobsPerPlayer.get(), QUARK_CONFIG.passiveMobsPerWorld.get());
+      addSpawnRatesForNeutralMobs(QUARK_CONFIG.id.get(),
+          new HashSet<>(QUARK_CONFIG.neutralMobsList.get()),
+          QUARK_CONFIG.neutralMobsPerPlayer.get(), QUARK_CONFIG.neutralMobsPerWorld.get());
+      addSpawnRatesForHostileMobs(QUARK_CONFIG.id.get(),
+          new HashSet<>(QUARK_CONFIG.hostileMobsList.get()),
+          QUARK_CONFIG.hostileMobsPerPlayer.get(), QUARK_CONFIG.hostileMobsPerWorld.get());
     }
 
     // Tinkers Construct
-    if (Boolean.TRUE.equals(TINKERS_CONSTRUCT_CONFIG.tinkersConstructEnabled.get())
-        && modList.isLoaded(TINKERS_CONSTRUCT_CONFIG.tinkersConstructId.get())) {
-      addSpawnRatesForHostileMobs(TINKERS_CONSTRUCT_CONFIG.tinkersConstructId.get(),
-          new HashSet<>(TINKERS_CONSTRUCT_CONFIG.tinkersConstructHostileMobsList.get()),
-          TINKERS_CONSTRUCT_CONFIG.tinkersConstructMaxHostileMobsPerPlayer.get(),
-          TINKERS_CONSTRUCT_CONFIG.tinkersConstructMaxHostileMobsPerWorld.get());
+    if (Boolean.TRUE.equals(TINKERS_CONSTRUCT_CONFIG.enabled.get())
+        && modList.isLoaded(TINKERS_CONSTRUCT_CONFIG.id.get())) {
+      addSpawnRatesForHostileMobs(TINKERS_CONSTRUCT_CONFIG.id.get(),
+          new HashSet<>(TINKERS_CONSTRUCT_CONFIG.hostileMobsList.get()),
+          TINKERS_CONSTRUCT_CONFIG.hostileMobsPerPlayer.get(),
+          TINKERS_CONSTRUCT_CONFIG.hostileMobsPerWorld.get());
     }
 
     // Untamed Wilds
-    if (Boolean.TRUE.equals(UNTAMED_WILDS_CONFIG.untamedWildsEnabled.get())
-        && modList.isLoaded(UNTAMED_WILDS_CONFIG.untamedWildsId.get())) {
-      addSpawnRatesForPassiveMobs(UNTAMED_WILDS_CONFIG.untamedWildsId.get(),
-          new HashSet<>(UNTAMED_WILDS_CONFIG.untamedWildsPassiveMobsList.get()),
-          UNTAMED_WILDS_CONFIG.untamedWildsMaxPassiveMobsPerPlayer.get(),
-          UNTAMED_WILDS_CONFIG.untamedWildsMaxPassiveMobsPerWorld.get());
-      addSpawnRatesForNeutralMobs(UNTAMED_WILDS_CONFIG.untamedWildsId.get(),
-          new HashSet<>(UNTAMED_WILDS_CONFIG.untamedWildsNeutralMobsList.get()),
-          UNTAMED_WILDS_CONFIG.untamedWildsMaxNeutralMobsPerPlayer.get(),
-          UNTAMED_WILDS_CONFIG.untamedWildsMaxNeutralMobsPerWorld.get());
-      addSpawnRatesForHostileMobs(UNTAMED_WILDS_CONFIG.untamedWildsId.get(),
-          new HashSet<>(UNTAMED_WILDS_CONFIG.untamedWildsHostileMobsList.get()),
-          UNTAMED_WILDS_CONFIG.untamedWildsMaxHostileMobsPerPlayer.get(),
-          UNTAMED_WILDS_CONFIG.untamedWildsMaxHostileMobsPerWorld.get());
+    if (Boolean.TRUE.equals(UNTAMED_WILDS_CONFIG.enabled.get())
+        && modList.isLoaded(UNTAMED_WILDS_CONFIG.id.get())) {
+      addSpawnRatesForPassiveMobs(UNTAMED_WILDS_CONFIG.id.get(),
+          new HashSet<>(UNTAMED_WILDS_CONFIG.passiveMobsList.get()),
+          UNTAMED_WILDS_CONFIG.passiveMobsPerPlayer.get(),
+          UNTAMED_WILDS_CONFIG.passiveMobsPerWorld.get());
+      addSpawnRatesForNeutralMobs(UNTAMED_WILDS_CONFIG.id.get(),
+          new HashSet<>(UNTAMED_WILDS_CONFIG.neutralMobsList.get()),
+          UNTAMED_WILDS_CONFIG.neutralMobsPerPlayer.get(),
+          UNTAMED_WILDS_CONFIG.neutralMobsPerWorld.get());
+      addSpawnRatesForHostileMobs(UNTAMED_WILDS_CONFIG.id.get(),
+          new HashSet<>(UNTAMED_WILDS_CONFIG.hostileMobsList.get()),
+          UNTAMED_WILDS_CONFIG.hostileMobsPerPlayer.get(),
+          UNTAMED_WILDS_CONFIG.hostileMobsPerWorld.get());
+    }
+
+    // Untitled Duck
+    if (Boolean.TRUE.equals(UNTITLED_DUCK_CONFIG.enabled.get())
+        && modList.isLoaded(UNTITLED_DUCK_CONFIG.id.get())) {
+      addSpawnRatesForPassiveMobs(UNTITLED_DUCK_CONFIG.id.get(),
+          new HashSet<>(UNTITLED_DUCK_CONFIG.passiveMobsList.get()),
+          UNTITLED_DUCK_CONFIG.passiveMobsPerPlayer.get(),
+          UNTITLED_DUCK_CONFIG.passiveMobsPerWorld.get());
+      addSpawnRatesForNeutralMobs(UNTITLED_DUCK_CONFIG.id.get(),
+          new HashSet<>(UNTITLED_DUCK_CONFIG.neutralMobsList.get()),
+          UNTITLED_DUCK_CONFIG.neutralMobsPerPlayer.get(),
+          UNTITLED_DUCK_CONFIG.neutralMobsPerWorld.get());
     }
 
     // Custom Spawn Config overwrites former definitions!
-    if (Boolean.TRUE.equals(CUSTOM_CONFIG.customEnabled.get())) {
-      addSpawnRatesForPassiveMobs(CUSTOM_CONFIG.customId.get(),
-          new HashSet<>(CUSTOM_CONFIG.customPassiveMobsList.get()),
-          CUSTOM_CONFIG.customMaxPassiveMobsPerPlayer.get(),
-          CUSTOM_CONFIG.customMaxPassiveMobsPerWorld.get());
-      addSpawnRatesForNeutralMobs(CUSTOM_CONFIG.customId.get(),
-          new HashSet<>(CUSTOM_CONFIG.customNeutralMobsList.get()),
-          CUSTOM_CONFIG.customMaxNeutralMobsPerPlayer.get(),
-          CUSTOM_CONFIG.customMaxNeutralMobsPerWorld.get());
-      addSpawnRatesForHostileMobs(CUSTOM_CONFIG.customId.get(),
-          new HashSet<>(CUSTOM_CONFIG.customHostileMobsList.get()),
-          CUSTOM_CONFIG.customMaxHostileMobsPerPlayer.get(),
-          CUSTOM_CONFIG.customMaxHostileMobsPerWorld.get());
+    if (Boolean.TRUE.equals(CUSTOM_CONFIG.enabled.get())) {
+      addSpawnRatesForPassiveMobs(CUSTOM_CONFIG.id.get(),
+          new HashSet<>(CUSTOM_CONFIG.passiveMobsList.get()),
+          CUSTOM_CONFIG.passiveMobsPerPlayer.get(), CUSTOM_CONFIG.passiveMobsPerWorld.get());
+      addSpawnRatesForNeutralMobs(CUSTOM_CONFIG.id.get(),
+          new HashSet<>(CUSTOM_CONFIG.neutralMobsList.get()),
+          CUSTOM_CONFIG.neutralMobsPerPlayer.get(), CUSTOM_CONFIG.neutralMobsPerWorld.get());
+      addSpawnRatesForHostileMobs(CUSTOM_CONFIG.id.get(),
+          new HashSet<>(CUSTOM_CONFIG.hostileMobsList.get()),
+          CUSTOM_CONFIG.hostileMobsPerPlayer.get(), CUSTOM_CONFIG.hostileMobsPerWorld.get());
     }
 
     log.info("Added {} player spawn rules, {} world spawn rules and {} special spawn rules.",

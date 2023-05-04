@@ -38,11 +38,11 @@ import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
-public final class AlexsMobsSpawnConfig {
+public final class BornInChaosSpawnConfig {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
-  private AlexsMobsSpawnConfig() {}
+  private BornInChaosSpawnConfig() {}
 
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
@@ -53,8 +53,8 @@ public final class AlexsMobsSpawnConfig {
         new ForgeConfigSpec.Builder().configure(Config::new);
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
-    log.info("Registering {} {} spawn config ...", Constants.MOD_NAME,
-        CoreConstants.ALEXSMOBS_NAME);
+    log.info("Registering {} {} Spawn config ...", Constants.MOD_NAME,
+        CoreConstants.BORN_IN_CHAOS_NAME);
     try {
       FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
           CoreConstants.CONFIG_ID);
@@ -62,21 +62,13 @@ public final class AlexsMobsSpawnConfig {
       log.error("There was an error, creating the directory:", exception);
     }
     ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec,
-        CoreConstants.CONFIG_ID_PREFIX + "/spawn/AlexsMobsSpawn.toml");
+        CoreConstants.CONFIG_ID_PREFIX + "/spawn/BornInChaosSpawn.toml");
   }
 
   public static class Config {
 
     public final ForgeConfigSpec.BooleanValue enabled;
     public final ForgeConfigSpec.ConfigValue<String> id;
-
-    public final ForgeConfigSpec.IntValue passiveMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue passiveMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> passiveMobsList;
-
-    public final ForgeConfigSpec.IntValue neutralMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue neutralMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> neutralMobsList;
 
     public final ForgeConfigSpec.IntValue hostileMobsPerPlayer;
     public final ForgeConfigSpec.IntValue hostileMobsPerWorld;
@@ -85,77 +77,45 @@ public final class AlexsMobsSpawnConfig {
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
-      builder.push("Alexs Mobs Spawn Config");
+      builder.push("Born in Chaos Spawn Config");
       enabled = builder.define("Enabled", true);
-      id = builder.define("Id", CoreConstants.ALEXSMOBS_MOD);
+      id = builder.define("Id", CoreConstants.BORN_IN_CHAOS_MOD);
 
-      passiveMobsPerPlayer = builder.defineInRange("MaxPassiveMobsPerPlayer", 4, 1, 64);
-      passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 16, 1, 512);
-      passiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
-          .define("PassiveMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-            "alexsmobs:blobfish",
-            "alexsmobs:endergrade",
-            "alexsmobs:fly",
-            "alexsmobs:gazelle",
-            "alexsmobs:hummingbird",
-            "alexsmobs:mungus",
-            "alexsmobs:seal",
-            "alexsmobs:spectre",
-            "alexsmobs:stradpole",
-            "alexsmobs:sunbird"
-          // @formatter:on
-          )));
-
-      neutralMobsPerPlayer = builder.defineInRange("MaxNeutralMobsPerPlayer", 4, 1, 64);
-      neutralMobsPerWorld = builder.defineInRange("MaxNeutralMobsPerWorld", 16, 1, 512);
-      neutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
-          .define("NeutralMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-            "alexsmobs:cachalot_whale",
-            "alexsmobs:capuchin_monkey",
-            "alexsmobs:cockroach",
-            "alexsmobs:crow",
-            "alexsmobs:elephant",
-            "alexsmobs:emu",
-            "alexsmobs:gorilla",
-            "alexsmobs:kangaroo",
-            "alexsmobs:lobster",
-            "alexsmobs:mantis_shrimp",
-            "alexsmobs:moose",
-            "alexsmobs:orca",
-            "alexsmobs:platypus",
-            "alexsmobs:raccoon",
-            "alexsmobs:roadrunner",
-            "alexsmobs:shoebill",
-            "alexsmobs:snow_leopard",
-            "alexsmobs:tasmanian_devil",
-            "alexsmobs:warped_toad"
-          // @formatter:on
-          )));
-
-      hostileMobsPerPlayer = builder.defineInRange("MaxHostileMobsPerPlayer", 4, 1, 64);
-      hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 16, 1, 512);
+      hostileMobsPerPlayer = builder.comment("e.g. mobs which will always attack yon ...")
+          .defineInRange("HostileMobsPerPlayer", 16, 1, 64);
+      hostileMobsPerWorld = builder.defineInRange("HostileMobsPerWorld", 32, 1, 512);
       hostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
           .define("HostileMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
-            "alexsmobs:alligator_snapping_turtle",
-            "alexsmobs:bone_serpent",
-            "alexsmobs:centipede_head",
-            "alexsmobs:crimson_mosquito",
-            "alexsmobs:crocodile",
-            "alexsmobs:dropbear",
-            "alexsmobs:enderiophage",
-            "alexsmobs:grizzly_bear",
-            "alexsmobs:guster",
-            "alexsmobs:hammerhead_shark",
-            "alexsmobs:komodo_dragon",
-            "alexsmobs:leafcutter_ant",
-            "alexsmobs:mimicube",
-            "alexsmobs:rattlesnake",
-            "alexsmobs:soul_vulture",
-            "alexsmobs:straddler",
-            "alexsmobs:warped_mosco"
+            "born_in_chaos_v1:baby_s_2",
+            "born_in_chaos_v1:baby_skeleton",
+            "born_in_chaos_v1:bone_imp",
+            "born_in_chaos_v1:bone_imp_2",
+            "born_in_chaos_v1:bonescaller",
+            "born_in_chaos_v1:dark_vortex",
+            "born_in_chaos_v1:decaying_zombie",
+            "born_in_chaos_v1:decrepit_skeleton",
+            "born_in_chaos_v1:diamond_thermite",
+            "born_in_chaos_v1:dread_hound",
+            "born_in_chaos_v1:fallen_chaos_knight",
+            "born_in_chaos_v1:firelight",
+            "born_in_chaos_v1:mr_pumpkin",
+            "born_in_chaos_v1:nightmare_stalker",
+            "born_in_chaos_v1:phantom_creeper",
+            "born_in_chaos_v1:pumpkin_spirit",
+            "born_in_chaos_v1:restless_spirit",
+            "born_in_chaos_v1:scarletpersecutor",
+            "born_in_chaos_v1:seared_spirit",
+            "born_in_chaos_v1:shy_spirit",
+            "born_in_chaos_v1:skeleton_bomb",
+            "born_in_chaos_v1:skeleton_thrasher",
+            "born_in_chaos_v1:spirit_guide_assistant",
+            "born_in_chaos_v1:spiritual_guide",
+            "born_in_chaos_v1:supreme_bonecaller",
+            "born_in_chaos_v1:wither_strider",
+            "born_in_chaos_v1:zombie_clown",
+            "born_in_chaos_v1:zombiesina_barrel",
+            "born_in_chaos_v1:zombieswith_door"
           // @formatter:on
           )));
 
