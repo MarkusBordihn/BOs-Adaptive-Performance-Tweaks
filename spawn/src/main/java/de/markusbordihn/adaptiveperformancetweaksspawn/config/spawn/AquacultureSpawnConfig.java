@@ -67,25 +67,23 @@ public final class AquacultureSpawnConfig {
 
   public static class Config {
 
-    public final ForgeConfigSpec.BooleanValue modAquacultureEnabled;
-    public final ForgeConfigSpec.ConfigValue<String> modAquacultureId;
+    public final ForgeConfigSpec.BooleanValue enabled;
+    public final ForgeConfigSpec.ConfigValue<String> id;
 
-    public final ForgeConfigSpec.IntValue modAquacultureMaxFishPerPlayer;
-    public final ForgeConfigSpec.IntValue modAquacultureMaxFishPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> modAquacultureFishList;
+    public final ForgeConfigSpec.IntValue fishPerPlayer;
+    public final ForgeConfigSpec.IntValue fishPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> fishList;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
       builder.push("Aquaculture 2 Spawn Config");
-      modAquacultureEnabled = builder.define("modAquacultureEnabled", true);
-      modAquacultureId = builder.define("modAquacultureId", CoreConstants.AQUACULTURE_MOD);
-      modAquacultureMaxFishPerPlayer =
-          builder.defineInRange("modAquacultureMaxFishPerPlayer", 2, 1, 64);
-      modAquacultureMaxFishPerWorld =
-          builder.defineInRange("modAquacultureMaxFishPerWorld", 8, 1, 512);
-      modAquacultureFishList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
-          .define("modAquacultureFishList", new ArrayList<String>(Arrays.asList(
+      enabled = builder.define("Enabled", true);
+      id = builder.define("Id", CoreConstants.AQUACULTURE_MOD);
+      fishPerPlayer = builder.defineInRange("MaxFishPerPlayer", 4, 1, 64);
+      fishPerWorld = builder.defineInRange("MaxFishPerWorld", 16, 1, 512);
+      fishList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS).define("FishList",
+          new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "aquaculture:acacia_fish_mount",
             "aquaculture:arapaima",

@@ -53,7 +53,8 @@ public final class PanthalassaSpawnConfig {
         new ForgeConfigSpec.Builder().configure(Config::new);
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
-    log.info("Registering {} {} spawn config ...", Constants.MOD_NAME, CoreConstants.QUARK_NAME);
+    log.info("Registering {} {} spawn config ...", Constants.MOD_NAME,
+        CoreConstants.PANTHALASSA_NAME);
     try {
       FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
           CoreConstants.CONFIG_ID);
@@ -66,34 +67,32 @@ public final class PanthalassaSpawnConfig {
 
   public static class Config {
 
-    public final ForgeConfigSpec.BooleanValue panthalassaEnabled;
-    public final ForgeConfigSpec.ConfigValue<String> panthalassaId;
+    public final ForgeConfigSpec.BooleanValue enabled;
+    public final ForgeConfigSpec.ConfigValue<String> id;
 
-    public final ForgeConfigSpec.IntValue panthalassaMaxPassiveMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue panthalassaMaxPassiveMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> panthalassaPassiveMobsList;
+    public final ForgeConfigSpec.IntValue passiveMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue passiveMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> passiveMobsList;
 
-    public final ForgeConfigSpec.IntValue panthalassaMaxNeutralMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue panthalassaMaxNeutralMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> panthalassaNeutralMobsList;
+    public final ForgeConfigSpec.IntValue neutralMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue neutralMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> neutralMobsList;
 
-    public final ForgeConfigSpec.IntValue panthalassaMaxHostileMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue panthalassaMaxHostileMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> panthalassaHostileMobsList;
+    public final ForgeConfigSpec.IntValue hostileMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue hostileMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> hostileMobsList;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
       builder.push("Panthalassa Spawn Config");
-      panthalassaEnabled = builder.define("panthalassaEnabled", true);
-      panthalassaId = builder.define("panthalassaId", CoreConstants.PANTHALASSA_MOD);
+      enabled = builder.define("Enabled", true);
+      id = builder.define("Id", CoreConstants.PANTHALASSA_MOD);
 
-      panthalassaMaxPassiveMobsPerPlayer =
-          builder.defineInRange("panthalassaMaxPassiveMobsPerPlayer", 4, 1, 64);
-      panthalassaMaxPassiveMobsPerWorld =
-          builder.defineInRange("panthalassaMaxPassiveMobsPerWorld", 16, 1, 512);
-      panthalassaPassiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
-          .define("panthalassaPassiveMobsList", new ArrayList<String>(Arrays.asList(
+      passiveMobsPerPlayer = builder.defineInRange("MaxPassiveMobsPerPlayer", 4, 1, 64);
+      passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 16, 1, 512);
+      passiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
+          .define("PassiveMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
       "panthalassa:acrolepis",
             "panthalassa:anomalocaris",
@@ -102,12 +101,10 @@ public final class PanthalassaSpawnConfig {
           // @formatter:on
           )));
 
-      panthalassaMaxNeutralMobsPerPlayer =
-          builder.defineInRange("panthalassaMaxNeutralMobsPerPlayer", 4, 1, 64);
-      panthalassaMaxNeutralMobsPerWorld =
-          builder.defineInRange("panthalassaMaxNeutralMobsPerWorld", 16, 1, 512);
-      panthalassaNeutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
-          .define("panthalassaNeutralMobsList", new ArrayList<String>(Arrays.asList(
+      neutralMobsPerPlayer = builder.defineInRange("MaxNeutralMobsPerPlayer", 4, 1, 64);
+      neutralMobsPerWorld = builder.defineInRange("MaxNeutralMobsPerWorld", 16, 1, 512);
+      neutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
+          .define("NeutralMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
       "panthalassa:archelon",
             "panthalassa:basilosaurus",
@@ -115,12 +112,10 @@ public final class PanthalassaSpawnConfig {
           // @formatter:on
           )));
 
-      panthalassaMaxHostileMobsPerPlayer =
-          builder.defineInRange("panthalassaMaxHostileMobsPerPlayer", 8, 1, 64);
-      panthalassaMaxHostileMobsPerWorld =
-          builder.defineInRange("panthalassaMaxHostileMobsPerWorld", 32, 1, 512);
-      panthalassaHostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
-          .define("panthalassaHostileMobsList", new ArrayList<String>(Arrays.asList(
+      hostileMobsPerPlayer = builder.defineInRange("MaxHostileMobsPerPlayer", 8, 1, 64);
+      hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 32, 1, 512);
+      hostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
+          .define("HostileMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "panthalassa:anglerfish",
             "panthalassa:dunkleosteus",
