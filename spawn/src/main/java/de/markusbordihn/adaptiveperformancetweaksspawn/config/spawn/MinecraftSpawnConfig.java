@@ -66,46 +66,45 @@ public final class MinecraftSpawnConfig {
 
   public static class Config {
 
-    public final ForgeConfigSpec.BooleanValue minecraftEnabled;
-    public final ForgeConfigSpec.ConfigValue<String> minecraftId;
+    public final ForgeConfigSpec.BooleanValue enabled;
+    public final ForgeConfigSpec.ConfigValue<String> id;
 
-    public final ForgeConfigSpec.IntValue minecraftMaxPassiveMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue minecraftMaxPassiveMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> minecraftPassiveMobsList;
+    public final ForgeConfigSpec.IntValue passiveMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue passiveMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> passiveMobsList;
 
-    public final ForgeConfigSpec.IntValue minecraftMaxNeutralMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue minecraftMaxNeutralMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> minecraftNeutralMobsList;
+    public final ForgeConfigSpec.IntValue neutralMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue neutralMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> neutralMobsList;
 
-    public final ForgeConfigSpec.IntValue minecraftMaxHostileMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue minecraftMaxHostileMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> minecraftHostileMobsList;
+    public final ForgeConfigSpec.IntValue hostileMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue hostileMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> hostileMobsList;
 
-    public final ForgeConfigSpec.IntValue minecraftMaxWaterPassiveMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue minecraftMaxWaterPassiveMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> minecraftWaterPassiveMobsList;
+    public final ForgeConfigSpec.IntValue waterPassiveMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue waterPassiveMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> waterPassiveMobsList;
 
-    public final ForgeConfigSpec.IntValue minecraftMaxWaterNeutralMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue minecraftMaxWaterNeutralMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> minecraftWaterNeutralMobsList;
+    public final ForgeConfigSpec.IntValue waterNeutralMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue waterNeutralMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> waterNeutralMobsList;
 
-    public final ForgeConfigSpec.IntValue minecraftMaxWaterHostileMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue minecraftMaxWaterHostileMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> minecraftWaterHostileMobsList;
+    public final ForgeConfigSpec.IntValue waterHostileMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue waterHostileMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> waterHostileMobsList;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
       builder.push("Minecraft Spawn Config");
-      minecraftEnabled = builder.define("minecraftEnabled", true);
-      minecraftId = builder.define("minecraftId", "minecraft");
+      enabled = builder.define("Enabled", true);
+      id = builder.define("Id", "minecraft");
 
-      minecraftMaxPassiveMobsPerPlayer = builder.comment("mobs which will not attack you")
-          .defineInRange("minecraftMaxPassiveMobsPerPlayer", 8, 1, 64);
-      minecraftMaxPassiveMobsPerWorld =
-          builder.defineInRange("minecraftMaxPassiveMobsPerWorld", 32, 1, 512);
-      minecraftPassiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
-          .define("minecraftPassiveMobsList", new ArrayList<String>(Arrays.asList(
+      passiveMobsPerPlayer = builder.comment("e.g. mobs which will not attack you")
+          .defineInRange("MaxPassiveMobsPerPlayer", 8, 1, 64);
+      passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 32, 1, 512);
+      passiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
+          .define("PassiveMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "minecraft:allay",
             "minecraft:axolotl",
@@ -131,12 +130,12 @@ public final class MinecraftSpawnConfig {
           // @formatter:on
           )));
 
-      minecraftMaxNeutralMobsPerPlayer = builder.comment("e.g. sheep, pig, horse, fox, ...")
-          .defineInRange("minecraftMaxNeutralMobsPerPlayer", 8, 1, 64);
-      minecraftMaxNeutralMobsPerWorld =
-          builder.defineInRange("minecraftMaxNeutralMobsPerWorld", 32, 1, 512);
-      minecraftNeutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
-          .define("minecraftNeutralMobsList", new ArrayList<String>(Arrays.asList(
+      neutralMobsPerPlayer =
+          builder.comment("e.g. mobs which will attack under certain conditions ...")
+              .defineInRange("MaxNeutralMobsPerPlayer", 8, 1, 64);
+      neutralMobsPerWorld = builder.defineInRange("MaxNeutralMobsPerWorld", 32, 1, 512);
+      neutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
+          .define("NeutralMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "minecraft:bee",
             "minecraft:cave_spider",
@@ -155,12 +154,11 @@ public final class MinecraftSpawnConfig {
           // @formatter:on
           )));
 
-      minecraftMaxHostileMobsPerPlayer = builder.comment("e.g. slime, spider, zombie, ravager, ...")
-          .defineInRange("minecraftMaxHostileMobsPerPlayer", 8, 1, 64);
-      minecraftMaxHostileMobsPerWorld =
-          builder.defineInRange("minecraftMaxHostileMobsPerWorld", 32, 1, 512);
-      minecraftHostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
-          .define("minecraftHostileMobsList", new ArrayList<String>(Arrays.asList(
+      hostileMobsPerPlayer = builder.comment("e.g. mobs which will always attack yon ...")
+          .defineInRange("MaxHostileMobsPerPlayer", 8, 1, 64);
+      hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 32, 1, 512);
+      hostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
+          .define("HostileMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "minecraft:blaze",
             "minecraft:chicken_jockey",
@@ -198,12 +196,11 @@ public final class MinecraftSpawnConfig {
           // @formatter:on
           )));
 
-      minecraftMaxWaterPassiveMobsPerPlayer = builder.comment("e.g. mostly fish")
-          .defineInRange("minecraftMaxWaterPassiveMobsPerPlayer", 4, 1, 64);
-      minecraftMaxWaterPassiveMobsPerWorld =
-          builder.defineInRange("minecraftMaxWaterPassiveMobsPerWorld", 16, 1, 512);
-      minecraftWaterPassiveMobsList = builder.comment("List of passive water Mobs to optimize")
-          .define("minecraftWaterPassiveMobsList", new ArrayList<String>(Arrays.asList(
+      waterPassiveMobsPerPlayer = builder.comment("e.g. mostly fish")
+          .defineInRange("MaxWaterPassiveMobsPerPlayer", 8, 1, 64);
+      waterPassiveMobsPerWorld = builder.defineInRange("MaxWaterPassiveMobsPerWorld", 32, 1, 512);
+      waterPassiveMobsList = builder.comment("List of passive water Mobs to optimize")
+          .define("WaterPassiveMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "minecraft:axolotl",
             "minecraft:cod",
@@ -213,24 +210,22 @@ public final class MinecraftSpawnConfig {
           // @formatter:on
           )));
 
-      minecraftMaxWaterNeutralMobsPerPlayer = builder.comment("e.g. squid, dolphin, ...")
-          .defineInRange("minecraftMaxWaterNeutralMobsPerPlayer", 4, 1, 64);
-      minecraftMaxWaterNeutralMobsPerWorld =
-          builder.defineInRange("minecraftMaxWaterNeutralMobsPerWorld", 16, 1, 512);
-      minecraftWaterNeutralMobsList = builder.comment("List of neutral water Mobs to optimize")
-          .define("minecraftWaterNeutralMobsList", new ArrayList<String>(Arrays.asList(
+      waterNeutralMobsPerPlayer = builder.comment("e.g. squid, dolphin, ...")
+          .defineInRange("MaxWaterNeutralMobsPerPlayer", 6, 1, 64);
+      waterNeutralMobsPerWorld = builder.defineInRange("MaxWaterNeutralMobsPerWorld", 24, 1, 512);
+      waterNeutralMobsList = builder.comment("List of neutral water Mobs to optimize")
+          .define("WaterNeutralMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "minecraft:dolphin",
             "minecraft:squid"
           // @formatter:on
           )));
 
-      minecraftMaxWaterHostileMobsPerPlayer = builder.comment("e.g. drowned, guardian...")
-          .defineInRange("minecraftMaxWaterHostileMobsPerPlayer", 12, 1, 64);
-      minecraftMaxWaterHostileMobsPerWorld =
-          builder.defineInRange("minecraftMaxWaterHostileMobsPerWorld", 48, 1, 512);
-      minecraftWaterHostileMobsList = builder.comment("List of hostile water Mobs to optimize")
-          .define("minecraftWaterHostileMobsList", new ArrayList<String>(Arrays.asList(
+      waterHostileMobsPerPlayer = builder.comment("e.g. drowned, guardian...")
+          .defineInRange("MaxWaterHostileMobsPerPlayer", 16, 1, 64);
+      waterHostileMobsPerWorld = builder.defineInRange("MaxWaterHostileMobsPerWorld", 64, 1, 512);
+      waterHostileMobsList = builder.comment("List of hostile water Mobs to optimize")
+          .define("WaterHostileMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "minecraft:drowned",
             "minecraft:elder_guardian",

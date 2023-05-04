@@ -38,11 +38,11 @@ import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
-public final class MekanismAdditionsSpawnConfig {
+public final class FishOfThievesSpawnConfig {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
-  private MekanismAdditionsSpawnConfig() {}
+  private FishOfThievesSpawnConfig() {}
 
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
@@ -54,7 +54,7 @@ public final class MekanismAdditionsSpawnConfig {
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
     log.info("Registering {} {} spawn config ...", Constants.MOD_NAME,
-        CoreConstants.MEKANISMADDITIONS_NAME);
+        CoreConstants.FISH_OF_THIEVES_NAME);
     try {
       FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
           CoreConstants.CONFIG_ID);
@@ -62,7 +62,7 @@ public final class MekanismAdditionsSpawnConfig {
       log.error("There was an error, creating the directory:", exception);
     }
     ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec,
-        CoreConstants.CONFIG_ID_PREFIX + "/spawn/MekanismAdditionsSpawn.toml");
+        CoreConstants.CONFIG_ID_PREFIX + "/spawn/FishOfThievesSpawn.toml");
   }
 
   public static class Config {
@@ -70,51 +70,32 @@ public final class MekanismAdditionsSpawnConfig {
     public final ForgeConfigSpec.BooleanValue enabled;
     public final ForgeConfigSpec.ConfigValue<String> id;
 
-    public final ForgeConfigSpec.IntValue passiveMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue passiveMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> passiveMobsList;
-
-    public final ForgeConfigSpec.IntValue neutralMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue neutralMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> neutralMobsList;
-
-    public final ForgeConfigSpec.IntValue hostileMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue hostileMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> hostileMobsList;
+    public final ForgeConfigSpec.IntValue fishPerPlayer;
+    public final ForgeConfigSpec.IntValue fishPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> fishList;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
-      builder.push("Mekanism Spawn Config");
+      builder.push("Fish of Thieves Spawn Config");
       enabled = builder.define("Enabled", true);
-      id = builder.define("Id", CoreConstants.MEKANISMADDITIONS_MOD);
+      id = builder.define("Id", CoreConstants.FISH_OF_THIEVES_MOD);
 
-      passiveMobsPerPlayer = builder.defineInRange("MaxPassiveMobsPerPlayer", 4, 1, 64);
-      passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 12, 1, 512);
-      passiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
-          .define("PassiveMobsList", new ArrayList<String>(Arrays.asList(
+      fishPerPlayer = builder.defineInRange("MaxFishPerPlayer", 16, 1, 64);
+      fishPerWorld = builder.defineInRange("MaxFishPerWorld", 64, 1, 512);
+      fishList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS).define("FishList",
+          new ArrayList<String>(Arrays.asList(
           // @formatter:off
-          // @formatter:on
-          )));
-
-      neutralMobsPerPlayer = builder.defineInRange("MaxNeutralMobsPerPlayer", 4, 1, 64);
-      neutralMobsPerWorld = builder.defineInRange("MaxNeutralMobsPerWorld", 16, 1, 512);
-      neutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
-          .define("NeutralMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-          // @formatter:on
-          )));
-
-      hostileMobsPerPlayer = builder.defineInRange("MaxHostileMobsPerPlayer", 4, 1, 64);
-      hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 16, 1, 512);
-      hostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
-          .define("HostileMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-            "mekanismadditions:baby_creeper",
-            "mekanismadditions:baby_enderman",
-            "mekanismadditions:baby_skeleton",
-            "mekanismadditions:baby_stray",
-            "mekanismadditions:baby_wither_skeleton"
+            "fishofthieves:ancientscales",
+            "fishofthieves:battlegills",
+            "fishofthieves:devilfish",
+            "fishofthieves:islehoppers",
+            "fishofthieves:plentifins",
+            "fishofthieves:pondies",
+            "fishofthieves:splashtail",
+            "fishofthieves:stormfish",
+            "fishofthieves:wildsplash",
+            "fishofthieves:wreckers"
           // @formatter:on
           )));
 

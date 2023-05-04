@@ -38,11 +38,11 @@ import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
-public final class AlexsMobsSpawnConfig {
+public final class InfernalExpansionSpawnConfig {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
-  private AlexsMobsSpawnConfig() {}
+  private InfernalExpansionSpawnConfig() {}
 
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
@@ -54,7 +54,7 @@ public final class AlexsMobsSpawnConfig {
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
     log.info("Registering {} {} spawn config ...", Constants.MOD_NAME,
-        CoreConstants.ALEXSMOBS_NAME);
+        CoreConstants.INFERNAL_EXPANSION_NAME);
     try {
       FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
           CoreConstants.CONFIG_ID);
@@ -62,7 +62,7 @@ public final class AlexsMobsSpawnConfig {
       log.error("There was an error, creating the directory:", exception);
     }
     ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec,
-        CoreConstants.CONFIG_ID_PREFIX + "/spawn/AlexsMobsSpawn.toml");
+        CoreConstants.CONFIG_ID_PREFIX + "/spawn/InfernalExpansionSpawn.toml");
   }
 
   public static class Config {
@@ -85,25 +85,20 @@ public final class AlexsMobsSpawnConfig {
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
-      builder.push("Alexs Mobs Spawn Config");
+      builder.push("Infernal Expansion Spawn Config");
       enabled = builder.define("Enabled", true);
-      id = builder.define("Id", CoreConstants.ALEXSMOBS_MOD);
+      id = builder.define("Id", CoreConstants.INFERNAL_EXPANSION_MOD);
 
       passiveMobsPerPlayer = builder.defineInRange("MaxPassiveMobsPerPlayer", 4, 1, 64);
       passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 16, 1, 512);
       passiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
           .define("PassiveMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
-            "alexsmobs:blobfish",
-            "alexsmobs:endergrade",
-            "alexsmobs:fly",
-            "alexsmobs:gazelle",
-            "alexsmobs:hummingbird",
-            "alexsmobs:mungus",
-            "alexsmobs:seal",
-            "alexsmobs:spectre",
-            "alexsmobs:stradpole",
-            "alexsmobs:sunbird"
+            "infernalexp:basalt",
+            "infernalexp:blackstone_dwarf",
+            "infernalexp:glowsilk_moth",
+            "infernalexp:shroomloin",
+            "infernalexp:warpbeetle"
           // @formatter:on
           )));
 
@@ -112,25 +107,6 @@ public final class AlexsMobsSpawnConfig {
       neutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
           .define("NeutralMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
-            "alexsmobs:cachalot_whale",
-            "alexsmobs:capuchin_monkey",
-            "alexsmobs:cockroach",
-            "alexsmobs:crow",
-            "alexsmobs:elephant",
-            "alexsmobs:emu",
-            "alexsmobs:gorilla",
-            "alexsmobs:kangaroo",
-            "alexsmobs:lobster",
-            "alexsmobs:mantis_shrimp",
-            "alexsmobs:moose",
-            "alexsmobs:orca",
-            "alexsmobs:platypus",
-            "alexsmobs:raccoon",
-            "alexsmobs:roadrunner",
-            "alexsmobs:shoebill",
-            "alexsmobs:snow_leopard",
-            "alexsmobs:tasmanian_devil",
-            "alexsmobs:warped_toad"
           // @formatter:on
           )));
 
@@ -139,23 +115,11 @@ public final class AlexsMobsSpawnConfig {
       hostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
           .define("HostileMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
-            "alexsmobs:alligator_snapping_turtle",
-            "alexsmobs:bone_serpent",
-            "alexsmobs:centipede_head",
-            "alexsmobs:crimson_mosquito",
-            "alexsmobs:crocodile",
-            "alexsmobs:dropbear",
-            "alexsmobs:enderiophage",
-            "alexsmobs:grizzly_bear",
-            "alexsmobs:guster",
-            "alexsmobs:hammerhead_shark",
-            "alexsmobs:komodo_dragon",
-            "alexsmobs:leafcutter_ant",
-            "alexsmobs:mimicube",
-            "alexsmobs:rattlesnake",
-            "alexsmobs:soul_vulture",
-            "alexsmobs:straddler",
-            "alexsmobs:warped_mosco"
+            "infernalexp:blindsight",
+            "infernalexp:embody",
+            "infernalexp:embody",
+            "infernalexp:glowsquito",
+            "infernalexp:voline"
           // @formatter:on
           )));
 

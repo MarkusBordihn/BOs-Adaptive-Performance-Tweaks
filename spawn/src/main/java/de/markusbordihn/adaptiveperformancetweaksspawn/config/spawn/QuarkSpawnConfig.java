@@ -53,8 +53,7 @@ public final class QuarkSpawnConfig {
         new ForgeConfigSpec.Builder().configure(Config::new);
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
-    log.info("Registering {} {} spawn config ...", Constants.MOD_NAME,
-        CoreConstants.QUARK_NAME);
+    log.info("Registering {} {} spawn config ...", Constants.MOD_NAME, CoreConstants.QUARK_NAME);
     try {
       FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
           CoreConstants.CONFIG_ID);
@@ -67,35 +66,32 @@ public final class QuarkSpawnConfig {
 
   public static class Config {
 
-    public final ForgeConfigSpec.BooleanValue quarkEnabled;
-    public final ForgeConfigSpec.ConfigValue<String> quarkId;
+    public final ForgeConfigSpec.BooleanValue enabled;
+    public final ForgeConfigSpec.ConfigValue<String> id;
 
-    public final ForgeConfigSpec.IntValue quarkMaxPassiveMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue quarkMaxPassiveMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> quarkPassiveMobsList;
+    public final ForgeConfigSpec.IntValue passiveMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue passiveMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> passiveMobsList;
 
-    public final ForgeConfigSpec.IntValue quarkMaxNeutralMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue quarkMaxNeutralMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> quarkNeutralMobsList;
+    public final ForgeConfigSpec.IntValue neutralMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue neutralMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> neutralMobsList;
 
-    public final ForgeConfigSpec.IntValue quarkMaxHostileMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue quarkMaxHostileMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> quarkHostileMobsList;
+    public final ForgeConfigSpec.IntValue hostileMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue hostileMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> hostileMobsList;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
       builder.push("Quark Spawn Config");
-      quarkEnabled = builder.define("quarkEnabled", true);
-      quarkId =
-          builder.define("quarkId", CoreConstants.QUARK_MOD);
+      enabled = builder.define("Enabled", true);
+      id = builder.define("Id", CoreConstants.QUARK_MOD);
 
-      quarkMaxPassiveMobsPerPlayer =
-          builder.defineInRange("quarkMaxPassiveMobsPerPlayer", 2, 1, 64);
-      quarkMaxPassiveMobsPerWorld =
-          builder.defineInRange("quarkMaxPassiveMobsPerWorld", 16, 1, 512);
-      quarkPassiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
-          .define("quarkPassiveMobsList", new ArrayList<String>(Arrays.asList(
+      passiveMobsPerPlayer = builder.defineInRange("MaxPassiveMobsPerPlayer", 4, 1, 64);
+      passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 16, 1, 512);
+      passiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
+          .define("PassiveMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "quark:crab",
             "quark:frog",
@@ -103,23 +99,19 @@ public final class QuarkSpawnConfig {
           // @formatter:on
           )));
 
-      quarkMaxNeutralMobsPerPlayer =
-          builder.defineInRange("quarkMaxNeutralMobsPerPlayer", 2, 1, 64);
-      quarkMaxNeutralMobsPerWorld =
-          builder.defineInRange("quarkMaxNeutralMobsPerWorld", 16, 1, 512);
-      quarkNeutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
-          .define("quarkNeutralMobsList", new ArrayList<String>(Arrays.asList(
+      neutralMobsPerPlayer = builder.defineInRange("MaxNeutralMobsPerPlayer", 4, 1, 64);
+      neutralMobsPerWorld = builder.defineInRange("MaxNeutralMobsPerWorld", 16, 1, 512);
+      neutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
+          .define("NeutralMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "quark:toretoise"
           // @formatter:on
           )));
 
-      quarkMaxHostileMobsPerPlayer =
-          builder.defineInRange("quarkMaxHostileMobsPerPlayer", 4, 1, 64);
-      quarkMaxHostileMobsPerWorld =
-          builder.defineInRange("quarkMaxHostileMobsPerWorld", 16, 1, 512);
-      quarkHostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
-          .define("quarkHostileMobsList", new ArrayList<String>(Arrays.asList(
+      hostileMobsPerPlayer = builder.defineInRange("MaxHostileMobsPerPlayer", 8, 1, 64);
+      hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 32, 1, 512);
+      hostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
+          .define("HostileMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "quark:forgotten",
             "quark:foxhound",

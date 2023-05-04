@@ -67,34 +67,32 @@ public final class UntamedWildsSpawnConfig {
 
   public static class Config {
 
-    public final ForgeConfigSpec.BooleanValue untamedWildsEnabled;
-    public final ForgeConfigSpec.ConfigValue<String> untamedWildsId;
+    public final ForgeConfigSpec.BooleanValue enabled;
+    public final ForgeConfigSpec.ConfigValue<String> id;
 
-    public final ForgeConfigSpec.IntValue untamedWildsMaxPassiveMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue untamedWildsMaxPassiveMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> untamedWildsPassiveMobsList;
+    public final ForgeConfigSpec.IntValue passiveMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue passiveMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> passiveMobsList;
 
-    public final ForgeConfigSpec.IntValue untamedWildsMaxNeutralMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue untamedWildsMaxNeutralMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> untamedWildsNeutralMobsList;
+    public final ForgeConfigSpec.IntValue neutralMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue neutralMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> neutralMobsList;
 
-    public final ForgeConfigSpec.IntValue untamedWildsMaxHostileMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue untamedWildsMaxHostileMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> untamedWildsHostileMobsList;
+    public final ForgeConfigSpec.IntValue hostileMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue hostileMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> hostileMobsList;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
       builder.push("Untamed Wilds Spawn Config");
-      untamedWildsEnabled = builder.define("untamedWildsEnabled", true);
-      untamedWildsId = builder.define("untamedWildsId", CoreConstants.UNTAMED_WILDS_MOD);
+      enabled = builder.define("Enabled", true);
+      id = builder.define("Id", CoreConstants.UNTAMED_WILDS_MOD);
 
-      untamedWildsMaxPassiveMobsPerPlayer =
-          builder.defineInRange("untamedWildsMaxPassiveMobsPerPlayer", 4, 1, 64);
-      untamedWildsMaxPassiveMobsPerWorld =
-          builder.defineInRange("untamedWildsMaxPassiveMobsPerWorld", 16, 1, 512);
-      untamedWildsPassiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
-          .define("untamedWildsPassiveMobsList", new ArrayList<String>(Arrays.asList(
+      passiveMobsPerPlayer = builder.defineInRange("MaxPassiveMobsPerPlayer", 4, 1, 64);
+      passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 16, 1, 512);
+      passiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
+          .define("PassiveMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "untamedwilds:arowana",
             "untamedwilds:giant_clam",
@@ -105,12 +103,10 @@ public final class UntamedWildsSpawnConfig {
           // @formatter:on
           )));
 
-      untamedWildsMaxNeutralMobsPerPlayer =
-          builder.defineInRange("untamedWildsMaxNeutralMobsPerPlayer", 4, 1, 64);
-      untamedWildsMaxNeutralMobsPerWorld =
-          builder.defineInRange("untamedWildsMaxNeutralMobsPerWorld", 16, 1, 512);
-      untamedWildsNeutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
-          .define("untamedWildsNeutralMobsList", new ArrayList<String>(Arrays.asList(
+      neutralMobsPerPlayer = builder.defineInRange("MaxNeutralMobsPerPlayer", 4, 1, 64);
+      neutralMobsPerWorld = builder.defineInRange("MaxNeutralMobsPerWorld", 16, 1, 512);
+      neutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
+          .define("NeutralMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "untamedwilds:aardvark",
             "untamedwilds:softshell_turtle",
@@ -118,12 +114,10 @@ public final class UntamedWildsSpawnConfig {
           // @formatter:on
           )));
 
-      untamedWildsMaxHostileMobsPerPlayer =
-          builder.defineInRange("untamedWildsMaxHostileMobsPerPlayer", 4, 1, 64);
-      untamedWildsMaxHostileMobsPerWorld =
-          builder.defineInRange("untamedWildsMaxHostileMobsPerWorld", 16, 1, 512);
-      untamedWildsHostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
-          .define("untamedWildsHostileMobsList", new ArrayList<String>(Arrays.asList(
+      hostileMobsPerPlayer = builder.defineInRange("MaxHostileMobsPerPlayer", 4, 1, 64);
+      hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 16, 1, 512);
+      hostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
+          .define("HostileMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
             "untamedwilds:bear_black",
             "untamedwilds:bear_blind",

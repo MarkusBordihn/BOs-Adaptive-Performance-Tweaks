@@ -53,7 +53,7 @@ public final class CustomSpawnConfig {
         new ForgeConfigSpec.Builder().configure(Config::new);
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
-    log.info("Registering {} custom spawn config ...", Constants.MOD_NAME);
+    log.info("Registering {} Custom spawn config ...", Constants.MOD_NAME);
     try {
       FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
           CoreConstants.CONFIG_ID);
@@ -66,54 +66,48 @@ public final class CustomSpawnConfig {
 
   public static class Config {
 
-    public final ForgeConfigSpec.BooleanValue customEnabled;
-    public final ForgeConfigSpec.ConfigValue<String> customId;
+    public final ForgeConfigSpec.BooleanValue enabled;
+    public final ForgeConfigSpec.ConfigValue<String> id;
 
-    public final ForgeConfigSpec.IntValue customMaxPassiveMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue customMaxPassiveMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> customPassiveMobsList;
+    public final ForgeConfigSpec.IntValue passiveMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue passiveMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> passiveMobsList;
 
-    public final ForgeConfigSpec.IntValue customMaxNeutralMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue customMaxNeutralMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> customNeutralMobsList;
+    public final ForgeConfigSpec.IntValue neutralMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue neutralMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> neutralMobsList;
 
-    public final ForgeConfigSpec.IntValue customMaxHostileMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue customMaxHostileMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> customHostileMobsList;
+    public final ForgeConfigSpec.IntValue hostileMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue hostileMobsPerWorld;
+    public final ForgeConfigSpec.ConfigValue<List<String>> hostileMobsList;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
       builder.push("Custom Spawn Config");
-      customEnabled = builder.define("customEnabled", false);
-      customId = builder.define("customId", "custom_config");
+      enabled = builder.define("Enabled", false);
+      id = builder.define("Id", "_config");
 
-      customMaxPassiveMobsPerPlayer =
-          builder.defineInRange("customMaxPassiveMobsPerPlayer", 2, 1, 64);
-      customMaxPassiveMobsPerWorld =
-          builder.defineInRange("customMaxPassiveMobsPerWorld", 16, 1, 512);
-      customPassiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
-          .define("customPassiveMobsList", new ArrayList<String>(Arrays.asList(
+      passiveMobsPerPlayer = builder.defineInRange("MaxPassiveMobsPerPlayer", 4, 1, 64);
+      passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 16, 1, 512);
+      passiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
+          .define("PassiveMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
           // @formatter:on
           )));
 
-      customMaxNeutralMobsPerPlayer =
-          builder.defineInRange("customMaxNeutralMobsPerPlayer", 2, 1, 64);
-      customMaxNeutralMobsPerWorld =
-          builder.defineInRange("customMaxNeutralMobsPerWorld", 16, 1, 512);
-      customNeutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
-          .define("customNeutralMobsList", new ArrayList<String>(Arrays.asList(
+      neutralMobsPerPlayer = builder.defineInRange("MaxNeutralMobsPerPlayer", 4, 1, 64);
+      neutralMobsPerWorld = builder.defineInRange("MaxNeutralMobsPerWorld", 16, 1, 512);
+      neutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
+          .define("NeutralMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
           // @formatter:on
           )));
 
-      customMaxHostileMobsPerPlayer =
-          builder.defineInRange("customMaxHostileMobsPerPlayer", 2, 1, 64);
-      customMaxHostileMobsPerWorld =
-          builder.defineInRange("customMaxHostileMobsPerWorld", 16, 1, 512);
-      customHostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
-          .define("customHostileMobsList", new ArrayList<String>(Arrays.asList(
+      hostileMobsPerPlayer = builder.defineInRange("MaxHostileMobsPerPlayer", 4, 1, 64);
+      hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 16, 1, 512);
+      hostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
+          .define("HostileMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
           // @formatter:on
           )));
