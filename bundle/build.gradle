@@ -124,8 +124,8 @@ dependencies {
   minecraft 'net.minecraftforge:forge:1.19.4-45.0.50'
 
   // Required: Bo's Adaptive Performance Tweaks: Core (dev dependency)
-  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:8.2.0")
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:8.2.0")
+  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:8.3.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:8.3.0")
 
   // Required: Bo's Adaptive Performance Tweaks: Gamerules (runtime dependency)
   runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksgamerules:gamerules:8.2.0")
@@ -137,7 +137,7 @@ dependencies {
   runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksplayer:player:8.2.0")
 
   // Required: Bo's Adaptive Performance Tweaks: Spawn (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksspawn:spawn:8.2.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksspawn:spawn:8.3.0")
 
   // Additional helpful Mods for development (runtime depenedency)
   runtimeOnly fg.deobf("curse.maven:xaeros_minimap-263420:4440702")

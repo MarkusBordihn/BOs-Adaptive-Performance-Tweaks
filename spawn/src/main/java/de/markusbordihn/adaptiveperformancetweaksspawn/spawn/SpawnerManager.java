@@ -83,7 +83,6 @@ public class SpawnerManager {
 
       // Ignore events which are already canceled or denied.
       if (event.isCanceled() || event.getResult() == Event.Result.DENY) {
-        log.debug("[Canceled / denied Spawner Event] Ignore spawner event {}!", event);
         return;
       }
 
