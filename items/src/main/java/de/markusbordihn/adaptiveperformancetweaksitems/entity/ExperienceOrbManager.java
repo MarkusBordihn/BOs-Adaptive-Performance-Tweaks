@@ -91,7 +91,6 @@ public class ExperienceOrbManager {
 
     // Ignore events which are already canceled
     if (event.isCanceled()) {
-      log.debug("Ignore canceled Experience Orb event {}!", event);
       return;
     }
 

@@ -85,4 +85,16 @@ public class ServerHandler {
     }
   }
 
+  public static long getServerAboutToStartTime() {
+    return serverAboutToStartTime;
+  }
+
+  public static long getServerStartingTime() {
+    return serverStartingTime;
+  }
+
+  public static long getServerStartedTime() {
+    return serverStartedTime;
+  }
+
 }

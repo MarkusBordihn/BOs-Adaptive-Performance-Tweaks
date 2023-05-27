@@ -125,7 +125,6 @@ public final class MinecraftSpawnConfig {
             "minecraft:sheep",
             "minecraft:skeleton_horse",
             "minecraft:snow_golem",
-            "minecraft:strider",
             "minecraft:turtle"
           // @formatter:on
           )));
@@ -149,8 +148,7 @@ public final class MinecraftSpawnConfig {
             "minecraft:trader_llama",
             "minecraft:wandering_trader",
             "minecraft:wolf",
-            "minecraft:zombie_horse",
-            "minecraft:zombified_piglin"
+            "minecraft:zombie_horse"
           // @formatter:on
           )));
 
@@ -160,21 +158,15 @@ public final class MinecraftSpawnConfig {
       hostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
           .define("HostileMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
-            "minecraft:blaze",
             "minecraft:chicken_jockey",
             "minecraft:creeper",
             "minecraft:ender_dragon",
             "minecraft:endermite",
             "minecraft:evoker",
-            "minecraft:ghast",
             "minecraft:giant",
-            "minecraft:hoglin",
             "minecraft:husk",
             "minecraft:illusioner",
-            "minecraft:magma_cube",
             "minecraft:phantom",
-            "minecraft:piglin",
-            "minecraft:piglin_brute",
             "minecraft:pillager",
             "minecraft:ravager",
             "minecraft:ravager_jockey",
@@ -189,7 +181,6 @@ public final class MinecraftSpawnConfig {
             "minecraft:warden",
             "minecraft:witch",
             "minecraft:wither",
-            "minecraft:wither_skeleton",
             "minecraft:zoglin",
             "minecraft:zombie",
             "minecraft:zombie_villager"

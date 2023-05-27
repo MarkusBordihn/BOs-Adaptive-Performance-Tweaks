@@ -117,6 +117,10 @@ public final class CoreConstants {
   public static final String GUARD_VILLAGERS_NAME = "Guard Villagers";
   public static final boolean GUARD_VILLAGERS_LOADED = ModList.get().isLoaded(GUARD_VILLAGERS_MOD);
 
+  public static final String GOTHIC_MOD = "gothic";
+  public static final String GOTHIC_NAME = "Gothic RPG";
+  public static final boolean GOTHIC_LOADED = ModList.get().isLoaded(GOTHIC_MOD);
+
   public static final String HUMAN_COMPANIONS_MOD = "humancompanions";
   public static final String HUMAN_COMPANIONS_NAME = "Human Companions";
   public static final boolean HUMAN_COMPANIONS_LOADED =
