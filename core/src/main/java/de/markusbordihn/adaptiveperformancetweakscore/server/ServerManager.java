@@ -31,6 +31,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.DifficultyChangeEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.server.ServerLifecycleHooks;
@@ -55,6 +56,8 @@ public class ServerManager {
 
   private static MinecraftServer minecraftServer = null;
   private static java.lang.Iterable<ServerLevel> serverLevels = null;
+  private static int maxNumberOfPlayers = 0;
+  private static int numberOfPlayers = 0;
 
   private static Difficulty gameDifficulty = Difficulty.NORMAL;
   private static double gameDifficultyFactor = 1;
@@ -72,19 +75,12 @@ public class ServerManager {
   }
 
   @SubscribeEvent
-  @OnlyIn(Dist.CLIENT)
-  public static void handleClientServerStartingEvent(ServerStartingEvent event) {
-    updateGameDifficulty(getMinecraftServer().getWorldData().getDifficulty());
-    log.info("{} Max number of local players is set to {}", Constants.LOG_PREFIX,
-        getMinecraftServer().getPlayerList().getMaxPlayers());
-  }
-
-  @SubscribeEvent
-  @OnlyIn(Dist.DEDICATED_SERVER)
-  public static void handleDedicatedServerStartingEvent(ServerStartingEvent event) {
+  public static void handleServerStartingEvent(ServerStartingEvent event) {
+    maxNumberOfPlayers = getMinecraftServer().getPlayerList().getMaxPlayers();
+    numberOfPlayers = getMinecraftServer().getPlayerList().getPlayerCount();
     updateGameDifficulty(getMinecraftServer().getWorldData().getDifficulty());
     log.info("{} Max number of remote players is set to {}", Constants.LOG_PREFIX,
-        getMinecraftServer().getPlayerList().getMaxPlayers());
+        maxNumberOfPlayers);
   }
 
   @SubscribeEvent
@@ -110,6 +106,21 @@ public class ServerManager {
   @SubscribeEvent
   public static void handleDifficultyChangeEvent(DifficultyChangeEvent event) {
     updateGameDifficulty(event.getDifficulty());
+  }
+
+  @SubscribeEvent
+  public static void handlePlayerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {
+    numberOfPlayers = getMinecraftServer().getPlayerList().getPlayerCount();
+  }
+
+  @SubscribeEvent
+  public static void handlePlayerLoggedOutEvent(PlayerEvent.PlayerLoggedOutEvent event) {
+    numberOfPlayers = getMinecraftServer().getPlayerList().getPlayerCount();
+  }
+
+  @SubscribeEvent
+  public static void handlePlayerRespawnEvent(PlayerEvent.PlayerRespawnEvent event) {
+    numberOfPlayers = getMinecraftServer().getPlayerList().getPlayerCount();
   }
 
   public static void handleServerTickEvent(Dist dist) {
@@ -140,6 +151,14 @@ public class ServerManager {
       serverLevels = getMinecraftServer().getAllLevels();
     }
     return serverLevels;
+  }
+
+  public static int getMaxNumberOfPlayers() {
+    return maxNumberOfPlayers;
+  }
+
+  public static int getNumberOfPlayers() {
+    return numberOfPlayers;
   }
 
   public static Difficulty getGameDifficulty() {

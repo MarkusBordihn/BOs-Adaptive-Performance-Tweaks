@@ -385,8 +385,9 @@ public class CoreEntityManager {
       for (Set<Entity> entities : entityMapToCheck.values()) {
         Iterator<Entity> entityIterator = entities.iterator();
         while (entityIterator.hasNext()) {
+          // Check if the entity is still valid.
           Entity entity = entityIterator.next();
-          if (entity != null && entity.isRemoved()) {
+          if (entity == null || entity.isRemoved()) {
             entityIterator.remove();
             removedEntries++;
           }
