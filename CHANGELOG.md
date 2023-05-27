@@ -5,6 +5,12 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2023.05.27
+
+- Improved player position detection and added optimizations for Nether and End dimensions.
+- Added additional spawn logic to allow the max player limit overrule the max world limit.
+- Added custom spawn configuration for Nether and Gothic RPG.
+
 ### 2023.05.04
 
 - Added custom spawn configuration for Born in Chaos, Fish fo Thieves, Friends and Foes, Infernal Expansion and Untitled Duck. Thanks to pewblaze for providing the example spawn configs.

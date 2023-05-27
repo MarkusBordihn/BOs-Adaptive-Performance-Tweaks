@@ -366,9 +366,15 @@ public class SpawnManager {
       // Get current game difficult to define spawn factor.
       double spawnFactor = ServerManager.getGameDifficultyFactor();
 
-      // Limit spawn based on world limits.
+      // Get limits per player, world and number of current players.
       int limitPerWorld = SpawnConfigManager.getSpawnLimitPerWorld(entityName);
-      if (limitPerWorld > 0 && numberOfEntitiesPerWorld >= limitPerWorld * spawnFactor) {
+      int limitPerPlayer = SpawnConfigManager.getSpawnLimitPerPlayer(entityName);
+      int numberOfPlayers = ServerManager.getNumberOfPlayers();
+
+      // Limit spawn based on world limits, but consider current number of players and limits per
+      // player.
+      if (limitPerWorld > 0 && (numberOfPlayers * limitPerPlayer <= limitPerWorld)
+          && numberOfEntitiesPerWorld >= limitPerWorld * spawnFactor) {
         log.debug("[World limit] Blocked {} event for {} ({} >= {} * {}f) in {}", eventType,
             entityName, numberOfEntitiesPerWorld, limitPerWorld, spawnFactor, levelName);
         if (isLivingSpawnEvent) {
@@ -381,7 +387,6 @@ public class SpawnManager {
 
       // Cheap and fast calculation to limit spawn based on possible entities within player limits
       // for high server load.
-      int limitPerPlayer = SpawnConfigManager.getSpawnLimitPerPlayer(entityName);
       if (hasHighServerLoad && limitPerPlayer > 0 && numOfPlayersInsideViewArea > 0
           && numberOfEntitiesPerWorld >= limitPerPlayer * limitPerPlayer
               * numOfPlayersInsideViewArea * spawnFactor) {

@@ -41,8 +41,10 @@ import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.CustomSpawnC
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.FishOfThievesSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.InfernalExpansionSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.FriendsAndFoesSpawnConfig;
+import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.GothicSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.MekanismAdditionsSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.MinecraftSpawnConfig;
+import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.NetherSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.PanthalassaSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.QuarkSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.TinkersConstructConfig;
@@ -66,11 +68,13 @@ public class SpawnConfigManager {
       FishOfThievesSpawnConfig.COMMON;
   private static final FriendsAndFoesSpawnConfig.Config FRIENDS_AND_FOES_CONFIG =
       FriendsAndFoesSpawnConfig.COMMON;
+  private static final GothicSpawnConfig.Config GOTHIC_CONFIG = GothicSpawnConfig.COMMON;
   private static final InfernalExpansionSpawnConfig.Config INFERNAL_EXPANSION_CONFIG =
       InfernalExpansionSpawnConfig.COMMON;
   private static final MekanismAdditionsSpawnConfig.Config MEKANISM_ADDITIONS_CONFIG =
       MekanismAdditionsSpawnConfig.COMMON;
   private static final MinecraftSpawnConfig.Config MINECRAFT_CONFIG = MinecraftSpawnConfig.COMMON;
+  private static final NetherSpawnConfig.Config NETHER_CONFIG = NetherSpawnConfig.COMMON;
   private static final PanthalassaSpawnConfig.Config PANTHALASSA_CONFIG =
       PanthalassaSpawnConfig.COMMON;
   private static final QuarkSpawnConfig.Config QUARK_CONFIG = QuarkSpawnConfig.COMMON;
@@ -115,6 +119,17 @@ public class SpawnConfigManager {
       addSpawnRatesForHostileMobs(MINECRAFT_CONFIG.id.get(),
           new HashSet<>(MINECRAFT_CONFIG.hostileMobsList.get()),
           MINECRAFT_CONFIG.hostileMobsPerPlayer.get(), MINECRAFT_CONFIG.hostileMobsPerWorld.get());
+
+      // Nether vanilla mobs
+      addSpawnRatesForPassiveMobs(NETHER_CONFIG.id.get(),
+          new HashSet<>(NETHER_CONFIG.passiveMobsList.get()),
+          NETHER_CONFIG.passiveMobsPerPlayer.get(), NETHER_CONFIG.passiveMobsPerWorld.get());
+      addSpawnRatesForNeutralMobs(NETHER_CONFIG.id.get(),
+          new HashSet<>(NETHER_CONFIG.neutralMobsList.get()),
+          NETHER_CONFIG.neutralMobsPerPlayer.get(), NETHER_CONFIG.neutralMobsPerWorld.get());
+      addSpawnRatesForHostileMobs(NETHER_CONFIG.id.get(),
+          new HashSet<>(NETHER_CONFIG.hostileMobsList.get()),
+          NETHER_CONFIG.hostileMobsPerPlayer.get(), NETHER_CONFIG.hostileMobsPerWorld.get());
 
       // Water vanilla mobs
       addSpawnRatesForPassiveMobs(MINECRAFT_CONFIG.id.get(),
@@ -182,6 +197,20 @@ public class SpawnConfigManager {
           FRIENDS_AND_FOES_CONFIG.passiveMobsPerWorld.get());
     }
 
+    // Gothic RPG
+    if (Boolean.TRUE.equals(GOTHIC_CONFIG.enabled.get())
+        && modList.isLoaded(GOTHIC_CONFIG.id.get())) {
+      addSpawnRatesForPassiveMobs(GOTHIC_CONFIG.id.get(),
+          new HashSet<>(GOTHIC_CONFIG.passiveMobsList.get()),
+          GOTHIC_CONFIG.passiveMobsPerPlayer.get(), GOTHIC_CONFIG.passiveMobsPerWorld.get());
+      addSpawnRatesForNeutralMobs(GOTHIC_CONFIG.id.get(),
+          new HashSet<>(GOTHIC_CONFIG.neutralMobsList.get()),
+          GOTHIC_CONFIG.neutralMobsPerPlayer.get(), GOTHIC_CONFIG.neutralMobsPerWorld.get());
+      addSpawnRatesForHostileMobs(GOTHIC_CONFIG.id.get(),
+          new HashSet<>(GOTHIC_CONFIG.hostileMobsList.get()),
+          GOTHIC_CONFIG.hostileMobsPerPlayer.get(), GOTHIC_CONFIG.hostileMobsPerWorld.get());
+    }
+
     // Infernal Expansion
     if (Boolean.TRUE.equals(INFERNAL_EXPANSION_CONFIG.enabled.get())
         && modList.isLoaded(INFERNAL_EXPANSION_CONFIG.id.get())) {
@@ -197,7 +226,6 @@ public class SpawnConfigManager {
           new HashSet<>(INFERNAL_EXPANSION_CONFIG.hostileMobsList.get()),
           INFERNAL_EXPANSION_CONFIG.hostileMobsPerPlayer.get(),
           INFERNAL_EXPANSION_CONFIG.hostileMobsPerWorld.get());
-
     }
 
     // Mekanism Additions

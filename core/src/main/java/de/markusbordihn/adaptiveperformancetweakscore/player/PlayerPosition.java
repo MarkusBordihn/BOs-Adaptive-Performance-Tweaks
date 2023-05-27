@@ -28,8 +28,14 @@ import net.minecraft.world.phys.Vec3;
 public class PlayerPosition {
 
   private static final String OVERWORLD = "minecraft:overworld";
+  private static final String NETHER = "minecraft:the_nether";
+  private static final String THE_END = "minecraft:the_end";
+  private static final float NETHER_EXPAND_FACTOR = 1.1f;
+  private static final float THE_END_EXPAND_FACTOR = 1.5f;
   private static final int CHUNK_SIZE = 16;
   private static final int MAX_BUILD_HEIGHT = 320;
+  private static final int MAX_BUILD_HEIGHT_NETHER = 256;
+  private static final int MAX_BUILD_HEIGHT_THE_END = 256;
   private static final int MIN_BUILD_HEIGHT = -64;
   private static final int OVERGROUND_Y = 63;
   private static final int OVERGROUND_Y_MIN_VIEW = OVERGROUND_Y - 12;
@@ -37,13 +43,15 @@ public class PlayerPosition {
   private static final int MAX_VIEW_AREA_DISTANCE = 240; // 240x240 = 15x15 chunks max.
 
   private ServerPlayer player;
+  private String levelName = "";
   private String playerName = "";
   private UUID playerUUID;
-  private String levelName = "";
   private boolean canSeeSky = false;
+  private boolean isNether = false;
+  private boolean isOverworld = false;
+  private boolean isTheEnd = false;
   private boolean isUnderWater = false;
   private boolean viewAreaCalculated = false;
-  private long lastActionTime = 0;
   private int posX = 0;
   private int posY = 0;
   private int posZ = 0;
@@ -56,6 +64,7 @@ public class PlayerPosition {
   private int viewAreaStopY = 0;
   private int viewAreaStopZ = 0;
   private int viewDistance = 8;
+  private long lastActionTime = 0;
 
   public PlayerPosition(ServerPlayer player, int viewDistance, int simulationDistance) {
     this.player = player;
@@ -119,11 +128,15 @@ public class PlayerPosition {
     this.posX = (int) position.x;
     this.posY = (int) position.y;
     this.posZ = (int) position.z;
-    this.canSeeSky = this.player.getLevel().canSeeSky(this.player.blockPosition());
-    this.isUnderWater = this.player.isUnderWater();
     if (!this.levelName.equals(levelName)) {
       this.levelName = levelName;
+      this.isNether = levelName.equals(NETHER);
+      this.isOverworld = levelName.equals(OVERWORLD);
+      this.isTheEnd = levelName.equals(THE_END);
     }
+    this.canSeeSky =
+        !this.isNether && this.player.getLevel().canSeeSky(this.player.blockPosition());
+    this.isUnderWater = !this.isNether && this.player.isUnderWater();
     this.simulationDistance = simulationDistance;
     this.viewDistance = viewDistance;
     this.viewAreaCalculated = false;
@@ -134,10 +147,12 @@ public class PlayerPosition {
       return;
     }
 
-    // Calculate view area distance in blocks based on surrounding factors
-    if (!this.canSeeSky || this.isUnderWater) {
-      this.viewAreaDistance = (this.simulationDistance < this.viewDistance ? this.simulationDistance
-          : this.simulationDistance - 1) * CHUNK_SIZE;
+    // Calculate view area distance in blocks based on surrounding factors like dimension, player
+    // can see sky or is under water.
+    if ((!isNether && !isTheEnd && !this.canSeeSky) || this.isUnderWater) {
+      this.viewAreaDistance =
+          (this.simulationDistance < this.viewDistance - 1 ? this.simulationDistance
+              : this.viewDistance - 1) * CHUNK_SIZE;
     } else {
       this.viewAreaDistance = this.viewDistance * CHUNK_SIZE;
     }
@@ -157,8 +172,7 @@ public class PlayerPosition {
 
     // Additional optimization based on the current position, world and other factors like if the
     // player is able to see the sky, if the player is overground or underground.
-    if (OVERWORLD.equals(this.levelName)) {
-
+    if (isOverworld) {
       // Player is on overground and can see Sky
       if (this.posY >= OVERGROUND_Y) {
         this.viewAreaStartY = OVERGROUND_Y_MIN_VIEW;
@@ -175,6 +189,28 @@ public class PlayerPosition {
       }
     }
 
+    // Additional optimization for the Nether to expand the view area in the X and Z direction.
+    // This makes sure that the player is able to see the full view distance in the Nether.
+    if (isNether) {
+      this.viewAreaStartX = Math.round(this.viewAreaStartX * NETHER_EXPAND_FACTOR);
+      this.viewAreaStopX = Math.round(this.viewAreaStopX * NETHER_EXPAND_FACTOR);
+      this.viewAreaStopY = Math.min(this.viewAreaStopY, MAX_BUILD_HEIGHT_NETHER);
+      this.viewAreaStartZ = Math.round(this.viewAreaStartZ * NETHER_EXPAND_FACTOR);
+      this.viewAreaStopZ = Math.round(this.viewAreaStopZ * NETHER_EXPAND_FACTOR);
+    }
+
+    // Additional optimization for the End to expand the view area in the X and Z direction.
+    // This makes sure that the player is able to see the full view distance to fly in the End.
+    if (isTheEnd) {
+      this.viewAreaStartX = Math.round(this.viewAreaStartX * THE_END_EXPAND_FACTOR);
+      this.viewAreaStopX = Math.round(this.viewAreaStopX * THE_END_EXPAND_FACTOR);
+      this.viewAreaStartY = Math.round(this.viewAreaStartY * THE_END_EXPAND_FACTOR);
+      this.viewAreaStopY = Math.min(Math.round(this.viewAreaStopY * THE_END_EXPAND_FACTOR),
+          MAX_BUILD_HEIGHT_THE_END);
+      this.viewAreaStartZ = Math.round(this.viewAreaStartZ * THE_END_EXPAND_FACTOR);
+      this.viewAreaStopZ = Math.round(this.viewAreaStopZ * THE_END_EXPAND_FACTOR);
+    }
+
     this.viewAreaCalculated = true;
   }
 
@@ -188,7 +224,8 @@ public class PlayerPosition {
         + this.simulationDistance + ", viewAreaDistance: " + this.viewAreaDistance + "}, Range{x:"
         + this.viewAreaStartX + " to " + this.viewAreaStopX + ", y:" + this.viewAreaStartY + " to "
         + this.viewAreaStopY + ", z:" + this.viewAreaStartZ + " to " + this.viewAreaStopZ
-        + "}, Meta{canSeeSky: " + this.canSeeSky + ", isUnderWater: " + this.isUnderWater + "}]";
+        + "}, Meta{isOverworld: " + this.isOverworld + ", isNether: " + this.isNether
+        + ", canSeeSky: " + this.canSeeSky + ", isUnderWater: " + this.isUnderWater + "}]";
   }
 
 }
