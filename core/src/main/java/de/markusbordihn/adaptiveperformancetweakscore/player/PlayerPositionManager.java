@@ -22,6 +22,7 @@ package de.markusbordihn.adaptiveperformancetweakscore.player;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -47,9 +48,14 @@ import de.markusbordihn.adaptiveperformancetweakscore.dimension.DimensionManager
 public class PlayerPositionManager {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  private static Random random = new Random();
 
   private static Map<String, PlayerPosition> playerPositionMap = new ConcurrentHashMap<>();
-  private static int ticks = 0;
+  private static final int PLAYER_POSITION_FORCED_UPDATE_TICK = 600;
+  private static final int PLAYER_POSITION_UPDATE_TICK = 60;
+  private static int forcedUpdateTicks = random.nextInt(60);
+  private static int updateTicks = random.nextInt(30);
+
   private static int numberOfPlayers = 0;
 
   protected PlayerPositionManager() {}
@@ -69,34 +75,60 @@ public class PlayerPositionManager {
   }
 
   @SubscribeEvent
-  public static void handleServerTickEvent(TickEvent.ServerTickEvent event) {
+  public static void handleServerTickEventForPositionUpdates(TickEvent.ServerTickEvent event) {
     if (event.phase == TickEvent.Phase.END) {
-      ticks++;
+      updateTicks++;
       return;
     }
-    if (ticks >= 50) {
-      MinecraftServer minecraftServer = ServerLifecycleHooks.getCurrentServer();
-      if (minecraftServer != null) {
-        PlayerList playerList = minecraftServer.getPlayerList();
-        if (playerList != null) {
-          numberOfPlayers = playerList.getPlayerCount();
-          if (numberOfPlayers == 0) {
-            if (!playerPositionMap.isEmpty()) {
-              playerPositionMap = new ConcurrentHashMap<>();
-            }
-          } else {
-            List<ServerPlayer> serverPlayerList = playerList.getPlayers();
-            int viewDistance = playerList.getViewDistance();
-            int simulationDistance = playerList.getSimulationDistance();
-            for (ServerPlayer player : serverPlayerList) {
-              if (player.isAlive() && !player.hasDisconnected()) {
-                updatePlayerPosition(player, viewDistance, simulationDistance);
-              }
-            }
-          }
+    if (updateTicks >= PLAYER_POSITION_UPDATE_TICK && event.haveTime()) {
+      updatePlayerPositions(false);
+      updateTicks = 0;
+    }
+  }
+
+  @SubscribeEvent
+  public static void handleServerTickEventForForcedPositionUpdates(
+      TickEvent.ServerTickEvent event) {
+    if (event.phase == TickEvent.Phase.END) {
+      forcedUpdateTicks++;
+      return;
+    }
+    if (forcedUpdateTicks >= PLAYER_POSITION_FORCED_UPDATE_TICK) {
+      updatePlayerPositions(true);
+      forcedUpdateTicks = 0;
+    }
+  }
+
+  private static void updatePlayerPositions(boolean forceUpdate) {
+    MinecraftServer minecraftServer = ServerLifecycleHooks.getCurrentServer();
+    if (minecraftServer == null) {
+      return;
+    }
+
+    PlayerList playerList = minecraftServer.getPlayerList();
+    if (playerList == null) {
+      return;
+    }
+
+    numberOfPlayers = playerList.getPlayerCount();
+    if (numberOfPlayers == 0) {
+      if (!playerPositionMap.isEmpty()) {
+        playerPositionMap = new ConcurrentHashMap<>();
+      }
+      return;
+    }
+
+    List<ServerPlayer> serverPlayerList = playerList.getPlayers();
+    int viewDistance = playerList.getViewDistance();
+    int simulationDistance = playerList.getSimulationDistance();
+    for (ServerPlayer player : serverPlayerList) {
+      if (player.isAlive() && !player.hasDisconnected()) {
+        if (forceUpdate) {
+          forceUpdatePlayerPosition(player, viewDistance, simulationDistance);
+        } else {
+          updatePlayerPosition(player, viewDistance, simulationDistance);
         }
       }
-      ticks = 0;
     }
   }
 
@@ -155,5 +187,16 @@ public class PlayerPositionManager {
     PlayerPosition playerPosition = playerPositionMap.computeIfAbsent(player.getStringUUID(),
         key -> new PlayerPosition(player, viewDistance, simulationDistance));
     playerPosition.update(player, viewDistance, simulationDistance);
+    log.debug("Update player position for {} to {} in dimension {}", player, playerPosition,
+        player.level.dimension().location());
+  }
+
+  private static void forceUpdatePlayerPosition(ServerPlayer player, int viewDistance,
+      int simulationDistance) {
+    PlayerPosition playerPosition = playerPositionMap.computeIfAbsent(player.getStringUUID(),
+        key -> new PlayerPosition(player, viewDistance, simulationDistance));
+    playerPosition.forceUpdate(player, viewDistance, simulationDistance);
+    log.debug("Forced update player position for {} to {} in dimension {}", player, playerPosition,
+        player.level.dimension().location());
   }
 }

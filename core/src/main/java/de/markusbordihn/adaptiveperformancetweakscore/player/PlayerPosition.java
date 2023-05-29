@@ -87,6 +87,11 @@ public class PlayerPosition {
     }
   }
 
+  public void forceUpdate(ServerPlayer player, int viewDistance, int simulationDistance) {
+    this.updatePosition(player, player.getLevel().dimension().location().toString(), viewDistance,
+        simulationDistance);
+  }
+
   public boolean isInsidePlayerViewArea(String levelName) {
     return this.levelName.equals(levelName);
   }
@@ -123,8 +128,14 @@ public class PlayerPosition {
   }
 
   private void updatePosition(String levelName, int viewDistance, int simulationDistance) {
-    this.lastActionTime = player.getLastActionTime();
-    Vec3 position = player.position();
+    updatePosition(this.player, levelName, viewDistance, simulationDistance);
+  }
+
+  private void updatePosition(ServerPlayer serverPlayer, String levelName, int viewDistance,
+      int simulationDistance) {
+    this.player = serverPlayer;
+    this.lastActionTime = serverPlayer.getLastActionTime();
+    Vec3 position = serverPlayer.position();
     this.posX = (int) position.x;
     this.posY = (int) position.y;
     this.posZ = (int) position.z;
@@ -135,8 +146,8 @@ public class PlayerPosition {
       this.isTheEnd = levelName.equals(THE_END);
     }
     this.canSeeSky =
-        !this.isNether && this.player.getLevel().canSeeSky(this.player.blockPosition());
-    this.isUnderWater = !this.isNether && this.player.isUnderWater();
+        !this.isNether && serverPlayer.getLevel().canSeeSky(serverPlayer.blockPosition());
+    this.isUnderWater = !this.isNether && serverPlayer.isUnderWater();
     this.simulationDistance = simulationDistance;
     this.viewDistance = viewDistance;
     this.viewAreaCalculated = false;
