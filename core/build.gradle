@@ -132,12 +132,13 @@ dependencies {
   minecraft 'net.minecraftforge:forge:1.18.2-40.2.4'
 
   // Testing (runtime depenedency)
-  runtimeOnly fg.deobf("curse.maven:luggage-594709:4326962")
-  runtimeOnly fg.deobf("curse.maven:domestication-innovation-591149:3826903")
-  runtimeOnly fg.deobf("curse.maven:citadel-331936:3783096")
+  // runtimeOnly fg.deobf("curse.maven:luggage-594709:4326962")
+  // runtimeOnly fg.deobf("curse.maven:domestication-innovation-591149:3826903")
+  // runtimeOnly fg.deobf("curse.maven:citadel-331936:3783096")
 
   // Additional helpful Mods for development (dev depenedency)
   runtimeOnly fg.deobf("curse.maven:xaeros_minimap-263420:3712760")
+  runtimeOnly fg.deobf("curse.maven:spark-361579:4505375")
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..

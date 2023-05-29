@@ -138,6 +138,7 @@ dependencies {
 
   // Additional helpful Mods for development (runtime depenedency)
   runtimeOnly fg.deobf("curse.maven:xaeros_minimap-263420:3712760")
+  runtimeOnly fg.deobf("curse.maven:spark-361579:4505375")
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..

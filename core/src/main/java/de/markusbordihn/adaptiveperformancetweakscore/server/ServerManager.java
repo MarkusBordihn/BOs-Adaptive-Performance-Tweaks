@@ -19,12 +19,17 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.server;
 
+import java.util.Arrays;
+import java.util.Random;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.level.Level;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -45,6 +50,7 @@ import de.markusbordihn.adaptiveperformancetweakscore.config.CommonConfig;
 public class ServerManager {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  private static Random random = new Random();
 
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
   private static double gameDifficultyFactorEasy = COMMON.gameDifficultyFactorEasy.get();
@@ -52,11 +58,12 @@ public class ServerManager {
   private static double gameDifficultyFactorPeaceful = COMMON.gameDifficultyFactorPeaceful.get();
   private static double gameDifficultyFactorHard = COMMON.gameDifficultyFactorHard.get();
 
-  private static short ticks = 0;
-  private static final short SERVER_LOAD_TICK = 1 * 20;
-  private static final short WORLD_LOAD_TICK = 2 * 20;
-  private static final short OPTIMIZATION_TICK = 3 * 20;
-  private static final short RESET_TICK = 6 * 20;
+  private static final int BASE_TICK = 25;
+  private static final int OPTIMIZATION_TICK = 4 * BASE_TICK;
+  private static final int RESET_TICK = 6 * BASE_TICK;
+  private static final int SERVER_LOAD_TICK = 1 * BASE_TICK;
+  private static final int WORLD_LOAD_TICK = 2 * BASE_TICK;
+  private static int ticks = random.nextInt(15);
 
   private static MinecraftServer minecraftServer = null;
   private static java.lang.Iterable<ServerLevel> serverLevels = null;
@@ -147,6 +154,18 @@ public class ServerManager {
       minecraftServer = ServerLifecycleHooks.getCurrentServer();
     }
     return minecraftServer;
+  }
+
+  public static long[] getTickTime(ResourceKey<Level> level) {
+    return minecraftServer != null ? minecraftServer.getTickTime(level) : null;
+  }
+
+  public static double getAverageTickTime(ServerLevel serverLevel) {
+    long[] tickTimes = getTickTime(serverLevel.dimension());
+    if (tickTimes != null) {
+      return Arrays.stream(tickTimes).average().orElseGet(() -> Double.NaN) / 1000000;
+    }
+    return 0;
   }
 
   public static float getAverageTickTime() {
