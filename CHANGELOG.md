@@ -5,6 +5,11 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2023.05.30
+
+- Smaller Performance Improvement
+- Added forced player update to the player module to fix issues with player positions not updated correctly.
+
 ### 2023.05.27
 
 - Improved player position detection and added optimizations for Nether and End dimensions.
