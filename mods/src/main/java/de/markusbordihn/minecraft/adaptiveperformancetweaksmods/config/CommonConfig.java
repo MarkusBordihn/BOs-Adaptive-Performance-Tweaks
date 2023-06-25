@@ -19,6 +19,8 @@
 
 package de.markusbordihn.minecraft.adaptiveperformancetweaksmods.config;
 
+import java.nio.file.Files;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,7 +30,6 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.fml.loading.FileUtils;
 
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.Constants;
@@ -51,8 +52,7 @@ public final class CommonConfig {
     COMMON = specPair.getLeft();
     log.info("Registering {} common config ...", Constants.MOD_NAME);
     try {
-      FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
-          CoreConstants.CONFIG_ID);
+      Files.createDirectories(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID));
     } catch (Exception exception) {
       log.error("There was an error, creating the directory:", exception);
     }
@@ -68,8 +68,8 @@ public final class CommonConfig {
       builder.comment(Constants.MOD_NAME);
 
       builder.push("Mods");
-      modsEnabled = builder.comment("Enable/Disable mods optimization.")
-          .define("modsEnabled", true);
+      modsEnabled =
+          builder.comment("Enable/Disable mods optimization.").define("modsEnabled", true);
       builder.pop();
     }
   }

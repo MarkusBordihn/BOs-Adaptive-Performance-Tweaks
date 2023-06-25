@@ -70,13 +70,13 @@ public class PlayerPosition {
     this.player = player;
     this.playerName = player.getName().getString();
     this.playerUUID = player.getUUID();
-    this.updatePosition(player.getLevel().dimension().location().toString(), viewDistance,
+    this.updatePosition(player.level().dimension().location().toString(), viewDistance,
         simulationDistance);
     this.calculateViewArea();
   }
 
   public void update(ServerPlayer player, int viewDistance, int simulationDistance) {
-    update(player.getLevel().dimension().location().toString(), viewDistance, simulationDistance);
+    update(player.level().dimension().location().toString(), viewDistance, simulationDistance);
   }
 
   public void update(String levelName, int viewDistance, int simulationDistance) {
@@ -88,7 +88,7 @@ public class PlayerPosition {
   }
 
   public void forceUpdate(ServerPlayer player, int viewDistance, int simulationDistance) {
-    this.updatePosition(player, player.getLevel().dimension().location().toString(), viewDistance,
+    this.updatePosition(player, player.level().dimension().location().toString(), viewDistance,
         simulationDistance);
   }
 
@@ -146,7 +146,7 @@ public class PlayerPosition {
       this.isTheEnd = levelName.equals(THE_END);
     }
     this.canSeeSky =
-        !this.isNether && serverPlayer.getLevel().canSeeSky(serverPlayer.blockPosition());
+        !this.isNether && serverPlayer.level().canSeeSky(serverPlayer.blockPosition());
     this.isUnderWater = !this.isNether && serverPlayer.isUnderWater();
     this.simulationDistance = simulationDistance;
     this.viewDistance = viewDistance;

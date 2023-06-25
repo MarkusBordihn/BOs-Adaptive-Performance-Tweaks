@@ -82,7 +82,10 @@ Please report issues over the **Issue** link.
 | Forge 1.19     | ⚠️ Deprecated         |
 | Forge 1.19.1   | ⚠️ Deprecated         |
 | Forge 1.19.2   | ⚠️ Maintenance only   |
-| Forge 1.19.3   | ✔️ Active development |
+| Forge 1.19.3   | ⚠️ Maintenance only   |
+| Forge 1.19.4   | ⚠️ Maintenance only   |
+| Forge 1.20     | ⚠️ Maintenance only   |
+| Forge 1.20.1   | ✔️ Active development |
 
 [header]: ../assets/aptweaks-header-only.png
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks

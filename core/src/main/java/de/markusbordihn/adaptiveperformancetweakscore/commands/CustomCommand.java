@@ -32,7 +32,7 @@ public abstract class CustomCommand implements Command<CommandSourceStack> {
 
   public static void sendFeedback(CommandContext<CommandSourceStack> context, String feedback) {
     CommandSourceStack commandSource = context.getSource();
-    commandSource.sendSuccess(Component.literal(feedback), false);
+    commandSource.sendSuccess(() -> Component.literal(feedback), false);
   }
 
   public static void sendDebugFeedback(CommandContext<CommandSourceStack> context, String module,
@@ -40,21 +40,21 @@ public abstract class CustomCommand implements Command<CommandSourceStack> {
     CommandSourceStack commandSource = context.getSource();
     String commandName = module.toLowerCase();
     if (enabled) {
-      commandSource.sendSuccess(Component
+      commandSource.sendSuccess(() -> Component
           .literal("\u25BA Enable debug for the " + module
               + " module, please check debug.log for the full output.")
           .withStyle(ChatFormatting.GREEN), false);
-      commandSource.sendSuccess(Component
+      commandSource.sendSuccess(() -> Component
           .literal("> Use '/aptweaks debug " + commandName + " false' to disable the debug!")
           .withStyle(ChatFormatting.WHITE), false);
     } else {
-      commandSource
-          .sendSuccess(Component.literal("\u25A0 Disable debug for the " + commandName + " module!")
-              .withStyle(ChatFormatting.RED), false);
       commandSource.sendSuccess(
-          Component.literal("> Please check the latest.log and/or debug.log for the full output.")
-              .withStyle(ChatFormatting.WHITE),
+          () -> Component.literal("\u25A0 Disable debug for the " + commandName + " module!")
+              .withStyle(ChatFormatting.RED),
           false);
+      commandSource.sendSuccess(() -> Component
+          .literal("> Please check the latest.log and/or debug.log for the full output.")
+          .withStyle(ChatFormatting.WHITE), false);
     }
   }
 

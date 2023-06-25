@@ -19,6 +19,7 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.config;
 
+import java.nio.file.Files;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,7 +29,6 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.fml.loading.FileUtils;
 
 import de.markusbordihn.adaptiveperformancetweakscore.Constants;
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
@@ -51,8 +51,7 @@ public final class CommonConfig {
     COMMON = specPair.getLeft();
     log.info("{} common config ...", Constants.LOG_REGISTER_PREFIX);
     try {
-      FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
-          CoreConstants.CONFIG_ID);
+      Files.createDirectories(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID));
     } catch (Exception exception) {
       log.error("There was an error, creating the directory:", exception);
     }

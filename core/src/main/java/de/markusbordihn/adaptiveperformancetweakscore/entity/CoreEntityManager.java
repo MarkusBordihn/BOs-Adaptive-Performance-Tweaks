@@ -194,7 +194,7 @@ public class CoreEntityManager {
     }
 
     // Ignore client side world.
-    Level level = entity.getLevel();
+    Level level = entity.level();
     if (level.isClientSide) {
       return;
     }

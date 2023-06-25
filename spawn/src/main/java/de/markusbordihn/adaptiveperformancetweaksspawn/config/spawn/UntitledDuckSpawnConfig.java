@@ -19,6 +19,7 @@
 
 package de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn;
 
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +33,6 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.fml.loading.FileUtils;
 
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
@@ -56,8 +56,7 @@ public final class UntitledDuckSpawnConfig {
     log.info("Registering {} {} spawn config ...", Constants.MOD_NAME,
         CoreConstants.UNTITLED_DUCK_NAME);
     try {
-      FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
-          CoreConstants.CONFIG_ID);
+      Files.createDirectories(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID));
     } catch (Exception exception) {
       log.error("There was an error, creating the directory:", exception);
     }

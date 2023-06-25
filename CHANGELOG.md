@@ -1,9 +1,13 @@
-# Changelog for Adaptive Performance Tweaks (> 1.19.4)
+# Changelog for Adaptive Performance Tweaks (> 1.18.x)
 
 ## Note
 
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
+
+### 2023.06.25
+
+- Refactored code for version 1.20-46.0.14
 
 ### 2023.05.30
 

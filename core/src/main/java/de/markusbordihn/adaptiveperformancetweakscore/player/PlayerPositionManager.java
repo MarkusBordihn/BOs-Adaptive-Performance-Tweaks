@@ -188,7 +188,7 @@ public class PlayerPositionManager {
         key -> new PlayerPosition(player, viewDistance, simulationDistance));
     playerPosition.update(player, viewDistance, simulationDistance);
     log.debug("Update player position for {} to {} in dimension {}", player, playerPosition,
-        player.level.dimension().location());
+        player.level().dimension().location());
   }
 
   private static void forceUpdatePlayerPosition(ServerPlayer player, int viewDistance,
@@ -197,6 +197,6 @@ public class PlayerPositionManager {
         key -> new PlayerPosition(player, viewDistance, simulationDistance));
     playerPosition.forceUpdate(player, viewDistance, simulationDistance);
     log.debug("Forced update player position for {} to {} in dimension {}", player, playerPosition,
-        player.level.dimension().location());
+        player.level().dimension().location());
   }
 }

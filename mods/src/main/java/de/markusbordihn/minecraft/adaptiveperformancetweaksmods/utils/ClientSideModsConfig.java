@@ -34,7 +34,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.fml.loading.FileUtils;
 
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.minecraft.adaptiveperformancetweaksmods.Constants;
@@ -52,7 +51,7 @@ public class ClientSideModsConfig {
   protected static final String CONFIG_FILE_VERSION_HEADER = "## Client Side Mods - Version:";
 
   protected static final String CONFIG_FILE_HEADER =
-      "## Disable existing entries by comment out like # client-side-mod-1.19.4.jar";
+      "## Disable existing entries by comment out like # client-side-mod-1.20.jar";
 
   protected static final String CONFIG_FILE_TEXT = "client side mods config file";
 
@@ -233,8 +232,8 @@ public class ClientSideModsConfig {
   private static Path getConfigDirectory() {
     Path resultPath = null;
     try {
-      resultPath = FileUtils.getOrCreateDirectory(
-          FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID), CoreConstants.CONFIG_ID);
+      resultPath =
+          Files.createDirectories(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID));
     } catch (Exception exception) {
       log.error("There was an error, creating the directory:", exception);
       return null;

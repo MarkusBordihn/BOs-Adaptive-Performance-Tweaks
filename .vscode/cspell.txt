@@ -49,6 +49,7 @@ deathworm
 dropbear
 dungeonsmod
 dynview
+Elytra
 Endergetic
 endergrade
 enderiophage
@@ -137,6 +138,7 @@ Pokecube
 pondies
 pufferfish
 refinedstorage
+Reposts
 Respawn
 roka
 Savageandravage

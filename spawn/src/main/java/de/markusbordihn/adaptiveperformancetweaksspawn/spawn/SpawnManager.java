@@ -226,7 +226,7 @@ public class SpawnManager {
 
     // Ignore client side events.
     Entity entity = event.getEntity();
-    Level level = entity.level;
+    Level level = entity.level();
     if (level.isClientSide()) {
       return;
     }
