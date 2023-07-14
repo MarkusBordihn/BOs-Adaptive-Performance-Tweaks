@@ -5,6 +5,10 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2023.06.13
+
+- Improved spawn module and added additional checks for better compatibility with other mods.
+
 ### 2023.05.30
 
 - Smaller Performance Improvement

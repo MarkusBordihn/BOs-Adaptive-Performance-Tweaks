@@ -56,6 +56,8 @@ public class SpawnerManager {
 
   protected SpawnerManager() {}
 
+  // CheckSpawn is fired when an Entity is about to be spawned.
+  // This event is not cancellable, but does have a result.
   @SubscribeEvent(priority = EventPriority.NORMAL)
   public static void handleLivingCheckSpawnEvent(LivingSpawnEvent.CheckSpawn event) {
     handleSpawnEvent(event);
