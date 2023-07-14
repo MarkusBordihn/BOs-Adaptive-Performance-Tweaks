@@ -118,22 +118,19 @@ public class SpawnManager {
       }
     }
 
+    // Added optimization warning for specific Mods
     if (CoreConstants.PERFORMANT_LOADED) {
       log.warn(() -> WarnMessages.coreModWarning(CoreConstants.PERFORMANT_NAME));
     }
-
     if (CoreConstants.POKECUBE_AIO_LOADED) {
       log.warn(() -> WarnMessages.knownIssuesSpawnModWarning(CoreConstants.POKECUBE_AIO_NAME));
     }
-
     if (CoreConstants.SODIUM_LOADED) {
       log.error(() -> WarnMessages.coreModWarning(CoreConstants.SODIUM_NAME));
     }
-
     if (CoreConstants.RUBIDIUM_LOADED) {
       log.error(() -> WarnMessages.coreModWarning(CoreConstants.RUBIDIUM_NAME));
     }
-
     if (CoreConstants.INCONTROL_LOADED) {
       log.warn(() -> WarnMessages.conflictingFeaturesModWarning(CoreConstants.INCONTROL_NAME,
           "controls the mob spawns and entity spawns"));
@@ -198,12 +195,14 @@ public class SpawnManager {
   }
 
   // CheckSpawn is fired when an Entity is about to be spawned.
+  // This event is not cancellable, but does have a result.
   @SubscribeEvent(priority = EventPriority.HIGHEST)
   public static void handleLivingCheckSpawnEvent(LivingSpawnEvent.CheckSpawn event) {
     handleSpawnEvent(event);
   }
 
   // SpecialSpawn is fired when an Entity is to be spawned.
+  // This event is cancellable and does not have a result.
   @SubscribeEvent(priority = EventPriority.HIGHEST)
   public static void handleLivingSpecialSpawnEvent(LivingSpawnEvent.SpecialSpawn event) {
     handleSpawnEvent(event);
@@ -232,8 +231,7 @@ public class SpawnManager {
 
     String entityName = entity.getEncodeId();
     String levelName = level.dimension().location().toString();
-    boolean isLivingSpawnEvent = event instanceof LivingSpawnEvent;
-    String eventType = isLivingSpawnEvent ? "spawn" : "join";
+    String eventType = event instanceof LivingSpawnEvent ? "spawn" : "join";
 
     // Pre-check for ignored dimension to avoid further checks
     if (ignoreDimensionList.contains(levelName)) {
@@ -260,11 +258,7 @@ public class SpawnManager {
     // Pre-check for denied entities to avoid expensive calculations.
     if (denyList.contains(entityName)) {
       log.debug("[Denied Entity] Denied {} event for {} in {} ", eventType, entity, levelName);
-      if (isLivingSpawnEvent) {
-        event.setResult(Event.Result.DENY);
-      } else {
-        event.setCanceled(true);
-      }
+      cancelSpawnEvent(event);
       return;
     }
 
@@ -287,7 +281,7 @@ public class SpawnManager {
       numOfPlayersInsideViewArea = playersPositionsInsideViewArea.size();
       if (numOfPlayersInsideViewArea == 0) {
         log.debug("[View Area Visibility] Blocked spawn event for {} in {}.", entity, levelName);
-        event.setResult(Event.Result.DENY);
+        cancelSpawnEvent(event);
         return;
       }
     }
@@ -297,11 +291,7 @@ public class SpawnManager {
     if (spawnLimitationLimiter > 0 && spawnLimiter++ >= spawnLimitationLimiter) {
       log.debug("[Spawn Limiter {}] Blocked {} event for {} in {}.", spawnLimitationLimiter,
           eventType, entity, levelName);
-      if (isLivingSpawnEvent) {
-        event.setResult(Event.Result.DENY);
-      } else {
-        event.setCanceled(true);
-      }
+      cancelSpawnEvent(event);
       spawnLimiter = 0;
       return;
     }
@@ -313,11 +303,7 @@ public class SpawnManager {
         && numberOfEntities >= spawnLimitationMaxMobsPerServer) {
       log.debug("[Spawn Limitations Server: {}] Blocked {} event for {} in {}.", numberOfEntities,
           eventType, entity, levelName);
-      if (isLivingSpawnEvent) {
-        event.setResult(Event.Result.DENY);
-      } else {
-        event.setCanceled(true);
-      }
+      cancelSpawnEvent(event);
       return;
     }
 
@@ -328,11 +314,7 @@ public class SpawnManager {
         && numberOfEntitiesPerWorld >= spawnLimitationMaxMobsPerWorld) {
       log.debug("[Spawn Limitations World: {}] Blocked {} event for {} in {}.",
           numberOfEntitiesPerWorld, eventType, entity, levelName);
-      if (isLivingSpawnEvent) {
-        event.setResult(Event.Result.DENY);
-      } else {
-        event.setCanceled(true);
-      }
+      cancelSpawnEvent(event);
       return;
     }
 
@@ -346,7 +328,7 @@ public class SpawnManager {
           && numberOfEntitiesInsideViewArea >= spawnLimitationMaxMobsPerPlayer) {
         log.debug("[Spawn Limitations Player: {}] Blocked spawn event for {} in {}.",
             numberOfEntitiesInsideViewArea, entity, levelName);
-        event.setResult(Event.Result.DENY);
+        cancelSpawnEvent(event);
         return;
       }
     }
@@ -375,11 +357,7 @@ public class SpawnManager {
           && numberOfEntitiesPerWorld >= limitPerWorld * spawnFactor) {
         log.debug("[World limit] Blocked {} event for {} ({} >= {} * {}f) in {}", eventType,
             entityName, numberOfEntitiesPerWorld, limitPerWorld, spawnFactor, levelName);
-        if (isLivingSpawnEvent) {
-          event.setResult(Event.Result.DENY);
-        } else {
-          event.setCanceled(true);
-        }
+        cancelSpawnEvent(event);
         return;
       }
 
@@ -392,7 +370,7 @@ public class SpawnManager {
             "[High Server Load] Blocked spawn event for {} ({} >= {}m * {}m * {}p * {}f) in {}",
             entityName, numberOfEntitiesPerWorld, limitPerPlayer, numOfPlayersInsideViewArea,
             spawnFactor, levelName);
-        event.setResult(Event.Result.DENY);
+        cancelSpawnEvent(event);
         return;
       }
 
@@ -403,7 +381,7 @@ public class SpawnManager {
         log.debug("[View Area Limit] Blocked spawn event for {} ({} >= {}l * {}p * {}f) in {}",
             entityName, numberOfEntitiesInsideViewArea, limitPerPlayer, numOfPlayersInsideViewArea,
             spawnFactor, levelName);
-        event.setResult(Event.Result.DENY);
+        cancelSpawnEvent(event);
         return;
       }
     }
@@ -422,6 +400,15 @@ public class SpawnManager {
 
     // Cache result for avoid duplicated checks.
     lastAllowedSpawnEntity = entity;
+  }
+
+  // Cancel spawn event.
+  private static void cancelSpawnEvent(EntityEvent event) {
+    if (event instanceof LivingSpawnEvent.CheckSpawn) {
+      event.setResult(Event.Result.DENY);
+    } else {
+      event.setCanceled(true);
+    }
   }
 
 }
