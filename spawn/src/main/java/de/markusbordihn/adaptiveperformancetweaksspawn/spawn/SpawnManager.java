@@ -70,6 +70,7 @@ public class SpawnManager {
   private static int spawnLimiter = 0;
   private static boolean hasHighServerLoad = false;
   private static Entity lastAllowedSpawnEntity;
+  private static Entity lastBlockedSpawnEntity;
 
   protected SpawnManager() {}
 
@@ -119,22 +120,19 @@ public class SpawnManager {
       }
     }
 
+    // Added optimization warning for specific Mods
     if (CoreConstants.PERFORMANT_LOADED) {
       log.warn(() -> WarnMessages.coreModWarning(CoreConstants.PERFORMANT_NAME));
     }
-
     if (CoreConstants.POKECUBE_AIO_LOADED) {
       log.warn(() -> WarnMessages.knownIssuesSpawnModWarning(CoreConstants.POKECUBE_AIO_NAME));
     }
-
     if (CoreConstants.SODIUM_LOADED) {
       log.error(() -> WarnMessages.coreModWarning(CoreConstants.SODIUM_NAME));
     }
-
     if (CoreConstants.RUBIDIUM_LOADED) {
       log.error(() -> WarnMessages.coreModWarning(CoreConstants.RUBIDIUM_NAME));
     }
-
     if (CoreConstants.INCONTROL_LOADED) {
       log.warn(() -> WarnMessages.conflictingFeaturesModWarning(CoreConstants.INCONTROL_NAME,
           "controls the mob spawns and entity spawns"));
@@ -198,16 +196,13 @@ public class SpawnManager {
     }
   }
 
-  // MobSpawnEvent is fired when an Entity is about to be spawned.
-  @SubscribeEvent(priority = EventPriority.HIGHEST)
-  public static void handleMobSpawnEvent(MobSpawnEvent event) {
-    handleSpawnEvent(event);
-  }
-
   // FinalizeSpawn is fired before a entity is finalized.
+  // This event is cancelable and does not have a result.
   @SubscribeEvent(priority = EventPriority.HIGHEST)
   public static void handleFinalizeSpawnEvent(FinalizeSpawn event) {
-    handleSpawnEvent(event);
+    if (!event.isSpawnCancelled()) {
+      handleSpawnEvent(event);
+    }
   }
 
   // EntityJoinWorldEvent is fired when an Entity joins the world.
@@ -233,8 +228,7 @@ public class SpawnManager {
 
     String entityName = entity.getEncodeId();
     String levelName = level.dimension().location().toString();
-    boolean isFinalizeSpawn = event instanceof FinalizeSpawn;
-    String eventType = isFinalizeSpawn ? "spawn" : "join";
+    String eventType = event instanceof FinalizeSpawn ? "spawn" : "join";
 
     // Pre-check for ignored dimension to avoid further checks
     if (ignoreDimensionList.contains(levelName)) {
@@ -254,18 +248,14 @@ public class SpawnManager {
     }
 
     // Skip already checked entities.
-    if (lastAllowedSpawnEntity == entity) {
+    if (lastAllowedSpawnEntity == entity || lastBlockedSpawnEntity == entity) {
       return;
     }
 
     // Pre-check for denied entities to avoid expensive calculations.
     if (denyList.contains(entityName)) {
       log.debug("[Denied Entity] Denied {} event for {} in {} ", eventType, entity, levelName);
-      if (isFinalizeSpawn) {
-        event.setResult(Event.Result.DENY);
-      } else {
-        event.setCanceled(true);
-      }
+      cancelSpawnEvent(event);
       return;
     }
 
@@ -288,7 +278,7 @@ public class SpawnManager {
       numOfPlayersInsideViewArea = playersPositionsInsideViewArea.size();
       if (numOfPlayersInsideViewArea == 0) {
         log.debug("[View Area Visibility] Blocked spawn event for {} in {}.", entity, levelName);
-        event.setResult(Event.Result.DENY);
+        cancelSpawnEvent(event);
         return;
       }
     }
@@ -298,11 +288,7 @@ public class SpawnManager {
     if (spawnLimitationLimiter > 0 && spawnLimiter++ >= spawnLimitationLimiter) {
       log.debug("[Spawn Limiter {}] Blocked {} event for {} in {}.", spawnLimitationLimiter,
           eventType, entity, levelName);
-      if (isFinalizeSpawn) {
-        event.setResult(Event.Result.DENY);
-      } else {
-        event.setCanceled(true);
-      }
+      cancelSpawnEvent(event);
       spawnLimiter = 0;
       return;
     }
@@ -314,11 +300,7 @@ public class SpawnManager {
         && numberOfEntities >= spawnLimitationMaxMobsPerServer) {
       log.debug("[Spawn Limitations Server: {}] Blocked {} event for {} in {}.", numberOfEntities,
           eventType, entity, levelName);
-      if (isFinalizeSpawn) {
-        event.setResult(Event.Result.DENY);
-      } else {
-        event.setCanceled(true);
-      }
+      cancelSpawnEvent(event);
       return;
     }
 
@@ -329,11 +311,7 @@ public class SpawnManager {
         && numberOfEntitiesPerWorld >= spawnLimitationMaxMobsPerWorld) {
       log.debug("[Spawn Limitations World: {}] Blocked {} event for {} in {}.",
           numberOfEntitiesPerWorld, eventType, entity, levelName);
-      if (isFinalizeSpawn) {
-        event.setResult(Event.Result.DENY);
-      } else {
-        event.setCanceled(true);
-      }
+      cancelSpawnEvent(event);
       return;
     }
 
@@ -347,7 +325,7 @@ public class SpawnManager {
           && numberOfEntitiesInsideViewArea >= spawnLimitationMaxMobsPerPlayer) {
         log.debug("[Spawn Limitations Player: {}] Blocked spawn event for {} in {}.",
             numberOfEntitiesInsideViewArea, entity, levelName);
-        event.setResult(Event.Result.DENY);
+        cancelSpawnEvent(event);
         return;
       }
     }
@@ -376,11 +354,7 @@ public class SpawnManager {
           && numberOfEntitiesPerWorld >= limitPerWorld * spawnFactor) {
         log.debug("[World limit] Blocked {} event for {} ({} >= {} * {}f) in {}", eventType,
             entityName, numberOfEntitiesPerWorld, limitPerWorld, spawnFactor, levelName);
-        if (isFinalizeSpawn) {
-          event.setResult(Event.Result.DENY);
-        } else {
-          event.setCanceled(true);
-        }
+        cancelSpawnEvent(event);
         return;
       }
 
@@ -393,7 +367,7 @@ public class SpawnManager {
             "[High Server Load] Blocked spawn event for {} ({} >= {}m * {}m * {}p * {}f) in {}",
             entityName, numberOfEntitiesPerWorld, limitPerPlayer, numOfPlayersInsideViewArea,
             spawnFactor, levelName);
-        event.setResult(Event.Result.DENY);
+        cancelSpawnEvent(event);
         return;
       }
 
@@ -404,7 +378,7 @@ public class SpawnManager {
         log.debug("[View Area Limit] Blocked spawn event for {} ({} >= {}l * {}p * {}f) in {}",
             entityName, numberOfEntitiesInsideViewArea, limitPerPlayer, numOfPlayersInsideViewArea,
             spawnFactor, levelName);
-        event.setResult(Event.Result.DENY);
+        cancelSpawnEvent(event);
         return;
       }
     }
@@ -423,6 +397,18 @@ public class SpawnManager {
 
     // Cache result for avoid duplicated checks.
     lastAllowedSpawnEntity = entity;
+  }
+
+  // Cancel spawn event.
+  private static void cancelSpawnEvent(EntityEvent event) {
+    if (event instanceof FinalizeSpawn finalizeSpawnEvent) {
+      event.setCanceled(true);
+      finalizeSpawnEvent.setSpawnCancelled(true);
+      lastBlockedSpawnEntity = event.getEntity();
+    } else if (event instanceof EntityJoinLevelEvent) {
+      event.setCanceled(true);
+      lastBlockedSpawnEntity = event.getEntity();
+    }
   }
 
 }

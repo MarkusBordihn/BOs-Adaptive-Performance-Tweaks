@@ -64,6 +64,7 @@ public class SpawnerManager {
     }
   }
 
+  // This event is cancellable and does not have a result.
   @SubscribeEvent(priority = EventPriority.NORMAL)
   public static void handleFinalizeSpawnEvent(FinalizeSpawn event) {
 
