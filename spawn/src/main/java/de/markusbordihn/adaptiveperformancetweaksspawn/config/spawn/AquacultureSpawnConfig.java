@@ -72,6 +72,7 @@ public final class AquacultureSpawnConfig {
 
     public final ForgeConfigSpec.IntValue fishPerPlayer;
     public final ForgeConfigSpec.IntValue fishPerWorld;
+    public final ForgeConfigSpec.IntValue fishPerServer;
     public final ForgeConfigSpec.ConfigValue<List<String>> fishList;
 
     Config(ForgeConfigSpec.Builder builder) {
@@ -82,6 +83,7 @@ public final class AquacultureSpawnConfig {
       id = builder.define("Id", CoreConstants.AQUACULTURE_MOD);
       fishPerPlayer = builder.defineInRange("MaxFishPerPlayer", 4, 1, 64);
       fishPerWorld = builder.defineInRange("MaxFishPerWorld", 16, 1, 512);
+      fishPerServer = builder.defineInRange("MaxFishPerServer", 320, 1, 1024);
       fishList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS).define("FishList",
           new ArrayList<String>(Arrays.asList(
           // @formatter:off

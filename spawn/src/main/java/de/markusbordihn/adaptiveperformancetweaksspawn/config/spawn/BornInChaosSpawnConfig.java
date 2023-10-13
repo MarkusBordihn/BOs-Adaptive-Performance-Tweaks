@@ -72,6 +72,7 @@ public final class BornInChaosSpawnConfig {
 
     public final ForgeConfigSpec.IntValue hostileMobsPerPlayer;
     public final ForgeConfigSpec.IntValue hostileMobsPerWorld;
+    public final ForgeConfigSpec.IntValue hostileMobsPerServer;
     public final ForgeConfigSpec.ConfigValue<List<String>> hostileMobsList;
 
     Config(ForgeConfigSpec.Builder builder) {
@@ -84,6 +85,7 @@ public final class BornInChaosSpawnConfig {
       hostileMobsPerPlayer = builder.comment("e.g. mobs which will always attack yon ...")
           .defineInRange("HostileMobsPerPlayer", 16, 1, 64);
       hostileMobsPerWorld = builder.defineInRange("HostileMobsPerWorld", 32, 1, 512);
+      hostileMobsPerServer = builder.defineInRange("HostileMobsPerServer", 320, 1, 1024);
       hostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
           .define("HostileMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
