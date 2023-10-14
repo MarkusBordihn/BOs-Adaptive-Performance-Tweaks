@@ -10,6 +10,7 @@ For the full changelog, please go to the [Git Hub History][history] instead.
 - Added individual world limits for the spawn module.
 - Improved debug output for the spawn module to show the current numbers of entities and the corresponding limits.
 - Smaller performance improvements.
+- Fixed Pillager over-spawning issue for outposts.
 
 ### 2023.06.13
 

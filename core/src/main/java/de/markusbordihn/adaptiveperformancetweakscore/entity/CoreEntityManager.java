@@ -51,7 +51,6 @@ import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.ElderGuardian;
-import net.minecraft.world.entity.monster.PatrollingMonster;
 import net.minecraft.world.entity.npc.Npc;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.EvokerFangs;
@@ -403,15 +402,14 @@ public class CoreEntityManager {
         || entity instanceof ItemEntity || entity instanceof LightningBolt
         || entity instanceof FallingBlockEntity || entity instanceof Projectile
         || entity instanceof EvokerFangs || entity instanceof EyeOfEnder
-        || entity instanceof PatrollingMonster || entity instanceof MinecartChest
-        || entity instanceof AbstractMinecart || entity instanceof Player || entity instanceof Boat
-        || entity instanceof ArmorStand || entity instanceof AreaEffectCloud
-        || entity instanceof EndCrystal || entity instanceof Marker
-        || entity instanceof HangingEntity || entity instanceof Npc || entity instanceof Raider
+        || entity instanceof MinecartChest || entity instanceof AbstractMinecart
+        || entity instanceof Player || entity instanceof Boat || entity instanceof ArmorStand
+        || entity instanceof AreaEffectCloud || entity instanceof EndCrystal
+        || entity instanceof Marker || entity instanceof HangingEntity || entity instanceof Npc
         || entity instanceof EnderDragon || entity instanceof EnderDragonPart
         || entity instanceof WitherBoss || entity instanceof ElderGuardian || entity.isSpectator()
         || entity.isInvisible() || entity.isInvulnerable() || entity.isVehicle()
-        || entity.isPassenger()
+        || entity.isPassenger() || (entity instanceof Raider raider && raider.hasActiveRaid())
         || (entity instanceof TamableAnimal tamableAnimal
             && (tamableAnimal.getOwner() != null || tamableAnimal.getOwnerUUID() != null))
         || (entity instanceof Mob mob && mob.isLeashed())
