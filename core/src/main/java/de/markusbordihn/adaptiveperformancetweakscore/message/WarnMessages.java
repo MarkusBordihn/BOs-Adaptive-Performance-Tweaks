@@ -49,7 +49,9 @@ public class WarnMessages {
   public static String debugLogLevelWarning(String loggerName, String level) {
     return String.format(
         "⚠ The log level for %s is set to %s, this will log all debug information and will cause performance issues."
-            + " This is expected on an developer environment or for testing but not on a production environment!",
+            + " This is expected in a developer environment or during large-scale troubleshooting."
+            + " However, rest assured, to mitigate performance concerns, the debug mode for this module has been automatically adjusted to an info level!"
+            + " If you require debug information, simply use the /aptweaks debug <module> command to re-enable debug mode.",
         loggerName, level);
   }
 
