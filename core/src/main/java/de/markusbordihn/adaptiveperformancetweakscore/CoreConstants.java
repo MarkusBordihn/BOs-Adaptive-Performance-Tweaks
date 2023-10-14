@@ -242,6 +242,11 @@ public final class CoreConstants {
   public static final boolean VIESCRAFT_MACHINES_LOADED =
       ModList.get().isLoaded(VIESCRAFT_MACHINES_MOD);
 
+  public static final String WEATHER_STORMS_TORNADOES_MOD = "weather2";
+  public static final String WEATHER_STORMS_TORNADOES_NAME = "Weather, Storms & Tornadoes";
+  public static final boolean WEATHER_STORMS_TORNADOES_LOADED =
+      ModList.get().isLoaded(WEATHER_STORMS_TORNADOES_MOD);
+
   public static final String WHISPERWOODS_MOD = "whisperwoods";
   public static final String WHISPERWOODS_NAME = "Whisperwoods";
   public static final boolean WHISPERWOODS_LOADED = ModList.get().isLoaded(WHISPERWOODS_MOD);

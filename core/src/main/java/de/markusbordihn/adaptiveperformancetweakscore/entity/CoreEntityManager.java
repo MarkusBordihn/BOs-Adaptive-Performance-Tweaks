@@ -138,7 +138,9 @@ public class CoreEntityManager {
       // Only if debug is enabled we wan't to know more about the details.
       if (log.isDebugEnabled()) {
         if ((CoreConstants.ADHOOKS_LOADED && entityType.startsWith("entity.adhooks."))
-            || (CoreConstants.COFH_CORE_LOADED && entityType.startsWith("entity.cofh_core."))) {
+            || (CoreConstants.COFH_CORE_LOADED && entityType.startsWith("entity.cofh_core."))
+            || (CoreConstants.WEATHER_STORMS_TORNADOES_LOADED
+                && entityType.startsWith("entity.weather2."))) {
           log.debug("Ignore modded entity {} in {}", entity, levelName);
         } else if (CoreConstants.MANA_AND_ARTIFICE_LOADED
             && entityType.startsWith("entity.mana-and-artifice.")) {
@@ -478,6 +480,8 @@ public class CoreEntityManager {
             && entityName.startsWith(CoreConstants.ULTIMATE_CAR_MOD))
         || (CoreConstants.VIESCRAFT_MACHINES_LOADED
             && entityName.startsWith(CoreConstants.VIESCRAFT_MACHINES_MOD))
+        || (CoreConstants.WEATHER_STORMS_TORNADOES_LOADED
+            && entityName.startsWith(CoreConstants.WEATHER_STORMS_TORNADOES_MOD))
         || (CoreConstants.XNET_LOADED && entityName.startsWith(CoreConstants.XNET_MOD))) {
       return false;
     }
