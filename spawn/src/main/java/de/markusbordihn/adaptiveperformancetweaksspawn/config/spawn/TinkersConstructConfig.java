@@ -72,6 +72,7 @@ public final class TinkersConstructConfig {
 
     public final ForgeConfigSpec.IntValue hostileMobsPerPlayer;
     public final ForgeConfigSpec.IntValue hostileMobsPerWorld;
+    public final ForgeConfigSpec.IntValue hostileMobsPerServer;
     public final ForgeConfigSpec.ConfigValue<List<String>> hostileMobsList;
 
     Config(ForgeConfigSpec.Builder builder) {
@@ -83,6 +84,7 @@ public final class TinkersConstructConfig {
 
       hostileMobsPerPlayer = builder.defineInRange("MaxHostileMobsPerPlayer", 6, 1, 64);
       hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 24, 1, 512);
+      hostileMobsPerServer = builder.defineInRange("MaxHostileMobsPerServer", 320, 1, 1024);
       hostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
           .define("HostileMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off

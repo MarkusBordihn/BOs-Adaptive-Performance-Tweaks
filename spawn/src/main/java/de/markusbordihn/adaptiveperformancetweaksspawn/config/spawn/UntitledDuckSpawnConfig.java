@@ -72,10 +72,12 @@ public final class UntitledDuckSpawnConfig {
 
     public final ForgeConfigSpec.IntValue passiveMobsPerPlayer;
     public final ForgeConfigSpec.IntValue passiveMobsPerWorld;
+    public final ForgeConfigSpec.IntValue passiveMobsPerServer;
     public final ForgeConfigSpec.ConfigValue<List<String>> passiveMobsList;
 
     public final ForgeConfigSpec.IntValue neutralMobsPerPlayer;
     public final ForgeConfigSpec.IntValue neutralMobsPerWorld;
+    public final ForgeConfigSpec.IntValue neutralMobsPerServer;
     public final ForgeConfigSpec.ConfigValue<List<String>> neutralMobsList;
 
     Config(ForgeConfigSpec.Builder builder) {
@@ -87,6 +89,7 @@ public final class UntitledDuckSpawnConfig {
 
       passiveMobsPerPlayer = builder.defineInRange("MaxPassiveMobsPerPlayer", 16, 1, 64);
       passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 32, 1, 512);
+      passiveMobsPerServer = builder.defineInRange("MaxPassiveMobsPerServer", 320, 1, 1024);
       passiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
           .define("PassiveMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
@@ -96,6 +99,7 @@ public final class UntitledDuckSpawnConfig {
 
       neutralMobsPerPlayer = builder.defineInRange("MaxNeutralMobsPerPlayer", 8, 1, 64);
       neutralMobsPerWorld = builder.defineInRange("MaxNeutralMobsPerWorld", 32, 1, 512);
+      neutralMobsPerServer = builder.defineInRange("MaxNeutralMobsPerServer", 320, 1, 1024);
       neutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
           .define("NeutralMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off

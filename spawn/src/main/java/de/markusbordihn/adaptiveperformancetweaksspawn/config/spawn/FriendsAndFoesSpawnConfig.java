@@ -72,6 +72,8 @@ public final class FriendsAndFoesSpawnConfig {
 
     public final ForgeConfigSpec.IntValue passiveMobsPerPlayer;
     public final ForgeConfigSpec.IntValue passiveMobsPerWorld;
+    public final ForgeConfigSpec.IntValue passiveMobsPerServer;
+
     public final ForgeConfigSpec.ConfigValue<List<String>> passiveMobsList;
 
     Config(ForgeConfigSpec.Builder builder) {
@@ -83,6 +85,7 @@ public final class FriendsAndFoesSpawnConfig {
 
       passiveMobsPerPlayer = builder.defineInRange("MaxPassiveMobsPerPlayer", 8, 1, 64);
       passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 64, 1, 512);
+      passiveMobsPerServer = builder.defineInRange("MaxPassiveMobsPerServer", 320, 1, 1024);
       passiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
           .define("PassiveMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
