@@ -22,10 +22,7 @@ package de.markusbordihn.minecraft.adaptiveperformancetweaksmods;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import net.minecraftforge.fml.IExtensionPoint;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.NetworkConstants;
 
 import de.markusbordihn.adaptiveperformancetweakscore.debug.DebugManager;
 
@@ -35,11 +32,6 @@ public class AdaptivePerformanceTweaksMods {
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   public AdaptivePerformanceTweaksMods() {
-    // Make sure the mod being absent on the other network side does not cause the client to display
-    // the server as incompatible
-    ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class,
-        () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY,
-            (a, b) -> true));
 
     // Warn if debugging is enabled and automatically disable debug on prod for performance reasons.
     DebugManager.checkForDebugLogging(Constants.LOG_NAME);

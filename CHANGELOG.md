@@ -5,6 +5,10 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2023.10.15
+
+- Refactored code for version 1.20.2-48.0.30
+
 ### 2023.10.13
 
 - Added individual server limits for the spawn module.

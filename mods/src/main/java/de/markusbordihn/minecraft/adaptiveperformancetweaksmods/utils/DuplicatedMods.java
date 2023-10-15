@@ -157,8 +157,8 @@ public class DuplicatedMods {
   }
 
   public static String getVersionNumber(String fileName) {
-    return fileName.replace("1.20.1.jar", "").replace("mc1.20.1", "").replace("[1.20.1]", "")
-        .replaceAll("[^0-9.-]", "").replace("1.20.1-", "").replace("-1.20.1", "")
+    return fileName.replace("1.20.2.jar", "").replace("mc1.20.2", "").replace("[1.20.2]", "")
+        .replaceAll("[^0-9.-]", "").replace("1.20.2-", "").replace("-1.20.2", "")
         .replaceAll("(\\d)-(\\d)", "$1.$2").replace("-", "").replaceAll("\\.$", "")
         .replaceAll("^\\.", "");
   }

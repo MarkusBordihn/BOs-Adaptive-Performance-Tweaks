@@ -7,7 +7,7 @@
 modLoader="javafml" #mandatory
 
 # A version range to match for said mod loader - for regular FML @Mod it will be the forge version
-loaderVersion="[47,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
+loaderVersion="[48,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
 
 # The license for you mod. This is mandatory metadata and allows for easier comprehension of your redistributive properties.
 # Review your options at https://choosealicense.com/. All rights reserved is the default copyright stance, and is thus the default here.
@@ -21,6 +21,7 @@ license="MIT"
   version="${file.jarVersion}"
   displayName="APTweaks: Core"
   displayURL="https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core/"
+  displayTest="IGNORE_SERVER_VERSION"
   logoFile="logo.png"
   credits=""
   authors="Markus Bordihn"
@@ -29,13 +30,13 @@ license="MIT"
 [[dependencies.adaptive_performance_tweaks_core]]
   modId="forge"
   mandatory=true
-  versionRange="[47,)"
+  versionRange="[48,)"
   ordering="NONE"
   side="BOTH"
 
 [[dependencies.adaptive_performance_tweaks_core]]
   modId="minecraft"
   mandatory=true
-  versionRange="[1.20.1,1.21)"
+  versionRange="[1.20.2,1.21)"
   ordering="NONE"
   side="BOTH"
