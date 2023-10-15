@@ -71,14 +71,17 @@ public final class NetherSpawnConfig {
 
     public final ForgeConfigSpec.IntValue passiveMobsPerPlayer;
     public final ForgeConfigSpec.IntValue passiveMobsPerWorld;
+    public final ForgeConfigSpec.IntValue passiveMobsPerServer;
     public final ForgeConfigSpec.ConfigValue<List<String>> passiveMobsList;
 
     public final ForgeConfigSpec.IntValue neutralMobsPerPlayer;
     public final ForgeConfigSpec.IntValue neutralMobsPerWorld;
+    public final ForgeConfigSpec.IntValue neutralMobsPerServer;
     public final ForgeConfigSpec.ConfigValue<List<String>> neutralMobsList;
 
     public final ForgeConfigSpec.IntValue hostileMobsPerPlayer;
     public final ForgeConfigSpec.IntValue hostileMobsPerWorld;
+    public final ForgeConfigSpec.IntValue hostileMobsPerServer;
     public final ForgeConfigSpec.ConfigValue<List<String>> hostileMobsList;
 
     Config(ForgeConfigSpec.Builder builder) {
@@ -91,6 +94,7 @@ public final class NetherSpawnConfig {
       passiveMobsPerPlayer = builder.comment("e.g. mobs which will not attack you")
           .defineInRange("MaxPassiveMobsPerPlayer", 16, 1, 64);
       passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 32, 1, 512);
+      passiveMobsPerServer = builder.defineInRange("MaxPassiveMobsPerServer", 320, 1, 1024);
       passiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
           .define("PassiveMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
@@ -102,6 +106,7 @@ public final class NetherSpawnConfig {
           builder.comment("e.g. mobs which will attack under certain conditions ...")
               .defineInRange("MaxNeutralMobsPerPlayer", 16, 1, 64);
       neutralMobsPerWorld = builder.defineInRange("MaxNeutralMobsPerWorld", 32, 1, 512);
+      neutralMobsPerServer = builder.defineInRange("MaxNeutralMobsPerServer", 320, 1, 1024);
       neutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
           .define("NeutralMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
@@ -112,6 +117,7 @@ public final class NetherSpawnConfig {
       hostileMobsPerPlayer = builder.comment("e.g. mobs which will always attack yon ...")
           .defineInRange("MaxHostileMobsPerPlayer", 16, 1, 64);
       hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 32, 1, 512);
+      hostileMobsPerServer = builder.defineInRange("MaxHostileMobsPerServer", 320, 1, 1024);
       hostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
           .define("HostileMobsList", new ArrayList<String>(Arrays.asList(
           // @formatter:off
