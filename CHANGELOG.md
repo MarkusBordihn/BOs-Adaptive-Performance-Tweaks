@@ -5,6 +5,13 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2023.10.13
+
+- Added individual server limits for the spawn module.
+- Improved debug output for the spawn module to show the current numbers of entities and the corresponding limits.
+- Smaller performance improvements.
+- Fixed Pillager over-spawning issue for outposts.
+
 ### 2023.07.14
 
 - Improved spawn module and added additional checks for better compatibility with other mods.
