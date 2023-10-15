@@ -90,8 +90,9 @@ public final class CommonConfig {
           .define("denyList", new ArrayList<String>(Arrays.asList("")));
       spawnIgnoreDimensionList = builder.comment("General list of ignored dimensions.").define(
           "spawnIgnoreDimensionList", new ArrayList<String>(Arrays.asList("minecraft:the_end")));
-      spawnAggressiveMode = builder.comment("Enable/Disable more aggressive spawn limitations.")
-          .define("spawnAggressiveMode", false);
+      spawnAggressiveMode =
+          builder.comment("Enable/Disable more aggressive and strict spawn limitations.")
+              .define("spawnAggressiveMode", false);
       builder.pop();
 
       builder.push("View Area");

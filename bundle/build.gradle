@@ -124,20 +124,20 @@ dependencies {
   minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
 
   // Required: Bo's Adaptive Performance Tweaks: Core (dev dependency)
-  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:9.1.0")
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:9.1.0")
+  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:10.0.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:10.0.0")
 
   // Required: Bo's Adaptive Performance Tweaks: Gamerules (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksgamerules:gamerules:9.1.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksgamerules:gamerules:10.0.0")
 
   // Required: Bo's Adaptive Performance Tweaks: Items (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksitems:items:9.1.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksitems:items:10.0.0")
 
   // Required: Bo's Adaptive Performance Tweaks: Player (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksplayer:player:9.1.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksplayer:player:10.0.0")
 
   // Required: Bo's Adaptive Performance Tweaks: Spawn (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksspawn:spawn:9.1.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksspawn:spawn:10.0.0")
 
   // Additional helpful Mods for development (runtime depenedency)
    runtimeOnly fg.deobf("curse.maven:xaeros_minimap-263420:4593190")

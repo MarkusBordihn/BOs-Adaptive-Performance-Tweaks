@@ -49,7 +49,6 @@ import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.ElderGuardian;
-import net.minecraft.world.entity.monster.PatrollingMonster;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.npc.Npc;
 import net.minecraft.world.entity.player.Player;
@@ -137,7 +136,9 @@ public class CoreEntityManager {
       // Only if debug is enabled we wan't to know more about the details.
       if (log.isDebugEnabled()) {
         if ((CoreConstants.ADHOOKS_LOADED && entityType.startsWith("entity.adhooks."))
-            || (CoreConstants.COFH_CORE_LOADED && entityType.startsWith("entity.cofh_core."))) {
+            || (CoreConstants.COFH_CORE_LOADED && entityType.startsWith("entity.cofh_core."))
+            || (CoreConstants.WEATHER_STORMS_TORNADOES_LOADED
+                && entityType.startsWith("entity.weather2."))) {
           log.debug("Ignore modded entity {} in {}", entity, levelName);
         } else if (CoreConstants.MANA_AND_ARTIFICE_LOADED
             && entityType.startsWith("entity.mana-and-artifice.")) {
@@ -378,15 +379,15 @@ public class CoreEntityManager {
         || entity instanceof ItemEntity || entity instanceof LightningBolt
         || entity instanceof FallingBlockEntity || entity instanceof Projectile
         || entity instanceof EvokerFangs || entity instanceof EyeOfEnder
-        || entity instanceof PatrollingMonster || entity instanceof MinecartChest
-        || entity instanceof AbstractMinecart || entity instanceof Player || entity instanceof Boat
-        || entity instanceof ArmorStand || entity instanceof AreaEffectCloud
-        || entity instanceof EndCrystal || entity instanceof Marker
-        || entity instanceof HangingEntity || entity instanceof Npc || entity instanceof Raider
+        || entity instanceof MinecartChest || entity instanceof AbstractMinecart
+        || entity instanceof Player || entity instanceof Boat || entity instanceof ArmorStand
+        || entity instanceof AreaEffectCloud || entity instanceof EndCrystal
+        || entity instanceof Marker || entity instanceof HangingEntity || entity instanceof Npc
         || entity instanceof EnderDragon || entity instanceof EnderDragonPart
         || entity instanceof Warden || entity instanceof WitherBoss
         || entity instanceof ElderGuardian || entity.isSpectator() || entity.isInvisible()
         || entity.isInvulnerable() || entity.isVehicle() || entity.isPassenger()
+        || (entity instanceof Raider raider && raider.hasActiveRaid())
         || (entity instanceof TamableAnimal tamableAnimal
             && (tamableAnimal.getOwner() != null || tamableAnimal.getOwnerUUID() != null))
         || (entity instanceof Mob mob && mob.isLeashed())
@@ -455,6 +456,8 @@ public class CoreEntityManager {
             && entityName.startsWith(CoreConstants.ULTIMATE_CAR_MOD))
         || (CoreConstants.VIESCRAFT_MACHINES_LOADED
             && entityName.startsWith(CoreConstants.VIESCRAFT_MACHINES_MOD))
+        || (CoreConstants.WEATHER_STORMS_TORNADOES_LOADED
+            && entityName.startsWith(CoreConstants.WEATHER_STORMS_TORNADOES_MOD))
         || (CoreConstants.XNET_LOADED && entityName.startsWith(CoreConstants.XNET_MOD))) {
       return false;
     }
