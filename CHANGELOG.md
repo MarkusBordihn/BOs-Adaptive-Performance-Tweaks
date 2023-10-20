@@ -5,6 +5,10 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2023.10.20
+
+- Fixed wrong view area calculation for `The End` and `The Nether` dimensions. #55
+
 ### 2023.10.13
 
 - Added individual world limits for the spawn module.
