@@ -195,31 +195,32 @@ public class PlayerPosition {
       }
 
       // Player is underground and underwater
-      else if (this.isUnderWater) {
+      else if (this.isUnderWater && this.posY < WATER_Y_MAX_VIEW) {
         this.viewAreaStopY = WATER_Y_MAX_VIEW;
       }
     }
 
     // Additional optimization for the Nether to expand the view area in the X and Z direction.
     // This makes sure that the player is able to see the full view distance in the Nether.
-    if (isNether) {
-      this.viewAreaStartX = Math.round(this.viewAreaStartX * NETHER_EXPAND_FACTOR);
-      this.viewAreaStopX = Math.round(this.viewAreaStopX * NETHER_EXPAND_FACTOR);
+    else if (isNether) {
+      int netherViewAreaDistance = Math.round(this.viewAreaDistance * NETHER_EXPAND_FACTOR);
+      this.viewAreaStartX = this.viewAreaStartX - netherViewAreaDistance;
+      this.viewAreaStopX = this.viewAreaStopX + netherViewAreaDistance;
       this.viewAreaStopY = Math.min(this.viewAreaStopY, MAX_BUILD_HEIGHT_NETHER);
-      this.viewAreaStartZ = Math.round(this.viewAreaStartZ * NETHER_EXPAND_FACTOR);
-      this.viewAreaStopZ = Math.round(this.viewAreaStopZ * NETHER_EXPAND_FACTOR);
+      this.viewAreaStartZ = this.viewAreaStartZ - netherViewAreaDistance;
+      this.viewAreaStopZ = this.viewAreaStopZ + netherViewAreaDistance;
     }
 
     // Additional optimization for the End to expand the view area in the X and Z direction.
     // This makes sure that the player is able to see the full view distance to fly in the End.
-    if (isTheEnd) {
-      this.viewAreaStartX = Math.round(this.viewAreaStartX * THE_END_EXPAND_FACTOR);
-      this.viewAreaStopX = Math.round(this.viewAreaStopX * THE_END_EXPAND_FACTOR);
-      this.viewAreaStartY = Math.round(this.viewAreaStartY * THE_END_EXPAND_FACTOR);
-      this.viewAreaStopY = Math.min(Math.round(this.viewAreaStopY * THE_END_EXPAND_FACTOR),
-          MAX_BUILD_HEIGHT_THE_END);
-      this.viewAreaStartZ = Math.round(this.viewAreaStartZ * THE_END_EXPAND_FACTOR);
-      this.viewAreaStopZ = Math.round(this.viewAreaStopZ * THE_END_EXPAND_FACTOR);
+    else if (isTheEnd) {
+      int theEndViewAreaDistance = Math.round(this.viewAreaDistance * THE_END_EXPAND_FACTOR);
+      this.viewAreaStartX = this.viewAreaStartX - theEndViewAreaDistance;
+      this.viewAreaStopX = this.viewAreaStopX + theEndViewAreaDistance;
+      this.viewAreaStopY =
+          Math.min(this.viewAreaStopY + theEndViewAreaDistance, MAX_BUILD_HEIGHT_THE_END);
+      this.viewAreaStartZ = this.viewAreaStartZ - theEndViewAreaDistance;
+      this.viewAreaStopZ = this.viewAreaStopZ + theEndViewAreaDistance;
     }
 
     this.viewAreaCalculated = true;
