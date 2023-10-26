@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.AreaEffectCloud;
@@ -83,17 +84,23 @@ public class CoreEntityManager {
   private static final short VERIFICATION_TICK = 25 * 20;
   private static final String ENTITY_OWNER_TAG = "Owner";
 
-  // Entity map to store all entities per world and global.
+  // Entity map to store all entities, per chunk, per world and global.
   private static ConcurrentHashMap<String, Set<Entity>> entityMap = new ConcurrentHashMap<>();
+  private static ConcurrentHashMap<String, Set<Entity>> entityMapPerChunk =
+      new ConcurrentHashMap<>();
   private static ConcurrentHashMap<String, Set<Entity>> entityMapPerWorld =
       new ConcurrentHashMap<>();
   private static ConcurrentHashMap<String, Set<Entity>> entityMapGlobal = new ConcurrentHashMap<>();
+
+  // Entity Chunk Map to determine if any mob was spawned in a specific chunk.
+  private static ConcurrentHashMap<String, Boolean> entityChunkMap = new ConcurrentHashMap<>();
 
   protected CoreEntityManager() {}
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
     entityMap = new ConcurrentHashMap<>();
+    entityMapPerChunk = new ConcurrentHashMap<>();
     entityMapPerWorld = new ConcurrentHashMap<>();
     entityMapGlobal = new ConcurrentHashMap<>();
   }
@@ -139,20 +146,21 @@ public class CoreEntityManager {
             || (CoreConstants.COFH_CORE_LOADED && entityType.startsWith("entity.cofh_core."))
             || (CoreConstants.WEATHER_STORMS_TORNADOES_LOADED
                 && entityType.startsWith("entity.weather2."))) {
-          log.debug("Ignore modded entity {} in {}", entity, levelName);
+          log.debug("[Entity Manager] Ignore modded entity {} in {}", entity, levelName);
         } else if (CoreConstants.MANA_AND_ARTIFICE_LOADED
             && entityType.startsWith("entity.mana-and-artifice.")) {
-          log.debug("Ignore {} entity {} in {}", CoreConstants.MANA_AND_ARTIFICE_NAME, entity,
-              levelName);
+          log.debug("[Entity Manager] Ignore {} entity {} in {}",
+              CoreConstants.MANA_AND_ARTIFICE_NAME, entity, levelName);
         } else if (entity.isMultipartEntity() || entityType.contains("body_part")) {
-          log.debug("Ignore multipart entity {} in {}.", entity, levelName);
+          log.debug("[Entity Manager] Ignore multipart entity {} in {}.", entity, levelName);
         } else if (entity.hasCustomName()) {
           Component component = entity.getCustomName();
-          log.debug("Unknown entity name for entity {} ({}) with custom name {} in {}.", entity,
-              entityType, component != null ? component.getString() : "", levelName);
+          log.debug(
+              "[Entity Manager] Unknown entity name for entity {} ({}) with custom name {} in {}.",
+              entity, entityType, component != null ? component.getString() : "", levelName);
         } else {
           log.warn(
-              "Unknown entity name for entity {} ({}) in {}. Please report this issue under {}!",
+              "[Entity Manager] Unknown entity name for entity {} ({}) in {}. Please report this issue under {}!",
               entity, entityType, levelName, CoreConstants.ISSUE_REPORT);
         }
       }
@@ -222,6 +230,12 @@ public class CoreEntityManager {
         key -> ConcurrentHashMap.newKeySet());
     entities.add(entity);
 
+    // Store entities per chunk and world.
+    String entityChunkKey = getEntityChunkKey(levelName, entity.blockPosition());
+    Set<Entity> entitiesPerChunk =
+        entityMapPerChunk.computeIfAbsent(entityChunkKey, key -> ConcurrentHashMap.newKeySet());
+    entitiesPerChunk.add(entity);
+
     // Store entities per world.
     Set<Entity> entitiesPerWorld =
         entityMapPerWorld.computeIfAbsent(levelName, key -> ConcurrentHashMap.newKeySet());
@@ -231,6 +245,9 @@ public class CoreEntityManager {
     Set<Entity> entitiesGlobal =
         entityMapGlobal.computeIfAbsent(entityName, key -> ConcurrentHashMap.newKeySet());
     entitiesGlobal.add(entity);
+
+    // Update entity chunk map.
+    entityChunkMap.put(entityChunkKey, true);
 
     log.debug("[Joined] Entity {} ({}) joined {}.", entityName, entity, levelName);
   }
@@ -249,6 +266,13 @@ public class CoreEntityManager {
       entities.remove(entity);
     }
 
+    // Remove entity from per chunk and world map.
+    Set<Entity> entitiesPerChunk =
+        entityMapPerChunk.get(getEntityChunkKey(levelName, entity.blockPosition()));
+    if (entitiesPerChunk != null) {
+      entitiesPerChunk.remove(entity);
+    }
+
     // Remove entity from per world map
     Set<Entity> entitiesPerWorld = entityMapPerWorld.get(levelName);
     if (entitiesPerWorld != null) {
@@ -261,6 +285,9 @@ public class CoreEntityManager {
       entitiesGlobal.remove(entity);
     }
 
+    // Entity chunk map will not be updated here, because we want to keep the chunk in the map to
+    // determine if any mob was spawned in a specific chunk over time.
+
     log.debug("[Left] Entity {} ({}) leaved {}.", entityName, entity, levelName);
   }
 
@@ -268,8 +295,20 @@ public class CoreEntityManager {
     return '[' + levelName + ']' + entityName;
   }
 
+  public static String getEntityChunkKey(String levelName, BlockPos blockPos) {
+    return '[' + levelName + ':' + (blockPos.getX() >> 4) + 'x' + (blockPos.getZ() >> 4) + ']';
+  }
+
   public static Map<String, Set<Entity>> getEntities() {
     return entityMap;
+  }
+
+  public static Map<String, Set<Entity>> getEntitiesPerChunk() {
+    return entityMapPerChunk;
+  }
+
+  public static Map<String, Set<Entity>> getEntitiesPerWorld() {
+    return entityMapPerWorld;
   }
 
   public static Map<String, Set<Entity>> getEntitiesGlobal() {
@@ -294,6 +333,14 @@ public class CoreEntityManager {
 
   public static Integer getNumberOfEntities(String levelName, String entityName) {
     Set<Entity> entities = entityMap.get(getEntityMapKey(levelName, entityName));
+    if (entities == null) {
+      return 0;
+    }
+    return entities.size();
+  }
+
+  public static Integer getNumberOfEntitiesPerChunk(String levelName, BlockPos blockPos) {
+    Set<Entity> entities = entityMapPerChunk.get(getEntityChunkKey(levelName, blockPos));
     if (entities == null) {
       return 0;
     }
@@ -338,20 +385,34 @@ public class CoreEntityManager {
     return counter;
   }
 
+  public static boolean hasEntitySpawnedInChunk(String levelName, BlockPos blockPos) {
+    return entityChunkMap.getOrDefault(getEntityChunkKey(levelName, blockPos), false);
+  }
+
   private static void verifyEntities() {
     int removedEntries = 0;
+    int removedChunkEntries = 0;
+    int removedWorldEntries = 0;
+    int removedGlobalEntries = 0;
 
     // Verify Entities in overall overview
     removedEntries += removeDiscardedEntities(entityMap);
 
+    // Verify Entities from chunk specific overview
+    removedChunkEntries += removeDiscardedEntities(entityMapPerChunk);
+
     // Verify Entities from world specific overview
-    removedEntries += removeDiscardedEntities(entityMapPerWorld);
+    removedWorldEntries += removeDiscardedEntities(entityMapPerWorld);
 
     // Verify Entities from global overview
-    removedEntries += removeDiscardedEntities(entityMapGlobal);
+    removedGlobalEntries += removeDiscardedEntities(entityMapGlobal);
 
-    if (removedEntries > 0) {
-      log.debug("🗑 Removed {} entries during the verification ", removedEntries);
+    if (removedEntries > 0 || removedChunkEntries > 0 || removedWorldEntries > 0
+        || removedGlobalEntries > 0) {
+      log.debug(
+          "[Entity Manager] 🗑 Removed {} entities from overview, {} from chunk overview, {} from world "
+              + "overview and {} from global overview.",
+          removedEntries, removedChunkEntries, removedWorldEntries, removedGlobalEntries);
     }
   }
 
