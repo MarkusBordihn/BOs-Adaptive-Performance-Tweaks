@@ -27,6 +27,7 @@ barakoana
 barakoaya
 battlegills
 bayad
+behaviour
 bigcat
 biggerreactors
 blindsight
@@ -46,10 +47,10 @@ curseforge
 cylcops
 deadhound
 deathworm
+Despawn
 dropbear
 dungeonsmod
 dynview
-Elytra
 Endergetic
 endergrade
 enderiophage
@@ -69,6 +70,7 @@ foliaath
 friendsandfoes
 frostmaw
 ftbultimine
+gameplay
 gamerule
 getittogetherdrops
 glowsilk
@@ -136,9 +138,10 @@ Pipez
 plentifins
 Pokecube
 pondies
+PREGEN
+PREGENERATOR
 pufferfish
 refinedstorage
-Reposts
 Respawn
 roka
 Savageandravage
@@ -179,6 +182,7 @@ untamedwilds
 untitledduckmod
 VIESCRAFT
 viescraftmachines
+viewarea
 voidmaster
 voline
 warg
