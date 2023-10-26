@@ -128,7 +128,12 @@ dependencies {
   minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
 
   // Additional helpful Mods for development (dev depenedency)
-   runtimeOnly fg.deobf("curse.maven:xaeros_minimap-263420:4593190")
+  runtimeOnly fg.deobf("curse.maven:xaeros_minimap-263420:4593190")
+
+  // Test Framework
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+  testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+  testImplementation 'org.junit.jupiter:junit-jupiter-params:5.8.1'
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..
@@ -170,6 +175,7 @@ curseforge {
   project {
     id = "${curseforge_project_id}"
     changelog = file("../CHANGELOG.md")
+    changelogType = 'markdown'
     releaseType = "${curseforge_release_type}"
     addGameVersion("${mc_version}")
     addGameVersion("Forge")

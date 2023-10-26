@@ -50,6 +50,7 @@ public class EntityCommand extends CustomCommand {
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
     return Commands.literal("entities").requires(cs -> cs.hasPermission(2)).executes(command)
         .then(Commands.literal("overview").executes(command::overview))
+        .then(Commands.literal("overview_per_chunk").executes(command::overviewPerChunk))
         .then(Commands.literal("overview_per_level").executes(command::overviewPerLevel))
         .then(Commands.literal("registry").executes(command::registry));
   }
@@ -59,6 +60,8 @@ public class EntityCommand extends CustomCommand {
     sendFeedback(context, """
         Usage:
         /aptweaks entities overview - List of entities in the world
+        /aptweaks entities overview_per_chunk - List of entities per chunk
+        /aptweaks entities overview_per_level - List of entities per level
         /aptweaks entities registry - List of known entities from the registry""");
     return 0;
   }
@@ -73,6 +76,20 @@ public class EntityCommand extends CustomCommand {
     log.info("Entity overview: {}", entities);
     for (Map.Entry<String, Set<Entity>> entity : entities.entrySet()) {
       sendFeedback(context, String.format("%s x %s", entity.getValue().size(), entity.getKey()));
+    }
+    return 0;
+  }
+
+  public int overviewPerChunk(CommandContext<CommandSourceStack> context) {
+    Map<String, Set<Entity>> entities = CoreEntityManager.getEntitiesPerChunk();
+    if (entities.isEmpty()) {
+      sendFeedback(context, NO_ENTITIES_TEXT);
+      return 0;
+    }
+    sendFeedback(context, String.format("Entity overview (%s types)\n===", entities.size()));
+    log.info("Entity overview: {}", entities);
+    for (Map.Entry<String, Set<Entity>> entity : entities.entrySet()) {
+      sendFeedback(context, String.format("%s x %s", entity.getKey(), entity.getValue().size()));
     }
     return 0;
   }
