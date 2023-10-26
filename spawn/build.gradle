@@ -116,8 +116,8 @@ dependencies {
   minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
 
   // Required: Bo's Adaptive Performance Tweaks: Core (dev dependency)
-  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:10.0.0")
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:10.0.0")
+  compileOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:10.2.0")
+  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:10.2.0")
 
   // Testing (runtime depenedency)
   // runtimeOnly fg.deobf("curse.maven:aquaculture-60028:4307997")
@@ -166,6 +166,7 @@ curseforge {
   project {
     id = "${curseforge_project_id}"
     changelog = file("../CHANGELOG.md")
+    changelogType = 'markdown'
     releaseType = "${curseforge_release_type}"
     addGameVersion("${mc_version}")
     addGameVersion("Forge")

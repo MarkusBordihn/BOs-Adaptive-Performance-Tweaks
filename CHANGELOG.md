@@ -5,6 +5,16 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [Git Hub History][history] instead.
 
+### 2023.10.25
+
+As always make sure to create regular backups of your world!
+
+- Added `friendlyChunkSpawnRate` to avoid issues with chunk optimization by other mods.
+- Added warning message for pre-chunk generation mods to ensure that the spawn module will be disabled during the pre-chunk generation process to avoid any possible side effects with the pre-generated chunk data.
+- Added server start delay before the spawn module will be enabled to allow other mods to finish their initialization.
+- Improved view area calculation for faster and more accurate results.
+- Improved debug logging messages for better readability and easier troubleshooting.
+
 ### 2023.10.20
 
 - Fixed wrong view area calculation for `The End` and `The Nether` dimensions. #55
