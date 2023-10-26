@@ -35,6 +35,13 @@ public class WarnMessages {
         modName, reason);
   }
 
+  public static String chunkPregeneratorModWarning(String modName) {
+    return String.format("⚠ Detected a chunk pre-generator mod %s for creating new chunks!"
+        + "Please make sure to temporary disable/remove Adaptive Performance Tweaks while pre-generate new chunks with the mod %s to avoid any side effects!"
+        + "After the new chunks are pre-generated you can re-enable Adaptive Performance Tweaks again.",
+        modName, modName);
+  }
+
   public static String knownIssuesModWarning(String modName) {
     return String.format("⚠ There are known issue with the %s mod, please do not report any issue!",
         modName);
