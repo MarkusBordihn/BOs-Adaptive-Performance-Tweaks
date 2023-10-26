@@ -72,6 +72,7 @@ public final class CommonConfig {
     public final ForgeConfigSpec.BooleanValue spawnAggressiveMode;
 
     public final ForgeConfigSpec.BooleanValue viewAreaEnabled;
+    public final ForgeConfigSpec.IntValue friendlyChunkSpawnRate;
 
     public final ForgeConfigSpec.BooleanValue spawnLimitationEnabled;
     public final ForgeConfigSpec.IntValue spawnLimitationLimiter;
@@ -96,9 +97,16 @@ public final class CommonConfig {
               .define("spawnAggressiveMode", false);
       builder.pop();
 
+      builder.push("Chunk Optimization");
+      friendlyChunkSpawnRate = builder.comment(
+          "Allows to spawn at least one mob (regardless of the type) per selected chunk to avoid side effects."
+              + "A value of 9 means every 9 chunk request will be allowed. Use 0 to disable this optimization.")
+          .defineInRange("friendlyChunkSpawnRate", 9, 0, 256);
+      builder.pop();
+
       builder.push("View Area");
-      viewAreaEnabled =
-          builder.comment("Enable/Disable view area optimization.").define("viewAreaEnabled", true);
+      viewAreaEnabled = builder.comment("Enable/Disable player based view area optimization.")
+          .define("viewAreaEnabled", true);
       builder.pop();
 
       builder.push("Global Spawn Limitations");

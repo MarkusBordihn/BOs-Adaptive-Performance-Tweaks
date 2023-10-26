@@ -27,6 +27,7 @@ barakoana
 barakoaya
 battlegills
 bayad
+behaviour
 bigcat
 biggerreactors
 blindsight
@@ -68,6 +69,7 @@ foliaath
 friendsandfoes
 frostmaw
 ftbultimine
+gameplay
 gamerule
 getittogetherdrops
 glowsilk
@@ -135,6 +137,8 @@ Pipez
 plentifins
 Pokecube
 pondies
+PREGEN
+PREGENERATOR
 pufferfish
 refinedstorage
 Respawn
@@ -177,6 +181,7 @@ untamedwilds
 untitledduckmod
 VIESCRAFT
 viescraftmachines
+viewarea
 voidmaster
 voline
 warg
