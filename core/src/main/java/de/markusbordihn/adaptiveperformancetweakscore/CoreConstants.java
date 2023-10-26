@@ -84,6 +84,10 @@ public final class CoreConstants {
   public static final String CREATE_NAME = "Create";
   public static final boolean CREATE_LOADED = ModList.get().isLoaded(CREATE_MOD);
 
+  public static final String CHUNK_PREGEN_MOD = "chunkpregen";
+  public static final String CHUNK_PREGEN_NAME = "Chunk Pregenerator";
+  public static final boolean CHUNK_PREGEN_LOADED = ModList.get().isLoaded(CHUNK_PREGEN_MOD);
+
   public static final String DYNVIEW_MOD = "dynview";
   public static final String DYNVIEW_NAME = "Dynview";
   public static final boolean DYNVIEW_LOADED = ModList.get().isLoaded(DYNVIEW_MOD);
