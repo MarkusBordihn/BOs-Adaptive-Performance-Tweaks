@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -21,17 +21,15 @@ package de.markusbordihn.adaptiveperformancetweaks;
 
 public final class Constants {
 
-  protected Constants() {}
-
   // General Mod definitions
   public static final String ISSUE_REPORT =
-          "https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues";
+      "https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues";
   public static final String LOG_NAME = "APTweaks";
-  public static final String MOD_COMMAND = "aptweaks";
   public static final String MOD_ID = "adaptive_performance_tweaks";
   public static final String MOD_NAME = "🚀 Adaptive Performance Tweaks";
-
   // Other
   public static final String LOG_THANKS =
-          "Thanks for using " + MOD_NAME + " (bundle), please report issues to: " + ISSUE_REPORT;
+      "Thanks for using " + MOD_NAME + " (bundle), please report issues to: " + ISSUE_REPORT;
+
+  private Constants() {}
 }

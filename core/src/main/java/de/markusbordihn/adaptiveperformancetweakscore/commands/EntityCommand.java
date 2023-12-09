@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,25 +19,20 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.commands;
 
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-
+import de.markusbordihn.adaptiveperformancetweakscore.Constants;
+import de.markusbordihn.adaptiveperformancetweakscore.entity.CoreEntityManager;
+import java.util.Map;
+import java.util.Set;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
-
 import net.minecraftforge.registries.ForgeRegistries;
-
-import de.markusbordihn.adaptiveperformancetweakscore.Constants;
-import de.markusbordihn.adaptiveperformancetweakscore.entity.CoreEntityManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class EntityCommand extends CustomCommand {
 
@@ -48,7 +43,9 @@ public class EntityCommand extends CustomCommand {
       "Unable to find any entities. Server / World is not loaded?";
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
-    return Commands.literal("entities").requires(cs -> cs.hasPermission(2)).executes(command)
+    return Commands.literal("entities")
+        .requires(cs -> cs.hasPermission(2))
+        .executes(command)
         .then(Commands.literal("overview").executes(command::overview))
         .then(Commands.literal("overview_per_chunk").executes(command::overviewPerChunk))
         .then(Commands.literal("overview_per_level").executes(command::overviewPerLevel))
@@ -57,7 +54,9 @@ public class EntityCommand extends CustomCommand {
 
   @Override
   public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-    sendFeedback(context, """
+    sendFeedback(
+        context,
+        """
         Usage:
         /aptweaks entities overview - List of entities in the world
         /aptweaks entities overview_per_chunk - List of entities per chunk
@@ -117,7 +116,7 @@ public class EntityCommand extends CustomCommand {
     sendFeedback(context, String.format("Entity registry (%s types)\n===", entitiesKeys.size()));
     log.info("Entity registry: {}", entitiesKeys);
     for (ResourceLocation entityKey : entitiesKeys) {
-      sendFeedback(context, String.format("\u25CB %s", entityKey));
+      sendFeedback(context, String.format("○ %s", entityKey));
     }
     return 0;
   }

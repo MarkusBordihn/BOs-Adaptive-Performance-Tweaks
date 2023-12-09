@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,26 +19,25 @@
 
 package de.markusbordihn.adaptiveperformancetweaksitems.commands;
 
-import java.util.Map;
-import java.util.Set;
-
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-
+import de.markusbordihn.adaptiveperformancetweakscore.commands.CustomCommand;
+import de.markusbordihn.adaptiveperformancetweaksitems.entity.ItemEntityManager;
+import java.util.Map;
+import java.util.Set;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.world.entity.item.ItemEntity;
-
-import de.markusbordihn.adaptiveperformancetweakscore.commands.CustomCommand;
-import de.markusbordihn.adaptiveperformancetweaksitems.entity.ItemEntityManager;
 
 public class ItemsCommand extends CustomCommand {
 
   private static final ItemsCommand command = new ItemsCommand();
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
-    return Commands.literal("items").requires(cs -> cs.hasPermission(2)).executes(command)
+    return Commands.literal("items")
+        .requires(cs -> cs.hasPermission(2))
+        .executes(command)
         .then(Commands.literal("optimize").executes(command::runOptimize));
   }
 
@@ -46,15 +45,15 @@ public class ItemsCommand extends CustomCommand {
   public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
     Map<String, Set<ItemEntity>> itemTypeEntityMap = ItemEntityManager.getItemTypeEntityMap();
     if (itemTypeEntityMap.isEmpty()) {
-      sendFeedback(context,
-          "Unable to find any items entity. World is not loaded or nor items dropped?");
+      sendFeedback(
+          context, "Unable to find any items entity. World is not loaded or nor items dropped?");
     } else {
-      sendFeedback(context,
-          String.format("Items Overview (%s types)\n===", itemTypeEntityMap.size()));
+      sendFeedback(
+          context, String.format("Items Overview (%s types)\n===", itemTypeEntityMap.size()));
       for (Map.Entry<String, Set<ItemEntity>> itemEntities : itemTypeEntityMap.entrySet()) {
         int numOfItems = itemEntities.getValue().size();
         if (numOfItems > 0) {
-          sendFeedback(context, String.format("\u25CB %s %s", itemEntities.getKey(), numOfItems));
+          sendFeedback(context, String.format("○ %s %s", itemEntities.getKey(), numOfItems));
         }
       }
     }
@@ -65,12 +64,11 @@ public class ItemsCommand extends CustomCommand {
     sendFeedback(context, "Running manual Item Optimization ...");
     int numberOfRemovedItems = ItemEntityManager.optimizeItems();
     if (numberOfRemovedItems > 0) {
-      sendFeedback(context,
-          String.format("Removed items %s from all worlds!", numberOfRemovedItems));
+      sendFeedback(
+          context, String.format("Removed items %s from all worlds!", numberOfRemovedItems));
     } else {
       sendFeedback(context, "Optimization was not needed!");
     }
     return 0;
   }
-
 }

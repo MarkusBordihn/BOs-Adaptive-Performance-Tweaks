@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,19 +19,6 @@
 
 package de.markusbordihn.adaptiveperformancetweaksspawn.spawn;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import net.minecraftforge.event.server.ServerAboutToStartEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
-
 import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.CommonConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.AlexsMobsSpawnConfig;
@@ -39,9 +26,9 @@ import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.AquacultureS
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.BornInChaosSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.CustomSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.FishOfThievesSpawnConfig;
-import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.InfernalExpansionSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.FriendsAndFoesSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.GothicSpawnConfig;
+import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.InfernalExpansionSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.MekanismAdditionsSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.MinecraftSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.NetherSpawnConfig;
@@ -50,6 +37,16 @@ import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.QuarkSpawnCo
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.TinkersConstructConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.UntamedWildsSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.UntitledDuckSpawnConfig;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.common.Mod;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Mod.EventBusSubscriber
 public class SpawnConfigManager {
@@ -84,15 +81,13 @@ public class SpawnConfigManager {
       UntamedWildsSpawnConfig.COMMON;
   private static final UntitledDuckSpawnConfig.Config UNTITLED_DUCK_CONFIG =
       UntitledDuckSpawnConfig.COMMON;
-
+  private static final Map<String, Integer> spawnConfigPerPlayer = new HashMap<>();
+  private static final Map<String, Integer> spawnConfigPerWorld = new HashMap<>();
+  private static final Map<String, Integer> spawnConfigPerServer = new HashMap<>();
+  private static final Map<String, Integer> spawnConfigSpecial = new HashMap<>();
   private static int spawnLimitationMaxMobsPerPlayer = COMMON.spawnLimitationMaxMobsPerPlayer.get();
   private static int spawnLimitationMaxMobsPerWorld = COMMON.spawnLimitationMaxMobsPerWorld.get();
   private static int spawnLimitationMaxMobsPerServer = COMMON.spawnLimitationMaxMobsPerServer.get();
-
-  private static Map<String, Integer> spawnConfigPerPlayer = new HashMap<>();
-  private static Map<String, Integer> spawnConfigPerWorld = new HashMap<>();
-  private static Map<String, Integer> spawnConfigPerServer = new HashMap<>();
-  private static Map<String, Integer> spawnConfigSpecial = new HashMap<>();
 
   protected SpawnConfigManager() {}
 
@@ -113,45 +108,60 @@ public class SpawnConfigManager {
     // Minecraft Vanilla Mobs
     if (Boolean.TRUE.equals(MINECRAFT_CONFIG.enabled.get())) {
       // Normal vanilla mobs
-      addSpawnRatesForPassiveMobs(MINECRAFT_CONFIG.id.get(),
+      addSpawnRatesForPassiveMobs(
+          MINECRAFT_CONFIG.id.get(),
           new HashSet<>(MINECRAFT_CONFIG.passiveMobsList.get()),
-          MINECRAFT_CONFIG.passiveMobsPerPlayer.get(), MINECRAFT_CONFIG.passiveMobsPerWorld.get(),
+          MINECRAFT_CONFIG.passiveMobsPerPlayer.get(),
+          MINECRAFT_CONFIG.passiveMobsPerWorld.get(),
           MINECRAFT_CONFIG.passiveMobsPerServer.get());
-      addSpawnRatesForNeutralMobs(MINECRAFT_CONFIG.id.get(),
+      addSpawnRatesForNeutralMobs(
+          MINECRAFT_CONFIG.id.get(),
           new HashSet<>(MINECRAFT_CONFIG.neutralMobsList.get()),
-          MINECRAFT_CONFIG.neutralMobsPerPlayer.get(), MINECRAFT_CONFIG.neutralMobsPerWorld.get(),
+          MINECRAFT_CONFIG.neutralMobsPerPlayer.get(),
+          MINECRAFT_CONFIG.neutralMobsPerWorld.get(),
           MINECRAFT_CONFIG.neutralMobsPerServer.get());
-      addSpawnRatesForHostileMobs(MINECRAFT_CONFIG.id.get(),
+      addSpawnRatesForHostileMobs(
+          MINECRAFT_CONFIG.id.get(),
           new HashSet<>(MINECRAFT_CONFIG.hostileMobsList.get()),
-          MINECRAFT_CONFIG.hostileMobsPerPlayer.get(), MINECRAFT_CONFIG.hostileMobsPerWorld.get(),
+          MINECRAFT_CONFIG.hostileMobsPerPlayer.get(),
+          MINECRAFT_CONFIG.hostileMobsPerWorld.get(),
           MINECRAFT_CONFIG.hostileMobsPerServer.get());
 
       // Nether vanilla mobs
-      addSpawnRatesForPassiveMobs(NETHER_CONFIG.id.get(),
+      addSpawnRatesForPassiveMobs(
+          NETHER_CONFIG.id.get(),
           new HashSet<>(NETHER_CONFIG.passiveMobsList.get()),
-          NETHER_CONFIG.passiveMobsPerPlayer.get(), NETHER_CONFIG.passiveMobsPerWorld.get(),
+          NETHER_CONFIG.passiveMobsPerPlayer.get(),
+          NETHER_CONFIG.passiveMobsPerWorld.get(),
           NETHER_CONFIG.passiveMobsPerServer.get());
-      addSpawnRatesForNeutralMobs(NETHER_CONFIG.id.get(),
+      addSpawnRatesForNeutralMobs(
+          NETHER_CONFIG.id.get(),
           new HashSet<>(NETHER_CONFIG.neutralMobsList.get()),
-          NETHER_CONFIG.neutralMobsPerPlayer.get(), NETHER_CONFIG.neutralMobsPerWorld.get(),
+          NETHER_CONFIG.neutralMobsPerPlayer.get(),
+          NETHER_CONFIG.neutralMobsPerWorld.get(),
           NETHER_CONFIG.neutralMobsPerServer.get());
-      addSpawnRatesForHostileMobs(NETHER_CONFIG.id.get(),
+      addSpawnRatesForHostileMobs(
+          NETHER_CONFIG.id.get(),
           new HashSet<>(NETHER_CONFIG.hostileMobsList.get()),
-          NETHER_CONFIG.hostileMobsPerPlayer.get(), NETHER_CONFIG.hostileMobsPerWorld.get(),
+          NETHER_CONFIG.hostileMobsPerPlayer.get(),
+          NETHER_CONFIG.hostileMobsPerWorld.get(),
           NETHER_CONFIG.hostileMobsPerServer.get());
 
       // Water vanilla mobs
-      addSpawnRatesForPassiveMobs(MINECRAFT_CONFIG.id.get(),
+      addSpawnRatesForPassiveMobs(
+          MINECRAFT_CONFIG.id.get(),
           new HashSet<>(MINECRAFT_CONFIG.waterPassiveMobsList.get()),
           MINECRAFT_CONFIG.waterPassiveMobsPerPlayer.get(),
           MINECRAFT_CONFIG.waterPassiveMobsPerWorld.get(),
           MINECRAFT_CONFIG.waterPassiveMobsPerServer.get());
-      addSpawnRatesForNeutralMobs(MINECRAFT_CONFIG.id.get(),
+      addSpawnRatesForNeutralMobs(
+          MINECRAFT_CONFIG.id.get(),
           new HashSet<>(MINECRAFT_CONFIG.waterNeutralMobsList.get()),
           MINECRAFT_CONFIG.waterNeutralMobsPerPlayer.get(),
           MINECRAFT_CONFIG.waterNeutralMobsPerWorld.get(),
           MINECRAFT_CONFIG.waterNeutralMobsPerServer.get());
-      addSpawnRatesForHostileMobs(MINECRAFT_CONFIG.id.get(),
+      addSpawnRatesForHostileMobs(
+          MINECRAFT_CONFIG.id.get(),
           new HashSet<>(MINECRAFT_CONFIG.waterHostileMobsList.get()),
           MINECRAFT_CONFIG.waterHostileMobsPerPlayer.get(),
           MINECRAFT_CONFIG.waterHostileMobsPerWorld.get(),
@@ -161,15 +171,19 @@ public class SpawnConfigManager {
     // Aquaculture Mobs
     if (Boolean.TRUE.equals(AQUACULTURE_CONFIG.enabled.get())
         && modList.isLoaded(AQUACULTURE_CONFIG.id.get())) {
-      addSpawnRatesForPassiveMobs(AQUACULTURE_CONFIG.id.get(),
-          new HashSet<>(AQUACULTURE_CONFIG.fishList.get()), AQUACULTURE_CONFIG.fishPerPlayer.get(),
-          AQUACULTURE_CONFIG.fishPerWorld.get(), AQUACULTURE_CONFIG.fishPerServer.get());
+      addSpawnRatesForPassiveMobs(
+          AQUACULTURE_CONFIG.id.get(),
+          new HashSet<>(AQUACULTURE_CONFIG.fishList.get()),
+          AQUACULTURE_CONFIG.fishPerPlayer.get(),
+          AQUACULTURE_CONFIG.fishPerWorld.get(),
+          AQUACULTURE_CONFIG.fishPerServer.get());
     }
 
     // Born in Chaos Mobs
     if (Boolean.TRUE.equals(BORN_IN_CHAOS_CONFIG.enabled.get())
         && modList.isLoaded(BORN_IN_CHAOS_CONFIG.id.get())) {
-      addSpawnRatesForHostileMobs(BORN_IN_CHAOS_CONFIG.id.get(),
+      addSpawnRatesForHostileMobs(
+          BORN_IN_CHAOS_CONFIG.id.get(),
           new HashSet<>(BORN_IN_CHAOS_CONFIG.hostileMobsList.get()),
           BORN_IN_CHAOS_CONFIG.hostileMobsPerPlayer.get(),
           BORN_IN_CHAOS_CONFIG.hostileMobsPerWorld.get(),
@@ -179,33 +193,42 @@ public class SpawnConfigManager {
     // Alex's Mobs
     if (Boolean.TRUE.equals(ALEXS_MOBS_CONFIG.enabled.get())
         && modList.isLoaded(ALEXS_MOBS_CONFIG.id.get())) {
-      addSpawnRatesForPassiveMobs(ALEXS_MOBS_CONFIG.id.get(),
+      addSpawnRatesForPassiveMobs(
+          ALEXS_MOBS_CONFIG.id.get(),
           new HashSet<>(ALEXS_MOBS_CONFIG.passiveMobsList.get()),
-          ALEXS_MOBS_CONFIG.passiveMobsPerPlayer.get(), ALEXS_MOBS_CONFIG.passiveMobsPerWorld.get(),
+          ALEXS_MOBS_CONFIG.passiveMobsPerPlayer.get(),
+          ALEXS_MOBS_CONFIG.passiveMobsPerWorld.get(),
           ALEXS_MOBS_CONFIG.passiveMobsPerServer.get());
-      addSpawnRatesForNeutralMobs(ALEXS_MOBS_CONFIG.id.get(),
+      addSpawnRatesForNeutralMobs(
+          ALEXS_MOBS_CONFIG.id.get(),
           new HashSet<>(ALEXS_MOBS_CONFIG.neutralMobsList.get()),
-          ALEXS_MOBS_CONFIG.neutralMobsPerPlayer.get(), ALEXS_MOBS_CONFIG.neutralMobsPerWorld.get(),
+          ALEXS_MOBS_CONFIG.neutralMobsPerPlayer.get(),
+          ALEXS_MOBS_CONFIG.neutralMobsPerWorld.get(),
           ALEXS_MOBS_CONFIG.neutralMobsPerServer.get());
-      addSpawnRatesForHostileMobs(ALEXS_MOBS_CONFIG.id.get(),
+      addSpawnRatesForHostileMobs(
+          ALEXS_MOBS_CONFIG.id.get(),
           new HashSet<>(ALEXS_MOBS_CONFIG.hostileMobsList.get()),
-          ALEXS_MOBS_CONFIG.hostileMobsPerPlayer.get(), ALEXS_MOBS_CONFIG.hostileMobsPerWorld.get(),
+          ALEXS_MOBS_CONFIG.hostileMobsPerPlayer.get(),
+          ALEXS_MOBS_CONFIG.hostileMobsPerWorld.get(),
           ALEXS_MOBS_CONFIG.hostileMobsPerServer.get());
     }
 
     // Fish of Thieves Mobs
     if (Boolean.TRUE.equals(FISH_OF_THIEVES_CONFIG.enabled.get())
         && modList.isLoaded(FISH_OF_THIEVES_CONFIG.id.get())) {
-      addSpawnRatesForPassiveMobs(FISH_OF_THIEVES_CONFIG.id.get(),
+      addSpawnRatesForPassiveMobs(
+          FISH_OF_THIEVES_CONFIG.id.get(),
           new HashSet<>(FISH_OF_THIEVES_CONFIG.fishList.get()),
-          FISH_OF_THIEVES_CONFIG.fishPerPlayer.get(), FISH_OF_THIEVES_CONFIG.fishPerWorld.get(),
+          FISH_OF_THIEVES_CONFIG.fishPerPlayer.get(),
+          FISH_OF_THIEVES_CONFIG.fishPerWorld.get(),
           FISH_OF_THIEVES_CONFIG.fishPerServer.get());
     }
 
     // Friends and Foes
     if (Boolean.TRUE.equals(FRIENDS_AND_FOES_CONFIG.enabled.get())
         && modList.isLoaded(FRIENDS_AND_FOES_CONFIG.id.get())) {
-      addSpawnRatesForPassiveMobs(FRIENDS_AND_FOES_CONFIG.id.get(),
+      addSpawnRatesForPassiveMobs(
+          FRIENDS_AND_FOES_CONFIG.id.get(),
           new HashSet<>(FRIENDS_AND_FOES_CONFIG.passiveMobsList.get()),
           FRIENDS_AND_FOES_CONFIG.passiveMobsPerPlayer.get(),
           FRIENDS_AND_FOES_CONFIG.passiveMobsPerWorld.get(),
@@ -215,34 +238,43 @@ public class SpawnConfigManager {
     // Gothic RPG
     if (Boolean.TRUE.equals(GOTHIC_CONFIG.enabled.get())
         && modList.isLoaded(GOTHIC_CONFIG.id.get())) {
-      addSpawnRatesForPassiveMobs(GOTHIC_CONFIG.id.get(),
+      addSpawnRatesForPassiveMobs(
+          GOTHIC_CONFIG.id.get(),
           new HashSet<>(GOTHIC_CONFIG.passiveMobsList.get()),
-          GOTHIC_CONFIG.passiveMobsPerPlayer.get(), GOTHIC_CONFIG.passiveMobsPerWorld.get(),
+          GOTHIC_CONFIG.passiveMobsPerPlayer.get(),
+          GOTHIC_CONFIG.passiveMobsPerWorld.get(),
           GOTHIC_CONFIG.passiveMobsPerServer.get());
-      addSpawnRatesForNeutralMobs(GOTHIC_CONFIG.id.get(),
+      addSpawnRatesForNeutralMobs(
+          GOTHIC_CONFIG.id.get(),
           new HashSet<>(GOTHIC_CONFIG.neutralMobsList.get()),
-          GOTHIC_CONFIG.neutralMobsPerPlayer.get(), GOTHIC_CONFIG.neutralMobsPerWorld.get(),
+          GOTHIC_CONFIG.neutralMobsPerPlayer.get(),
+          GOTHIC_CONFIG.neutralMobsPerWorld.get(),
           GOTHIC_CONFIG.neutralMobsPerServer.get());
-      addSpawnRatesForHostileMobs(GOTHIC_CONFIG.id.get(),
+      addSpawnRatesForHostileMobs(
+          GOTHIC_CONFIG.id.get(),
           new HashSet<>(GOTHIC_CONFIG.hostileMobsList.get()),
-          GOTHIC_CONFIG.hostileMobsPerPlayer.get(), GOTHIC_CONFIG.hostileMobsPerWorld.get(),
+          GOTHIC_CONFIG.hostileMobsPerPlayer.get(),
+          GOTHIC_CONFIG.hostileMobsPerWorld.get(),
           GOTHIC_CONFIG.hostileMobsPerServer.get());
     }
 
     // Infernal Expansion
     if (Boolean.TRUE.equals(INFERNAL_EXPANSION_CONFIG.enabled.get())
         && modList.isLoaded(INFERNAL_EXPANSION_CONFIG.id.get())) {
-      addSpawnRatesForPassiveMobs(INFERNAL_EXPANSION_CONFIG.id.get(),
+      addSpawnRatesForPassiveMobs(
+          INFERNAL_EXPANSION_CONFIG.id.get(),
           new HashSet<>(INFERNAL_EXPANSION_CONFIG.passiveMobsList.get()),
           INFERNAL_EXPANSION_CONFIG.passiveMobsPerPlayer.get(),
           INFERNAL_EXPANSION_CONFIG.passiveMobsPerWorld.get(),
           INFERNAL_EXPANSION_CONFIG.passiveMobsPerServer.get());
-      addSpawnRatesForNeutralMobs(INFERNAL_EXPANSION_CONFIG.id.get(),
+      addSpawnRatesForNeutralMobs(
+          INFERNAL_EXPANSION_CONFIG.id.get(),
           new HashSet<>(INFERNAL_EXPANSION_CONFIG.neutralMobsList.get()),
           INFERNAL_EXPANSION_CONFIG.neutralMobsPerPlayer.get(),
           INFERNAL_EXPANSION_CONFIG.neutralMobsPerWorld.get(),
           INFERNAL_EXPANSION_CONFIG.neutralMobsPerServer.get());
-      addSpawnRatesForHostileMobs(INFERNAL_EXPANSION_CONFIG.id.get(),
+      addSpawnRatesForHostileMobs(
+          INFERNAL_EXPANSION_CONFIG.id.get(),
           new HashSet<>(INFERNAL_EXPANSION_CONFIG.hostileMobsList.get()),
           INFERNAL_EXPANSION_CONFIG.hostileMobsPerPlayer.get(),
           INFERNAL_EXPANSION_CONFIG.hostileMobsPerWorld.get(),
@@ -252,17 +284,20 @@ public class SpawnConfigManager {
     // Mekanism Additions
     if (Boolean.TRUE.equals(MEKANISM_ADDITIONS_CONFIG.enabled.get())
         && modList.isLoaded(MEKANISM_ADDITIONS_CONFIG.id.get())) {
-      addSpawnRatesForPassiveMobs(MEKANISM_ADDITIONS_CONFIG.id.get(),
+      addSpawnRatesForPassiveMobs(
+          MEKANISM_ADDITIONS_CONFIG.id.get(),
           new HashSet<>(MEKANISM_ADDITIONS_CONFIG.passiveMobsList.get()),
           MEKANISM_ADDITIONS_CONFIG.passiveMobsPerPlayer.get(),
           MEKANISM_ADDITIONS_CONFIG.passiveMobsPerWorld.get(),
           MEKANISM_ADDITIONS_CONFIG.passiveMobsPerServer.get());
-      addSpawnRatesForNeutralMobs(MEKANISM_ADDITIONS_CONFIG.id.get(),
+      addSpawnRatesForNeutralMobs(
+          MEKANISM_ADDITIONS_CONFIG.id.get(),
           new HashSet<>(MEKANISM_ADDITIONS_CONFIG.neutralMobsList.get()),
           MEKANISM_ADDITIONS_CONFIG.neutralMobsPerPlayer.get(),
           MEKANISM_ADDITIONS_CONFIG.neutralMobsPerWorld.get(),
           MEKANISM_ADDITIONS_CONFIG.neutralMobsPerServer.get());
-      addSpawnRatesForHostileMobs(MEKANISM_ADDITIONS_CONFIG.id.get(),
+      addSpawnRatesForHostileMobs(
+          MEKANISM_ADDITIONS_CONFIG.id.get(),
           new HashSet<>(MEKANISM_ADDITIONS_CONFIG.hostileMobsList.get()),
           MEKANISM_ADDITIONS_CONFIG.hostileMobsPerPlayer.get(),
           MEKANISM_ADDITIONS_CONFIG.hostileMobsPerWorld.get(),
@@ -272,17 +307,20 @@ public class SpawnConfigManager {
     // Panthalassa
     if (Boolean.TRUE.equals(PANTHALASSA_CONFIG.enabled.get())
         && modList.isLoaded(PANTHALASSA_CONFIG.id.get())) {
-      addSpawnRatesForPassiveMobs(PANTHALASSA_CONFIG.id.get(),
+      addSpawnRatesForPassiveMobs(
+          PANTHALASSA_CONFIG.id.get(),
           new HashSet<>(PANTHALASSA_CONFIG.passiveMobsList.get()),
           PANTHALASSA_CONFIG.passiveMobsPerPlayer.get(),
           PANTHALASSA_CONFIG.passiveMobsPerWorld.get(),
           PANTHALASSA_CONFIG.passiveMobsPerServer.get());
-      addSpawnRatesForNeutralMobs(PANTHALASSA_CONFIG.id.get(),
+      addSpawnRatesForNeutralMobs(
+          PANTHALASSA_CONFIG.id.get(),
           new HashSet<>(PANTHALASSA_CONFIG.neutralMobsList.get()),
           PANTHALASSA_CONFIG.neutralMobsPerPlayer.get(),
           PANTHALASSA_CONFIG.neutralMobsPerWorld.get(),
           PANTHALASSA_CONFIG.neutralMobsPerServer.get());
-      addSpawnRatesForHostileMobs(PANTHALASSA_CONFIG.id.get(),
+      addSpawnRatesForHostileMobs(
+          PANTHALASSA_CONFIG.id.get(),
           new HashSet<>(PANTHALASSA_CONFIG.hostileMobsList.get()),
           PANTHALASSA_CONFIG.hostileMobsPerPlayer.get(),
           PANTHALASSA_CONFIG.hostileMobsPerWorld.get(),
@@ -292,24 +330,31 @@ public class SpawnConfigManager {
     // Quark
     if (Boolean.TRUE.equals(QUARK_CONFIG.enabled.get())
         && modList.isLoaded(QUARK_CONFIG.id.get())) {
-      addSpawnRatesForPassiveMobs(QUARK_CONFIG.id.get(),
+      addSpawnRatesForPassiveMobs(
+          QUARK_CONFIG.id.get(),
           new HashSet<>(QUARK_CONFIG.passiveMobsList.get()),
-          QUARK_CONFIG.passiveMobsPerPlayer.get(), QUARK_CONFIG.passiveMobsPerWorld.get(),
+          QUARK_CONFIG.passiveMobsPerPlayer.get(),
+          QUARK_CONFIG.passiveMobsPerWorld.get(),
           QUARK_CONFIG.passiveMobsPerServer.get());
-      addSpawnRatesForNeutralMobs(QUARK_CONFIG.id.get(),
+      addSpawnRatesForNeutralMobs(
+          QUARK_CONFIG.id.get(),
           new HashSet<>(QUARK_CONFIG.neutralMobsList.get()),
-          QUARK_CONFIG.neutralMobsPerPlayer.get(), QUARK_CONFIG.neutralMobsPerWorld.get(),
+          QUARK_CONFIG.neutralMobsPerPlayer.get(),
+          QUARK_CONFIG.neutralMobsPerWorld.get(),
           QUARK_CONFIG.neutralMobsPerServer.get());
-      addSpawnRatesForHostileMobs(QUARK_CONFIG.id.get(),
+      addSpawnRatesForHostileMobs(
+          QUARK_CONFIG.id.get(),
           new HashSet<>(QUARK_CONFIG.hostileMobsList.get()),
-          QUARK_CONFIG.hostileMobsPerPlayer.get(), QUARK_CONFIG.hostileMobsPerWorld.get(),
+          QUARK_CONFIG.hostileMobsPerPlayer.get(),
+          QUARK_CONFIG.hostileMobsPerWorld.get(),
           QUARK_CONFIG.hostileMobsPerServer.get());
     }
 
     // Tinkers Construct
     if (Boolean.TRUE.equals(TINKERS_CONSTRUCT_CONFIG.enabled.get())
         && modList.isLoaded(TINKERS_CONSTRUCT_CONFIG.id.get())) {
-      addSpawnRatesForHostileMobs(TINKERS_CONSTRUCT_CONFIG.id.get(),
+      addSpawnRatesForHostileMobs(
+          TINKERS_CONSTRUCT_CONFIG.id.get(),
           new HashSet<>(TINKERS_CONSTRUCT_CONFIG.hostileMobsList.get()),
           TINKERS_CONSTRUCT_CONFIG.hostileMobsPerPlayer.get(),
           TINKERS_CONSTRUCT_CONFIG.hostileMobsPerWorld.get(),
@@ -319,17 +364,20 @@ public class SpawnConfigManager {
     // Untamed Wilds
     if (Boolean.TRUE.equals(UNTAMED_WILDS_CONFIG.enabled.get())
         && modList.isLoaded(UNTAMED_WILDS_CONFIG.id.get())) {
-      addSpawnRatesForPassiveMobs(UNTAMED_WILDS_CONFIG.id.get(),
+      addSpawnRatesForPassiveMobs(
+          UNTAMED_WILDS_CONFIG.id.get(),
           new HashSet<>(UNTAMED_WILDS_CONFIG.passiveMobsList.get()),
           UNTAMED_WILDS_CONFIG.passiveMobsPerPlayer.get(),
           UNTAMED_WILDS_CONFIG.passiveMobsPerWorld.get(),
           UNTAMED_WILDS_CONFIG.passiveMobsPerServer.get());
-      addSpawnRatesForNeutralMobs(UNTAMED_WILDS_CONFIG.id.get(),
+      addSpawnRatesForNeutralMobs(
+          UNTAMED_WILDS_CONFIG.id.get(),
           new HashSet<>(UNTAMED_WILDS_CONFIG.neutralMobsList.get()),
           UNTAMED_WILDS_CONFIG.neutralMobsPerPlayer.get(),
           UNTAMED_WILDS_CONFIG.neutralMobsPerWorld.get(),
           UNTAMED_WILDS_CONFIG.neutralMobsPerServer.get());
-      addSpawnRatesForHostileMobs(UNTAMED_WILDS_CONFIG.id.get(),
+      addSpawnRatesForHostileMobs(
+          UNTAMED_WILDS_CONFIG.id.get(),
           new HashSet<>(UNTAMED_WILDS_CONFIG.hostileMobsList.get()),
           UNTAMED_WILDS_CONFIG.hostileMobsPerPlayer.get(),
           UNTAMED_WILDS_CONFIG.hostileMobsPerWorld.get(),
@@ -339,12 +387,14 @@ public class SpawnConfigManager {
     // Untitled Duck
     if (Boolean.TRUE.equals(UNTITLED_DUCK_CONFIG.enabled.get())
         && modList.isLoaded(UNTITLED_DUCK_CONFIG.id.get())) {
-      addSpawnRatesForPassiveMobs(UNTITLED_DUCK_CONFIG.id.get(),
+      addSpawnRatesForPassiveMobs(
+          UNTITLED_DUCK_CONFIG.id.get(),
           new HashSet<>(UNTITLED_DUCK_CONFIG.passiveMobsList.get()),
           UNTITLED_DUCK_CONFIG.passiveMobsPerPlayer.get(),
           UNTITLED_DUCK_CONFIG.passiveMobsPerWorld.get(),
           UNTITLED_DUCK_CONFIG.passiveMobsPerServer.get());
-      addSpawnRatesForNeutralMobs(UNTITLED_DUCK_CONFIG.id.get(),
+      addSpawnRatesForNeutralMobs(
+          UNTITLED_DUCK_CONFIG.id.get(),
           new HashSet<>(UNTITLED_DUCK_CONFIG.neutralMobsList.get()),
           UNTITLED_DUCK_CONFIG.neutralMobsPerPlayer.get(),
           UNTITLED_DUCK_CONFIG.neutralMobsPerWorld.get(),
@@ -353,27 +403,35 @@ public class SpawnConfigManager {
 
     // Custom Spawn Config overwrites former definitions!
     if (Boolean.TRUE.equals(CUSTOM_CONFIG.enabled.get())) {
-      addSpawnRatesForPassiveMobs(CUSTOM_CONFIG.id.get(),
+      addSpawnRatesForPassiveMobs(
+          CUSTOM_CONFIG.id.get(),
           new HashSet<>(CUSTOM_CONFIG.passiveMobsList.get()),
-          CUSTOM_CONFIG.passiveMobsPerPlayer.get(), CUSTOM_CONFIG.passiveMobsPerWorld.get(),
+          CUSTOM_CONFIG.passiveMobsPerPlayer.get(),
+          CUSTOM_CONFIG.passiveMobsPerWorld.get(),
           CUSTOM_CONFIG.passiveMobsPerServer.get());
-      addSpawnRatesForNeutralMobs(CUSTOM_CONFIG.id.get(),
+      addSpawnRatesForNeutralMobs(
+          CUSTOM_CONFIG.id.get(),
           new HashSet<>(CUSTOM_CONFIG.neutralMobsList.get()),
-          CUSTOM_CONFIG.neutralMobsPerPlayer.get(), CUSTOM_CONFIG.neutralMobsPerWorld.get(),
+          CUSTOM_CONFIG.neutralMobsPerPlayer.get(),
+          CUSTOM_CONFIG.neutralMobsPerWorld.get(),
           CUSTOM_CONFIG.neutralMobsPerServer.get());
-      addSpawnRatesForHostileMobs(CUSTOM_CONFIG.id.get(),
+      addSpawnRatesForHostileMobs(
+          CUSTOM_CONFIG.id.get(),
           new HashSet<>(CUSTOM_CONFIG.hostileMobsList.get()),
-          CUSTOM_CONFIG.hostileMobsPerPlayer.get(), CUSTOM_CONFIG.hostileMobsPerWorld.get(),
+          CUSTOM_CONFIG.hostileMobsPerPlayer.get(),
+          CUSTOM_CONFIG.hostileMobsPerWorld.get(),
           CUSTOM_CONFIG.hostileMobsPerServer.get());
     }
 
-    log.info("Added {} player spawn rules, {} world spawn rules and {} special spawn rules.",
-        spawnConfigPerPlayer.size(), spawnConfigPerWorld.size(), spawnConfigSpecial.size());
+    log.info(
+        "Added {} player spawn rules, {} world spawn rules and {} special spawn rules.",
+        spawnConfigPerPlayer.size(),
+        spawnConfigPerWorld.size(),
+        spawnConfigSpecial.size());
   }
 
   public static void clearSpawnRates() {
     log.info("Clearing spawn rates calculation ...");
-    spawnConfigPerPlayer.clear();
     spawnConfigPerPlayer.clear();
     spawnConfigPerWorld.clear();
     spawnConfigSpecial.clear();
@@ -396,10 +454,6 @@ public class SpawnConfigManager {
     spawnConfigPerServer.put(entityName, maxNumberOfEntities);
   }
 
-  public static void addSpawnConfigSpecial(String entityName, int maxNumberOfEntities) {
-    spawnConfigSpecial.put(entityName, maxNumberOfEntities);
-  }
-
   public static int getSpawnLimitPerPlayer(String entityName) {
     return spawnConfigPerPlayer.getOrDefault(entityName, spawnLimitationMaxMobsPerPlayer);
   }
@@ -412,110 +466,71 @@ public class SpawnConfigManager {
     return spawnConfigPerServer.getOrDefault(entityName, spawnLimitationMaxMobsPerServer);
   }
 
-  public static int getSpawnerListSpecial(String entityName) {
-    return spawnConfigPerWorld.get(entityName);
-  }
-
-  public static Map<String, Integer> getSpawnConfigPerPlayer() {
-    return spawnConfigPerPlayer;
-  }
-
-  public static Map<String, Integer> getSpawnConfigPerWorld() {
-    return spawnConfigPerWorld;
-  }
-
-  public static Map<String, Integer> getSpawnConfigPerServer() {
-    return spawnConfigPerServer;
-  }
-
-  public static Map<String, Integer> getSpawnConfigSpecial() {
-    return spawnConfigSpecial;
-  }
-
-  public static void addSpawnRatesForGeneralMobs(String name, Set<String> generalMobList,
-      int maxGeneralMobsPerPlayer, int maxGeneralMobsPerWorld, int maxGeneralMobsPerServer) {
-    if (generalMobList.isEmpty()) {
-      return;
-    }
-    log.info(
-        "\u2713 Enable general mobs spawn rate control for {} and {} mobs with maxPerPlayer:{}, maxPerWorld:{} and maxPerServer:{}",
-        name, generalMobList.size(), maxGeneralMobsPerPlayer, maxGeneralMobsPerWorld,
-        maxGeneralMobsPerServer);
-    addSpawnRatesForGeneralMobs(generalMobList, maxGeneralMobsPerPlayer, maxGeneralMobsPerWorld,
-        maxGeneralMobsPerServer);
-  }
-
-  public static void addSpawnRatesForPassiveMobs(String name, Set<String> passiveMobList,
-      int maxPassiveMobsPerPlayer, int maxPassiveMobsPerWorld, int maxPassiveMobsPerServer) {
+  public static void addSpawnRatesForPassiveMobs(
+      String name,
+      Set<String> passiveMobList,
+      int maxPassiveMobsPerPlayer,
+      int maxPassiveMobsPerWorld,
+      int maxPassiveMobsPerServer) {
     if (passiveMobList.isEmpty()) {
       return;
     }
     log.info(
-        "\u2713 Enable passive mobs spawn rate control for {} and {} mobs with maxPerPlayer:{}, maxPerWorld:{} and maxPerServer:{}",
-        name, passiveMobList.size(), maxPassiveMobsPerPlayer, maxPassiveMobsPerWorld,
+        "✓ Enable passive mobs spawn rate control for {} and {} mobs with maxPerPlayer:{}, maxPerWorld:{} and maxPerServer:{}",
+        name,
+        passiveMobList.size(),
+        maxPassiveMobsPerPlayer,
+        maxPassiveMobsPerWorld,
         maxPassiveMobsPerServer);
-    addSpawnRatesForPassiveMobs(passiveMobList, maxPassiveMobsPerPlayer, maxPassiveMobsPerWorld,
-        maxPassiveMobsPerServer);
+    addSpawnRatesForPassiveMobs(
+        passiveMobList, maxPassiveMobsPerPlayer, maxPassiveMobsPerWorld, maxPassiveMobsPerServer);
   }
 
-  public static void addSpawnRatesForNeutralMobs(String name, Set<String> neutralMobList,
-      int maxNeutralMobsPerPlayer, int maxNeutralMobsPerWorld, int maxNeutralMobsPerServer) {
+  public static void addSpawnRatesForNeutralMobs(
+      String name,
+      Set<String> neutralMobList,
+      int maxNeutralMobsPerPlayer,
+      int maxNeutralMobsPerWorld,
+      int maxNeutralMobsPerServer) {
     if (neutralMobList.isEmpty()) {
       return;
     }
     log.info(
-        "\u2713 Enable neutral mobs spawn rate control for {} and {} mobs with maxPerPlayer:{}, maxPerWorld:{} and maxPerServer:{}",
-        name, neutralMobList.size(), maxNeutralMobsPerPlayer, maxNeutralMobsPerWorld,
+        "✓ Enable neutral mobs spawn rate control for {} and {} mobs with maxPerPlayer:{}, maxPerWorld:{} and maxPerServer:{}",
+        name,
+        neutralMobList.size(),
+        maxNeutralMobsPerPlayer,
+        maxNeutralMobsPerWorld,
         maxNeutralMobsPerServer);
-    addSpawnRatesForNeutralMobs(neutralMobList, maxNeutralMobsPerPlayer, maxNeutralMobsPerWorld,
-        maxNeutralMobsPerServer);
+    addSpawnRatesForNeutralMobs(
+        neutralMobList, maxNeutralMobsPerPlayer, maxNeutralMobsPerWorld, maxNeutralMobsPerServer);
   }
 
-  public static void addSpawnRatesForHostileMobs(String name, Set<String> hostileMobList,
-      int maxHostileMobsPerPlayer, int maxHostileMobsPerWorld, int maxHostileMobsPerServer) {
+  public static void addSpawnRatesForHostileMobs(
+      String name,
+      Set<String> hostileMobList,
+      int maxHostileMobsPerPlayer,
+      int maxHostileMobsPerWorld,
+      int maxHostileMobsPerServer) {
     if (hostileMobList.isEmpty()) {
       return;
     }
     log.info(
-        "\u2713 Enable hostile mobs spawn rate control for {} and {} mobs with maxPerPlayer:{}, maxPerWorld:{} and maxPerServer:{}",
-        name, hostileMobList.size(), maxHostileMobsPerPlayer, maxHostileMobsPerWorld,
+        "✓ Enable hostile mobs spawn rate control for {} and {} mobs with maxPerPlayer:{}, maxPerWorld:{} and maxPerServer:{}",
+        name,
+        hostileMobList.size(),
+        maxHostileMobsPerPlayer,
+        maxHostileMobsPerWorld,
         maxHostileMobsPerServer);
-    addSpawnRatesForHostileMobs(hostileMobList, maxHostileMobsPerPlayer, maxHostileMobsPerWorld,
-        maxHostileMobsPerServer);
+    addSpawnRatesForHostileMobs(
+        hostileMobList, maxHostileMobsPerPlayer, maxHostileMobsPerWorld, maxHostileMobsPerServer);
   }
 
-  public static void addSpawnRatesForBossMobs(String name, Set<String> bossMobList,
-      int maxBossMobsPerPlayer, int maxBossMobsPerWorld, int maxBossMobsPerServer) {
-    if (bossMobList.isEmpty()) {
-      return;
-    }
-    log.info(
-        "\u2713 Enable boss mobs spawn rate control for {} and {} mobs with maxPerPlayer:{}, maxPerWorld:{} and maxPerServer:{}",
-        name, bossMobList.size(), maxBossMobsPerPlayer, maxBossMobsPerWorld, maxBossMobsPerServer);
-    addSpawnRatesForBossMobs(bossMobList, maxBossMobsPerPlayer, maxBossMobsPerWorld,
-        maxBossMobsPerServer);
-  }
-
-  public static void addSpecialSpawnRates(String name, Map<String, Integer> specialMobList) {
-    if (specialMobList.isEmpty()) {
-      return;
-    }
-    log.info("\u2713 Enable special mobs spawn rate control for {} and {} mobs with: {}", name,
-        specialMobList.size(), specialMobList);
-    addSpecialSpawnRates(specialMobList);
-  }
-
-  public static void addSpawnRatesForGeneralMobs(Set<String> generalMobList,
-      int maxGeneralMobsPerPlayer, int maxGeneralMobsPerWorld, int maxGeneralMobsPerServer) {
-    for (String entity : generalMobList) {
-      SpawnConfigManager.addSpawnConfigPerPlayer(entity, maxGeneralMobsPerPlayer);
-      SpawnConfigManager.addSpawnConfigPerWorld(entity, maxGeneralMobsPerWorld);
-      SpawnConfigManager.addSpawnConfigPerServer(entity, maxGeneralMobsPerServer);
-    }
-  }
-
-  public static void addSpawnRatesForPassiveMobs(Set<String> passiveMobList,
-      int maxPassiveMobsPerPlayer, int maxPassiveMobsPerWorld, int maxPassiveMobsPerServer) {
+  public static void addSpawnRatesForPassiveMobs(
+      Set<String> passiveMobList,
+      int maxPassiveMobsPerPlayer,
+      int maxPassiveMobsPerWorld,
+      int maxPassiveMobsPerServer) {
     for (String entity : passiveMobList) {
       SpawnConfigManager.addSpawnConfigPerPlayer(entity, maxPassiveMobsPerPlayer);
       SpawnConfigManager.addSpawnConfigPerWorld(entity, maxPassiveMobsPerWorld);
@@ -523,8 +538,11 @@ public class SpawnConfigManager {
     }
   }
 
-  public static void addSpawnRatesForNeutralMobs(Set<String> neutralMobList,
-      int maxNeutralMobsPerPlayer, int maxNeutralMobsPerWorld, int maxNeutralMobsPerServer) {
+  public static void addSpawnRatesForNeutralMobs(
+      Set<String> neutralMobList,
+      int maxNeutralMobsPerPlayer,
+      int maxNeutralMobsPerWorld,
+      int maxNeutralMobsPerServer) {
     for (String entity : neutralMobList) {
       SpawnConfigManager.addSpawnConfigPerPlayer(entity, maxNeutralMobsPerPlayer);
       SpawnConfigManager.addSpawnConfigPerWorld(entity, maxNeutralMobsPerWorld);
@@ -532,36 +550,15 @@ public class SpawnConfigManager {
     }
   }
 
-  public static void addSpawnRatesForHostileMobs(Set<String> hostileMobList,
-      int maxHostileMobsPerPlayer, int maxHostileMobsPerWorld, int maxHostileMobsPerServer) {
+  public static void addSpawnRatesForHostileMobs(
+      Set<String> hostileMobList,
+      int maxHostileMobsPerPlayer,
+      int maxHostileMobsPerWorld,
+      int maxHostileMobsPerServer) {
     for (String entity : hostileMobList) {
       SpawnConfigManager.addSpawnConfigPerPlayer(entity, maxHostileMobsPerPlayer);
       SpawnConfigManager.addSpawnConfigPerWorld(entity, maxHostileMobsPerWorld);
       SpawnConfigManager.addSpawnConfigPerServer(entity, maxHostileMobsPerServer);
     }
   }
-
-  public static void addSpawnRatesForBossMobs(Set<String> bossMobList, int maxBossMobsPerPlayer,
-      int maxBossMobsPerWorld, int maxBossMobsPerServer) {
-    for (String entity : bossMobList) {
-      SpawnConfigManager.addSpawnConfigPerPlayer(entity, maxBossMobsPerPlayer);
-      SpawnConfigManager.addSpawnConfigPerWorld(entity, maxBossMobsPerWorld);
-      SpawnConfigManager.addSpawnConfigPerServer(entity, maxBossMobsPerServer);
-    }
-  }
-
-  public static void addSpecialSpawnRates(Map<String, Integer> specialMobList) {
-    for (Map.Entry<String, Integer> entry : specialMobList.entrySet()) {
-      String entity = entry.getKey();
-      SpawnConfigManager.addSpawnConfigSpecial(entity, entry.getValue());
-    }
-  }
-
-  public static void addSpawnRateForMob(String entity, int maxMobsPerPlayer, int maxMobsPerWorld,
-      int maxMobsPerServer) {
-    SpawnConfigManager.addSpawnConfigPerPlayer(entity, maxMobsPerPlayer);
-    SpawnConfigManager.addSpawnConfigPerWorld(entity, maxMobsPerWorld);
-    SpawnConfigManager.addSpawnConfigPerServer(entity, maxMobsPerServer);
-  }
-
 }

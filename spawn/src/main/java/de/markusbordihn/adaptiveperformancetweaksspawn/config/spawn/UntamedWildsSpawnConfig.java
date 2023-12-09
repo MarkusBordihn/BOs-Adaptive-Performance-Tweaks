@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,33 +19,27 @@
 
 package de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn;
 
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.fml.loading.FileUtils;
-
-import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
-import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public final class UntamedWildsSpawnConfig {
 
-  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-
-  private UntamedWildsSpawnConfig() {}
-
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
+  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   static {
     com.electronwill.nightconfig.core.Config.setInsertionOrderPreserved(true);
@@ -53,17 +47,22 @@ public final class UntamedWildsSpawnConfig {
         new ForgeConfigSpec.Builder().configure(Config::new);
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
-    log.info("Registering {} {} spawn config ...", Constants.MOD_NAME,
-        CoreConstants.UNTAMED_WILDS_NAME);
+    log.info(
+        "Registering {} {} spawn config ...", Constants.MOD_NAME, CoreConstants.UNTAMED_WILDS_NAME);
     try {
-      FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
-          CoreConstants.CONFIG_ID);
+      FileUtils.getOrCreateDirectory(
+          FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID), CoreConstants.CONFIG_ID);
     } catch (Exception exception) {
       log.error("There was an error, creating the directory:", exception);
     }
-    ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec,
-        CoreConstants.CONFIG_ID_PREFIX + "/spawn/UntamedWildsSpawn.toml");
+    ModLoadingContext.get()
+        .registerConfig(
+            ModConfig.Type.COMMON,
+            commonSpec,
+            CoreConstants.CONFIG_ID_PREFIX + "/spawn/UntamedWildsSpawn.toml");
   }
+
+  private UntamedWildsSpawnConfig() {}
 
   public static class Config {
 
@@ -95,60 +94,74 @@ public final class UntamedWildsSpawnConfig {
       passiveMobsPerPlayer = builder.defineInRange("MaxPassiveMobsPerPlayer", 4, 1, 64);
       passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 16, 1, 512);
       passiveMobsPerServer = builder.defineInRange("MaxPassiveMobsPerServer", 320, 1, 1024);
-      passiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
-          .define("PassiveMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-            "untamedwilds:arowana",
-            "untamedwilds:giant_clam",
-            "untamedwilds:giant_salamander",
-            "untamedwilds:rhino",
-            "untamedwilds:sunfish",
-            "untamedwilds:trevally"
-          // @formatter:on
-          )));
+      passiveMobsList =
+          builder
+              .comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
+              .define(
+                  "PassiveMobsList",
+                  new ArrayList<>(
+                      Arrays.asList(
+                          // @formatter:off
+                          "untamedwilds:arowana",
+                          "untamedwilds:giant_clam",
+                          "untamedwilds:giant_salamander",
+                          "untamedwilds:rhino",
+                          "untamedwilds:sunfish",
+                          "untamedwilds:trevally"
+                          // @formatter:on
+                          )));
 
       neutralMobsPerPlayer = builder.defineInRange("MaxNeutralMobsPerPlayer", 4, 1, 64);
       neutralMobsPerWorld = builder.defineInRange("MaxNeutralMobsPerWorld", 16, 1, 512);
       neutralMobsPerServer = builder.defineInRange("MaxNeutralMobsPerServer", 320, 1, 1024);
-      neutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
-          .define("NeutralMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-            "untamedwilds:aardvark",
-            "untamedwilds:softshell_turtle",
-            "untamedwilds:tortoise"
-          // @formatter:on
-          )));
+      neutralMobsList =
+          builder
+              .comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
+              .define(
+                  "NeutralMobsList",
+                  new ArrayList<>(
+                      Arrays.asList(
+                          // @formatter:off
+                          "untamedwilds:aardvark",
+                          "untamedwilds:softshell_turtle",
+                          "untamedwilds:tortoise"
+                          // @formatter:on
+                          )));
 
       hostileMobsPerPlayer = builder.defineInRange("MaxHostileMobsPerPlayer", 4, 1, 64);
       hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 16, 1, 512);
       hostileMobsPerServer = builder.defineInRange("MaxHostileMobsPerServer", 320, 1, 1024);
-      hostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
-          .define("HostileMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-            "untamedwilds:bear_black",
-            "untamedwilds:bear_blind",
-            "untamedwilds:bear_brown",
-            "untamedwilds:bear_cave",
-            "untamedwilds:bear_panda",
-            "untamedwilds:bear_polar",
-            "untamedwilds:bear_spectacled",
-            "untamedwilds:bear_sun",
-            "untamedwilds:bigcat_jaguar",
-            "untamedwilds:bigcat_leopard",
-            "untamedwilds:bigcat_lion",
-            "untamedwilds:bigcat_puma",
-            "untamedwilds:bigcat_snow_leopard",
-            "untamedwilds:bigcat_tiger",
-            "untamedwilds:football_fish",
-            "untamedwilds:hippo",
-            "untamedwilds:shark",
-            "untamedwilds:snake",
-            "untamedwilds:tarantula"
-          // @formatter:on
-          )));
+      hostileMobsList =
+          builder
+              .comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
+              .define(
+                  "HostileMobsList",
+                  new ArrayList<>(
+                      Arrays.asList(
+                          // @formatter:off
+                          "untamedwilds:bear_black",
+                          "untamedwilds:bear_blind",
+                          "untamedwilds:bear_brown",
+                          "untamedwilds:bear_cave",
+                          "untamedwilds:bear_panda",
+                          "untamedwilds:bear_polar",
+                          "untamedwilds:bear_spectacled",
+                          "untamedwilds:bear_sun",
+                          "untamedwilds:bigcat_jaguar",
+                          "untamedwilds:bigcat_leopard",
+                          "untamedwilds:bigcat_lion",
+                          "untamedwilds:bigcat_puma",
+                          "untamedwilds:bigcat_snow_leopard",
+                          "untamedwilds:bigcat_tiger",
+                          "untamedwilds:football_fish",
+                          "untamedwilds:hippo",
+                          "untamedwilds:shark",
+                          "untamedwilds:snake",
+                          "untamedwilds:tarantula"
+                          // @formatter:on
+                          )));
 
       builder.pop();
     }
   }
-
 }

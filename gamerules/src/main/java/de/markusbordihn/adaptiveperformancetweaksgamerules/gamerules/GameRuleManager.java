@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,45 +19,38 @@
 
 package de.markusbordihn.adaptiveperformancetweaksgamerules.gamerules;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import net.minecraft.world.level.GameRules;
-
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.server.ServerLifecycleHooks;
-import net.minecraftforge.event.server.ServerAboutToStartEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.fml.ModList;
-
-import de.markusbordihn.adaptiveperformancetweaksgamerules.Constants;
-import de.markusbordihn.adaptiveperformancetweaksgamerules.config.CommonConfig;
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweakscore.commands.CommandManager;
 import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLoadEvent;
+import de.markusbordihn.adaptiveperformancetweaksgamerules.Constants;
+import de.markusbordihn.adaptiveperformancetweaksgamerules.config.CommonConfig;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.world.level.GameRules;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
+import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.server.ServerLifecycleHooks;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber
 public class GameRuleManager {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
-
+  private static final int MIN_ENTITY_CRAMMING_MINE_COLONIES = 16;
   private static GameRules gameRules;
-
   private static boolean entityCrammingEnabled = COMMON.entityCrammingEnabled.get();
   private static boolean insomniaEnabled = COMMON.insomniaEnabled.get();
   private static boolean patrolSpawningEnabled = COMMON.patrolSpawningEnabled.get();
   private static boolean raidsEnabled = COMMON.raidsEnabled.get();
   private static boolean randomTickSpeedEnabled = COMMON.randomTickSpeedEnabled.get();
   private static boolean traderSpawningEnabled = COMMON.traderSpawningEnabled.get();
-
   private static int maxEntityCramming = COMMON.maxEntityCramming.get();
   private static int minEntityCramming = COMMON.maxEntityCramming.get();
-  private static int minEntityCrammingMineColonies = 16;
   private static int randomTickSpeed = COMMON.randomTickSpeed.get();
 
   private static int timeBetweenUpdates = COMMON.timeBetweenUpdates.get() * 1000;
@@ -86,14 +79,18 @@ public class GameRuleManager {
     }
 
     // Additional check for Mine Colonies to make sure we don't kill stucked entities.
-    if (entityCrammingEnabled && ModList.get().isLoaded(CoreConstants.MINECOLONIES_MOD)
-        && minEntityCramming < minEntityCrammingMineColonies) {
+    if (entityCrammingEnabled
+        && ModList.get().isLoaded(CoreConstants.MINECOLONIES_MOD)
+        && minEntityCramming < MIN_ENTITY_CRAMMING_MINE_COLONIES) {
       log.warn(
           "WARNING: The recommended value for minEntityCramming with {} is min. {} instead of {}!",
-          CoreConstants.MINECOLONIES_NAME, minEntityCrammingMineColonies, minEntityCramming);
-      log.info("The minEntityCramming will be automatically set to {}!",
-          minEntityCrammingMineColonies);
-      minEntityCramming = minEntityCrammingMineColonies;
+          CoreConstants.MINECOLONIES_NAME,
+          MIN_ENTITY_CRAMMING_MINE_COLONIES,
+          minEntityCramming);
+      log.info(
+          "The minEntityCramming will be automatically set to {}!",
+          MIN_ENTITY_CRAMMING_MINE_COLONIES);
+      minEntityCramming = MIN_ENTITY_CRAMMING_MINE_COLONIES;
       if (maxEntityCramming <= minEntityCramming) {
         maxEntityCramming = minEntityCramming + 1;
       }
@@ -104,7 +101,8 @@ public class GameRuleManager {
   public static void handleServerStartingEvent(ServerStartingEvent event) {
     gameRules = ServerLifecycleHooks.getCurrentServer().getGameRules();
 
-    log.info("Gamerules will be optimized with an {} sec delay between updates.",
+    log.info(
+        "Gamerules will be optimized with an {} sec delay between updates.",
         timeBetweenUpdates / 1000);
 
     if (randomTickSpeedEnabled) {
@@ -115,7 +113,9 @@ public class GameRuleManager {
     }
 
     if (entityCrammingEnabled) {
-      log.info("Max Entity Cramming will be optimized between {} and {}", minEntityCramming,
+      log.info(
+          "Max Entity Cramming will be optimized between {} and {}",
+          minEntityCramming,
           maxEntityCramming);
       if (gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING) != maxEntityCramming) {
         setMaxEntityCramming(maxEntityCramming);
@@ -310,31 +310,25 @@ public class GameRuleManager {
     int currentMaxEntityCramming = gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
     if (currentMaxEntityCramming != maxEntity) {
       log.debug("Changing maxEntityCramming from {} to {}", currentMaxEntityCramming, maxEntity);
-      CommandManager
-          .executeServerCommand(String.format("gamerule maxEntityCramming %s", maxEntity));
+      CommandManager.executeServerCommand(
+          String.format("gamerule maxEntityCramming %s", maxEntity));
     }
-  }
-
-  public static GameRules getGameRules() {
-    if (gameRules == null) {
-      gameRules = ServerLifecycleHooks.getCurrentServer().getGameRules();
-    }
-    return gameRules;
   }
 
   public static Map<String, String> getGameRulesOverview() {
     Map<String, String> overview = new ConcurrentHashMap<>();
-    overview.put("disableRaids",
-        String.valueOf(gameRules.getBoolean(GameRules.RULE_DISABLE_RAIDS)));
+    overview.put(
+        "disableRaids", String.valueOf(gameRules.getBoolean(GameRules.RULE_DISABLE_RAIDS)));
     overview.put("doInsomnia", String.valueOf(gameRules.getBoolean(GameRules.RULE_DOINSOMNIA)));
-    overview.put("doPatrolSpawning",
+    overview.put(
+        "doPatrolSpawning",
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)));
-    overview.put("doTraderSpawning",
+    overview.put(
+        "doTraderSpawning",
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_TRADER_SPAWNING)));
-    overview.put("maxEntityCramming",
-        String.valueOf(gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING)));
+    overview.put(
+        "maxEntityCramming", String.valueOf(gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING)));
     overview.put("randomTickSpeed", String.valueOf(gameRules.getInt(GameRules.RULE_RANDOMTICKING)));
     return overview;
   }
-
 }

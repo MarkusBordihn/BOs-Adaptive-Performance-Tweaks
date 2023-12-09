@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -36,15 +36,11 @@ public class WarnMessages {
   }
 
   public static String chunkPregeneratorModWarning(String modName) {
-    return String.format("⚠ Detected a chunk pre-generator mod %s for creating new chunks!"
-        + "Please make sure to temporary disable/remove Adaptive Performance Tweaks while pre-generate new chunks with the mod %s to avoid any side effects!"
-        + "After the new chunks are pre-generated you can re-enable Adaptive Performance Tweaks again.",
+    return String.format(
+        "⚠ Detected a chunk pre-generator mod %s for creating new chunks!"
+            + "Please make sure to temporary disable/remove Adaptive Performance Tweaks while pre-generate new chunks with the mod %s to avoid any side effects!"
+            + "After the new chunks are pre-generated you can re-enable Adaptive Performance Tweaks again.",
         modName, modName);
-  }
-
-  public static String knownIssuesModWarning(String modName) {
-    return String.format("⚠ There are known issue with the %s mod, please do not report any issue!",
-        modName);
   }
 
   public static String knownIssuesSpawnModWarning(String modName) {
@@ -61,9 +57,9 @@ public class WarnMessages {
   }
 
   public static String disabledOptimizationModWarning(String modName) {
-    return String.format("🛈 There are known issue with the %s mod!"
-        + " For this reasons all optimizations for related %s entities and/or items are disabled!",
+    return String.format(
+        "🛈 There are known issue with the %s mod!"
+            + " For this reasons all optimizations for related %s entities and/or items are disabled!",
         modName, modName);
   }
-
 }

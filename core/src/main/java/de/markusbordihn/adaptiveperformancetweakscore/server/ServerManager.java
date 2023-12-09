@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,63 +19,52 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.server;
 
+import de.markusbordihn.adaptiveperformancetweakscore.Constants;
+import de.markusbordihn.adaptiveperformancetweakscore.config.CommonConfig;
 import java.util.Arrays;
 import java.util.Random;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.Level;
-
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.DifficultyChangeEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
+import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.server.ServerLifecycleHooks;
-import net.minecraftforge.event.server.ServerAboutToStartEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
-
-import de.markusbordihn.adaptiveperformancetweakscore.Constants;
-import de.markusbordihn.adaptiveperformancetweakscore.config.CommonConfig;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber
 public class ServerManager {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-  private static Random random = new Random();
-
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
-  private static double gameDifficultyFactorEasy = COMMON.gameDifficultyFactorEasy.get();
-  private static double gameDifficultyFactorNormal = COMMON.gameDifficultyFactorNormal.get();
-  private static double gameDifficultyFactorPeaceful = COMMON.gameDifficultyFactorPeaceful.get();
-  private static double gameDifficultyFactorHard = COMMON.gameDifficultyFactorHard.get();
-
   private static final int BASE_TICK = 25;
   private static final int OPTIMIZATION_TICK = 4 * BASE_TICK;
   private static final int RESET_TICK = 6 * BASE_TICK;
   private static final int SERVER_LOAD_TICK = 1 * BASE_TICK;
   private static final int WORLD_LOAD_TICK = 2 * BASE_TICK;
+  private static final Random random = new Random();
+  private static double gameDifficultyFactorEasy = COMMON.gameDifficultyFactorEasy.get();
+  private static double gameDifficultyFactorNormal = COMMON.gameDifficultyFactorNormal.get();
+  private static double gameDifficultyFactor = gameDifficultyFactorNormal;
+  private static double gameDifficultyFactorPeaceful = COMMON.gameDifficultyFactorPeaceful.get();
+  private static double gameDifficultyFactorHard = COMMON.gameDifficultyFactorHard.get();
   private static int ticks = random.nextInt(15);
-
   private static MinecraftServer minecraftServer = null;
   private static java.lang.Iterable<ServerLevel> serverLevels = null;
-  private static int maxNumberOfPlayers = 0;
   private static int numberOfPlayers = 0;
-
   private static Difficulty gameDifficulty = Difficulty.NORMAL;
-  private static double gameDifficultyFactor = gameDifficultyFactorNormal;
 
-  protected ServerManager() {
-
-  }
+  protected ServerManager() {}
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
@@ -83,18 +72,22 @@ public class ServerManager {
     gameDifficultyFactorNormal = COMMON.gameDifficultyFactorNormal.get();
     gameDifficultyFactorPeaceful = COMMON.gameDifficultyFactorPeaceful.get();
     gameDifficultyFactorHard = COMMON.gameDifficultyFactorHard.get();
-    log.info("{} Game difficult factors EASY: {}, NORMAL: {}, PEACEFUL: {} and HARD: {}",
-        Constants.LOG_PREFIX, gameDifficultyFactorEasy, gameDifficultyFactorNormal,
-        gameDifficultyFactorPeaceful, gameDifficultyFactorHard);
+    log.info(
+        "{} Game difficult factors EASY: {}, NORMAL: {}, PEACEFUL: {} and HARD: {}",
+        Constants.LOG_PREFIX,
+        gameDifficultyFactorEasy,
+        gameDifficultyFactorNormal,
+        gameDifficultyFactorPeaceful,
+        gameDifficultyFactorHard);
   }
 
   @SubscribeEvent
   public static void handleServerStartingEvent(ServerStartingEvent event) {
-    maxNumberOfPlayers = getMinecraftServer().getPlayerList().getMaxPlayers();
+    int maxNumberOfPlayers = getMinecraftServer().getPlayerList().getMaxPlayers();
     numberOfPlayers = getMinecraftServer().getPlayerList().getPlayerCount();
     updateGameDifficulty(getMinecraftServer().getWorldData().getDifficulty());
-    log.info("{} Max number of remote players is set to {}", Constants.LOG_PREFIX,
-        maxNumberOfPlayers);
+    log.info(
+        "{} Max number of remote players is set to {}", Constants.LOG_PREFIX, maxNumberOfPlayers);
   }
 
   @SubscribeEvent
@@ -163,7 +156,7 @@ public class ServerManager {
   public static double getAverageTickTime(ServerLevel serverLevel) {
     long[] tickTimes = getTickTime(serverLevel.dimension());
     if (tickTimes != null) {
-      return Arrays.stream(tickTimes).average().orElseGet(() -> Double.NaN) / 1000000;
+      return Arrays.stream(tickTimes).average().orElse(Double.NaN) / 1000000;
     }
     return 0;
   }
@@ -179,16 +172,8 @@ public class ServerManager {
     return serverLevels;
   }
 
-  public static int getMaxNumberOfPlayers() {
-    return maxNumberOfPlayers;
-  }
-
   public static int getNumberOfPlayers() {
     return numberOfPlayers;
-  }
-
-  public static Difficulty getGameDifficulty() {
-    return gameDifficulty;
   }
 
   public static double getGameDifficultyFactor() {
@@ -204,9 +189,6 @@ public class ServerManager {
       case EASY:
         gameDifficultyFactor = gameDifficultyFactorEasy;
         break;
-      case NORMAL:
-        gameDifficultyFactor = gameDifficultyFactorNormal;
-        break;
       case PEACEFUL:
         gameDifficultyFactor = gameDifficultyFactorPeaceful;
         break;
@@ -216,8 +198,10 @@ public class ServerManager {
       default:
         gameDifficultyFactor = gameDifficultyFactorNormal;
     }
-    log.info("{} Game difficulty is set to {} with a {} factor.", Constants.LOG_PREFIX,
-        gameDifficulty, gameDifficultyFactor);
+    log.info(
+        "{} Game difficulty is set to {} with a {} factor.",
+        Constants.LOG_PREFIX,
+        gameDifficulty,
+        gameDifficultyFactor);
   }
-
 }

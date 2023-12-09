@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,17 +19,14 @@
 
 package de.markusbordihn.adaptiveperformancetweaksgamerules.commands;
 
-import java.util.Map;
-
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-
 import de.markusbordihn.adaptiveperformancetweakscore.commands.CustomCommand;
 import de.markusbordihn.adaptiveperformancetweaksgamerules.gamerules.GameRuleManager;
+import java.util.Map;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 
 public class GameRuleCommand extends CustomCommand {
 
@@ -54,5 +51,4 @@ public class GameRuleCommand extends CustomCommand {
     }
     return 0;
   }
-
 }

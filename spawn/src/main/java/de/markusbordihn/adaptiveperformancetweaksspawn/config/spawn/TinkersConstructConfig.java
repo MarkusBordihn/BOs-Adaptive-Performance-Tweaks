@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,33 +19,27 @@
 
 package de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn;
 
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.fml.loading.FileUtils;
-
-import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
-import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public final class TinkersConstructConfig {
 
-  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-
-  private TinkersConstructConfig() {}
-
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
+  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   static {
     com.electronwill.nightconfig.core.Config.setInsertionOrderPreserved(true);
@@ -53,17 +47,22 @@ public final class TinkersConstructConfig {
         new ForgeConfigSpec.Builder().configure(Config::new);
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
-    log.info("Registering {} {} spawn config ...", Constants.MOD_NAME,
-        CoreConstants.TCONSTRUCT_NAME);
+    log.info(
+        "Registering {} {} spawn config ...", Constants.MOD_NAME, CoreConstants.TCONSTRUCT_NAME);
     try {
-      FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
-          CoreConstants.CONFIG_ID);
+      FileUtils.getOrCreateDirectory(
+          FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID), CoreConstants.CONFIG_ID);
     } catch (Exception exception) {
       log.error("There was an error, creating the directory:", exception);
     }
-    ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec,
-        CoreConstants.CONFIG_ID_PREFIX + "/spawn/TinkersConstructSpawn.toml");
+    ModLoadingContext.get()
+        .registerConfig(
+            ModConfig.Type.COMMON,
+            commonSpec,
+            CoreConstants.CONFIG_ID_PREFIX + "/spawn/TinkersConstructSpawn.toml");
   }
+
+  private TinkersConstructConfig() {}
 
   public static class Config {
 
@@ -85,16 +84,18 @@ public final class TinkersConstructConfig {
       hostileMobsPerPlayer = builder.defineInRange("MaxHostileMobsPerPlayer", 6, 1, 64);
       hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 24, 1, 512);
       hostileMobsPerServer = builder.defineInRange("MaxHostileMobsPerServer", 320, 1, 1024);
-      hostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
-          .define("HostileMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-            "tconstruct:earth_slime",
-            "tconstruct:sky_slime",
-            "tconstruct:ender_slime"
-          // @formatter:on
-          )));
+      hostileMobsList =
+          builder
+              .comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
+              .define(
+                  "HostileMobsList",
+                  new ArrayList<>(
+                      Arrays.asList(
+                          // @formatter:off
+                          "tconstruct:earth_slime", "tconstruct:sky_slime", "tconstruct:ender_slime"
+                          // @formatter:on
+                          )));
       builder.pop();
     }
   }
-
 }

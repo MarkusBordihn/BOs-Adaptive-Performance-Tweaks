@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -23,17 +23,14 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 
 public class PlayerValidation {
-
-  private ServerPlayer player;
-  private String playerUUID;
-  private String username;
-  private Vec3 position;
-  private double rotationYawHead;
-  private long lastValidationTime = System.currentTimeMillis();
+  private final ServerPlayer player;
+  private final String username;
+  private final Vec3 position;
+  private final double rotationYawHead;
+  private final long lastValidationTime = System.currentTimeMillis();
 
   PlayerValidation(ServerPlayer player) {
     this.player = player;
-    this.playerUUID = player.getStringUUID();
     this.position = player.position();
     this.rotationYawHead = player.getYHeadRot();
     this.username = player.getName().getString();
@@ -44,20 +41,8 @@ public class PlayerValidation {
         || this.rotationYawHead != this.player.getYHeadRot());
   }
 
-  public ServerPlayer getPlayer() {
-    return this.player;
-  }
-
-  public String getPlayerUUID() {
-    return this.playerUUID;
-  }
-
   public String getUsername() {
     return this.username;
-  }
-
-  public long getValidationTime() {
-    return this.lastValidationTime;
   }
 
   public long getValidationTimeElapsed() {
