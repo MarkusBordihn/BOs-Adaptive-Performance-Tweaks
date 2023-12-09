@@ -1,26 +1,24 @@
 /**
  * Copyright 2021 Markus Bordihn
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all copies or
+ * <p>The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
 package de.markusbordihn.adaptiveperformancetweakscore.player;
 
 import java.util.UUID;
-
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -61,8 +59,8 @@ public class PlayerPosition {
     this.player = player;
     this.playerName = player.getName().getString();
     this.playerUUID = player.getUUID();
-    this.updatePosition(player.getLevel().dimension().location().toString(), viewDistance,
-        simulationDistance);
+    this.updatePosition(
+        player.getLevel().dimension().location().toString(), viewDistance, simulationDistance);
     this.calculateViewArea();
   }
 
@@ -71,9 +69,11 @@ public class PlayerPosition {
   }
 
   public void update(String levelName, int viewDistance, int simulationDistance) {
-    if (!this.levelName.equals(levelName) || this.viewDistance != viewDistance
+    if (!this.levelName.equals(levelName)
+        || this.viewDistance != viewDistance
         || this.simulationDistance != simulationDistance
-        || this.lastActionTime != this.player.getLastActionTime() || hasChangedPosition()) {
+        || this.lastActionTime != this.player.getLastActionTime()
+        || hasChangedPosition()) {
       this.updatePosition(levelName, viewDistance, simulationDistance);
     }
   }
@@ -136,8 +136,11 @@ public class PlayerPosition {
 
     // Calculate view area distance in blocks based on surrounding factors
     if (!this.canSeeSky || this.isUnderWater) {
-      this.viewAreaDistance = (this.simulationDistance < this.viewDistance ? this.simulationDistance
-          : this.simulationDistance - 1) * CHUNK_SIZE;
+      this.viewAreaDistance =
+          (this.simulationDistance < this.viewDistance
+                  ? this.simulationDistance
+                  : this.simulationDistance - 1)
+              * CHUNK_SIZE;
     } else {
       this.viewAreaDistance = this.viewDistance * CHUNK_SIZE;
     }
@@ -182,13 +185,40 @@ public class PlayerPosition {
     // Make sure to calculate view area before displaying results.
     calculateViewArea();
 
-    return "PlayerPosition[Player{name: '" + this.playerName + "', uuid: '" + this.playerUUID
-        + "', world: '" + this.levelName + "', x:" + this.posX + ", y:" + this.posY + ", z:"
-        + this.posZ + ", viewDistance: " + this.viewDistance + ", simulationDistance: "
-        + this.simulationDistance + ", viewAreaDistance: " + this.viewAreaDistance + "}, Range{x:"
-        + this.viewAreaStartX + " to " + this.viewAreaStopX + ", y:" + this.viewAreaStartY + " to "
-        + this.viewAreaStopY + ", z:" + this.viewAreaStartZ + " to " + this.viewAreaStopZ
-        + "}, Meta{canSeeSky: " + this.canSeeSky + ", isUnderWater: " + this.isUnderWater + "}]";
+    return "PlayerPosition[Player{name: '"
+        + this.playerName
+        + "', uuid: '"
+        + this.playerUUID
+        + "', world: '"
+        + this.levelName
+        + "', x:"
+        + this.posX
+        + ", y:"
+        + this.posY
+        + ", z:"
+        + this.posZ
+        + ", viewDistance: "
+        + this.viewDistance
+        + ", simulationDistance: "
+        + this.simulationDistance
+        + ", viewAreaDistance: "
+        + this.viewAreaDistance
+        + "}, Range{x:"
+        + this.viewAreaStartX
+        + " to "
+        + this.viewAreaStopX
+        + ", y:"
+        + this.viewAreaStartY
+        + " to "
+        + this.viewAreaStopY
+        + ", z:"
+        + this.viewAreaStartZ
+        + " to "
+        + this.viewAreaStopZ
+        + "}, Meta{canSeeSky: "
+        + this.canSeeSky
+        + ", isUnderWater: "
+        + this.isUnderWater
+        + "}]";
   }
-
 }

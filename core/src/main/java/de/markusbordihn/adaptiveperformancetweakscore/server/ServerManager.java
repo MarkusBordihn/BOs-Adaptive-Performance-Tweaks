@@ -1,44 +1,40 @@
 /**
  * Copyright 2021 Markus Bordihn
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all copies or
+ * <p>The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
 package de.markusbordihn.adaptiveperformancetweakscore.server;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import de.markusbordihn.adaptiveperformancetweakscore.Constants;
+import de.markusbordihn.adaptiveperformancetweakscore.config.CommonConfig;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Difficulty;
-
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.DifficultyChangeEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
+import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.server.ServerLifecycleHooks;
-import net.minecraftforge.event.server.ServerAboutToStartEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
-
-import de.markusbordihn.adaptiveperformancetweakscore.Constants;
-import de.markusbordihn.adaptiveperformancetweakscore.config.CommonConfig;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber
 public class ServerManager {
@@ -46,28 +42,27 @@ public class ServerManager {
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
-
-  private static short ticks = 0;
   private static final short SERVER_LOAD_TICK = 1 * 20;
   private static final short WORLD_LOAD_TICK = 2 * 20;
   private static final short OPTIMIZATION_TICK = 3 * 20;
   private static final short RESET_TICK = 6 * 20;
-
+  private static short ticks = 0;
   private static MinecraftServer minecraftServer = null;
   private static java.lang.Iterable<ServerLevel> serverLevels = null;
 
   private static Difficulty gameDifficulty = Difficulty.NORMAL;
   private static double gameDifficultyFactor = 1;
 
-  protected ServerManager() {
-
-  }
+  protected ServerManager() {}
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
-    log.info("{} Game difficult factors EASY: {}, NORMAL: {}, PEACEFUL: {} and HARD: {}",
-        Constants.LOG_PREFIX, COMMON.gameDifficultyFactorEasy.get(),
-        COMMON.gameDifficultyFactorNormal.get(), COMMON.gameDifficultyFactorPeaceful.get(),
+    log.info(
+        "{} Game difficult factors EASY: {}, NORMAL: {}, PEACEFUL: {} and HARD: {}",
+        Constants.LOG_PREFIX,
+        COMMON.gameDifficultyFactorEasy.get(),
+        COMMON.gameDifficultyFactorNormal.get(),
+        COMMON.gameDifficultyFactorPeaceful.get(),
         COMMON.gameDifficultyFactorHard.get());
   }
 
@@ -75,7 +70,9 @@ public class ServerManager {
   @OnlyIn(Dist.CLIENT)
   public static void handleClientServerStartingEvent(ServerStartingEvent event) {
     updateGameDifficulty(getMinecraftServer().getWorldData().getDifficulty());
-    log.info("{} Max number of local players is set to {}", Constants.LOG_PREFIX,
+    log.info(
+        "{} Max number of local players is set to {}",
+        Constants.LOG_PREFIX,
         getMinecraftServer().getPlayerList().getMaxPlayers());
   }
 
@@ -83,7 +80,9 @@ public class ServerManager {
   @OnlyIn(Dist.DEDICATED_SERVER)
   public static void handleDedicatedServerStartingEvent(ServerStartingEvent event) {
     updateGameDifficulty(getMinecraftServer().getWorldData().getDifficulty());
-    log.info("{} Max number of remote players is set to {}", Constants.LOG_PREFIX,
+    log.info(
+        "{} Max number of remote players is set to {}",
+        Constants.LOG_PREFIX,
         getMinecraftServer().getPlayerList().getMaxPlayers());
   }
 
@@ -171,8 +170,10 @@ public class ServerManager {
       default:
         gameDifficultyFactor = COMMON.gameDifficultyFactorNormal.get();
     }
-    log.info("{} Game difficulty is set to {} with a {} factor.", Constants.LOG_PREFIX,
-        gameDifficulty, gameDifficultyFactor);
+    log.info(
+        "{} Game difficulty is set to {} with a {} factor.",
+        Constants.LOG_PREFIX,
+        gameDifficulty,
+        gameDifficultyFactor);
   }
-
 }

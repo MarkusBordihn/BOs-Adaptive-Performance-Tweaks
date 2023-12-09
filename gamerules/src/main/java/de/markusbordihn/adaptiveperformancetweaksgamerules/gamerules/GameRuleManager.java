@@ -1,44 +1,39 @@
 /**
  * Copyright 2021 Markus Bordihn
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all copies or
+ * <p>The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
 package de.markusbordihn.adaptiveperformancetweaksgamerules.gamerules;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import net.minecraft.world.level.GameRules;
-
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.server.ServerLifecycleHooks;
-import net.minecraftforge.event.server.ServerAboutToStartEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.fml.ModList;
-
-import de.markusbordihn.adaptiveperformancetweaksgamerules.Constants;
-import de.markusbordihn.adaptiveperformancetweaksgamerules.config.CommonConfig;
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweakscore.commands.CommandManager;
 import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLoadEvent;
+import de.markusbordihn.adaptiveperformancetweaksgamerules.Constants;
+import de.markusbordihn.adaptiveperformancetweaksgamerules.config.CommonConfig;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.world.level.GameRules;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
+import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.server.ServerLifecycleHooks;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber
 public class GameRuleManager {
@@ -63,20 +58,23 @@ public class GameRuleManager {
   public static void handleServerStartingEvent(ServerStartingEvent event) {
     gameRules = ServerLifecycleHooks.getCurrentServer().getGameRules();
 
-    log.info("Gamerules will be optimized with an {} sec delay between updates.",
+    log.info(
+        "Gamerules will be optimized with an {} sec delay between updates.",
         timeBetweenUpdates / 1000);
 
     if (Boolean.TRUE.equals(COMMON.randomTickSpeedEnabled.get())) {
-      log.info("Random Tick Speed will be optimized between {} and {}", 1,
-          COMMON.randomTickSpeed.get());
+      log.info(
+          "Random Tick Speed will be optimized between {} and {}", 1, COMMON.randomTickSpeed.get());
       if (gameRules.getInt(GameRules.RULE_RANDOMTICKING) != COMMON.randomTickSpeed.get()) {
         setRandomTickSpeed(COMMON.randomTickSpeed.get());
       }
     }
 
     if (Boolean.TRUE.equals(COMMON.entityCrammingEnabled.get())) {
-      log.info("Max Entity Cramming will be optimized between {} and {}",
-          COMMON.minEntityCramming.get(), COMMON.maxEntityCramming.get());
+      log.info(
+          "Max Entity Cramming will be optimized between {} and {}",
+          COMMON.minEntityCramming.get(),
+          COMMON.maxEntityCramming.get());
       if (gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING) != COMMON.maxEntityCramming.get()) {
         setMaxEntityCramming(COMMON.maxEntityCramming.get());
       }
@@ -297,9 +295,11 @@ public class GameRuleManager {
         && maxEntity < COMMON.minEntityCrammingMineColonies.get()) {
       log.warn(
           "WARNING: The recommended value for minEntityCramming with {} is min. {} instead of {}!",
-          CoreConstants.MINECOLONIES_NAME, COMMON.minEntityCrammingMineColonies.get(),
+          CoreConstants.MINECOLONIES_NAME,
+          COMMON.minEntityCrammingMineColonies.get(),
           COMMON.minEntityCramming.get());
-      log.info("The minEntityCramming will be automatically set to {}!",
+      log.info(
+          "The minEntityCramming will be automatically set to {}!",
           COMMON.minEntityCrammingMineColonies.get());
       maxEntity = COMMON.minEntityCrammingMineColonies.get();
     }
@@ -320,21 +320,27 @@ public class GameRuleManager {
 
   public static Map<String, String> getGameRulesOverview() {
     Map<String, String> overview = new ConcurrentHashMap<>();
-    overview.put(GameRules.RULE_DISABLE_RAIDS.getId(),
+    overview.put(
+        GameRules.RULE_DISABLE_RAIDS.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DISABLE_RAIDS)));
-    overview.put(GameRules.RULE_DOINSOMNIA.getId(),
+    overview.put(
+        GameRules.RULE_DOINSOMNIA.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DOINSOMNIA)));
-    overview.put(GameRules.RULE_DO_PATROL_SPAWNING.getId(),
+    overview.put(
+        GameRules.RULE_DO_PATROL_SPAWNING.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)));
-    overview.put(GameRules.RULE_DO_TRADER_SPAWNING.getId(),
+    overview.put(
+        GameRules.RULE_DO_TRADER_SPAWNING.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_TRADER_SPAWNING)));
-    overview.put(GameRules.RULE_DO_WARDEN_SPAWNING.getId(),
+    overview.put(
+        GameRules.RULE_DO_WARDEN_SPAWNING.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING)));
-    overview.put(GameRules.RULE_MAX_ENTITY_CRAMMING.getId(),
+    overview.put(
+        GameRules.RULE_MAX_ENTITY_CRAMMING.getId(),
         String.valueOf(gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING)));
-    overview.put(GameRules.RULE_RANDOMTICKING.getId(),
+    overview.put(
+        GameRules.RULE_RANDOMTICKING.getId(),
         String.valueOf(gameRules.getInt(GameRules.RULE_RANDOMTICKING)));
     return overview;
   }
-
 }

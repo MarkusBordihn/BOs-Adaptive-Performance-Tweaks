@@ -1,35 +1,32 @@
 /**
  * Copyright 2022 Markus Bordihn
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all copies or
+ * <p>The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
 package de.markusbordihn.adaptiveperformancetweakscore.utils;
-
-import java.net.URISyntaxException;
-import java.util.Optional;
-import java.util.regex.Pattern;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import cpw.mods.modlauncher.Launcher;
 import cpw.mods.modlauncher.api.IEnvironment;
 import de.markusbordihn.adaptiveperformancetweakscore.AdaptivePerformanceTweaksCore;
 import de.markusbordihn.adaptiveperformancetweakscore.Constants;
+import java.net.URISyntaxException;
+import java.util.Optional;
+import java.util.regex.Pattern;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class StopModReposts {
 
@@ -56,8 +53,13 @@ public class StopModReposts {
     }
     String jarFilePath = null;
     try {
-      jarFilePath = AdaptivePerformanceTweaksCore.class.getProtectionDomain().getCodeSource().getLocation()
-          .toURI().getPath();
+      jarFilePath =
+          AdaptivePerformanceTweaksCore.class
+              .getProtectionDomain()
+              .getCodeSource()
+              .getLocation()
+              .toURI()
+              .getPath();
     } catch (URISyntaxException exception) {
       log.error("Unable to get jar file path: {}", exception);
     }
@@ -67,7 +69,9 @@ public class StopModReposts {
     }
 
     if (expectedFilePattern.matcher(jarFilePath).find()) {
-      log.info("Thanks for using {} ({}). I hope you enjoy the mod. :)", Constants.MOD_NAME,
+      log.info(
+          "Thanks for using {} ({}). I hope you enjoy the mod. :)",
+          Constants.MOD_NAME,
           Constants.MOD_URL);
     } else {
       log.error("");
@@ -80,13 +84,13 @@ public class StopModReposts {
       log.error("It's seems that the mod file you are using was modified!");
       log.error(
           "Please make sure to download the latest {} mod only from the original source at {}",
-          Constants.MOD_NAME, Constants.MOD_URL);
+          Constants.MOD_NAME,
+          Constants.MOD_URL);
       log.error(
           "If you downloaded this mod from other sources we could not make sure that it works as expected or does not includes any unwanted modification (e.g. adware, malware, ...).");
       log.error("");
       log.error("See the following page for more details: {}", STOP_MOD_REPOSTS_URL);
       log.error("");
     }
-
   }
 }

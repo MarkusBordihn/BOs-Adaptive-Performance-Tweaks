@@ -1,7 +1,9 @@
 {
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
-  "editor.rulers": [100],
+  "editor.rulers": [
+    100
+  ],
   "files.trimFinalNewlines": true,
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
@@ -136,7 +138,7 @@
     "zombified",
     "zotzpyre"
   ],
-  "cSpell.ignorePaths" : [
+  "cSpell.ignorePaths": [
     "*.yml",
     ".gradle",
     ".vscode",

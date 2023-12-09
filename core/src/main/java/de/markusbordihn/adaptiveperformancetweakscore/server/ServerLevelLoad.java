@@ -1,41 +1,36 @@
 /**
  * Copyright 2021 Markus Bordihn
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all copies or
+ * <p>The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
 package de.markusbordihn.adaptiveperformancetweakscore.server;
 
+import de.markusbordihn.adaptiveperformancetweakscore.Constants;
+import de.markusbordihn.adaptiveperformancetweakscore.config.CommonConfig;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraft.server.level.ServerLevel;
-
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-
-import de.markusbordihn.adaptiveperformancetweakscore.Constants;
-import de.markusbordihn.adaptiveperformancetweakscore.config.CommonConfig;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber
 public class ServerLevelLoad {
@@ -50,10 +45,6 @@ public class ServerLevelLoad {
   private static Map<ServerLevel, Double> levelLoad = new ConcurrentHashMap<>();
   private static Map<ServerLevel, ServerLevelLoadLevel> levelLoadLevel = new ConcurrentHashMap<>();
   private static Map<String, ServerLevelLoadLevel> levelNameLoadLevel = new ConcurrentHashMap<>();
-
-  public enum ServerLevelLoadLevel {
-    VERY_LOW, LOW, NORMAL, MEDIUM, HIGH, VERY_HIGH
-  }
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
@@ -91,14 +82,21 @@ public class ServerLevelLoad {
         // Report change to server log, if enabled.
         if (loadLevel != lastLoadLevel && Boolean.TRUE.equals(COMMON.logServerLevelLoad.get())) {
           String loadIndicator = lastAvgTickTime > avgTickTime ? "↓" : "↑";
-          log.info("{} {} Level load for {} changed from {} (avg. {}) to {} (avg. {})",
-              Constants.LOG_PREFIX, loadIndicator, serverLevelName, lastLoadLevel, lastAvgTickTime,
-              loadLevel, avgTickTime);
+          log.info(
+              "{} {} Level load for {} changed from {} (avg. {}) to {} (avg. {})",
+              Constants.LOG_PREFIX,
+              loadIndicator,
+              serverLevelName,
+              lastLoadLevel,
+              lastAvgTickTime,
+              loadLevel,
+              avgTickTime);
         }
 
         // Post result to the event bus.
-        MinecraftForge.EVENT_BUS.post(new ServerLevelLoadEvent(serverLevel, loadLevel,
-            lastLoadLevel, avgTickTime, lastAvgTickTime, dist));
+        MinecraftForge.EVENT_BUS.post(
+            new ServerLevelLoadEvent(
+                serverLevel, loadLevel, lastLoadLevel, avgTickTime, lastAvgTickTime, dist));
       }
     }
 
@@ -149,4 +147,12 @@ public class ServerLevelLoad {
     }
   }
 
+  public enum ServerLevelLoadLevel {
+    VERY_LOW,
+    LOW,
+    NORMAL,
+    MEDIUM,
+    HIGH,
+    VERY_HIGH
+  }
 }
