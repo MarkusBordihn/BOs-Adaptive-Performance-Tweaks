@@ -1,8 +1,8 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
@@ -10,42 +10,35 @@
  * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
 package de.markusbordihn.adaptiveperformancetweaksitems.config;
 
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import de.markusbordihn.adaptiveperformancetweaksitems.Constants;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.fml.loading.FileUtils;
-
-import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
-import de.markusbordihn.adaptiveperformancetweaksitems.Constants;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public final class CommonConfig {
 
-  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-
-  private CommonConfig() {}
-
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
+  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   static {
     com.electronwill.nightconfig.core.Config.setInsertionOrderPreserved(true);
@@ -55,14 +48,17 @@ public final class CommonConfig {
     COMMON = specPair.getLeft();
     log.info("Registering {} common config ...", Constants.MOD_NAME);
     try {
-      FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
-          CoreConstants.CONFIG_ID);
+      FileUtils.getOrCreateDirectory(
+          FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID), CoreConstants.CONFIG_ID);
     } catch (Exception exception) {
       log.error("There was an error, creating the directory:", exception);
     }
-    ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec,
-        CoreConstants.CONFIG_ID_PREFIX + "items.toml");
+    ModLoadingContext.get()
+        .registerConfig(
+            ModConfig.Type.COMMON, commonSpec, CoreConstants.CONFIG_ID_PREFIX + "items.toml");
   }
+
+  private CommonConfig() {}
 
   public static class Config {
 
@@ -82,33 +78,46 @@ public final class CommonConfig {
       builder.push("Items");
       optimizeItems =
           builder.comment("Enable/Disable items optimization.").define("optimizeItems", true);
-      maxNumberOfItemsPerType = builder.comment(
-          "Defines the max. number of items / item stacks per type which are allowed to lay around in the world.")
-          .defineInRange("maxNumberOfItemsPerType", 32, 16, 128);
-      maxNumberOfItems = builder.comment(
-          "Defines the max. number of items / item stacks which are allowed to lay around in a single world.")
-          .defineInRange("maxNumberOfItems", 128, 16, 1000);
-      itemsClusterRange = builder
-          .comment(
-              "Defines the radius in blocks which items / item stacks will be clustered together.")
-          .defineInRange("itemsClusterRange", 3, 1, 16);
-      itemsAllowList = builder.comment(
-          "Defines a list of items which will be optimized and all other items will be ignored by the optimization.")
-          .define("itemsAllowList", new ArrayList<String>(Arrays.asList()));
-      itemsDenyList = builder.comment(
-          "Defines a list of items which will be ignored by the optimization and all other relevant items will be optimized.")
-          .define("itemsDenyList", new ArrayList<String>(
-              Arrays.asList("item.minecraft.diamond", "item.minecraft.diamond_block")));
+      maxNumberOfItemsPerType =
+          builder
+              .comment(
+                  "Defines the max. number of items / item stacks per type which are allowed to lay around in the world.")
+              .defineInRange("maxNumberOfItemsPerType", 32, 16, 128);
+      maxNumberOfItems =
+          builder
+              .comment(
+                  "Defines the max. number of items / item stacks which are allowed to lay around in a single world.")
+              .defineInRange("maxNumberOfItems", 128, 16, 1000);
+      itemsClusterRange =
+          builder
+              .comment(
+                  "Defines the radius in blocks which items / item stacks will be clustered together.")
+              .defineInRange("itemsClusterRange", 3, 1, 16);
+      itemsAllowList =
+          builder
+              .comment(
+                  "Defines a list of items which will be optimized and all other items will be ignored by the optimization.")
+              .define("itemsAllowList", new ArrayList<>(List.of()));
+      itemsDenyList =
+          builder
+              .comment(
+                  "Defines a list of items which will be ignored by the optimization and all other relevant items will be optimized.")
+              .define(
+                  "itemsDenyList",
+                  new ArrayList<>(
+                      Arrays.asList("item.minecraft.diamond", "item.minecraft.diamond_block")));
       builder.pop();
 
       builder.push("Experience Orbs");
-      optimizeExperienceOrbs = builder.comment("Enable/Disable experience orbs optimization.")
-          .define("optimizeExperienceOrbs", true);
+      optimizeExperienceOrbs =
+          builder
+              .comment("Enable/Disable experience orbs optimization.")
+              .define("optimizeExperienceOrbs", true);
       experienceOrbsClusterRange =
-          builder.comment("Defines the radius in which experience orbs will be clustered together.")
+          builder
+              .comment("Defines the radius in which experience orbs will be clustered together.")
               .defineInRange("experienceOrbsClusterRange", 4, 1, 16);
       builder.pop();
     }
   }
-
 }

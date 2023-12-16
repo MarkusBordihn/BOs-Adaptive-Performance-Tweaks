@@ -1,8 +1,8 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
@@ -10,36 +10,31 @@
  * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
 package de.markusbordihn.adaptiveperformancetweaksspawn.commands;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-
+import de.markusbordihn.adaptiveperformancetweakscore.commands.CustomCommand;
+import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
+import de.markusbordihn.adaptiveperformancetweaksspawn.spawn.SpawnerManager;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-
-import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
-import de.markusbordihn.adaptiveperformancetweaksspawn.spawn.SpawnerManager;
-import de.markusbordihn.adaptiveperformancetweakscore.commands.CustomCommand;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class SpawnerCommand extends CustomCommand {
 
@@ -55,10 +50,12 @@ public class SpawnerCommand extends CustomCommand {
   public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
     Set<BaseSpawner> spawnerList = SpawnerManager.getSpawnerList();
     if (spawnerList.isEmpty()) {
-      sendFeedback(context,
+      sendFeedback(
+          context,
           "Unable to find any active mob spawner. World is not loaded or nor spawner are active yet?");
     } else {
-      sendFeedback(context,
+      sendFeedback(
+          context,
           "Spawner Overview (please check latest.log for full output with position and meta data)\n===");
       Map<String, Integer> spawnerCounter = new HashMap<>();
       for (BaseSpawner spawner : spawnerList) {
@@ -70,14 +67,19 @@ public class SpawnerCommand extends CustomCommand {
           String spawnerId = spawnerData.getString("id");
           String spawnEntityId =
               spawnerData.getCompound("SpawnData").getCompound("entity").getString("id");
-          log.info("[Mob Spawner] {}({}) at {} in {} with {}", spawnerId, spawnEntityId,
-              blockEntity.getBlockPos(), worldName, spawnerData);
+          log.info(
+              "[Mob Spawner] {}({}) at {} in {} with {}",
+              spawnerId,
+              spawnEntityId,
+              blockEntity.getBlockPos(),
+              worldName,
+              spawnerData);
           spawnerCounter.put(spawnEntityId, spawnerCounter.getOrDefault(spawnEntityId, 0) + 1);
         }
       }
       for (Map.Entry<String, Integer> spawnerEntry : spawnerCounter.entrySet()) {
-        sendFeedback(context,
-            String.format("\u221F %s x %s", spawnerEntry.getValue(), spawnerEntry.getKey()));
+        sendFeedback(
+            context, String.format("∟ %s x %s", spawnerEntry.getValue(), spawnerEntry.getKey()));
       }
     }
     return 0;

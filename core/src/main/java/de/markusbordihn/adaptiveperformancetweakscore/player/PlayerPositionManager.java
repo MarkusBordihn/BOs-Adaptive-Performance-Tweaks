@@ -1,8 +1,8 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
@@ -10,51 +10,40 @@
  * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
 package de.markusbordihn.adaptiveperformancetweakscore.player;
 
+import de.markusbordihn.adaptiveperformancetweakscore.Constants;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
-
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.server.ServerLifecycleHooks;
-import net.minecraftforge.event.server.ServerAboutToStartEvent;
-
-import de.markusbordihn.adaptiveperformancetweakscore.Constants;
-import de.markusbordihn.adaptiveperformancetweakscore.dimension.DimensionManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber
 public class PlayerPositionManager {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-  private static Random random = new Random();
-
-  private static Map<String, PlayerPosition> playerPositionMap = new ConcurrentHashMap<>();
   private static final int PLAYER_POSITION_UPDATE_TICK = 60;
+  private static final Random random = new Random();
+  private static Map<String, PlayerPosition> playerPositionMap = new ConcurrentHashMap<>();
   private static int updateTicks = random.nextInt(30);
-
-  private static int numberOfPlayers = 0;
 
   protected PlayerPositionManager() {}
 
@@ -95,7 +84,7 @@ public class PlayerPositionManager {
       return;
     }
 
-    numberOfPlayers = playerList.getPlayerCount();
+    int numberOfPlayers = playerList.getPlayerCount();
     if (numberOfPlayers == 0) {
       if (!playerPositionMap.isEmpty()) {
         playerPositionMap = new ConcurrentHashMap<>();
@@ -113,12 +102,8 @@ public class PlayerPositionManager {
     }
   }
 
-  public static int getNumberOfPlayers() {
-    return numberOfPlayers;
-  }
-
-  public static List<PlayerPosition> getPlayerPositionsInsideViewArea(String world, int x, int y,
-      int z) {
+  public static List<PlayerPosition> getPlayerPositionsInsideViewArea(
+      String world, int x, int y, int z) {
     List<PlayerPosition> playerPositions = new ArrayList<>();
     for (PlayerPosition playerPosition : playerPositionMap.values()) {
       if (playerPosition.isInsidePlayerViewArea(world, x, y, z)) {
@@ -126,47 +111,18 @@ public class PlayerPositionManager {
       }
     }
     return playerPositions;
-  }
-
-  public static List<PlayerPosition> getPlayerPositions(String world) {
-    List<PlayerPosition> playerPositions = new ArrayList<>();
-    for (PlayerPosition playerPosition : playerPositionMap.values()) {
-      if (playerPosition.isInsidePlayerViewArea(world)) {
-        playerPositions.add(playerPosition);
-      }
-    }
-    return playerPositions;
-  }
-
-  public static ConcurrentMap<String, List<PlayerPosition>> getPlayerPositions() {
-    ConcurrentHashMap<String, List<PlayerPosition>> playerPositions = new ConcurrentHashMap<>();
-    List<String> dimensionList = DimensionManager.getDimensionList();
-    for (String dimension : dimensionList) {
-      List<PlayerPosition> playerPositionsForDimension = getPlayerPositions(dimension);
-      if (!playerPositionsForDimension.isEmpty()) {
-        playerPositions.put(dimension, playerPositionsForDimension);
-      }
-    }
-    return playerPositions;
-  }
-
-  public static boolean isInsidePlayersViewArea(String world, int x, int y, int z) {
-    for (PlayerPosition playerPosition : playerPositionMap.values()) {
-      if (playerPosition.isInsidePlayerViewArea(world, x, y, z)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   public static Map<String, PlayerPosition> getPlayerPositionMap() {
     return playerPositionMap;
   }
 
-  private static void updatePlayerPosition(ServerPlayer player, int viewDistance,
-      int simulationDistance) {
-    PlayerPosition playerPosition = playerPositionMap.computeIfAbsent(player.getStringUUID(),
-        key -> new PlayerPosition(player, viewDistance, simulationDistance));
+  private static void updatePlayerPosition(
+      ServerPlayer player, int viewDistance, int simulationDistance) {
+    PlayerPosition playerPosition =
+        playerPositionMap.computeIfAbsent(
+            player.getStringUUID(),
+            key -> new PlayerPosition(player, viewDistance, simulationDistance));
     String levelName = player.level.dimension().location().toString();
     if (playerPosition.update(player, levelName, viewDistance, simulationDistance)) {
       log.debug("[Player Position] Updated position for {} to {}", player, playerPosition);

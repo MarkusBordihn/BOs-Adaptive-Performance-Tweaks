@@ -1,8 +1,8 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
@@ -10,8 +10,8 @@
  * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
@@ -19,24 +19,12 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.entity;
 
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.item.ItemEntity;
-
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import net.minecraft.world.entity.item.ItemEntity;
 
 public class CoreItemEntityManager {
 
   protected CoreItemEntityManager() {}
-
-  public static boolean isRelevantItemEntity(Entity entity) {
-    if (entity == null || entity.isRemoved()) {
-      return false;
-    }
-    if (entity instanceof ItemEntity itemEntity) {
-      return isRelevantItemEntity(itemEntity);
-    }
-    return false;
-  }
 
   @SuppressWarnings("java:S1126")
   public static boolean isRelevantItemEntity(ItemEntity itemEntity) {
@@ -44,10 +32,10 @@ public class CoreItemEntityManager {
       return false;
     }
 
-    // All items has the entity minecraft.item, so we are using the translation key
+    // All items have the entity minecraft.item, so we are using the translation key
     // to better distinguish the different types of items and minecraft.item as backup.
     String itemName = itemEntity.getItem().getItem().getDescriptionId();
-    if (itemName == null || itemName.isEmpty()) {
+    if (itemName.isEmpty()) {
       // Use encode id as item name.
       itemName = itemEntity.getEncodeId();
       if (itemName == null || itemName.isEmpty()) {
@@ -69,5 +57,4 @@ public class CoreItemEntityManager {
 
     return true;
   }
-
 }

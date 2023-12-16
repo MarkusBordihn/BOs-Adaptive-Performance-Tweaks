@@ -1,8 +1,8 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
@@ -10,13 +10,12 @@
  * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
 package de.markusbordihn.adaptiveperformancetweakscore.message;
 
 public class WarnMessages {
@@ -36,15 +35,16 @@ public class WarnMessages {
   }
 
   public static String chunkPregeneratorModWarning(String modName) {
-    return String.format("⚠ Detected a chunk pre-generator mod %s for creating new chunks!"
-        + "Please make sure to temporary disable/remove Adaptive Performance Tweaks while pre-generate new chunks with the mod %s to avoid any side effects!"
-        + "After the new chunks are pre-generated you can re-enable Adaptive Performance Tweaks again.",
+    return String.format(
+        "⚠ Detected a chunk pre-generator mod %s for creating new chunks!"
+            + "Please make sure to temporary disable/remove Adaptive Performance Tweaks while pre-generate new chunks with the mod %s to avoid any side effects!"
+            + "After the new chunks are pre-generated you can re-enable Adaptive Performance Tweaks again.",
         modName, modName);
   }
 
   public static String knownIssuesModWarning(String modName) {
-    return String.format("⚠ There are known issue with the %s mod, please do not report any issue!",
-        modName);
+    return String.format(
+        "⚠ There are known issue with the %s mod, please do not report any issue!", modName);
   }
 
   public static String knownIssuesSpawnModWarning(String modName) {
@@ -63,9 +63,9 @@ public class WarnMessages {
   }
 
   public static String disabledOptimizationModWarning(String modName) {
-    return String.format("🛈 There are known issue with the %s mod!"
-        + " For this reasons all optimizations for related %s entities and/or items are disabled!",
+    return String.format(
+        "🛈 There are known issue with the %s mod!"
+            + " For this reasons all optimizations for related %s entities and/or items are disabled!",
         modName, modName);
   }
-
 }
