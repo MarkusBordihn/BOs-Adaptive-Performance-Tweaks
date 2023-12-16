@@ -35,7 +35,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
-public final class QuarkSpawnConfig {
+public final class GothicSpawnConfig {
 
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
@@ -47,7 +47,7 @@ public final class QuarkSpawnConfig {
         new ForgeConfigSpec.Builder().configure(Config::new);
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
-    log.info("Registering {} {} spawn config ...", Constants.MOD_NAME, CoreConstants.QUARK_NAME);
+    log.info("Registering {} {} spawn config ...", Constants.MOD_NAME, CoreConstants.GOTHIC_NAME);
     try {
       FileUtils.getOrCreateDirectory(
           FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID), CoreConstants.CONFIG_ID);
@@ -58,10 +58,10 @@ public final class QuarkSpawnConfig {
         .registerConfig(
             ModConfig.Type.COMMON,
             commonSpec,
-            CoreConstants.CONFIG_ID_PREFIX + "/spawn/QuarkSpawn.toml");
+            CoreConstants.CONFIG_ID_PREFIX + "/spawn/GothicSpawn.toml");
   }
 
-  private QuarkSpawnConfig() {}
+  private GothicSpawnConfig() {}
 
   public static class Config {
 
@@ -86,13 +86,13 @@ public final class QuarkSpawnConfig {
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
-      builder.push("Quark Spawn Config");
+      builder.push("Gothic Spawn Config");
       enabled = builder.define("Enabled", true);
-      id = builder.define("Id", CoreConstants.QUARK_MOD);
+      id = builder.define("Id", CoreConstants.GOTHIC_MOD);
 
       passiveMobsPerPlayer = builder.defineInRange("MaxPassiveMobsPerPlayer", 4, 1, 64);
       passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 16, 1, 512);
-      passiveMobsPerServer = builder.defineInRange("MaxPassiveMobsPerServer", 320, 1, 1204);
+      passiveMobsPerServer = builder.defineInRange("MaxPassiveMobsPerServer", 320, 1, 1024);
       passiveMobsList =
           builder
               .comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
@@ -101,28 +101,28 @@ public final class QuarkSpawnConfig {
                   new ArrayList<>(
                       Arrays.asList(
                           // @formatter:off
-                          "quark:crab", "quark:frog", "quark:stoneling"
+                          "gothic:meatbug", "gothic:meatbug_tamed"
                           // @formatter:on
                           )));
 
       neutralMobsPerPlayer = builder.defineInRange("MaxNeutralMobsPerPlayer", 4, 1, 64);
       neutralMobsPerWorld = builder.defineInRange("MaxNeutralMobsPerWorld", 16, 1, 512);
-      neutralMobsPerServer = builder.defineInRange("MaxNeutralMobsPerServer", 320, 1, 1204);
+      neutralMobsPerServer = builder.defineInRange("MaxNeutralMobsPerServer", 320, 1, 1024);
       neutralMobsList =
           builder
               .comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
               .define(
                   "NeutralMobsList",
                   new ArrayList<>(
-                      List.of(
+                      Arrays.asList(
                           // @formatter:off
-                          "quark:toretoise"
+                          "gothic:npc_farmer", "gothic:npc_oldcamp_hunter"
                           // @formatter:on
                           )));
 
-      hostileMobsPerPlayer = builder.defineInRange("MaxHostileMobsPerPlayer", 8, 1, 64);
-      hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 32, 1, 512);
-      hostileMobsPerServer = builder.defineInRange("MaxHostileMobsPerServer", 320, 1, 1204);
+      hostileMobsPerPlayer = builder.defineInRange("MaxHostileMobsPerPlayer", 4, 1, 64);
+      hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 16, 1, 512);
+      hostileMobsPerServer = builder.defineInRange("MaxHostileMobsPerServer", 320, 1, 1024);
       hostileMobsList =
           builder
               .comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
@@ -131,7 +131,19 @@ public final class QuarkSpawnConfig {
                   new ArrayList<>(
                       Arrays.asList(
                           // @formatter:off
-                          "quark:forgotten", "quark:foxhound", "quark:wraith"
+                          "gothic:bloodfly",
+                          "gothic:bloodfly_hornet",
+                          "gothic:dragon_snapper",
+                          "gothic:gothic_wolf",
+                          "gothic:ice_wolf",
+                          "gothic:lurker",
+                          "gothic:molerat",
+                          "gothic:razor",
+                          "gothic:scavenger",
+                          "gothic:shadowbeast",
+                          "gothic:snapper",
+                          "gothic:stone_guardian",
+                          "gothic:warg"
                           // @formatter:on
                           )));
 

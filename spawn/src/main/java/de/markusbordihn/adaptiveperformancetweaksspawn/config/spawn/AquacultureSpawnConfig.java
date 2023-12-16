@@ -1,21 +1,22 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
- * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
- * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  *
- * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
- * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
 package de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn;
 
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
@@ -38,7 +39,7 @@ public final class AquacultureSpawnConfig {
 
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
-  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   static {
     com.electronwill.nightconfig.core.Config.setInsertionOrderPreserved(true);
@@ -65,29 +66,29 @@ public final class AquacultureSpawnConfig {
 
   public static class Config {
 
-    public final ForgeConfigSpec.BooleanValue modAquacultureEnabled;
-    public final ForgeConfigSpec.ConfigValue<String> modAquacultureId;
+    public final ForgeConfigSpec.BooleanValue enabled;
+    public final ForgeConfigSpec.ConfigValue<String> id;
 
-    public final ForgeConfigSpec.IntValue modAquacultureMaxFishPerPlayer;
-    public final ForgeConfigSpec.IntValue modAquacultureMaxFishPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> modAquacultureFishList;
+    public final ForgeConfigSpec.IntValue fishPerPlayer;
+    public final ForgeConfigSpec.IntValue fishPerWorld;
+    public final ForgeConfigSpec.IntValue fishPerServer;
+    public final ForgeConfigSpec.ConfigValue<List<String>> fishList;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
       builder.push("Aquaculture 2 Spawn Config");
-      modAquacultureEnabled = builder.define("modAquacultureEnabled", true);
-      modAquacultureId = builder.define("modAquacultureId", CoreConstants.AQUACULTURE_MOD);
-      modAquacultureMaxFishPerPlayer =
-          builder.defineInRange("modAquacultureMaxFishPerPlayer", 2, 1, 64);
-      modAquacultureMaxFishPerWorld =
-          builder.defineInRange("modAquacultureMaxFishPerWorld", 8, 1, 512);
-      modAquacultureFishList =
+      enabled = builder.define("Enabled", true);
+      id = builder.define("Id", CoreConstants.AQUACULTURE_MOD);
+      fishPerPlayer = builder.defineInRange("MaxFishPerPlayer", 4, 1, 64);
+      fishPerWorld = builder.defineInRange("MaxFishPerWorld", 16, 1, 512);
+      fishPerServer = builder.defineInRange("MaxFishPerServer", 320, 1, 1024);
+      fishList =
           builder
               .comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
               .define(
-                  "modAquacultureFishList",
-                  new ArrayList<String>(
+                  "FishList",
+                  new ArrayList<>(
                       Arrays.asList(
                           // @formatter:off
                           "aquaculture:acacia_fish_mount",

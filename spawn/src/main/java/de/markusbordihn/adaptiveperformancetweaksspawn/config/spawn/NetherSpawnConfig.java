@@ -35,7 +35,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
-public final class QuarkSpawnConfig {
+public final class NetherSpawnConfig {
 
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
@@ -47,7 +47,7 @@ public final class QuarkSpawnConfig {
         new ForgeConfigSpec.Builder().configure(Config::new);
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
-    log.info("Registering {} {} spawn config ...", Constants.MOD_NAME, CoreConstants.QUARK_NAME);
+    log.info("Registering {} Nether Spawn config ...", Constants.MOD_NAME);
     try {
       FileUtils.getOrCreateDirectory(
           FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID), CoreConstants.CONFIG_ID);
@@ -58,10 +58,10 @@ public final class QuarkSpawnConfig {
         .registerConfig(
             ModConfig.Type.COMMON,
             commonSpec,
-            CoreConstants.CONFIG_ID_PREFIX + "/spawn/QuarkSpawn.toml");
+            CoreConstants.CONFIG_ID_PREFIX + "/spawn/NetherSpawn.toml");
   }
 
-  private QuarkSpawnConfig() {}
+  private NetherSpawnConfig() {}
 
   public static class Config {
 
@@ -86,28 +86,34 @@ public final class QuarkSpawnConfig {
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
-      builder.push("Quark Spawn Config");
+      builder.push("Nether Spawn Config");
       enabled = builder.define("Enabled", true);
-      id = builder.define("Id", CoreConstants.QUARK_MOD);
+      id = builder.define("Id", "minecraft");
 
-      passiveMobsPerPlayer = builder.defineInRange("MaxPassiveMobsPerPlayer", 4, 1, 64);
-      passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 16, 1, 512);
-      passiveMobsPerServer = builder.defineInRange("MaxPassiveMobsPerServer", 320, 1, 1204);
+      passiveMobsPerPlayer =
+          builder
+              .comment("e.g. mobs which will not attack you")
+              .defineInRange("MaxPassiveMobsPerPlayer", 16, 1, 64);
+      passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 32, 1, 512);
+      passiveMobsPerServer = builder.defineInRange("MaxPassiveMobsPerServer", 320, 1, 1024);
       passiveMobsList =
           builder
               .comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
               .define(
                   "PassiveMobsList",
                   new ArrayList<>(
-                      Arrays.asList(
+                      List.of(
                           // @formatter:off
-                          "quark:crab", "quark:frog", "quark:stoneling"
+                          "minecraft:strider"
                           // @formatter:on
                           )));
 
-      neutralMobsPerPlayer = builder.defineInRange("MaxNeutralMobsPerPlayer", 4, 1, 64);
-      neutralMobsPerWorld = builder.defineInRange("MaxNeutralMobsPerWorld", 16, 1, 512);
-      neutralMobsPerServer = builder.defineInRange("MaxNeutralMobsPerServer", 320, 1, 1204);
+      neutralMobsPerPlayer =
+          builder
+              .comment("e.g. mobs which will attack under certain conditions ...")
+              .defineInRange("MaxNeutralMobsPerPlayer", 16, 1, 64);
+      neutralMobsPerWorld = builder.defineInRange("MaxNeutralMobsPerWorld", 32, 1, 512);
+      neutralMobsPerServer = builder.defineInRange("MaxNeutralMobsPerServer", 320, 1, 1024);
       neutralMobsList =
           builder
               .comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
@@ -116,13 +122,16 @@ public final class QuarkSpawnConfig {
                   new ArrayList<>(
                       List.of(
                           // @formatter:off
-                          "quark:toretoise"
+                          "minecraft:zombified_piglin"
                           // @formatter:on
                           )));
 
-      hostileMobsPerPlayer = builder.defineInRange("MaxHostileMobsPerPlayer", 8, 1, 64);
+      hostileMobsPerPlayer =
+          builder
+              .comment("e.g. mobs which will always attack yon ...")
+              .defineInRange("MaxHostileMobsPerPlayer", 16, 1, 64);
       hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 32, 1, 512);
-      hostileMobsPerServer = builder.defineInRange("MaxHostileMobsPerServer", 320, 1, 1204);
+      hostileMobsPerServer = builder.defineInRange("MaxHostileMobsPerServer", 320, 1, 1024);
       hostileMobsList =
           builder
               .comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
@@ -131,7 +140,13 @@ public final class QuarkSpawnConfig {
                   new ArrayList<>(
                       Arrays.asList(
                           // @formatter:off
-                          "quark:forgotten", "quark:foxhound", "quark:wraith"
+                          "minecraft:blaze",
+                          "minecraft:ghast",
+                          "minecraft:hoglin",
+                          "minecraft:magma_cube",
+                          "minecraft:piglin",
+                          "minecraft:piglin_brute",
+                          "minecraft:wither_skeleton"
                           // @formatter:on
                           )));
 

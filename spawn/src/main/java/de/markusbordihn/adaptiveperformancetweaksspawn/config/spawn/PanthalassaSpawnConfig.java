@@ -1,21 +1,22 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
- * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
- * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  *
- * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
- * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
 package de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn;
 
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
@@ -38,7 +39,7 @@ public final class PanthalassaSpawnConfig {
 
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
-  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   static {
     com.electronwill.nightconfig.core.Config.setInsertionOrderPreserved(true);
@@ -46,7 +47,8 @@ public final class PanthalassaSpawnConfig {
         new ForgeConfigSpec.Builder().configure(Config::new);
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
-    log.info("Registering {} {} spawn config ...", Constants.MOD_NAME, CoreConstants.QUARK_NAME);
+    log.info(
+        "Registering {} {} spawn config ...", Constants.MOD_NAME, CoreConstants.PANTHALASSA_NAME);
     try {
       FileUtils.getOrCreateDirectory(
           FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID), CoreConstants.CONFIG_ID);
@@ -64,38 +66,40 @@ public final class PanthalassaSpawnConfig {
 
   public static class Config {
 
-    public final ForgeConfigSpec.BooleanValue panthalassaEnabled;
-    public final ForgeConfigSpec.ConfigValue<String> panthalassaId;
+    public final ForgeConfigSpec.BooleanValue enabled;
+    public final ForgeConfigSpec.ConfigValue<String> id;
 
-    public final ForgeConfigSpec.IntValue panthalassaMaxPassiveMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue panthalassaMaxPassiveMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> panthalassaPassiveMobsList;
+    public final ForgeConfigSpec.IntValue passiveMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue passiveMobsPerWorld;
+    public final ForgeConfigSpec.IntValue passiveMobsPerServer;
+    public final ForgeConfigSpec.ConfigValue<List<String>> passiveMobsList;
 
-    public final ForgeConfigSpec.IntValue panthalassaMaxNeutralMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue panthalassaMaxNeutralMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> panthalassaNeutralMobsList;
+    public final ForgeConfigSpec.IntValue neutralMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue neutralMobsPerWorld;
+    public final ForgeConfigSpec.IntValue neutralMobsPerServer;
+    public final ForgeConfigSpec.ConfigValue<List<String>> neutralMobsList;
 
-    public final ForgeConfigSpec.IntValue panthalassaMaxHostileMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue panthalassaMaxHostileMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> panthalassaHostileMobsList;
+    public final ForgeConfigSpec.IntValue hostileMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue hostileMobsPerWorld;
+    public final ForgeConfigSpec.IntValue hostileMobsPerServer;
+    public final ForgeConfigSpec.ConfigValue<List<String>> hostileMobsList;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
       builder.push("Panthalassa Spawn Config");
-      panthalassaEnabled = builder.define("panthalassaEnabled", true);
-      panthalassaId = builder.define("panthalassaId", CoreConstants.PANTHALASSA_MOD);
+      enabled = builder.define("Enabled", true);
+      id = builder.define("Id", CoreConstants.PANTHALASSA_MOD);
 
-      panthalassaMaxPassiveMobsPerPlayer =
-          builder.defineInRange("panthalassaMaxPassiveMobsPerPlayer", 4, 1, 64);
-      panthalassaMaxPassiveMobsPerWorld =
-          builder.defineInRange("panthalassaMaxPassiveMobsPerWorld", 16, 1, 512);
-      panthalassaPassiveMobsList =
+      passiveMobsPerPlayer = builder.defineInRange("MaxPassiveMobsPerPlayer", 4, 1, 64);
+      passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 16, 1, 512);
+      passiveMobsPerServer = builder.defineInRange("MaxPassiveMobsPerServer", 320, 1, 1024);
+      passiveMobsList =
           builder
               .comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
               .define(
-                  "panthalassaPassiveMobsList",
-                  new ArrayList<String>(
+                  "PassiveMobsList",
+                  new ArrayList<>(
                       Arrays.asList(
                           // @formatter:off
                           "panthalassa:acrolepis",
@@ -105,16 +109,15 @@ public final class PanthalassaSpawnConfig {
                           // @formatter:on
                           )));
 
-      panthalassaMaxNeutralMobsPerPlayer =
-          builder.defineInRange("panthalassaMaxNeutralMobsPerPlayer", 4, 1, 64);
-      panthalassaMaxNeutralMobsPerWorld =
-          builder.defineInRange("panthalassaMaxNeutralMobsPerWorld", 16, 1, 512);
-      panthalassaNeutralMobsList =
+      neutralMobsPerPlayer = builder.defineInRange("MaxNeutralMobsPerPlayer", 4, 1, 64);
+      neutralMobsPerWorld = builder.defineInRange("MaxNeutralMobsPerWorld", 16, 1, 512);
+      neutralMobsPerServer = builder.defineInRange("MaxNeutralMobsPerServer", 320, 1, 1024);
+      neutralMobsList =
           builder
               .comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
               .define(
-                  "panthalassaNeutralMobsList",
-                  new ArrayList<String>(
+                  "NeutralMobsList",
+                  new ArrayList<>(
                       Arrays.asList(
                           // @formatter:off
                           "panthalassa:archelon",
@@ -123,16 +126,15 @@ public final class PanthalassaSpawnConfig {
                           // @formatter:on
                           )));
 
-      panthalassaMaxHostileMobsPerPlayer =
-          builder.defineInRange("panthalassaMaxHostileMobsPerPlayer", 8, 1, 64);
-      panthalassaMaxHostileMobsPerWorld =
-          builder.defineInRange("panthalassaMaxHostileMobsPerWorld", 32, 1, 512);
-      panthalassaHostileMobsList =
+      hostileMobsPerPlayer = builder.defineInRange("MaxHostileMobsPerPlayer", 8, 1, 64);
+      hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 32, 1, 512);
+      hostileMobsPerServer = builder.defineInRange("MaxHostileMobsPerServer", 320, 1, 1024);
+      hostileMobsList =
           builder
               .comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
               .define(
-                  "panthalassaHostileMobsList",
-                  new ArrayList<String>(
+                  "HostileMobsList",
+                  new ArrayList<>(
                       Arrays.asList(
                           // @formatter:off
                           "panthalassa:anglerfish",

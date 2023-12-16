@@ -1,27 +1,27 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
- * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
- * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  *
- * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
- * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
 package de.markusbordihn.adaptiveperformancetweaksspawn.config;
 
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -38,7 +38,7 @@ public final class CommonConfig {
 
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
-  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   static {
     com.electronwill.nightconfig.core.Config.setInsertionOrderPreserved(true);
@@ -68,6 +68,7 @@ public final class CommonConfig {
     public final ForgeConfigSpec.BooleanValue spawnAggressiveMode;
 
     public final ForgeConfigSpec.BooleanValue viewAreaEnabled;
+    public final ForgeConfigSpec.IntValue friendlyChunkSpawnRate;
 
     public final ForgeConfigSpec.BooleanValue spawnLimitationEnabled;
     public final ForgeConfigSpec.IntValue spawnLimitationLimiter;
@@ -83,27 +84,36 @@ public final class CommonConfig {
           builder
               .comment(
                   "General allow list for spawn entities (e.g. minecraft:squid) which should be ignored for optimization.")
-              .define("allowList", new ArrayList<String>(Arrays.asList("")));
+              .define("allowList", new ArrayList<>(List.of("")));
       spawnDenyList =
           builder
               .comment(
                   "General deny list for spawn entities (e.g. minecraft:bat) to no longer spawn in all worlds.")
-              .define("denyList", new ArrayList<String>(Arrays.asList("")));
+              .define("denyList", new ArrayList<>(List.of("")));
       spawnIgnoreDimensionList =
           builder
               .comment("General list of ignored dimensions.")
-              .define(
-                  "spawnIgnoreDimensionList",
-                  new ArrayList<String>(Arrays.asList("minecraft:the_end")));
+              .define("spawnIgnoreDimensionList", new ArrayList<>(List.of("minecraft:the_end")));
       spawnAggressiveMode =
           builder
-              .comment("Enable/Disable more aggressive spawn limitations.")
+              .comment("Enable/Disable more aggressive and strict spawn limitations.")
               .define("spawnAggressiveMode", false);
+      builder.pop();
+
+      builder.push("Chunk Optimization");
+      friendlyChunkSpawnRate =
+          builder
+              .comment(
+                  "Allows to spawn at least one mob (regardless of the type) per selected chunk to avoid side effects."
+                      + "A value of 9 means every 9 chunk request will be allowed. Use 0 to disable this optimization.")
+              .defineInRange("friendlyChunkSpawnRate", 9, 0, 256);
       builder.pop();
 
       builder.push("View Area");
       viewAreaEnabled =
-          builder.comment("Enable/Disable view area optimization.").define("viewAreaEnabled", true);
+          builder
+              .comment("Enable/Disable player based view area optimization.")
+              .define("viewAreaEnabled", true);
       builder.pop();
 
       builder.push("Global Spawn Limitations");
@@ -129,7 +139,7 @@ public final class CommonConfig {
       spawnLimitationMaxMobsPerServer =
           builder
               .comment(
-                  "Defines the max. number of entities of a specific type, which could spawn within a single world. Use 0 to disable this optimization.")
+                  "Defines the max. number of entities of a specific type, which could spawn within the server. Use 0 to disable this optimization.")
               .defineInRange("spawnLimitationMaxMobsPerServer", 512, 0, 1024);
       builder.pop();
     }

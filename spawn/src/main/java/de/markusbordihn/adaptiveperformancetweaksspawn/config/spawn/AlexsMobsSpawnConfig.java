@@ -1,21 +1,22 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
- * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
- * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  *
- * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
- * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
 package de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn;
 
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
@@ -38,7 +39,7 @@ public final class AlexsMobsSpawnConfig {
 
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
-  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   static {
     com.electronwill.nightconfig.core.Config.setInsertionOrderPreserved(true);
@@ -65,38 +66,40 @@ public final class AlexsMobsSpawnConfig {
 
   public static class Config {
 
-    public final ForgeConfigSpec.BooleanValue alexsMobsEnabled;
-    public final ForgeConfigSpec.ConfigValue<String> alexsMobsId;
+    public final ForgeConfigSpec.BooleanValue enabled;
+    public final ForgeConfigSpec.ConfigValue<String> id;
 
-    public final ForgeConfigSpec.IntValue alexsMobsMaxPassiveMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue alexsMobsMaxPassiveMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> alexsMobsPassiveMobsList;
+    public final ForgeConfigSpec.IntValue passiveMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue passiveMobsPerWorld;
+    public final ForgeConfigSpec.IntValue passiveMobsPerServer;
+    public final ForgeConfigSpec.ConfigValue<List<String>> passiveMobsList;
 
-    public final ForgeConfigSpec.IntValue alexsMobsMaxNeutralMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue alexsMobsMaxNeutralMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> alexsMobsNeutralMobsList;
+    public final ForgeConfigSpec.IntValue neutralMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue neutralMobsPerWorld;
+    public final ForgeConfigSpec.IntValue neutralMobsPerServer;
+    public final ForgeConfigSpec.ConfigValue<List<String>> neutralMobsList;
 
-    public final ForgeConfigSpec.IntValue alexsMobsMaxHostileMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue alexsMobsMaxHostileMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> alexsMobsHostileMobsList;
+    public final ForgeConfigSpec.IntValue hostileMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue hostileMobsPerWorld;
+    public final ForgeConfigSpec.IntValue hostileMobsPerServer;
+    public final ForgeConfigSpec.ConfigValue<List<String>> hostileMobsList;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
       builder.push("Alexs Mobs Spawn Config");
-      alexsMobsEnabled = builder.define("alexsMobsEnabled", true);
-      alexsMobsId = builder.define("alexsMobsId", CoreConstants.ALEXSMOBS_MOD);
+      enabled = builder.define("Enabled", true);
+      id = builder.define("Id", CoreConstants.ALEXSMOBS_MOD);
 
-      alexsMobsMaxPassiveMobsPerPlayer =
-          builder.defineInRange("alexsMobsMaxPassiveMobsPerPlayer", 2, 1, 64);
-      alexsMobsMaxPassiveMobsPerWorld =
-          builder.defineInRange("alexsMobsMaxPassiveMobsPerWorld", 8, 1, 512);
-      alexsMobsPassiveMobsList =
+      passiveMobsPerPlayer = builder.defineInRange("MaxPassiveMobsPerPlayer", 4, 1, 64);
+      passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 16, 1, 512);
+      passiveMobsPerServer = builder.defineInRange("MaxPassiveMobsPerServer", 320, 1, 1024);
+      passiveMobsList =
           builder
               .comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
               .define(
-                  "alexsMobsPassiveMobsList",
-                  new ArrayList<String>(
+                  "PassiveMobsList",
+                  new ArrayList<>(
                       Arrays.asList(
                           // @formatter:off
                           "alexsmobs:blobfish",
@@ -112,16 +115,15 @@ public final class AlexsMobsSpawnConfig {
                           // @formatter:on
                           )));
 
-      alexsMobsMaxNeutralMobsPerPlayer =
-          builder.defineInRange("alexsMobsMaxNeutralMobsPerPlayer", 2, 1, 64);
-      alexsMobsMaxNeutralMobsPerWorld =
-          builder.defineInRange("alexsMobsMaxNeutralMobsPerWorld", 8, 1, 512);
-      alexsMobsNeutralMobsList =
+      neutralMobsPerPlayer = builder.defineInRange("MaxNeutralMobsPerPlayer", 4, 1, 64);
+      neutralMobsPerWorld = builder.defineInRange("MaxNeutralMobsPerWorld", 16, 1, 512);
+      neutralMobsPerServer = builder.defineInRange("MaxNeutralMobsPerServer", 320, 1, 1024);
+      neutralMobsList =
           builder
               .comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
               .define(
-                  "alexsMobsNeutralMobsList",
-                  new ArrayList<String>(
+                  "NeutralMobsList",
+                  new ArrayList<>(
                       Arrays.asList(
                           // @formatter:off
                           "alexsmobs:cachalot_whale",
@@ -146,16 +148,15 @@ public final class AlexsMobsSpawnConfig {
                           // @formatter:on
                           )));
 
-      alexsMobsMaxHostileMobsPerPlayer =
-          builder.defineInRange("alexsMobsMaxHostileMobsPerPlayer", 4, 1, 64);
-      alexsMobsMaxHostileMobsPerWorld =
-          builder.defineInRange("alexsMobsMaxHostileMobsPerWorld", 16, 1, 512);
-      alexsMobsHostileMobsList =
+      hostileMobsPerPlayer = builder.defineInRange("MaxHostileMobsPerPlayer", 4, 1, 64);
+      hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 16, 1, 512);
+      hostileMobsPerServer = builder.defineInRange("MaxHostileMobsPerServer", 320, 1, 1024);
+      hostileMobsList =
           builder
               .comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
               .define(
-                  "alexsMobsHostileMobsList",
-                  new ArrayList<String>(
+                  "HostileMobsList",
+                  new ArrayList<>(
                       Arrays.asList(
                           // @formatter:off
                           "alexsmobs:alligator_snapping_turtle",

@@ -1,21 +1,22 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
- * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
- * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  *
- * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
- * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
 package de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn;
 
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
@@ -38,7 +39,7 @@ public final class UntamedWildsSpawnConfig {
 
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
-  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   static {
     com.electronwill.nightconfig.core.Config.setInsertionOrderPreserved(true);
@@ -65,38 +66,40 @@ public final class UntamedWildsSpawnConfig {
 
   public static class Config {
 
-    public final ForgeConfigSpec.BooleanValue untamedWildsEnabled;
-    public final ForgeConfigSpec.ConfigValue<String> untamedWildsId;
+    public final ForgeConfigSpec.BooleanValue enabled;
+    public final ForgeConfigSpec.ConfigValue<String> id;
 
-    public final ForgeConfigSpec.IntValue untamedWildsMaxPassiveMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue untamedWildsMaxPassiveMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> untamedWildsPassiveMobsList;
+    public final ForgeConfigSpec.IntValue passiveMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue passiveMobsPerWorld;
+    public final ForgeConfigSpec.IntValue passiveMobsPerServer;
+    public final ForgeConfigSpec.ConfigValue<List<String>> passiveMobsList;
 
-    public final ForgeConfigSpec.IntValue untamedWildsMaxNeutralMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue untamedWildsMaxNeutralMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> untamedWildsNeutralMobsList;
+    public final ForgeConfigSpec.IntValue neutralMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue neutralMobsPerWorld;
+    public final ForgeConfigSpec.IntValue neutralMobsPerServer;
+    public final ForgeConfigSpec.ConfigValue<List<String>> neutralMobsList;
 
-    public final ForgeConfigSpec.IntValue untamedWildsMaxHostileMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue untamedWildsMaxHostileMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> untamedWildsHostileMobsList;
+    public final ForgeConfigSpec.IntValue hostileMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue hostileMobsPerWorld;
+    public final ForgeConfigSpec.IntValue hostileMobsPerServer;
+    public final ForgeConfigSpec.ConfigValue<List<String>> hostileMobsList;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
       builder.push("Untamed Wilds Spawn Config");
-      untamedWildsEnabled = builder.define("untamedWildsEnabled", true);
-      untamedWildsId = builder.define("untamedWildsId", CoreConstants.UNTAMED_WILDS_MOD);
+      enabled = builder.define("Enabled", true);
+      id = builder.define("Id", CoreConstants.UNTAMED_WILDS_MOD);
 
-      untamedWildsMaxPassiveMobsPerPlayer =
-          builder.defineInRange("untamedWildsMaxPassiveMobsPerPlayer", 4, 1, 64);
-      untamedWildsMaxPassiveMobsPerWorld =
-          builder.defineInRange("untamedWildsMaxPassiveMobsPerWorld", 16, 1, 512);
-      untamedWildsPassiveMobsList =
+      passiveMobsPerPlayer = builder.defineInRange("MaxPassiveMobsPerPlayer", 4, 1, 64);
+      passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 16, 1, 512);
+      passiveMobsPerServer = builder.defineInRange("MaxPassiveMobsPerServer", 320, 1, 1024);
+      passiveMobsList =
           builder
               .comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
               .define(
-                  "untamedWildsPassiveMobsList",
-                  new ArrayList<String>(
+                  "PassiveMobsList",
+                  new ArrayList<>(
                       Arrays.asList(
                           // @formatter:off
                           "untamedwilds:arowana",
@@ -108,16 +111,15 @@ public final class UntamedWildsSpawnConfig {
                           // @formatter:on
                           )));
 
-      untamedWildsMaxNeutralMobsPerPlayer =
-          builder.defineInRange("untamedWildsMaxNeutralMobsPerPlayer", 4, 1, 64);
-      untamedWildsMaxNeutralMobsPerWorld =
-          builder.defineInRange("untamedWildsMaxNeutralMobsPerWorld", 16, 1, 512);
-      untamedWildsNeutralMobsList =
+      neutralMobsPerPlayer = builder.defineInRange("MaxNeutralMobsPerPlayer", 4, 1, 64);
+      neutralMobsPerWorld = builder.defineInRange("MaxNeutralMobsPerWorld", 16, 1, 512);
+      neutralMobsPerServer = builder.defineInRange("MaxNeutralMobsPerServer", 320, 1, 1024);
+      neutralMobsList =
           builder
               .comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
               .define(
-                  "untamedWildsNeutralMobsList",
-                  new ArrayList<String>(
+                  "NeutralMobsList",
+                  new ArrayList<>(
                       Arrays.asList(
                           // @formatter:off
                           "untamedwilds:aardvark",
@@ -126,16 +128,15 @@ public final class UntamedWildsSpawnConfig {
                           // @formatter:on
                           )));
 
-      untamedWildsMaxHostileMobsPerPlayer =
-          builder.defineInRange("untamedWildsMaxHostileMobsPerPlayer", 4, 1, 64);
-      untamedWildsMaxHostileMobsPerWorld =
-          builder.defineInRange("untamedWildsMaxHostileMobsPerWorld", 16, 1, 512);
-      untamedWildsHostileMobsList =
+      hostileMobsPerPlayer = builder.defineInRange("MaxHostileMobsPerPlayer", 4, 1, 64);
+      hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 16, 1, 512);
+      hostileMobsPerServer = builder.defineInRange("MaxHostileMobsPerServer", 320, 1, 1024);
+      hostileMobsList =
           builder
               .comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
               .define(
-                  "untamedWildsHostileMobsList",
-                  new ArrayList<String>(
+                  "HostileMobsList",
+                  new ArrayList<>(
                       Arrays.asList(
                           // @formatter:off
                           "untamedwilds:bear_black",

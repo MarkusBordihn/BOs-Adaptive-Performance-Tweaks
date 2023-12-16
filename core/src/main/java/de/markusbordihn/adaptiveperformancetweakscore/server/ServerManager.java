@@ -1,33 +1,39 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
- * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
- * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  *
- * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
- * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
 package de.markusbordihn.adaptiveperformancetweakscore.server;
 
 import de.markusbordihn.adaptiveperformancetweakscore.Constants;
 import de.markusbordihn.adaptiveperformancetweakscore.config.CommonConfig;
+import java.util.Arrays;
+import java.util.Random;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.DifficultyChangeEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -40,15 +46,19 @@ import org.apache.logging.log4j.Logger;
 public class ServerManager {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
-  private static final short SERVER_LOAD_TICK = 1 * 20;
-  private static final short WORLD_LOAD_TICK = 2 * 20;
-  private static final short OPTIMIZATION_TICK = 3 * 20;
-  private static final short RESET_TICK = 6 * 20;
-  private static short ticks = 0;
+  private static final int BASE_TICK = 25;
+  private static final int OPTIMIZATION_TICK = 4 * BASE_TICK;
+  private static final int RESET_TICK = 6 * BASE_TICK;
+  private static final int SERVER_LOAD_TICK = 1 * BASE_TICK;
+  private static final int WORLD_LOAD_TICK = 2 * BASE_TICK;
+  private static final Random random = new Random();
+  private static int ticks = random.nextInt(15);
+
   private static MinecraftServer minecraftServer = null;
   private static java.lang.Iterable<ServerLevel> serverLevels = null;
+  private static int maxNumberOfPlayers = 0;
+  private static int numberOfPlayers = 0;
 
   private static Difficulty gameDifficulty = Difficulty.NORMAL;
   private static double gameDifficultyFactor = 1;
@@ -67,23 +77,12 @@ public class ServerManager {
   }
 
   @SubscribeEvent
-  @OnlyIn(Dist.CLIENT)
-  public static void handleClientServerStartingEvent(ServerStartingEvent event) {
+  public static void handleServerStartingEvent(ServerStartingEvent event) {
+    maxNumberOfPlayers = getMinecraftServer().getPlayerList().getMaxPlayers();
+    numberOfPlayers = getMinecraftServer().getPlayerList().getPlayerCount();
     updateGameDifficulty(getMinecraftServer().getWorldData().getDifficulty());
     log.info(
-        "{} Max number of local players is set to {}",
-        Constants.LOG_PREFIX,
-        getMinecraftServer().getPlayerList().getMaxPlayers());
-  }
-
-  @SubscribeEvent
-  @OnlyIn(Dist.DEDICATED_SERVER)
-  public static void handleDedicatedServerStartingEvent(ServerStartingEvent event) {
-    updateGameDifficulty(getMinecraftServer().getWorldData().getDifficulty());
-    log.info(
-        "{} Max number of remote players is set to {}",
-        Constants.LOG_PREFIX,
-        getMinecraftServer().getPlayerList().getMaxPlayers());
+        "{} Max number of remote players is set to {}", Constants.LOG_PREFIX, maxNumberOfPlayers);
   }
 
   @SubscribeEvent
@@ -111,6 +110,21 @@ public class ServerManager {
     updateGameDifficulty(event.getDifficulty());
   }
 
+  @SubscribeEvent
+  public static void handlePlayerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {
+    numberOfPlayers = getMinecraftServer().getPlayerList().getPlayerCount();
+  }
+
+  @SubscribeEvent
+  public static void handlePlayerLoggedOutEvent(PlayerEvent.PlayerLoggedOutEvent event) {
+    numberOfPlayers = getMinecraftServer().getPlayerList().getPlayerCount();
+  }
+
+  @SubscribeEvent
+  public static void handlePlayerRespawnEvent(PlayerEvent.PlayerRespawnEvent event) {
+    numberOfPlayers = getMinecraftServer().getPlayerList().getPlayerCount();
+  }
+
   public static void handleServerTickEvent(Dist dist) {
     if (ticks == SERVER_LOAD_TICK) {
       ServerLoad.measureLoadAndPost(dist);
@@ -130,6 +144,18 @@ public class ServerManager {
     return minecraftServer;
   }
 
+  public static long[] getTickTime(ResourceKey<Level> level) {
+    return minecraftServer != null ? minecraftServer.getTickTime(level) : null;
+  }
+
+  public static double getAverageTickTime(ServerLevel serverLevel) {
+    long[] tickTimes = getTickTime(serverLevel.dimension());
+    if (tickTimes != null) {
+      return Arrays.stream(tickTimes).average().orElse(Double.NaN) / 1000000;
+    }
+    return 0;
+  }
+
   public static float getAverageTickTime() {
     return minecraftServer != null ? minecraftServer.getAverageTickTime() : 50F;
   }
@@ -139,6 +165,14 @@ public class ServerManager {
       serverLevels = getMinecraftServer().getAllLevels();
     }
     return serverLevels;
+  }
+
+  public static int getMaxNumberOfPlayers() {
+    return maxNumberOfPlayers;
+  }
+
+  public static int getNumberOfPlayers() {
+    return numberOfPlayers;
   }
 
   public static Difficulty getGameDifficulty() {
@@ -157,9 +191,6 @@ public class ServerManager {
     switch (difficulty) {
       case EASY:
         gameDifficultyFactor = COMMON.gameDifficultyFactorEasy.get();
-        break;
-      case NORMAL:
-        gameDifficultyFactor = COMMON.gameDifficultyFactorNormal.get();
         break;
       case PEACEFUL:
         gameDifficultyFactor = COMMON.gameDifficultyFactorPeaceful.get();

@@ -8,8 +8,7 @@ For the full changelog, please go to the [GitHub History][history] instead.
 ### v11.0.0
 
 - As requested, separated the Mods optimization module into a independent mod
-  called [Mods Optimizer][mods-optimizer]
-  to allow easier maintenance and updates.
+  called [Mods Optimizer][mods-optimizer] to allow easier maintenance and updates.
 - Improved overall performance and memory usage by code refactoring and optimizations up to 10%.
 - Simplified checks and removed unnecessary checks for better performance.
 - Added `PersistenceRequired` tag for mobs and modded entities to the ignore list to avoid issues

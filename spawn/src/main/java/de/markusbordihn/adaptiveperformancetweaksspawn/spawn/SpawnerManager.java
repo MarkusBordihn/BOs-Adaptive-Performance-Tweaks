@@ -1,21 +1,22 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
- * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
- * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  *
- * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
- * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
 package de.markusbordihn.adaptiveperformancetweaksspawn.spawn;
 
 import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
@@ -27,6 +28,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.BaseSpawner;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.event.TickEvent;
@@ -42,8 +44,8 @@ import org.apache.logging.log4j.Logger;
 public class SpawnerManager {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  static final Set<BaseSpawner> spawnerList = ConcurrentHashMap.newKeySet();
   private static final short VERIFICATION_TICK = 60 * 20;
-  static Set<BaseSpawner> spawnerList = ConcurrentHashMap.newKeySet();
   private static short ticks = 0;
 
   protected SpawnerManager() {}
@@ -80,7 +82,6 @@ public class SpawnerManager {
 
       // Ignore events which are already canceled or denied.
       if (event.isCanceled() || event.getResult() == Event.Result.DENY) {
-        log.debug("[Canceled / denied Spawner Event] Ignore spawner event {}!", event);
         return;
       }
 
@@ -99,14 +100,17 @@ public class SpawnerManager {
     // Only do expensive lookup for debugging.
     if (log.isDebugEnabled()) {
       BlockEntity blockEntity = spawner.getSpawnerBlockEntity();
-      BlockPos blockPos = blockEntity.getBlockPos();
-      String levelName = blockEntity.getLevel().dimension().location().toString();
-      CompoundTag spawnerData = blockEntity.serializeNBT();
-      String spawnerId = spawnerData.getString("id");
-      String spawnEntityId =
-          spawnerData.getCompound("SpawnData").getCompound("entity").getString("id");
-      log.debug(
-          "[Spawner] Found {}({}) at {} in {}", spawnerId, spawnEntityId, blockPos, levelName);
+      if (blockEntity != null) {
+        BlockPos blockPos = blockEntity.getBlockPos();
+        Level level = blockEntity.getLevel();
+        String levelName = level != null ? level.dimension().location().toString() : "";
+        CompoundTag spawnerData = blockEntity.serializeNBT();
+        String spawnerId = spawnerData.getString("id");
+        String spawnEntityId =
+            spawnerData.getCompound("SpawnData").getCompound("entity").getString("id");
+        log.debug(
+            "[Spawner] Found {}({}) at {} in {}", spawnerId, spawnEntityId, blockPos, levelName);
+      }
     }
   }
 
@@ -121,7 +125,8 @@ public class SpawnerManager {
     Iterator<BaseSpawner> spawnerIterator = spawnerList.iterator();
     while (spawnerIterator.hasNext()) {
       BaseSpawner spawner = spawnerIterator.next();
-      if (spawner != null && spawner.getSpawnerBlockEntity().isRemoved()) {
+      BlockEntity spawnerBlockEntity = spawner != null ? spawner.getSpawnerBlockEntity() : null;
+      if (spawner != null && spawnerBlockEntity != null && spawnerBlockEntity.isRemoved()) {
         spawnerIterator.remove();
         removedEntries++;
       }

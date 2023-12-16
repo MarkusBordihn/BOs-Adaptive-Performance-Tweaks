@@ -1,21 +1,22 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
- * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
- * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  *
- * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
- * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
 package de.markusbordihn.adaptiveperformancetweaksgamerules.gamerules;
 
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
@@ -80,17 +81,22 @@ public class GameRuleManager {
       }
     }
 
+    if (Boolean.TRUE.equals(COMMON.elytraMovementCheckEnabled.get())) {
+      log.info(
+          "Elytra movement check will be automatically disabled during very high server load!");
+    }
+
+    if (Boolean.TRUE.equals(COMMON.insomniaEnabled.get())) {
+      log.info(
+          "Insomnia (phantoms spawn) will be automatically disabled during very high server load!");
+    }
+
     if (Boolean.TRUE.equals(COMMON.patrolSpawningEnabled.get())) {
       log.info("Patrol spawning will be automatically disabled during very high server load!");
     }
 
     if (Boolean.TRUE.equals(COMMON.raidsEnabled.get())) {
       log.info("Raids will be automatically disabled during very high server load!");
-    }
-
-    if (Boolean.TRUE.equals(COMMON.insomniaEnabled.get())) {
-      log.info(
-          "Insomnia (phantoms spawn) will be automatically disabled during very high server load!");
     }
 
     if (Boolean.TRUE.equals(COMMON.traderSpawningEnabled.get())) {
@@ -114,14 +120,17 @@ public class GameRuleManager {
       if (Boolean.TRUE.equals(COMMON.randomTickSpeedEnabled.get())) {
         decreaseRandomTickSpeed();
       }
-      if (Boolean.TRUE.equals(COMMON.patrolSpawningEnabled.get())) {
-        disablePatrolSpawning();
+      if (Boolean.TRUE.equals(COMMON.elytraMovementCheckEnabled.get())) {
+        disableElytraMovementCheck();
+      }
+      if (Boolean.TRUE.equals(COMMON.insomniaEnabled.get())) {
+        disableInsomnia();
       }
       if (Boolean.TRUE.equals(COMMON.raidsEnabled.get())) {
         disableRaids();
       }
-      if (Boolean.TRUE.equals(COMMON.insomniaEnabled.get())) {
-        disableInsomnia();
+      if (Boolean.TRUE.equals(COMMON.patrolSpawningEnabled.get())) {
+        disablePatrolSpawning();
       }
       if (Boolean.TRUE.equals(COMMON.traderSpawningEnabled.get())) {
         disableTraderSpawning();
@@ -149,11 +158,14 @@ public class GameRuleManager {
     }
 
     // General: Handle normal and low server load
-    if (Boolean.TRUE.equals(COMMON.patrolSpawningEnabled.get())) {
-      enablePatrolSpawning();
+    if (Boolean.TRUE.equals(COMMON.elytraMovementCheckEnabled.get())) {
+      enableElytraMovementCheck();
     }
     if (Boolean.TRUE.equals(COMMON.raidsEnabled.get())) {
       enableRaids();
+    }
+    if (Boolean.TRUE.equals(COMMON.patrolSpawningEnabled.get())) {
+      enablePatrolSpawning();
     }
     if (Boolean.TRUE.equals(COMMON.insomniaEnabled.get())) {
       enableInsomnia();
@@ -184,17 +196,17 @@ public class GameRuleManager {
     lastUpdateTime = System.currentTimeMillis();
   }
 
-  public static void enablePatrolSpawning() {
-    if (!gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)) {
-      log.debug("Enable PatrolSpawning");
-      CommandManager.executeGameRuleCommand(GameRules.RULE_DO_PATROL_SPAWNING, true);
+  public static void enableElytraMovementCheck() {
+    if (gameRules.getBoolean(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK)) {
+      log.debug("Enable ElytraMovementCheck");
+      CommandManager.executeGameRuleCommand(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK, false);
     }
   }
 
-  public static void disablePatrolSpawning() {
-    if (gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)) {
-      log.debug("Disable PatrolSpawning");
-      CommandManager.executeGameRuleCommand(GameRules.RULE_DO_PATROL_SPAWNING, false);
+  public static void disableElytraMovementCheck() {
+    if (!gameRules.getBoolean(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK)) {
+      log.debug("Disable ElytraMovementCheck");
+      CommandManager.executeGameRuleCommand(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK, true);
     }
   }
 
@@ -209,6 +221,20 @@ public class GameRuleManager {
     if (gameRules.getBoolean(GameRules.RULE_DOINSOMNIA)) {
       log.debug("Disable Insomnia");
       CommandManager.executeGameRuleCommand(GameRules.RULE_DOINSOMNIA, false);
+    }
+  }
+
+  public static void enablePatrolSpawning() {
+    if (!gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)) {
+      log.debug("Enable PatrolSpawning");
+      CommandManager.executeGameRuleCommand(GameRules.RULE_DO_PATROL_SPAWNING, true);
+    }
+  }
+
+  public static void disablePatrolSpawning() {
+    if (gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)) {
+      log.debug("Disable PatrolSpawning");
+      CommandManager.executeGameRuleCommand(GameRules.RULE_DO_PATROL_SPAWNING, false);
     }
   }
 
@@ -321,8 +347,14 @@ public class GameRuleManager {
   public static Map<String, String> getGameRulesOverview() {
     Map<String, String> overview = new ConcurrentHashMap<>();
     overview.put(
-        GameRules.RULE_DISABLE_RAIDS.getId(),
-        String.valueOf(gameRules.getBoolean(GameRules.RULE_DISABLE_RAIDS)));
+        GameRules.RULE_MAX_ENTITY_CRAMMING.getId(),
+        String.valueOf(gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING)));
+    overview.put(
+        GameRules.RULE_RANDOMTICKING.getId(),
+        String.valueOf(gameRules.getInt(GameRules.RULE_RANDOMTICKING)));
+    overview.put(
+        GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK.getId(),
+        String.valueOf(gameRules.getBoolean(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK)));
     overview.put(
         GameRules.RULE_DOINSOMNIA.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DOINSOMNIA)));
@@ -330,17 +362,14 @@ public class GameRuleManager {
         GameRules.RULE_DO_PATROL_SPAWNING.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)));
     overview.put(
+        GameRules.RULE_DISABLE_RAIDS.getId(),
+        String.valueOf(gameRules.getBoolean(GameRules.RULE_DISABLE_RAIDS)));
+    overview.put(
         GameRules.RULE_DO_TRADER_SPAWNING.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_TRADER_SPAWNING)));
     overview.put(
         GameRules.RULE_DO_WARDEN_SPAWNING.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING)));
-    overview.put(
-        GameRules.RULE_MAX_ENTITY_CRAMMING.getId(),
-        String.valueOf(gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING)));
-    overview.put(
-        GameRules.RULE_RANDOMTICKING.getId(),
-        String.valueOf(gameRules.getInt(GameRules.RULE_RANDOMTICKING)));
     return overview;
   }
 }
