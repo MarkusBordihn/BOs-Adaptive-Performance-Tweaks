@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,19 +19,16 @@
 
 package de.markusbordihn.adaptiveperformancetweaksplayer.player;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLoad;
+import de.markusbordihn.adaptiveperformancetweaksplayer.Constants;
+import de.markusbordihn.adaptiveperformancetweaksplayer.config.CommonConfig;
 import net.minecraft.server.level.ServerPlayer;
-
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.server.ServerLifecycleHooks;
-
-import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLoad;
-import de.markusbordihn.adaptiveperformancetweaksplayer.Constants;
-import de.markusbordihn.adaptiveperformancetweaksplayer.config.CommonConfig;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber
 public class PlayerLogin {

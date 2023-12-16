@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,33 +19,27 @@
 
 package de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn;
 
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.fml.loading.FileUtils;
-
-import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
-import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public final class MekanismAdditionsSpawnConfig {
 
-  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-
-  private MekanismAdditionsSpawnConfig() {}
-
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
+  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   static {
     com.electronwill.nightconfig.core.Config.setInsertionOrderPreserved(true);
@@ -53,80 +47,92 @@ public final class MekanismAdditionsSpawnConfig {
         new ForgeConfigSpec.Builder().configure(Config::new);
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
-    log.info("Registering {} {} spawn config ...", Constants.MOD_NAME,
+    log.info(
+        "Registering {} {} spawn config ...",
+        Constants.MOD_NAME,
         CoreConstants.MEKANISMADDITIONS_NAME);
     try {
-      FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
-          CoreConstants.CONFIG_ID);
+      FileUtils.getOrCreateDirectory(
+          FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID), CoreConstants.CONFIG_ID);
     } catch (Exception exception) {
       log.error("There was an error, creating the directory:", exception);
     }
-    ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec,
-        CoreConstants.CONFIG_ID_PREFIX + "/spawn/MekanismAdditionsSpawn.toml");
+    ModLoadingContext.get()
+        .registerConfig(
+            ModConfig.Type.COMMON,
+            commonSpec,
+            CoreConstants.CONFIG_ID_PREFIX + "/spawn/MekanismAdditionsSpawn.toml");
   }
+
+  private MekanismAdditionsSpawnConfig() {}
 
   public static class Config {
 
-    public final ForgeConfigSpec.BooleanValue mekanismAdditionsEnabled;
-    public final ForgeConfigSpec.ConfigValue<String> mekanismAdditionsId;
+    public final ForgeConfigSpec.BooleanValue enabled;
+    public final ForgeConfigSpec.ConfigValue<String> id;
 
-    public final ForgeConfigSpec.IntValue mekanismAdditionsMaxPassiveMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue mekanismAdditionsMaxPassiveMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> mekanismAdditionsPassiveMobsList;
+    public final ForgeConfigSpec.IntValue passiveMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue passiveMobsPerWorld;
+    public final ForgeConfigSpec.IntValue passiveMobsPerServer;
+    public final ForgeConfigSpec.ConfigValue<List<String>> passiveMobsList;
 
-    public final ForgeConfigSpec.IntValue mekanismAdditionsMaxNeutralMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue mekanismAdditionsMaxNeutralMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> mekanismAdditionsNeutralMobsList;
+    public final ForgeConfigSpec.IntValue neutralMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue neutralMobsPerWorld;
+    public final ForgeConfigSpec.IntValue neutralMobsPerServer;
+    public final ForgeConfigSpec.ConfigValue<List<String>> neutralMobsList;
 
-    public final ForgeConfigSpec.IntValue mekanismAdditionsMaxHostileMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue mekanismAdditionsMaxHostileMobsPerWorld;
-    public final ForgeConfigSpec.ConfigValue<List<String>> mekanismAdditionsHostileMobsList;
+    public final ForgeConfigSpec.IntValue hostileMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue hostileMobsPerWorld;
+    public final ForgeConfigSpec.IntValue hostileMobsPerServer;
+    public final ForgeConfigSpec.ConfigValue<List<String>> hostileMobsList;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
       builder.push("Mekanism Spawn Config");
-      mekanismAdditionsEnabled = builder.define("mekanismAdditionsEnabled", true);
-      mekanismAdditionsId =
-          builder.define("mekanismAdditionsId", CoreConstants.MEKANISMADDITIONS_MOD);
+      enabled = builder.define("Enabled", true);
+      id = builder.define("Id", CoreConstants.MEKANISMADDITIONS_MOD);
 
-      mekanismAdditionsMaxPassiveMobsPerPlayer =
-          builder.defineInRange("mekanismAdditionsMaxPassiveMobsPerPlayer", 3, 1, 64);
-      mekanismAdditionsMaxPassiveMobsPerWorld =
-          builder.defineInRange("mekanismAdditionsMaxPassiveMobsPerWorld", 12, 1, 512);
-      mekanismAdditionsPassiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
-          .define("mekanismAdditionsPassiveMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-          // @formatter:on
-          )));
+      passiveMobsPerPlayer = builder.defineInRange("MaxPassiveMobsPerPlayer", 4, 1, 64);
+      passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 12, 1, 512);
+      passiveMobsPerServer = builder.defineInRange("MaxPassiveMobsPerServer", 320, 1, 1024);
+      // @formatter:off
+      // @formatter:on
+      passiveMobsList =
+          builder
+              .comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
+              .define("PassiveMobsList", new ArrayList<>(List.of()));
 
-      mekanismAdditionsMaxNeutralMobsPerPlayer =
-          builder.defineInRange("mekanismAdditionsMaxNeutralMobsPerPlayer", 4, 1, 64);
-      mekanismAdditionsMaxNeutralMobsPerWorld =
-          builder.defineInRange("mekanismAdditionsMaxNeutralMobsPerWorld", 16, 1, 512);
-      mekanismAdditionsNeutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
-          .define("mekanismAdditionsNeutralMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-          // @formatter:on
-          )));
+      neutralMobsPerPlayer = builder.defineInRange("MaxNeutralMobsPerPlayer", 4, 1, 64);
+      neutralMobsPerWorld = builder.defineInRange("MaxNeutralMobsPerWorld", 16, 1, 512);
+      neutralMobsPerServer = builder.defineInRange("MaxNeutralMobsPerServer", 320, 1, 1024);
+      // @formatter:off
+      // @formatter:on
+      neutralMobsList =
+          builder
+              .comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
+              .define("NeutralMobsList", new ArrayList<>(List.of()));
 
-      mekanismAdditionsMaxHostileMobsPerPlayer =
-          builder.defineInRange("mekanismAdditionsMaxHostileMobsPerPlayer", 4, 1, 64);
-      mekanismAdditionsMaxHostileMobsPerWorld =
-          builder.defineInRange("mekanismAdditionsMaxHostileMobsPerWorld", 16, 1, 512);
-      mekanismAdditionsHostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
-          .define("mekanismAdditionsHostileMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-            "mekanismadditions:baby_creeper",
-            "mekanismadditions:baby_enderman",
-            "mekanismadditions:baby_skeleton",
-            "mekanismadditions:baby_stray",
-            "mekanismadditions:baby_wither_skeleton"
-          // @formatter:on
-          )));
+      hostileMobsPerPlayer = builder.defineInRange("MaxHostileMobsPerPlayer", 4, 1, 64);
+      hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 16, 1, 512);
+      hostileMobsPerServer = builder.defineInRange("MaxHostileMobsPerServer", 320, 1, 1024);
+      hostileMobsList =
+          builder
+              .comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
+              .define(
+                  "HostileMobsList",
+                  new ArrayList<>(
+                      Arrays.asList(
+                          // @formatter:off
+                          "mekanismadditions:baby_creeper",
+                          "mekanismadditions:baby_enderman",
+                          "mekanismadditions:baby_skeleton",
+                          "mekanismadditions:baby_stray",
+                          "mekanismadditions:baby_wither_skeleton"
+                          // @formatter:on
+                          )));
 
       builder.pop();
     }
   }
-
 }

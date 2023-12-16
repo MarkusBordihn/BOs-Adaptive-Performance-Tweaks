@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,16 +19,15 @@
 
 package de.markusbordihn.adaptiveperformancetweaksplayer.player;
 
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import de.markusbordihn.adaptiveperformancetweakscore.message.WarnMessages;
+import de.markusbordihn.adaptiveperformancetweaksplayer.Constants;
+import de.markusbordihn.adaptiveperformancetweaksplayer.config.CommonConfig;
 import java.util.ConcurrentModificationException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraft.server.level.ServerPlayer;
-
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
@@ -36,11 +35,8 @@ import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.server.ServerLifecycleHooks;
-
-import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
-import de.markusbordihn.adaptiveperformancetweakscore.message.WarnMessages;
-import de.markusbordihn.adaptiveperformancetweaksplayer.Constants;
-import de.markusbordihn.adaptiveperformancetweaksplayer.config.CommonConfig;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Mod.EventBusSubscriber
 public class PlayerProtection {
@@ -60,15 +56,18 @@ public class PlayerProtection {
 
     // Additional checks for conflicting mods.
     if (CoreConstants.LOGIN_PROTECTION_LOADED) {
-      log.warn(() -> WarnMessages.conflictingFeaturesModWarning(CoreConstants.LOGIN_PROTECTION_NAME,
-          "protects the user during the login"));
+      log.warn(
+          () ->
+              WarnMessages.conflictingFeaturesModWarning(
+                  CoreConstants.LOGIN_PROTECTION_NAME, "protects the user during the login"));
     }
   }
 
   @SubscribeEvent
   public static void handleServerStartingEvent(ServerStartingEvent event) {
     if (Boolean.TRUE.equals(COMMON.protectPlayerDuringLogin.get())) {
-      log.info("Player will be protected during login for max. of {} secs.",
+      log.info(
+          "Player will be protected during login for max. of {} secs.",
           COMMON.playerLoginValidationTimeout.get());
     }
   }
@@ -83,10 +82,19 @@ public class PlayerProtection {
       ServerPlayer player =
           ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
 
+      // Warn if we unable to find server player by username.
+      if (player == null) {
+        log.warn("Unable to match username {} to server player!", username);
+        return;
+      }
+
       // Player Protection
       if (Boolean.TRUE.equals(COMMON.protectPlayerDuringLoginLogging.get())) {
-        log.info("Player {} {} logged in and will be protected for {} secs.", username,
-            event.getEntity(), COMMON.playerLoginValidationTimeout.get());
+        log.info(
+            "Player {} {} logged in and will be protected for {} secs.",
+            username,
+            event.getEntity(),
+            COMMON.playerLoginValidationTimeout.get());
         player.setInvisible(true);
         player.setInvulnerable(true);
         player.heal(1);
@@ -138,15 +146,19 @@ public class PlayerProtection {
           if (playerValidation.hasPlayerMoved()) {
             long validationTimeInSecs =
                 TimeUnit.MILLISECONDS.toSeconds(playerValidation.getValidationTimeElapsed());
-            log.info("{} {} was successful validated after {} secs.",
+            log.info(
+                "{} {} was successful validated after {} secs.",
                 Boolean.TRUE.equals(COMMON.protectPlayerDuringLoginLogging.get())
                     ? "Protected Player"
                     : "Player",
-                username, validationTimeInSecs);
+                username,
+                validationTimeInSecs);
             addPlayer(username);
-          } else if (playerValidation.getValidationTimeElapsed() >= TimeUnit.SECONDS
-              .toMillis(COMMON.playerLoginValidationTimeout.get())) {
-            log.warn("User validation for {} timed out after {} secs.", username,
+          } else if (playerValidation.getValidationTimeElapsed()
+              >= TimeUnit.SECONDS.toMillis(COMMON.playerLoginValidationTimeout.get())) {
+            log.warn(
+                "User validation for {} timed out after {} secs.",
+                username,
                 COMMON.playerLoginValidationTimeout.get());
             addPlayer(username);
           }
@@ -154,7 +166,8 @@ public class PlayerProtection {
       } catch (ConcurrentModificationException error) {
         log.error(
             "Unexpected error during user validation. Please report the following error under {} .\n{}",
-            CoreConstants.ISSUE_REPORT, error);
+            CoreConstants.ISSUE_REPORT,
+            error);
       }
     }
     ticker = 0;
@@ -166,6 +179,13 @@ public class PlayerProtection {
         if (username.equals(playerValidation.getUsername())) {
           ServerPlayer player =
               ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
+
+          // Warn if we unable to find server player by username.
+          if (player == null) {
+            log.warn("Unable to match username {} to server player!", username);
+            return;
+          }
+
           log.debug("Found player {} with player validation {}", player, playerValidation);
           if (Boolean.TRUE.equals(COMMON.protectPlayerDuringLogin.get())
               && (player.isInvisible() || player.isInvulnerable())) {
@@ -193,7 +213,6 @@ public class PlayerProtection {
                 player.setInvulnerable(false);
               }
             }
-
           }
           playerValidationList.remove(playerValidation);
           break;
@@ -202,7 +221,8 @@ public class PlayerProtection {
     } catch (ConcurrentModificationException error) {
       log.error(
           "Unexpected error during adding player. Please report the following error under {} .\n{}",
-          CoreConstants.ISSUE_REPORT, error);
+          CoreConstants.ISSUE_REPORT,
+          error);
     }
     log.debug("Added player {}", username);
   }
@@ -218,9 +238,9 @@ public class PlayerProtection {
     } catch (ConcurrentModificationException error) {
       log.error(
           "Unexpected error during removing player. Please report the following error under {} .\n{}",
-          CoreConstants.ISSUE_REPORT, error);
+          CoreConstants.ISSUE_REPORT,
+          error);
     }
     log.debug("Remove player {}", username);
   }
-
 }

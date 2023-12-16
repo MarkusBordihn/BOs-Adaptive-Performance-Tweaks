@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,31 +19,27 @@
 
 package de.markusbordihn.adaptiveperformancetweaksitems.entity;
 
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import de.markusbordihn.adaptiveperformancetweaksitems.Constants;
+import de.markusbordihn.adaptiveperformancetweaksitems.config.CommonConfig;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.Entity.RemovalReason;
+import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.level.Level;
-
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.event.server.ServerAboutToStartEvent;
-
-import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
-import de.markusbordihn.adaptiveperformancetweaksitems.Constants;
-import de.markusbordihn.adaptiveperformancetweaksitems.config.CommonConfig;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber
 public class ExperienceOrbManager {
@@ -60,7 +56,8 @@ public class ExperienceOrbManager {
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
     experienceOrbEntityMap = new ConcurrentHashMap<>();
     if (Boolean.TRUE.equals(COMMON.optimizeExperienceOrbs.get())) {
-      log.info("Enable clustering of Experience Orbs with a radius of {} blocks.",
+      log.info(
+          "Enable clustering of Experience Orbs with a radius of {} blocks.",
           COMMON.experienceOrbsClusterRange.get());
 
       // Additional checks for conflicting mods.
@@ -85,29 +82,32 @@ public class ExperienceOrbManager {
 
     // Ignore everything else besides experience orbs.
     Entity entity = event.getEntity();
-    if (!(entity instanceof ExperienceOrb)) {
+    if (!(entity instanceof ExperienceOrb experienceOrbEntity)) {
       return;
     }
 
     // Ignore events which are already canceled
     if (event.isCanceled()) {
-      log.debug("Ignore canceled Experience Orb event {}!", event);
       return;
     }
-
-    ExperienceOrb experienceOrbEntity = (ExperienceOrb) entity;
 
     // Get world name and ignore orb if it has 0 xp.
     String levelName = level.dimension().location().toString();
     if (Boolean.TRUE.equals(COMMON.optimizeExperienceOrbs.get() && !CoreConstants.CLUMPS_LOADED)
         && experienceOrbEntity.value <= 0) {
-      log.debug("Remove Experience Orb {} with {} xp from {}.", experienceOrbEntity,
-          experienceOrbEntity.value, levelName);
+      log.debug(
+          "Remove Experience Orb {} with {} xp from {}.",
+          experienceOrbEntity,
+          experienceOrbEntity.value,
+          levelName);
       experienceOrbEntity.remove(RemovalReason.DISCARDED);
       return;
     } else {
-      log.debug("Experience Orb {} with {} xp joined {}.", experienceOrbEntity,
-          experienceOrbEntity.value, levelName);
+      log.debug(
+          "Experience Orb {} with {} xp joined {}.",
+          experienceOrbEntity,
+          experienceOrbEntity.value,
+          levelName);
     }
 
     // Check if orb should be merged with existing orbs and ignore orb if it has 0 xp.
@@ -137,14 +137,21 @@ public class ExperienceOrbManager {
         int ySub = (int) existingExperienceOrb.getY();
         int zSub = (int) existingExperienceOrb.getZ();
         if (experienceOrbEntity.getId() != existingExperienceOrb.getId()
-            && existingExperienceOrb.isAlive() && (xStart < xSub && xSub < xEnd)
-            && (yStart < ySub && ySub < yEnd) && (zStart < zSub && zSub < zEnd)) {
+            && existingExperienceOrb.isAlive()
+            && (xStart < xSub && xSub < xEnd)
+            && (yStart < ySub && ySub < yEnd)
+            && (zStart < zSub && zSub < zEnd)) {
           int newExperienceValue = existingExperienceOrb.value + experienceOrbEntity.value;
-          log.debug("Merge experience orb {} with {} and {} xp.", experienceOrbEntity,
-              existingExperienceOrb, newExperienceValue);
+          log.debug(
+              "Merge experience orb {} with {} and {} xp.",
+              experienceOrbEntity,
+              existingExperienceOrb,
+              newExperienceValue);
           existingExperienceOrb.value = newExperienceValue;
           experienceOrbEntity.value = 0;
-          experienceOrbEntity.moveTo(existingExperienceOrb.getX(), existingExperienceOrb.getY(),
+          experienceOrbEntity.moveTo(
+              existingExperienceOrb.getX(),
+              existingExperienceOrb.getY(),
               existingExperienceOrb.getZ());
           experienceOrbEntity.remove(RemovalReason.DISCARDED);
 
@@ -170,15 +177,17 @@ public class ExperienceOrbManager {
 
     // Ignore everything else besides experience orbs
     Entity entity = event.getEntity();
-    if (!(entity instanceof ExperienceOrb)) {
+    if (!(entity instanceof ExperienceOrb experienceOrbEntity)) {
       return;
     }
-    ExperienceOrb experienceOrbEntity = (ExperienceOrb) entity;
 
     // Get level name and start processing of data
     String levelName = level.dimension().location().toString();
-    log.debug("Experience Orb {} with {} xp left {}.", experienceOrbEntity,
-        experienceOrbEntity.value, levelName);
+    log.debug(
+        "Experience Orb {} with {} xp left {}.",
+        experienceOrbEntity,
+        experienceOrbEntity.value,
+        levelName);
 
     // Remove item from level type map.
     Set<ExperienceOrb> experienceOrbWorldEntities = experienceOrbEntityMap.get(levelName);
@@ -186,5 +195,4 @@ public class ExperienceOrbManager {
       experienceOrbWorldEntities.remove(experienceOrbEntity);
     }
   }
-
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,39 +19,34 @@
 
 package de.markusbordihn.adaptiveperformancetweaksspawn.spawn;
 
+import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.BaseSpawner;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
-
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-
-import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber
 public class SpawnerManager {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-
-  private static short ticks = 0;
+  static final Set<BaseSpawner> spawnerList = ConcurrentHashMap.newKeySet();
   private static final short VERIFICATION_TICK = 60 * 20;
-
-  static Set<BaseSpawner> spawnerList = ConcurrentHashMap.newKeySet();
+  private static short ticks = 0;
 
   protected SpawnerManager() {}
 
@@ -87,14 +82,12 @@ public class SpawnerManager {
 
       // Ignore events which are already canceled or denied.
       if (event.isCanceled() || event.getResult() == Event.Result.DENY) {
-        log.debug("[Canceled / denied Spawner Event] Ignore spawner event {}!", event);
         return;
       }
 
       BaseSpawner spawner = checkSpawn.getSpawner();
       addSpawner(spawner);
     }
-
   }
 
   public static void addSpawner(BaseSpawner spawner) {
@@ -107,13 +100,17 @@ public class SpawnerManager {
     // Only do expensive lookup for debugging.
     if (log.isDebugEnabled()) {
       BlockEntity blockEntity = spawner.getSpawnerBlockEntity();
-      BlockPos blockPos = blockEntity.getBlockPos();
-      String levelName = blockEntity.getLevel().dimension().location().toString();
-      CompoundTag spawnerData = blockEntity.serializeNBT();
-      String spawnerId = spawnerData.getString("id");
-      String spawnEntityId =
-          spawnerData.getCompound("SpawnData").getCompound("entity").getString("id");
-      log.debug("[Spawner] Found {}({}) at {} in {}", spawnerId, spawnEntityId, blockPos, levelName);
+      if (blockEntity != null) {
+        BlockPos blockPos = blockEntity.getBlockPos();
+        Level level = blockEntity.getLevel();
+        String levelName = level != null ? level.dimension().location().toString() : "";
+        CompoundTag spawnerData = blockEntity.serializeNBT();
+        String spawnerId = spawnerData.getString("id");
+        String spawnEntityId =
+            spawnerData.getCompound("SpawnData").getCompound("entity").getString("id");
+        log.debug(
+            "[Spawner] Found {}({}) at {} in {}", spawnerId, spawnEntityId, blockPos, levelName);
+      }
     }
   }
 
@@ -128,7 +125,8 @@ public class SpawnerManager {
     Iterator<BaseSpawner> spawnerIterator = spawnerList.iterator();
     while (spawnerIterator.hasNext()) {
       BaseSpawner spawner = spawnerIterator.next();
-      if (spawner != null && spawner.getSpawnerBlockEntity().isRemoved()) {
+      BlockEntity spawnerBlockEntity = spawner != null ? spawner.getSpawnerBlockEntity() : null;
+      if (spawner != null && spawnerBlockEntity != null && spawnerBlockEntity.isRemoved()) {
         spawnerIterator.remove();
         removedEntries++;
       }
@@ -138,5 +136,4 @@ public class SpawnerManager {
       log.debug("Removed {} entries during the verification", removedEntries);
     }
   }
-
 }
