@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -21,12 +21,12 @@ package de.markusbordihn.adaptiveperformancetweaksitems;
 
 public final class Constants {
 
-  protected Constants() {}
-
   // General Mod definitions
   public static final String LOG_NAME = "APTweaks(Items)";
   public static final String MOD_COMMAND = "aptweaks";
   public static final String MOD_ID = "adaptive_performance_tweaks_items";
   public static final String MOD_NAME = "Adaptive Performance Tweaks: Items";
   public static final String MODULE_NAME = "Items";
+
+  protected Constants() {}
 }

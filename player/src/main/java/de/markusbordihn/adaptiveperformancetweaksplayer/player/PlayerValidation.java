@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -24,12 +24,12 @@ import net.minecraft.world.phys.Vec3;
 
 public class PlayerValidation {
 
-  private ServerPlayer player;
-  private String playerUUID;
-  private String username;
-  private Vec3 position;
-  private double rotationYawHead;
-  private long lastValidationTime = System.currentTimeMillis();
+  private final ServerPlayer player;
+  private final String playerUUID;
+  private final String username;
+  private final Vec3 position;
+  private final double rotationYawHead;
+  private final long lastValidationTime = System.currentTimeMillis();
 
   PlayerValidation(ServerPlayer player) {
     this.player = player;

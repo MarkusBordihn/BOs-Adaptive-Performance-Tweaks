@@ -1,66 +1,74 @@
+[![Adaptive Performance Tweaks Downloads](http://cf.way2muchnoise.eu/full_563963_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player)
+[![Adaptive Performance Tweaks Versions](http://cf.way2muchnoise.eu/versions/Minecraft_563963_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player)
+
 # Adaptive Performance Tweaks: Player
 
 ![Adaptive Performance Tweaks: Player][header]
 
-[![Adaptive Performance Tweaks Downloads](http://cf.way2muchnoise.eu/full_563963_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player)
-[![Adaptive Performance Tweaks Versions](http://cf.way2muchnoise.eu/versions/Minecraft_563963_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player)
-
-Adaptive Performance Tweaks is a collection of Minecraft Forge server-side Mod which automatically adjust specific settings on the server to allow a more balanced TPS/FPS.
+Adaptive Performance Tweaks (APTweaks) is a collection of Minecraft Forge server-side Mod which
+automatically adjust specific settings on the server to allow a more balanced TPS/FPS.
 The goal of this mod is to allow a smoother experience on a server with several (=> 180) Mods.
+
+### ✨ Features
+
+- Optimize server performance effortlessly with server-side optimization; client installation is
+  entirely optional.
+- Customize your experience by selecting the specific optimization modules or features that suit
+  your needs.
+- Achieve compatibility with other mods seamlessly, as our optimization approach avoids core/Mixin
+  modding.
+- Enjoy precise control over optimizations through fine-tuning via the user-friendly config files.
+- Dive deeper into the intricacies of your server's performance with our built-in debug mode,
+  providing comprehensive information about the current state and any applied changes.
+
+**⚠️Please make sure to create regular backup of your world in case something goes wrong.**
+
+**⚠️Please make sure to create regular backup of your world in case something goes wrong.**
 
 ## 🛡️Player Login Optimization and Protection
 
-Sometimes it takes up to 30sec until the player is able to interact with the world after he is logged in.
-This mod automatically protects the user for the time between login and to be able to interactive with the world to make sure that he is not attacked by mobs during this time.
-Furthermore other smaller optimization will be done to allow a smoother login process.
+Sometimes it takes up to 30sec until the player is able to interact with the world after he is
+logged in.
+This mod automatically protects the user for the time between login and to be able to interactive
+with the world to make sure that he is not attacked by mobs during this time.
+Furthermore, other smaller optimization will be done to allow a smoother login process.
 
 ## 🛡️🐨Child Player Protection
 
-Playing together with less experience player or child's could be a challenge to find the right balance for all players.
-Just add the child player names to the configuration and additional define how much hurt damage should be decreased and if any attack damage should be increased for them.
-This allows are more enjoying the game even if you are playing in hardcore mode or with less experience players or child's.
+Playing together with less experience player or child's could be a challenge to find the right
+balance for all players.
 
-## 🚀Install additional Optimization
+Just add the child player names to the configuration and additional define how much hurt damage
+should be decreased and if any attack damage should be increased for them.
 
-### 📦Bundled Version
+This allows a more enjoying the game even if you are playing in hardcore mode or with less
+experience players or child's.
+
+### Bundled Modules
 
 If you want to install all modules together use the bundled version:
 
 **➡️[Install the bundled version][bundled]**
 
-### ⚙️Customized
+## ℹ️ Explore Further Details
 
-If you want to pick and choose your optimizations, take a look at the core page:
+For in-depth information, explore our wiki available
+at https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki.
+Delve into comprehensive documentation to gain a deeper understanding of the nuances and
+functionalities of our project.
 
-**➡️[Install additional optimization modules][core]**
+## 🚩 Report Issues and Share Feature Requests
 
-### ⭐Recommended related Mods
+Encountering any issues? Navigate to our troubleshooting guide
+at https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki/Troubleshooting for
+comprehensive assistance.
 
-- [Better FPS][better-fps-render-distance]: Adds a few performance improvements to increase fps.
-- [Dynamic View][dynamic-view]: Help balancing lag(tps) and chunk view and simulation distance.
-- [Farsight][farsight]: Lets you see much further in already visited chunks than the servers chunk distance.
+To report issues or propose new features, utilize the Issues link above.
+Your feedback is invaluable, and we appreciate your contribution to enhancing the performance and
+functionality of
+our project.
+Thank you for helping us make it even better!
 
-### 🚩Issues
+[header]: ../assets/aptweaks-header.png
 
-Please report issues over the **Issue** link.
-
-## Version Status Overview 🛠️
-
-| Version        | Status                |
-| -------------- | --------------------- |
-| Fabric Version | ❌ Not planned        |
-| Forge 1.16.5   | ❌ Not planned        |
-| Forge 1.17.1   | ❌ Not planned        |
-| Forge 1.18.1   | ⚠️ Deprecated         |
-| Forge 1.18.2   | ⚠️ Maintenance only   |
-| Forge 1.19     | ⚠️ Deprecated         |
-| Forge 1.19.1   | ⚠️ Deprecated         |
-| Forge 1.19.2   | ⚠️ Maintenance only   |
-| Forge 1.19.3   | ✔️ Active development |
-
-[header]: ../assets/aptweaks-header-only.png
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
-[core]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
-[better-fps-render-distance]: https://www.curseforge.com/minecraft/mc-mods/better-fps-render-distance
-[dynamic-view]: https://www.curseforge.com/minecraft/mc-mods/dynamic-view/
-[farsight]: https://www.curseforge.com/minecraft/mc-mods/farsight

@@ -1,17 +1,30 @@
-# Changelog for Adaptive Performance Tweaks (> 1.19.4)
+# Changelog for Adaptive Performance Tweaks
 
 ## Note
 
 This change log includes the summarized changes.
-For the full changelog, please go to the [Git Hub History][history] instead.
+For the full changelog, please go to the [GitHub History][history] instead.
+
+### v11.0.0
+
+- As requested, separated the Mods optimization module into a independent mod
+  called [Mods Optimizer][mods-optimizer]
+  to allow easier maintenance and updates.
+- Improved overall performance and memory usage by code refactoring and optimizations up to 10%.
+- Simplified checks and removed unnecessary checks for better performance.
+- Added `PersistenceRequired` tag for mobs and modded entities to the ignore list to avoid issues
+  with the spawn module.
 
 ### 2023.10.25
 
 As always make sure to create regular backups of your world!
 
 - Added `friendlyChunkSpawnRate` to avoid issues with chunk optimization by other mods.
-- Added warning message for pre-chunk generation mods to ensure that the spawn module will be disabled during the pre-chunk generation process to avoid any possible side effects with the pre-generated chunk data.
-- Added server start delay before the spawn module will be enabled to allow other mods to finish their initialization.
+- Added warning message for pre-chunk generation mods to ensure that the spawn module will be
+  disabled during the pre-chunk generation process to avoid any possible side effects with the
+  pre-generated chunk data.
+- Added server start delay before the spawn module will be enabled to allow other mods to finish
+  their initialization.
 - Improved view area calculation for faster and more accurate results.
 - Improved debug logging messages for better readability and easier troubleshooting.
 
@@ -21,8 +34,9 @@ As always make sure to create regular backups of your world!
 
 ### 2023.10.13
 
-- Added individual server limits for the spawn module.
-- Improved debug output for the spawn module to show the current numbers of entities and the corresponding limits.
+- Added individual world limits for the spawn module.
+- Improved debug output for the spawn module to show the current numbers of entities and the
+  corresponding limits.
 - Smaller performance improvements.
 - Fixed Pillager over-spawning issue for outposts.
 
@@ -33,7 +47,8 @@ As always make sure to create regular backups of your world!
 ### 2023.05.30
 
 - Smaller Performance Improvement
-- Added forced player update to the player module to fix issues with player positions not updated correctly.
+- Added forced player update to the player module to fix issues with player positions not updated
+  correctly.
 
 ### 2023.05.27
 
@@ -43,18 +58,16 @@ As always make sure to create regular backups of your world!
 
 ### 2023.05.04
 
-- Added custom spawn configuration for Born in Chaos, Fish fo Thieves, Friends and Foes, Infernal Expansion and Untitled Duck. Thanks to pewblaze for providing the example spawn configs.
+- Added custom spawn configuration for Born in Chaos, Fish fo Thieves, Friends and Foes, Infernal
+  Expansion and Untitled Duck. Thanks to pewblaze for providing the example spawn configs.
 
 ### 2023.04.03
 
-- Improved compatibility with Ars Nouveau, Applied Energistics 2, Easy NPC, Flux Networks, Guard Villagers, Human Companions, Immersive Engineering, Modular Routers, Mining Colonies and Storage Drawers.
+- Improved compatibility with Ars Nouveau, Applied Energistics 2, Easy NPC, Flux Networks, Guard
+  Villagers, Human Companions, Immersive Engineering, Modular Routers, Mining Colonies and Storage
+  Drawers.
 - Improved owner detection for modded entities which are not extending the `TamableAnimal` class.
 - Improved performance by 5% by skipping mods specific checks for standard entities.
-
-### 2023.03.26
-
-- Refactored code for version 1.19.4-45.0.25
-- Added new game rule adjustments for disableElytraMovementCheck, doVinesSpread and doWardenSpawning
 
 ### 2023.03.06
 
@@ -62,18 +75,14 @@ As always make sure to create regular backups of your world!
 
 ### 2023.02.26
 
-- Added allow and deny list to the item module to allow individual fine tuning for specific items.
+- Added allow and deny list to the item module to allow individual fine-tuning for specific items.
   You can now easily add or remove specific items over the item list in the items.toml config file.
 
 ### 2023.01.13
 
-- Improved compatibility with Bigger Reactors, Botania, Industrial Foregoing, Mekanism, Pipez, Refined Storage, Ultimate Car, Viescraft and Xnet.
+- Improved compatibility with Bigger Reactors, Botania, Industrial Foregoing, Mekanism, Pipez,
+  Refined Storage, Ultimate Car, Viescraft and Xnet.
 - Improved performance by 5% with enable more specific checks only in debug mode.
-
-### 2022.12.12
-
-- Refactored code for version 1.19.3-44.0.11
-- Added new game rule adjustments for blockExplosionDropDecay, mobExplosionDropDecay and tntExplosionDropDecay
 
 ### 2022.12.05
 
@@ -100,13 +109,11 @@ As always make sure to create regular backups of your world!
 
 ### 2022.09.03
 
-- Added configuration file `config/adaptive_performance_tweaks/client_side_mods.list` to customize client side mods for the mod module with auto-update feature.
-- Added additional client side mods to the list based on information provided by [Modrinth][modrinth].
+- Added configuration file `config/adaptive_performance_tweaks/client_side_mods.list` to customize
+  client side mods for the mod module with auto-update feature.
+- Added additional client side mods to the list based on information provided
+  by [Modrinth][modrinth].
 - Improved client side mods version extraction and normalization.
-
-### 2022.08.07
-
-- Refactored code for version 1.19.2-43.0.0
 
 ### 2022.08.06
 
@@ -122,18 +129,6 @@ As always make sure to create regular backups of your world!
 
 - Updated client mods database and improved version detection.
 
-### 2022.07.28
-
-- Refactored code for version 1.19.1-42.0.0
-
-### 2022.07.17
-
-- Improved less experienced and child protection mode for player login module with the option to decrease hurt damage and to increase attack damage.
-
-### 2022.07.12
-
-- Refactored code for version 1.19-41.0.99
-
 ### 2022.07.10
 
 - Fixed exotic version strings detection and improved sorting for duplicated mods.
@@ -142,22 +137,6 @@ As always make sure to create regular backups of your world!
 ### 2022.07.02
 
 - Added additional check to handle client crash by loading the config files for the first time.
-
-### 2022.06.25
-
-- Fixed smaller issues with 1.19-41.0.45 Please report 1.19-41.0.45 issue over the issue link, if there are still any issues.
-
-### 2022.06.22
-
-- Updated client side mods database [thanks to NoShotz]
-
-### 2022.06.18
-
-- Fixed ConfigValue#get() change.
-
-### 2022.06.08
-
-- Refactored code for version 1.19-41.0.38
 
 ### 2022.05.28
 
@@ -185,16 +164,21 @@ As always make sure to create regular backups of your world!
 
 - Added Alex's Mob's, Mekanism Additions, Quark and Untamed Wilds individual spawn configuration.
 - Improved performance of mods module by ignore specific files and removing additional duplicates.
-- Removed view-distance and simulation distance optimizations from player module >= 3.5.0 and referrer to [Dynamic View][dynamic-view], [Farsight][farsight] and [Better FPS] [better-fps-render-distance] instead.
+- Removed view-distance and simulation distance optimizations from player module >= 3.5.0 and
+  referrer to [Dynamic View][dynamic-view], [Farsight][farsight]
+  and [Better FPS] [better-fps-render-distance] instead.
 
 ### 2022.04.04
 
-- Added warning and fixed performance issues with caused by other mods and/or specific server configuration which setting logging = ALL which enables all debug messages and cause a additional server load up to 10%.
+- Added warning and fixed performance issues with caused by other mods and/or specific server
+  configuration which setting logging = ALL which enables all debug messages and cause a additional
+  server load up to 10%.
 
 ### 2022.04.03
 
 - Merged latest changes from 1.18.1 to 1.18.2
-- Added mod specific configs for Minecraft and Aquaculture 2 to 1.18.2 to allow individual fine tuning for specific mob groups.
+- Added mod specific configs for Minecraft and Aquaculture 2 to 1.18.2 to allow individual
+  fine-tuning for specific mob groups.
   You can easily add or remove specific mob over the mob list in the relevant config files.
 
 ### 2022.03.07
@@ -203,7 +187,8 @@ As always make sure to create regular backups of your world!
 
 ### 2022.03.01
 
-- Moved config files to separate directory. NOTE: Please make sure to check the new auto-generated configs.
+- Moved config files to separate directory. NOTE: Please make sure to check the new auto-generated
+  configs.
 - Improved entity and position manager to improve tracking of entities and player positions.
 - Fixed issue with spawn rules which wrongly triggering "Player Limit" rule when it should not.
 
@@ -237,7 +222,8 @@ As always make sure to create regular backups of your world!
 ### 2022.01.27
 
 - Added experimental entity / spawn control module.
-- Added debug manager for easy activate of the debug output over `/aptweaks debug <module> <enable|disable>`.
+- Added debug manager for easy activate of the debug output
+  over `/aptweaks debug <module> <enable|disable>`.
 - Fixed smaller performance issue.
 
 ### 2022.01.26
@@ -245,10 +231,10 @@ As always make sure to create regular backups of your world!
 - Added automatic clean-up every 30 secs for the item cache.
 - Optimized kill command to work only inside a specific dimension.
 - Preparation for entity / spawn control module
-  - Adjusted view area calculation to consider additional factors
-  - Added `/aptweaks entity <options> command`
-  - Added entity monitoring
-  - Added automatic clean-up every 30 secs for the entity / spawn cache.
+    - Adjusted view area calculation to consider additional factors
+    - Added `/aptweaks entity <options> command`
+    - Added entity monitoring
+    - Added automatic clean-up every 30 secs for the entity / spawn cache.
 
 ### 2022.01.23
 
@@ -266,7 +252,8 @@ As always make sure to create regular backups of your world!
 ### 2022.01.04
 
 - Fixed: typos
-- Added time between update delay for view distance and simulation distance changes to lower the visual impact for the player.
+- Added time between update delay for view distance and simulation distance changes to lower the
+  visual impact for the player.
 
 ### 2022.01.03
 
@@ -280,10 +267,19 @@ As always make sure to create regular backups of your world!
 - Initial check-in of next gen-version of Adaptive Performance Tweaks.
 
 [history]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/commits/main
+
 [better-fps-render-distance]: https://www.curseforge.com/minecraft/mc-mods/better-fps-render-distance
+
 [create]: https://www.curseforge.com/minecraft/mc-mods/create
+
 [dynamic-view]: https://www.curseforge.com/minecraft/mc-mods/dynamic-view/
+
 [farsight]: https://www.curseforge.com/minecraft/mc-mods/farsight
+
 [modrinth]: https://modrinth.com/
+
 [pokecube_aio]: https://www.curseforge.com/minecraft/mc-mods/pokecube-aoi
+
 [productive_bees]: https://www.curseforge.com/minecraft/mc-mods/productivebees
+
+[mods-optimizer]: https://www.curseforge.com/minecraft/mc-mods/mods-optimizer
