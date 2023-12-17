@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -21,8 +21,6 @@ package de.markusbordihn.adaptiveperformancetweaksspawn;
 
 public final class Constants {
 
-  protected Constants() {}
-
   // General Mod definitions
   public static final String LOG_NAME = "APTweaks(Spawn)";
   public static final String LOG_PREFIX = "[APTweaks:Spawn]";
@@ -30,7 +28,6 @@ public final class Constants {
   public static final String MOD_ID = "adaptive_performance_tweaks_spawn";
   public static final String MOD_NAME = "Adaptive Performance Tweaks: Spawn";
   public static final String MODULE_NAME = "Spawn";
-
   // Config Descriptions
   public static final String CONFIG_LIST_PASSIVE_MOBS =
       "List of passive Mobs to optimize in the format [\"minecraft:bat\", \"minecraft:cat\", ..]";
@@ -38,4 +35,6 @@ public final class Constants {
       "List of neutral Mobs to optimize in the format [\"minecraft:bee\", \"minecraft:wolf\", ..]";
   public static final String CONFIG_LIST_HOSTILE_MOBS =
       "List of hostile Mobs to optimize in the format [\"minecraft:blaze\", \"minecraft:cave_spider\", ..]";
+
+  protected Constants() {}
 }

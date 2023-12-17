@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -23,22 +23,22 @@ import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-
 import de.markusbordihn.adaptiveperformancetweakscore.commands.CustomCommand;
 import de.markusbordihn.adaptiveperformancetweakscore.debug.DebugManager;
 import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 
 public class DebugCommand extends CustomCommand {
 
   private static final DebugCommand command = new DebugCommand();
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
-    return Commands.literal("debug").requires(cs -> cs.hasPermission(2))
-        .then(Commands.literal("spawn")
-            .then(Commands.argument("enable", BoolArgumentType.bool()).executes(command)));
+    return Commands.literal("debug")
+        .requires(cs -> cs.hasPermission(2))
+        .then(
+            Commands.literal("spawn")
+                .then(Commands.argument("enable", BoolArgumentType.bool()).executes(command)));
   }
 
   @Override

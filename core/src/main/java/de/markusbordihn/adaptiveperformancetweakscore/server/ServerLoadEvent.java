@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,51 +19,24 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.server;
 
+import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLoad.ServerLoadLevel;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.Event;
 
-import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLoad.ServerLoadLevel;
-
 public class ServerLoadEvent extends Event {
 
-  private Dist dist;
-  private ServerLoadLevel lastServerLoadLevel = ServerLoadLevel.NORMAL;
-  private ServerLoadLevel serverLoadLevel = ServerLoadLevel.NORMAL;
-  private double avgTickTime = 50.0;
-  private double lastAvgTickTime = 45.0;
+  private final ServerLoadLevel lastServerLoadLevel;
+  private final ServerLoadLevel serverLoadLevel;
 
-  public ServerLoadEvent(ServerLoadLevel currentServerLoad, ServerLoadLevel lastServerLoad,
-      double avgTickTime, double lastAvgTickTim, Dist dist) {
+  public ServerLoadEvent(
+      ServerLoadLevel currentServerLoad,
+      ServerLoadLevel lastServerLoad,
+      double avgTickTime,
+      double lastAvgTickTim,
+      Dist dist) {
     super();
-    this.avgTickTime = avgTickTime;
-    this.dist = dist;
-    this.lastAvgTickTime = lastAvgTickTim;
     this.lastServerLoadLevel = lastServerLoad;
     this.serverLoadLevel = currentServerLoad;
-  }
-
-  public boolean isDedicatedServer() {
-    return this.dist.isDedicatedServer();
-  }
-
-  public boolean isClient() {
-    return this.dist.isClient();
-  }
-
-  public double getAvgTickTime() {
-    return this.avgTickTime;
-  }
-
-  public double getLastAvgTickTime() {
-    return this.lastAvgTickTime;
-  }
-
-  public ServerLoadLevel getServerLoad() {
-    return serverLoadLevel;
-  }
-
-  public ServerLoadLevel getLastServerLoad() {
-    return lastServerLoadLevel;
   }
 
   public boolean hasVeryHighServerLoad() {

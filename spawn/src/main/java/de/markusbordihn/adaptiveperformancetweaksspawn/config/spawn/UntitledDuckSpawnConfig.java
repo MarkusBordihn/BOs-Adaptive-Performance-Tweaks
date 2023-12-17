@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,33 +19,26 @@
 
 package de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn;
 
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.fml.loading.FileUtils;
-
-import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
-import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public final class UntitledDuckSpawnConfig {
 
-  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-
-  private UntitledDuckSpawnConfig() {}
-
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   static {
     com.electronwill.nightconfig.core.Config.setInsertionOrderPreserved(true);
@@ -53,17 +46,22 @@ public final class UntitledDuckSpawnConfig {
         new ForgeConfigSpec.Builder().configure(Config::new);
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
-    log.info("Registering {} {} spawn config ...", Constants.MOD_NAME,
-        CoreConstants.UNTITLED_DUCK_NAME);
+    log.info(
+        "Registering {} {} spawn config ...", Constants.MOD_NAME, CoreConstants.UNTITLED_DUCK_NAME);
     try {
-      FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
-          CoreConstants.CONFIG_ID);
+      FileUtils.getOrCreateDirectory(
+          FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID), CoreConstants.CONFIG_ID);
     } catch (Exception exception) {
       log.error("There was an error, creating the directory:", exception);
     }
-    ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec,
-        CoreConstants.CONFIG_ID_PREFIX + "/spawn/UntitledDuck.toml");
+    ModLoadingContext.get()
+        .registerConfig(
+            ModConfig.Type.COMMON,
+            commonSpec,
+            CoreConstants.CONFIG_ID_PREFIX + "/spawn/UntitledDuck.toml");
   }
+
+  private UntitledDuckSpawnConfig() {}
 
   public static class Config {
 
@@ -90,25 +88,34 @@ public final class UntitledDuckSpawnConfig {
       passiveMobsPerPlayer = builder.defineInRange("MaxPassiveMobsPerPlayer", 16, 1, 64);
       passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 32, 1, 512);
       passiveMobsPerServer = builder.defineInRange("MaxPassiveMobsPerServer", 320, 1, 1024);
-      passiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
-          .define("PassiveMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-            "untitledduckmod:duck"
-          // @formatter:on
-          )));
+      passiveMobsList =
+          builder
+              .comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
+              .define(
+                  "PassiveMobsList",
+                  new ArrayList<>(
+                      List.of(
+                          // @formatter:off
+                          "untitledduckmod:duck"
+                          // @formatter:on
+                          )));
 
       neutralMobsPerPlayer = builder.defineInRange("MaxNeutralMobsPerPlayer", 8, 1, 64);
       neutralMobsPerWorld = builder.defineInRange("MaxNeutralMobsPerWorld", 32, 1, 512);
       neutralMobsPerServer = builder.defineInRange("MaxNeutralMobsPerServer", 320, 1, 1024);
-      neutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
-          .define("NeutralMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-            "untitledduckmod:goose"
-          // @formatter:on
-          )));
+      neutralMobsList =
+          builder
+              .comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
+              .define(
+                  "NeutralMobsList",
+                  new ArrayList<>(
+                      List.of(
+                          // @formatter:off
+                          "untitledduckmod:goose"
+                          // @formatter:on
+                          )));
 
       builder.pop();
     }
   }
-
 }

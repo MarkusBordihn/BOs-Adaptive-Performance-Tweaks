@@ -4,38 +4,38 @@
 # Note that there are a couple of TOML lists in this file.
 # Find more information on toml format here:  https://github.com/toml-lang/toml
 # The name of the mod loader type to load - for regular FML @Mod mods it should be javafml
-modLoader="javafml" #mandatory
+modLoader = "javafml" #mandatory
 
 # A version range to match for said mod loader - for regular FML @Mod it will be the forge version
-loaderVersion="[44,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
+loaderVersion = "[44,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
 
 # The license for you mod. This is mandatory metadata and allows for easier comprehension of your redistributive properties.
 # Review your options at https://choosealicense.com/. All rights reserved is the default copyright stance, and is thus the default here.
-license="MIT"
+license = "MIT"
 
 # A URL to refer people to when problems occur with this mod
 #issueTrackerURL="https://change.me.to.your.issue.tracker.example.invalid/" #optional
 # A list of mods - how many allowed here is determined by the individual mod loader
 [[mods]] #mandatory
-  modId="adaptive_performance_tweaks_core"
-  version="${file.jarVersion}"
-  displayName="APTweaks: Core"
-  displayURL="https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core/"
-  logoFile="logo.png"
-  credits=""
-  authors="Markus Bordihn"
-  description='''Adaptive Performance Tweaks Core is required for all Adaptive Performance Tweaks Modules and provides a shared API, monitoring functionally, events and commands.'''
+modId = "adaptive_performance_tweaks_core"
+version = "${file.jarVersion}"
+displayName = "APTweaks: Core"
+displayURL = "https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core/"
+logoFile = "logo.png"
+credits = ""
+authors = "Markus Bordihn"
+description = '''Adaptive Performance Tweaks Core is required for all Adaptive Performance Tweaks Modules and provides a shared API, monitoring functionally, events and commands.'''
 
 [[dependencies.adaptive_performance_tweaks_core]]
-  modId="forge"
-  mandatory=true
-  versionRange="[44,)"
-  ordering="NONE"
-  side="BOTH"
+modId = "forge"
+mandatory = true
+versionRange = "[44,)"
+ordering = "NONE"
+side = "BOTH"
 
 [[dependencies.adaptive_performance_tweaks_core]]
-  modId="minecraft"
-  mandatory=true
-  versionRange="[1.19.3,1.20)"
-  ordering="NONE"
-  side="BOTH"
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.19.3,1.20)"
+ordering = "NONE"
+side = "BOTH"

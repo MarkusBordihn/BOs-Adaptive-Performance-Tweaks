@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,20 +19,17 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.debug;
 
+import cpw.mods.modlauncher.Launcher;
+import cpw.mods.modlauncher.api.IEnvironment;
+import de.markusbordihn.adaptiveperformancetweakscore.Constants;
+import de.markusbordihn.adaptiveperformancetweakscore.message.WarnMessages;
 import java.util.Optional;
-
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
-
-import cpw.mods.modlauncher.Launcher;
-import cpw.mods.modlauncher.api.IEnvironment;
-
-import de.markusbordihn.adaptiveperformancetweakscore.Constants;
-import de.markusbordihn.adaptiveperformancetweakscore.message.WarnMessages;
 
 public class DebugManager {
 
@@ -115,11 +112,13 @@ public class DebugManager {
       if (version.isPresent() && version.get() != null && "MOD_DEV".equals(version.get())) {
         logger.debug("Detected MDK environment, will not change log level for {}!", loggerName);
       } else {
-        logger.warn("Adjusting log level for {} from {} to {}, for performance reasons!",
-            loggerName, logLevelName, Level.INFO);
+        logger.warn(
+            "Adjusting log level for {} from {} to {}, for performance reasons!",
+            loggerName,
+            logLevelName,
+            Level.INFO);
         enableDebugLevel(loggerName, false);
       }
     }
   }
-
 }

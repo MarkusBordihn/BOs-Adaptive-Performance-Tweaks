@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,33 +19,27 @@
 
 package de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn;
 
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.fml.loading.FileUtils;
-
-import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
-import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public final class MekanismAdditionsSpawnConfig {
 
-  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-
-  private MekanismAdditionsSpawnConfig() {}
-
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   static {
     com.electronwill.nightconfig.core.Config.setInsertionOrderPreserved(true);
@@ -53,17 +47,24 @@ public final class MekanismAdditionsSpawnConfig {
         new ForgeConfigSpec.Builder().configure(Config::new);
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
-    log.info("Registering {} {} spawn config ...", Constants.MOD_NAME,
+    log.info(
+        "Registering {} {} spawn config ...",
+        Constants.MOD_NAME,
         CoreConstants.MEKANISMADDITIONS_NAME);
     try {
-      FileUtils.getOrCreateDirectory(FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID),
-          CoreConstants.CONFIG_ID);
+      FileUtils.getOrCreateDirectory(
+          FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID), CoreConstants.CONFIG_ID);
     } catch (Exception exception) {
       log.error("There was an error, creating the directory:", exception);
     }
-    ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec,
-        CoreConstants.CONFIG_ID_PREFIX + "/spawn/MekanismAdditionsSpawn.toml");
+    ModLoadingContext.get()
+        .registerConfig(
+            ModConfig.Type.COMMON,
+            commonSpec,
+            CoreConstants.CONFIG_ID_PREFIX + "/spawn/MekanismAdditionsSpawn.toml");
   }
+
+  private MekanismAdditionsSpawnConfig() {}
 
   public static class Config {
 
@@ -95,37 +96,43 @@ public final class MekanismAdditionsSpawnConfig {
       passiveMobsPerPlayer = builder.defineInRange("MaxPassiveMobsPerPlayer", 4, 1, 64);
       passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 12, 1, 512);
       passiveMobsPerServer = builder.defineInRange("MaxPassiveMobsPerServer", 320, 1, 1024);
-      passiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
-          .define("PassiveMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-          // @formatter:on
-          )));
+      // @formatter:off
+      // @formatter:on
+      passiveMobsList =
+          builder
+              .comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
+              .define("PassiveMobsList", new ArrayList<>(List.of()));
 
       neutralMobsPerPlayer = builder.defineInRange("MaxNeutralMobsPerPlayer", 4, 1, 64);
       neutralMobsPerWorld = builder.defineInRange("MaxNeutralMobsPerWorld", 16, 1, 512);
       neutralMobsPerServer = builder.defineInRange("MaxNeutralMobsPerServer", 320, 1, 1024);
-      neutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
-          .define("NeutralMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-          // @formatter:on
-          )));
+      // @formatter:off
+      // @formatter:on
+      neutralMobsList =
+          builder
+              .comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
+              .define("NeutralMobsList", new ArrayList<>(List.of()));
 
       hostileMobsPerPlayer = builder.defineInRange("MaxHostileMobsPerPlayer", 4, 1, 64);
       hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 16, 1, 512);
       hostileMobsPerServer = builder.defineInRange("MaxHostileMobsPerServer", 320, 1, 1024);
-      hostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
-          .define("HostileMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-            "mekanismadditions:baby_creeper",
-            "mekanismadditions:baby_enderman",
-            "mekanismadditions:baby_skeleton",
-            "mekanismadditions:baby_stray",
-            "mekanismadditions:baby_wither_skeleton"
-          // @formatter:on
-          )));
+      hostileMobsList =
+          builder
+              .comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
+              .define(
+                  "HostileMobsList",
+                  new ArrayList<>(
+                      Arrays.asList(
+                          // @formatter:off
+                          "mekanismadditions:baby_creeper",
+                          "mekanismadditions:baby_enderman",
+                          "mekanismadditions:baby_skeleton",
+                          "mekanismadditions:baby_stray",
+                          "mekanismadditions:baby_wither_skeleton"
+                          // @formatter:on
+                          )));
 
       builder.pop();
     }
   }
-
 }

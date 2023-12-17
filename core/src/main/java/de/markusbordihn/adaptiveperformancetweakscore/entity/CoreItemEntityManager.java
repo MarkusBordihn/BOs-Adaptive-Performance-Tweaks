@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,10 +19,9 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.entity;
 
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
-
-import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 
 public class CoreItemEntityManager {
 
@@ -69,5 +68,4 @@ public class CoreItemEntityManager {
 
     return true;
   }
-
 }

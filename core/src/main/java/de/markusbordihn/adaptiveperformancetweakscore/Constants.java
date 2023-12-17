@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -21,8 +21,6 @@ package de.markusbordihn.adaptiveperformancetweakscore;
 
 public final class Constants {
 
-  protected Constants() {}
-
   // General Mod definitions
   public static final String LOG_NAME = "APTweaks(Core)";
   public static final String LOG_REGISTER_PREFIX = "Register Adaptive Performance Tweaks: Core";
@@ -33,4 +31,6 @@ public final class Constants {
   public static final String MOD_NAME = "Adaptive Performance Tweaks: Core";
   public static final String MOD_URL =
       "https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core";
+
+  protected Constants() {}
 }
