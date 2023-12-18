@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,33 +19,27 @@
 
 package de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn;
 
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.loading.FMLPaths;
-
-import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
-import de.markusbordihn.adaptiveperformancetweaksspawn.Constants;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public final class MinecraftSpawnConfig {
 
-  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-
-  private MinecraftSpawnConfig() {}
-
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   static {
     com.electronwill.nightconfig.core.Config.setInsertionOrderPreserved(true);
@@ -59,9 +53,14 @@ public final class MinecraftSpawnConfig {
     } catch (Exception exception) {
       log.error("There was an error, creating the directory:", exception);
     }
-    ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec,
-        CoreConstants.CONFIG_ID_PREFIX + "/spawn/MinecraftSpawn.toml");
+    ModLoadingContext.get()
+        .registerConfig(
+            ModConfig.Type.COMMON,
+            commonSpec,
+            CoreConstants.CONFIG_ID_PREFIX + "/spawn/MinecraftSpawn.toml");
   }
+
+  private MinecraftSpawnConfig() {}
 
   public static class Config {
 
@@ -105,138 +104,178 @@ public final class MinecraftSpawnConfig {
       enabled = builder.define("Enabled", true);
       id = builder.define("Id", "minecraft");
 
-      passiveMobsPerPlayer = builder.comment("e.g. mobs which will not attack you")
-          .defineInRange("MaxPassiveMobsPerPlayer", 8, 1, 64);
+      passiveMobsPerPlayer =
+          builder
+              .comment("e.g. mobs which will not attack you")
+              .defineInRange("MaxPassiveMobsPerPlayer", 8, 1, 64);
       passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 32, 1, 512);
       passiveMobsPerServer = builder.defineInRange("MaxPassiveMobsPerServer", 320, 1, 1024);
-      passiveMobsList = builder.comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
-          .define("PassiveMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-            "minecraft:allay",
-            "minecraft:axolotl",
-            "minecraft:bat",
-            "minecraft:cat",
-            "minecraft:chicken",
-            "minecraft:cow",
-            "minecraft:donkey",
-            "minecraft:fox",
-            "minecraft:frog",
-            "minecraft:horse",
-            "minecraft:mooshroom",
-            "minecraft:mule",
-            "minecraft:ocelot",
-            "minecraft:parrot",
-            "minecraft:pig",
-            "minecraft:rabbit",
-            "minecraft:sheep",
-            "minecraft:skeleton_horse",
-            "minecraft:snow_golem",
-            "minecraft:turtle"
-          // @formatter:on
-          )));
+      passiveMobsList =
+          builder
+              .comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
+              .define(
+                  "PassiveMobsList",
+                  new ArrayList<>(
+                      Arrays.asList(
+                          // @formatter:off
+                          "minecraft:allay",
+                          "minecraft:axolotl",
+                          "minecraft:bat",
+                          "minecraft:cat",
+                          "minecraft:chicken",
+                          "minecraft:cow",
+                          "minecraft:donkey",
+                          "minecraft:fox",
+                          "minecraft:frog",
+                          "minecraft:horse",
+                          "minecraft:mooshroom",
+                          "minecraft:mule",
+                          "minecraft:ocelot",
+                          "minecraft:parrot",
+                          "minecraft:pig",
+                          "minecraft:rabbit",
+                          "minecraft:sheep",
+                          "minecraft:skeleton_horse",
+                          "minecraft:snow_golem",
+                          "minecraft:turtle"
+                          // @formatter:on
+                          )));
 
       neutralMobsPerPlayer =
-          builder.comment("e.g. mobs which will attack under certain conditions ...")
+          builder
+              .comment("e.g. mobs which will attack under certain conditions ...")
               .defineInRange("MaxNeutralMobsPerPlayer", 8, 1, 64);
       neutralMobsPerWorld = builder.defineInRange("MaxNeutralMobsPerWorld", 32, 1, 512);
       neutralMobsPerServer = builder.defineInRange("MaxNeutralMobsPerServer", 320, 1, 1024);
-      neutralMobsList = builder.comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
-          .define("NeutralMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-            "minecraft:bee",
-            "minecraft:cave_spider",
-            "minecraft:enderman",
-            "minecraft:goat",
-            "minecraft:iron_golem",
-            "minecraft:llama",
-            "minecraft:panda",
-            "minecraft:polar_bear",
-            "minecraft:spider",
-            "minecraft:trader_llama",
-            "minecraft:wandering_trader",
-            "minecraft:wolf",
-            "minecraft:zombie_horse"
-          // @formatter:on
-          )));
+      neutralMobsList =
+          builder
+              .comment(Constants.CONFIG_LIST_NEUTRAL_MOBS)
+              .define(
+                  "NeutralMobsList",
+                  new ArrayList<>(
+                      Arrays.asList(
+                          // @formatter:off
+                          "minecraft:bee",
+                          "minecraft:cave_spider",
+                          "minecraft:enderman",
+                          "minecraft:goat",
+                          "minecraft:iron_golem",
+                          "minecraft:llama",
+                          "minecraft:panda",
+                          "minecraft:polar_bear",
+                          "minecraft:spider",
+                          "minecraft:trader_llama",
+                          "minecraft:wandering_trader",
+                          "minecraft:wolf",
+                          "minecraft:zombie_horse"
+                          // @formatter:on
+                          )));
 
-      hostileMobsPerPlayer = builder.comment("e.g. mobs which will always attack yon ...")
-          .defineInRange("MaxHostileMobsPerPlayer", 8, 1, 64);
+      hostileMobsPerPlayer =
+          builder
+              .comment("e.g. mobs which will always attack yon ...")
+              .defineInRange("MaxHostileMobsPerPlayer", 8, 1, 64);
       hostileMobsPerWorld = builder.defineInRange("MaxHostileMobsPerWorld", 32, 1, 512);
       hostileMobsPerServer = builder.defineInRange("MaxHostileMobsPerServer", 320, 1, 1024);
-      hostileMobsList = builder.comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
-          .define("HostileMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-            "minecraft:chicken_jockey",
-            "minecraft:creeper",
-            "minecraft:ender_dragon",
-            "minecraft:endermite",
-            "minecraft:evoker",
-            "minecraft:giant",
-            "minecraft:husk",
-            "minecraft:illusioner",
-            "minecraft:phantom",
-            "minecraft:pillager",
-            "minecraft:ravager",
-            "minecraft:ravager_jockey",
-            "minecraft:shulker",
-            "minecraft:silverfish",
-            "minecraft:skeleton",
-            "minecraft:skeleton_horseman",
-            "minecraft:slime",
-            "minecraft:stray",
-            "minecraft:vex",
-            "minecraft:vindicator",
-            "minecraft:warden",
-            "minecraft:witch",
-            "minecraft:wither",
-            "minecraft:zoglin",
-            "minecraft:zombie",
-            "minecraft:zombie_villager"
-          // @formatter:on
-          )));
+      hostileMobsList =
+          builder
+              .comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
+              .define(
+                  "HostileMobsList",
+                  new ArrayList<>(
+                      Arrays.asList(
+                          // @formatter:off
+                          "minecraft:chicken_jockey",
+                          "minecraft:creeper",
+                          "minecraft:ender_dragon",
+                          "minecraft:endermite",
+                          "minecraft:evoker",
+                          "minecraft:giant",
+                          "minecraft:husk",
+                          "minecraft:illusioner",
+                          "minecraft:phantom",
+                          "minecraft:pillager",
+                          "minecraft:ravager",
+                          "minecraft:ravager_jockey",
+                          "minecraft:shulker",
+                          "minecraft:silverfish",
+                          "minecraft:skeleton",
+                          "minecraft:skeleton_horseman",
+                          "minecraft:slime",
+                          "minecraft:stray",
+                          "minecraft:vex",
+                          "minecraft:vindicator",
+                          "minecraft:warden",
+                          "minecraft:witch",
+                          "minecraft:wither",
+                          "minecraft:zoglin",
+                          "minecraft:zombie",
+                          "minecraft:zombie_villager"
+                          // @formatter:on
+                          )));
 
-      waterPassiveMobsPerPlayer = builder.comment("e.g. mostly fish")
-          .defineInRange("MaxWaterPassiveMobsPerPlayer", 8, 1, 64);
+      waterPassiveMobsPerPlayer =
+          builder
+              .comment("e.g. mostly fish")
+              .defineInRange("MaxWaterPassiveMobsPerPlayer", 8, 1, 64);
       waterPassiveMobsPerWorld = builder.defineInRange("MaxWaterPassiveMobsPerWorld", 32, 1, 512);
-      waterPassiveMobsPerServer = builder.defineInRange("MaxWaterPassiveMobsPerServer", 320, 1, 1024);
-      waterPassiveMobsList = builder.comment("List of passive water Mobs to optimize")
-          .define("WaterPassiveMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-            "minecraft:axolotl",
-            "minecraft:cod",
-            "minecraft:pufferfish",
-            "minecraft:salmon",
-            "minecraft:tropical_fish"
-          // @formatter:on
-          )));
+      waterPassiveMobsPerServer =
+          builder.defineInRange("MaxWaterPassiveMobsPerServer", 320, 1, 1024);
+      waterPassiveMobsList =
+          builder
+              .comment("List of passive water Mobs to optimize")
+              .define(
+                  "WaterPassiveMobsList",
+                  new ArrayList<>(
+                      Arrays.asList(
+                          // @formatter:off
+                          "minecraft:axolotl",
+                          "minecraft:cod",
+                          "minecraft:pufferfish",
+                          "minecraft:salmon",
+                          "minecraft:tropical_fish"
+                          // @formatter:on
+                          )));
 
-      waterNeutralMobsPerPlayer = builder.comment("e.g. squid, dolphin, ...")
-          .defineInRange("MaxWaterNeutralMobsPerPlayer", 6, 1, 64);
+      waterNeutralMobsPerPlayer =
+          builder
+              .comment("e.g. squid, dolphin, ...")
+              .defineInRange("MaxWaterNeutralMobsPerPlayer", 6, 1, 64);
       waterNeutralMobsPerWorld = builder.defineInRange("MaxWaterNeutralMobsPerWorld", 24, 1, 512);
-      waterNeutralMobsPerServer = builder.defineInRange("MaxWaterNeutralMobsPerServer", 320, 1, 1024);
-      waterNeutralMobsList = builder.comment("List of neutral water Mobs to optimize")
-          .define("WaterNeutralMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-            "minecraft:dolphin",
-            "minecraft:squid"
-          // @formatter:on
-          )));
+      waterNeutralMobsPerServer =
+          builder.defineInRange("MaxWaterNeutralMobsPerServer", 320, 1, 1024);
+      waterNeutralMobsList =
+          builder
+              .comment("List of neutral water Mobs to optimize")
+              .define(
+                  "WaterNeutralMobsList",
+                  new ArrayList<>(
+                      Arrays.asList(
+                          // @formatter:off
+                          "minecraft:dolphin", "minecraft:squid"
+                          // @formatter:on
+                          )));
 
-      waterHostileMobsPerPlayer = builder.comment("e.g. drowned, guardian...")
-          .defineInRange("MaxWaterHostileMobsPerPlayer", 16, 1, 64);
+      waterHostileMobsPerPlayer =
+          builder
+              .comment("e.g. drowned, guardian...")
+              .defineInRange("MaxWaterHostileMobsPerPlayer", 16, 1, 64);
       waterHostileMobsPerWorld = builder.defineInRange("MaxWaterHostileMobsPerWorld", 64, 1, 512);
-      waterHostileMobsPerServer = builder.defineInRange("MaxWaterHostileMobsPerServer", 320, 1, 1024);
-      waterHostileMobsList = builder.comment("List of hostile water Mobs to optimize")
-          .define("WaterHostileMobsList", new ArrayList<String>(Arrays.asList(
-          // @formatter:off
-            "minecraft:drowned",
-            "minecraft:elder_guardian",
-            "minecraft:guardian"
-          // @formatter:on
-          )));
+      waterHostileMobsPerServer =
+          builder.defineInRange("MaxWaterHostileMobsPerServer", 320, 1, 1024);
+      waterHostileMobsList =
+          builder
+              .comment("List of hostile water Mobs to optimize")
+              .define(
+                  "WaterHostileMobsList",
+                  new ArrayList<>(
+                      Arrays.asList(
+                          // @formatter:off
+                          "minecraft:drowned", "minecraft:elder_guardian", "minecraft:guardian"
+                          // @formatter:on
+                          )));
 
       builder.pop();
     }
   }
-
 }

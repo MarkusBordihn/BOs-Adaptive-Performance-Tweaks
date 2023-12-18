@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,6 +19,9 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.entity;
 
+import de.markusbordihn.adaptiveperformancetweakscore.Constants;
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import de.markusbordihn.adaptiveperformancetweakscore.player.PlayerPosition;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -26,10 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -59,9 +58,7 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.Boat;
-import net.minecraft.world.entity.vehicle.MinecartChest;
 import net.minecraft.world.level.Level;
-
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
@@ -70,20 +67,20 @@ import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-
-import de.markusbordihn.adaptiveperformancetweakscore.Constants;
-import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
-import de.markusbordihn.adaptiveperformancetweakscore.player.PlayerPosition;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber
 public class CoreEntityManager {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-
-  private static short ticks = 0;
   private static final short VERIFICATION_TICK = 25 * 20;
   private static final String ENTITY_OWNER_TAG = "Owner";
-
+  private static final String PERSISTENCE_REQUIRED = "PersistenceRequired";
+  // Entity Chunk Map to determine if any mob was spawned in a specific chunk.
+  private static final ConcurrentHashMap<String, Boolean> entityChunkMap =
+      new ConcurrentHashMap<>();
+  private static short ticks = 0;
   // Entity map to store all entities, per chunk, per world and global.
   private static ConcurrentHashMap<String, Set<Entity>> entityMap = new ConcurrentHashMap<>();
   private static ConcurrentHashMap<String, Set<Entity>> entityMapPerChunk =
@@ -91,9 +88,6 @@ public class CoreEntityManager {
   private static ConcurrentHashMap<String, Set<Entity>> entityMapPerWorld =
       new ConcurrentHashMap<>();
   private static ConcurrentHashMap<String, Set<Entity>> entityMapGlobal = new ConcurrentHashMap<>();
-
-  // Entity Chunk Map to determine if any mob was spawned in a specific chunk.
-  private static ConcurrentHashMap<String, Boolean> entityChunkMap = new ConcurrentHashMap<>();
 
   protected CoreEntityManager() {}
 
@@ -149,19 +143,28 @@ public class CoreEntityManager {
           log.debug("[Entity Manager] Ignore modded entity {} in {}", entity, levelName);
         } else if (CoreConstants.MANA_AND_ARTIFICE_LOADED
             && entityType.startsWith("entity.mana-and-artifice.")) {
-          log.debug("[Entity Manager] Ignore {} entity {} in {}",
-              CoreConstants.MANA_AND_ARTIFICE_NAME, entity, levelName);
+          log.debug(
+              "[Entity Manager] Ignore {} entity {} in {}",
+              CoreConstants.MANA_AND_ARTIFICE_NAME,
+              entity,
+              levelName);
         } else if (entity.isMultipartEntity() || entityType.contains("body_part")) {
           log.debug("[Entity Manager] Ignore multipart entity {} in {}.", entity, levelName);
         } else if (entity.hasCustomName()) {
           Component component = entity.getCustomName();
           log.debug(
               "[Entity Manager] Unknown entity name for entity {} ({}) with custom name {} in {}.",
-              entity, entityType, component != null ? component.getString() : "", levelName);
+              entity,
+              entityType,
+              component != null ? component.getString() : "",
+              levelName);
         } else {
           log.warn(
               "[Entity Manager] Unknown entity name for entity {} ({}) in {}. Please report this issue under {}!",
-              entity, entityType, levelName, CoreConstants.ISSUE_REPORT);
+              entity,
+              entityType,
+              levelName,
+              CoreConstants.ISSUE_REPORT);
         }
       }
       return;
@@ -217,17 +220,12 @@ public class CoreEntityManager {
     removeEntity(entity, entityName, levelName);
   }
 
-  public static void addEntity(Entity entity, Level level) {
-    String entityName = entity.getEncodeId();
-    String levelName = level.dimension().location().toString();
-    addEntity(entity, entityName, levelName);
-  }
-
   public static void addEntity(Entity entity, String entityName, String levelName) {
 
     // Store entities per type and world.
-    Set<Entity> entities = entityMap.computeIfAbsent(getEntityMapKey(levelName, entityName),
-        key -> ConcurrentHashMap.newKeySet());
+    Set<Entity> entities =
+        entityMap.computeIfAbsent(
+            getEntityMapKey(levelName, entityName), key -> ConcurrentHashMap.newKeySet());
     entities.add(entity);
 
     // Store entities per chunk and world.
@@ -250,12 +248,6 @@ public class CoreEntityManager {
     entityChunkMap.put(entityChunkKey, true);
 
     log.debug("[Joined] Entity {} ({}) joined {}.", entityName, entity, levelName);
-  }
-
-  public static void removeEntity(Entity entity, Level level) {
-    String entityName = entity.getEncodeId();
-    String levelName = level.dimension().location().toString();
-    removeEntity(entity, entityName, levelName);
   }
 
   public static void removeEntity(Entity entity, String entityName, String levelName) {
@@ -307,48 +299,12 @@ public class CoreEntityManager {
     return entityMapPerChunk;
   }
 
-  public static Map<String, Set<Entity>> getEntitiesPerWorld() {
-    return entityMapPerWorld;
-  }
-
   public static Map<String, Set<Entity>> getEntitiesGlobal() {
     return entityMapGlobal;
   }
 
-  public static Map<String, Set<Entity>> getEntities(String dimensionName) {
-    ConcurrentHashMap<String, Set<Entity>> entityResultMap = new ConcurrentHashMap<>();
-    Set<Map.Entry<String, Set<Entity>>> entities = entityMap.entrySet();
-    Iterator<Map.Entry<String, Set<Entity>>> entitiesIterator = entities.iterator();
-    String levelName = '[' + dimensionName + ']';
-
-    while (entitiesIterator.hasNext()) {
-      Map.Entry<String, Set<Entity>> entity = entitiesIterator.next();
-      String key = entity.getKey();
-      if (key.startsWith(levelName)) {
-        entityResultMap.put(key, entity.getValue());
-      }
-    }
-    return entityResultMap;
-  }
-
   public static Integer getNumberOfEntities(String levelName, String entityName) {
     Set<Entity> entities = entityMap.get(getEntityMapKey(levelName, entityName));
-    if (entities == null) {
-      return 0;
-    }
-    return entities.size();
-  }
-
-  public static Integer getNumberOfEntitiesPerChunk(String levelName, BlockPos blockPos) {
-    Set<Entity> entities = entityMapPerChunk.get(getEntityChunkKey(levelName, blockPos));
-    if (entities == null) {
-      return 0;
-    }
-    return entities.size();
-  }
-
-  public static Integer getNumberOfEntitiesPerWorld(String levelName) {
-    Set<Entity> entities = entityMapPerWorld.get(levelName);
     if (entities == null) {
       return 0;
     }
@@ -363,17 +319,15 @@ public class CoreEntityManager {
     return entities.size();
   }
 
-  public static Integer getNumberOfEntitiesInPlayerPositions(String levelName, String entityName,
-      List<PlayerPosition> playerPositions) {
+  public static Integer getNumberOfEntitiesInPlayerPositions(
+      String levelName, String entityName, List<PlayerPosition> playerPositions) {
     String entityMapKey = getEntityMapKey(levelName, entityName);
     if (!entityMap.containsKey(entityMapKey)) {
       return 0;
     }
     int counter = 0;
     Set<Entity> entities = new HashSet<>(entityMap.get(entityMapKey));
-    Iterator<Entity> entityIterator = entities.iterator();
-    while (entityIterator.hasNext()) {
-      Entity entity = entityIterator.next();
+    for (Entity entity : entities) {
       if (entity != null) {
         for (PlayerPosition playerPosition : playerPositions) {
           if (playerPosition.isInsidePlayerViewArea(entity, levelName)) {
@@ -407,12 +361,17 @@ public class CoreEntityManager {
     // Verify Entities from global overview
     removedGlobalEntries += removeDiscardedEntities(entityMapGlobal);
 
-    if (removedEntries > 0 || removedChunkEntries > 0 || removedWorldEntries > 0
+    if (removedEntries > 0
+        || removedChunkEntries > 0
+        || removedWorldEntries > 0
         || removedGlobalEntries > 0) {
       log.debug(
           "[Entity Manager] 🗑 Removed {} entities from overview, {} from chunk overview, {} from world "
               + "overview and {} from global overview.",
-          removedEntries, removedChunkEntries, removedWorldEntries, removedGlobalEntries);
+          removedEntries,
+          removedChunkEntries,
+          removedWorldEntries,
+          removedGlobalEntries);
     }
   }
 
@@ -436,23 +395,44 @@ public class CoreEntityManager {
   }
 
   public static boolean isRelevantEntity(Entity entity) {
-    return !(entity == null || entity.isRemoved() || entity instanceof ExperienceOrb
-        || entity instanceof ItemEntity || entity instanceof LightningBolt
-        || entity instanceof FallingBlockEntity || entity instanceof Projectile
-        || entity instanceof EvokerFangs || entity instanceof EyeOfEnder
-        || entity instanceof MinecartChest || entity instanceof AbstractMinecart
-        || entity instanceof Player || entity instanceof Boat || entity instanceof ArmorStand
-        || entity instanceof AreaEffectCloud || entity instanceof EndCrystal
-        || entity instanceof Marker || entity instanceof HangingEntity || entity instanceof Npc
-        || entity instanceof EnderDragon || entity instanceof EnderDragonPart
-        || entity instanceof Warden || entity instanceof WitherBoss
-        || entity instanceof ElderGuardian || entity.isSpectator() || entity.isInvisible()
-        || entity.isInvulnerable() || entity.isVehicle() || entity.isPassenger()
+    return !(entity == null
+        || entity.isRemoved()
+        || entity instanceof ExperienceOrb
+        || entity instanceof ItemEntity
+        || entity instanceof LightningBolt
+        || entity instanceof FallingBlockEntity
+        || entity instanceof Projectile
+        || entity instanceof EvokerFangs
+        || entity instanceof EyeOfEnder
+        || entity instanceof AbstractMinecart
+        || entity instanceof Player
+        || entity instanceof Boat
+        || entity instanceof ArmorStand
+        || entity instanceof AreaEffectCloud
+        || entity instanceof EndCrystal
+        || entity instanceof Marker
+        || entity instanceof HangingEntity
+        || entity instanceof Npc
+        || entity instanceof EnderDragon
+        || entity instanceof EnderDragonPart
+        || entity instanceof Warden
+        || entity instanceof WitherBoss
+        || entity instanceof ElderGuardian
+        || entity.isSpectator()
+        || entity.isInvisible()
+        || entity.isInvulnerable()
+        || entity.isVehicle()
+        || entity.isPassenger()
         || (entity instanceof Raider raider && raider.hasActiveRaid())
         || (entity instanceof TamableAnimal tamableAnimal
             && (tamableAnimal.getOwner() != null || tamableAnimal.getOwnerUUID() != null))
-        || (entity instanceof Mob mob && mob.isLeashed())
-        || (entity instanceof Bee bee && bee.hasHive()) || entity.hasCustomName());
+        || (entity instanceof Mob mob
+            && (mob.isLeashed()
+                || mob.isPersistenceRequired()
+                || mob.requiresCustomPersistence()
+                || !mob.removeWhenFarAway(512)))
+        || (entity instanceof Bee bee && bee.hasHive())
+        || entity.hasCustomName());
   }
 
   @SuppressWarnings("java:S1126")
@@ -529,8 +509,12 @@ public class CoreEntityManager {
     if (compoundTag.contains(ENTITY_OWNER_TAG) && compoundTag.get(ENTITY_OWNER_TAG) != null) {
       return false;
     }
+    if (compoundTag.contains(PERSISTENCE_REQUIRED)
+        && compoundTag.get(PERSISTENCE_REQUIRED) != null
+        && compoundTag.getBoolean(PERSISTENCE_REQUIRED)) {
+      return false;
+    }
 
     return true;
   }
-
 }

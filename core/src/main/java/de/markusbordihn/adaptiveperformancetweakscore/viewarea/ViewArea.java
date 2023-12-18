@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -22,7 +22,6 @@ package de.markusbordihn.adaptiveperformancetweakscore.viewarea;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Level;
 
 public class ViewArea {
 
@@ -51,8 +50,11 @@ public class ViewArea {
   private int blocksViewDistance;
 
   public ViewArea(ServerPlayer player, int viewAreaDistance) {
-    this(player.blockPosition().getX(), player.blockPosition().getY(),
-        player.blockPosition().getZ(), viewAreaDistance,
+    this(
+        player.blockPosition().getX(),
+        player.blockPosition().getY(),
+        player.blockPosition().getZ(),
+        viewAreaDistance,
         player.level().dimension().location().toString());
   }
 
@@ -60,44 +62,8 @@ public class ViewArea {
     this.update(posX, posY, posZ, viewAreaDistance, levelName);
   }
 
-  public String levelName() {
-    return this.levelName;
-  }
-
-  public int startX() {
-    return this.startX;
-  }
-
-  public int stopX() {
-    return this.stopX;
-  }
-
-  public int startY() {
-    return this.startY;
-  }
-
-  public int stopY() {
-    return this.stopY;
-  }
-
-  public int startZ() {
-    return this.startZ;
-  }
-
-  public int stopZ() {
-    return this.stopZ;
-  }
-
-  public int blocksViewDistance() {
-    return this.blocksViewDistance;
-  }
-
-  public boolean isLevel(Level level) {
-    return level != null && isLevel(level.dimension().location().toString());
-  }
-
   public boolean isLevel(String levelName) {
-    return levelName != null && this.levelName.equals(levelName);
+    return this.levelName.equals(levelName);
   }
 
   public boolean isInside(Entity entity, String levelName) {
@@ -109,26 +75,31 @@ public class ViewArea {
   }
 
   public boolean isInside(int posX, int posY, int posZ) {
-    return (posX >= this.startX && posX <= this.stopX && posY >= this.startY && posY <= this.stopY
-        && posZ >= this.startZ && posZ <= this.stopZ);
-  }
-
-  public boolean update(ServerPlayer serverPlayer, int viewAreaDistance) {
-    return this.update(serverPlayer.blockPosition().getX(), serverPlayer.blockPosition().getY(),
-        serverPlayer.blockPosition().getZ(), viewAreaDistance,
-        serverPlayer.level().dimension().location().toString());
+    return (posX >= this.startX
+        && posX <= this.stopX
+        && posY >= this.startY
+        && posY <= this.stopY
+        && posZ >= this.startZ
+        && posZ <= this.stopZ);
   }
 
   public boolean update(ServerPlayer serverPlayer, int viewAreaDistance, String levelName) {
-    return this.update(serverPlayer.blockPosition().getX(), serverPlayer.blockPosition().getY(),
-        serverPlayer.blockPosition().getZ(), viewAreaDistance, levelName);
+    return this.update(
+        serverPlayer.blockPosition().getX(),
+        serverPlayer.blockPosition().getY(),
+        serverPlayer.blockPosition().getZ(),
+        viewAreaDistance,
+        levelName);
   }
 
   public boolean update(int posX, int posY, int posZ, int viewAreaDistance, String levelName) {
 
     // Check if calculation is necessary or has changed.
-    if (this.posX == posX && this.posY == posY && this.posZ == posZ
-        && this.viewAreaDistance == viewAreaDistance && this.levelName.equals(levelName)) {
+    if (this.posX == posX
+        && this.posY == posY
+        && this.posZ == posZ
+        && this.viewAreaDistance == viewAreaDistance
+        && this.levelName.equals(levelName)) {
       return false;
     }
 
@@ -180,10 +151,28 @@ public class ViewArea {
   }
 
   public String toString() {
-    return "ViewArea[level='" + this.levelName + "'', pos=(" + this.posX + "," + this.posY + ","
-        + this.posZ + "), start=(" + this.startX + "," + this.startY + "," + this.startZ
-        + "), stop=(" + this.stopX + "," + this.stopY + "," + this.stopZ + "), blockViewDistance="
-        + this.blocksViewDistance + "]";
+    return "ViewArea[level='"
+        + this.levelName
+        + "'', pos=("
+        + this.posX
+        + ","
+        + this.posY
+        + ","
+        + this.posZ
+        + "), start=("
+        + this.startX
+        + ","
+        + this.startY
+        + ","
+        + this.startZ
+        + "), stop=("
+        + this.stopX
+        + ","
+        + this.stopY
+        + ","
+        + this.stopZ
+        + "), blockViewDistance="
+        + this.blocksViewDistance
+        + "]";
   }
-
 }

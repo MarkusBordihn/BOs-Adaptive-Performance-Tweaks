@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,17 +19,14 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.commands;
 
-import java.util.Map;
-
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-
+import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLevelLoad;
+import java.util.Map;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.level.ServerLevel;
-
-import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLevelLoad;
 
 public class LoadCommand extends CustomCommand {
 
@@ -50,10 +47,9 @@ public class LoadCommand extends CustomCommand {
         ServerLevel serverLevel = worldEntry.getKey();
         String levelName = serverLevel.getLevel().dimension().location().toString();
         Double avgTickTime = worldEntry.getValue();
-        sendFeedback(context, String.format("\u25CB %s %sms", levelName, avgTickTime));
+        sendFeedback(context, String.format("○ %s %sms", levelName, avgTickTime));
       }
     }
     return 0;
   }
-
 }

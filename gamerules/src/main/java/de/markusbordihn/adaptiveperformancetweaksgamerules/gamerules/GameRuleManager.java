@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,26 +19,22 @@
 
 package de.markusbordihn.adaptiveperformancetweaksgamerules.gamerules;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import net.minecraft.world.level.GameRules;
-
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.server.ServerLifecycleHooks;
-import net.minecraftforge.event.server.ServerAboutToStartEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.fml.ModList;
-
-import de.markusbordihn.adaptiveperformancetweaksgamerules.Constants;
-import de.markusbordihn.adaptiveperformancetweaksgamerules.config.CommonConfig;
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweakscore.commands.CommandManager;
 import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLoadEvent;
+import de.markusbordihn.adaptiveperformancetweaksgamerules.Constants;
+import de.markusbordihn.adaptiveperformancetweaksgamerules.config.CommonConfig;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.world.level.GameRules;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
+import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.server.ServerLifecycleHooks;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber
 public class GameRuleManager {
@@ -63,20 +59,23 @@ public class GameRuleManager {
   public static void handleServerStartingEvent(ServerStartingEvent event) {
     gameRules = ServerLifecycleHooks.getCurrentServer().getGameRules();
 
-    log.info("Gamerules will be optimized with an {} sec delay between updates.",
+    log.info(
+        "Gamerules will be optimized with an {} sec delay between updates.",
         timeBetweenUpdates / 1000);
 
     if (Boolean.TRUE.equals(COMMON.randomTickSpeedEnabled.get())) {
-      log.info("Random Tick Speed will be optimized between {} and {}", 1,
-          COMMON.randomTickSpeed.get());
+      log.info(
+          "Random Tick Speed will be optimized between {} and {}", 1, COMMON.randomTickSpeed.get());
       if (gameRules.getInt(GameRules.RULE_RANDOMTICKING) != COMMON.randomTickSpeed.get()) {
         setRandomTickSpeed(COMMON.randomTickSpeed.get());
       }
     }
 
     if (Boolean.TRUE.equals(COMMON.entityCrammingEnabled.get())) {
-      log.info("Max Entity Cramming will be optimized between {} and {}",
-          COMMON.minEntityCramming.get(), COMMON.maxEntityCramming.get());
+      log.info(
+          "Max Entity Cramming will be optimized between {} and {}",
+          COMMON.minEntityCramming.get(),
+          COMMON.maxEntityCramming.get());
       if (gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING) != COMMON.maxEntityCramming.get()) {
         setMaxEntityCramming(COMMON.maxEntityCramming.get());
       }
@@ -146,7 +145,7 @@ public class GameRuleManager {
       if (Boolean.TRUE.equals(COMMON.insomniaEnabled.get())) {
         disableInsomnia();
       }
-      if (Boolean.TRUE.equals(COMMON.blockExplodesEnabled.get())) {
+      if (Boolean.TRUE.equals(COMMON.mobExplodesEnabled.get())) {
         enableMobExplosionDropDecay();
       }
       if (Boolean.TRUE.equals(COMMON.raidsEnabled.get())) {
@@ -238,13 +237,6 @@ public class GameRuleManager {
     }
   }
 
-  public static void disableBlockExplosionDropDecay() {
-    if (gameRules.getBoolean(GameRules.RULE_BLOCK_EXPLOSION_DROP_DECAY)) {
-      log.debug("Disable blockExplosionDropDecay");
-      CommandManager.executeGameRuleCommand(GameRules.RULE_BLOCK_EXPLOSION_DROP_DECAY, false);
-    }
-  }
-
   public static void enableElytraMovementCheck() {
     if (gameRules.getBoolean(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK)) {
       log.debug("Enable ElytraMovementCheck");
@@ -277,13 +269,6 @@ public class GameRuleManager {
     if (!gameRules.getBoolean(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY)) {
       log.debug("Enable mobExplosionDropDecay");
       CommandManager.executeGameRuleCommand(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY, true);
-    }
-  }
-
-  public static void disableMobExplosionDropDecay() {
-    if (gameRules.getBoolean(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY)) {
-      log.debug("Disable mobExplosionDropDecay");
-      CommandManager.executeGameRuleCommand(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY, false);
     }
   }
 
@@ -412,9 +397,11 @@ public class GameRuleManager {
         && maxEntity < COMMON.minEntityCrammingMineColonies.get()) {
       log.warn(
           "WARNING: The recommended value for minEntityCramming with {} is min. {} instead of {}!",
-          CoreConstants.MINECOLONIES_NAME, COMMON.minEntityCrammingMineColonies.get(),
+          CoreConstants.MINECOLONIES_NAME,
+          COMMON.minEntityCrammingMineColonies.get(),
           COMMON.minEntityCramming.get());
-      log.info("The minEntityCramming will be automatically set to {}!",
+      log.info(
+          "The minEntityCramming will be automatically set to {}!",
           COMMON.minEntityCrammingMineColonies.get());
       maxEntity = COMMON.minEntityCrammingMineColonies.get();
     }
@@ -426,41 +413,45 @@ public class GameRuleManager {
     }
   }
 
-  public static GameRules getGameRules() {
-    if (gameRules == null) {
-      gameRules = ServerLifecycleHooks.getCurrentServer().getGameRules();
-    }
-    return gameRules;
-  }
-
   public static Map<String, String> getGameRulesOverview() {
     Map<String, String> overview = new ConcurrentHashMap<>();
-    overview.put(GameRules.RULE_MAX_ENTITY_CRAMMING.getId(),
+    overview.put(
+        GameRules.RULE_MAX_ENTITY_CRAMMING.getId(),
         String.valueOf(gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING)));
-    overview.put(GameRules.RULE_RANDOMTICKING.getId(),
+    overview.put(
+        GameRules.RULE_RANDOMTICKING.getId(),
         String.valueOf(gameRules.getInt(GameRules.RULE_RANDOMTICKING)));
 
-    overview.put(GameRules.RULE_BLOCK_EXPLOSION_DROP_DECAY.getId(),
+    overview.put(
+        GameRules.RULE_BLOCK_EXPLOSION_DROP_DECAY.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_BLOCK_EXPLOSION_DROP_DECAY)));
-    overview.put(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK.getId(),
+    overview.put(
+        GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK)));
-    overview.put(GameRules.RULE_DOINSOMNIA.getId(),
+    overview.put(
+        GameRules.RULE_DOINSOMNIA.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DOINSOMNIA)));
-    overview.put(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY.getId(),
+    overview.put(
+        GameRules.RULE_MOB_EXPLOSION_DROP_DECAY.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY)));
-    overview.put(GameRules.RULE_DO_PATROL_SPAWNING.getId(),
+    overview.put(
+        GameRules.RULE_DO_PATROL_SPAWNING.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)));
-    overview.put(GameRules.RULE_DISABLE_RAIDS.getId(),
+    overview.put(
+        GameRules.RULE_DISABLE_RAIDS.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DISABLE_RAIDS)));
-    overview.put(GameRules.RULE_TNT_EXPLOSION_DROP_DECAY.getId(),
+    overview.put(
+        GameRules.RULE_TNT_EXPLOSION_DROP_DECAY.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_TNT_EXPLOSION_DROP_DECAY)));
-    overview.put(GameRules.RULE_DO_TRADER_SPAWNING.getId(),
+    overview.put(
+        GameRules.RULE_DO_TRADER_SPAWNING.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_TRADER_SPAWNING)));
-    overview.put(GameRules.RULE_DO_VINES_SPREAD.getId(),
+    overview.put(
+        GameRules.RULE_DO_VINES_SPREAD.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_VINES_SPREAD)));
-    overview.put(GameRules.RULE_DO_WARDEN_SPAWNING.getId(),
+    overview.put(
+        GameRules.RULE_DO_WARDEN_SPAWNING.getId(),
         String.valueOf(gameRules.getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING)));
     return overview;
   }
-
 }

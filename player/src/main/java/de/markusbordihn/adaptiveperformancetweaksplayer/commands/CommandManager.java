@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -20,17 +20,14 @@
 package de.markusbordihn.adaptiveperformancetweaksplayer.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import de.markusbordihn.adaptiveperformancetweaksplayer.Constants;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-
-import de.markusbordihn.adaptiveperformancetweaksplayer.Constants;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber
 public class CommandManager {
@@ -43,11 +40,11 @@ public class CommandManager {
   public static void handleRegisterCommandsEvent(RegisterCommandsEvent event) {
     log.info("Registering /aptweaks commands for {} ...", Constants.MOD_NAME);
     CommandDispatcher<CommandSourceStack> commandDispatcher = event.getDispatcher();
-    commandDispatcher.register(Commands.literal(Constants.MOD_COMMAND)
-    // @formatter:off
-      .then(DebugCommand.register())
-    // @formatter:on
-    );
+    commandDispatcher.register(
+        Commands.literal(Constants.MOD_COMMAND)
+            // @formatter:off
+            .then(DebugCommand.register())
+        // @formatter:on
+        );
   }
-
 }

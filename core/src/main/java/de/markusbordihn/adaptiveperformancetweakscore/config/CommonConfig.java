@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,29 +19,24 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.config;
 
+import de.markusbordihn.adaptiveperformancetweakscore.Constants;
+import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import java.nio.file.Files;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.loading.FMLPaths;
-
-import de.markusbordihn.adaptiveperformancetweakscore.Constants;
-import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public final class CommonConfig {
 
-  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-
-  private CommonConfig() {}
-
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   static {
     com.electronwill.nightconfig.core.Config.setInsertionOrderPreserved(true);
@@ -55,9 +50,12 @@ public final class CommonConfig {
     } catch (Exception exception) {
       log.error("There was an error, creating the directory:", exception);
     }
-    ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commonSpec,
-        CoreConstants.CONFIG_ID_PREFIX + "core.toml");
+    ModLoadingContext.get()
+        .registerConfig(
+            ModConfig.Type.COMMON, commonSpec, CoreConstants.CONFIG_ID_PREFIX + "core.toml");
   }
+
+  private CommonConfig() {}
 
   public static class Config {
 
@@ -75,13 +73,19 @@ public final class CommonConfig {
       builder.comment(Constants.MOD_NAME);
 
       builder.push("General");
-      timeBetweenUpdates = builder.comment(
-          "The time after a high to low load change is considered as valid. High loads are always considered immediately.")
-          .defineInRange("timeBetweenUpdates", 10, 1, 90);
-      logServerLoad = builder.comment("Enable/Disable logging of the overall server load.")
-          .define("logServerLoad", true);
-      logServerLevelLoad = builder.comment("Enable/Disable logging of the individual level load.")
-          .define("logServerLevelLoad", true);
+      timeBetweenUpdates =
+          builder
+              .comment(
+                  "The time after a high to low load change is considered as valid. High loads are always considered immediately.")
+              .defineInRange("timeBetweenUpdates", 10, 1, 90);
+      logServerLoad =
+          builder
+              .comment("Enable/Disable logging of the overall server load.")
+              .define("logServerLoad", true);
+      logServerLevelLoad =
+          builder
+              .comment("Enable/Disable logging of the individual level load.")
+              .define("logServerLevelLoad", true);
       builder.pop();
 
       builder.push("Game Difficulty Factors");
@@ -93,5 +97,4 @@ public final class CommonConfig {
       builder.pop();
     }
   }
-
 }

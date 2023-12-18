@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -21,7 +21,6 @@ package de.markusbordihn.adaptiveperformancetweakscore.commands;
 
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 
@@ -30,14 +29,17 @@ public class KillCommand extends CustomCommand {
   private static final KillCommand command = new KillCommand();
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
-    return Commands.literal("kill").requires(cs -> cs.hasPermission(2)).executes(command::run)
+    return Commands.literal("kill")
+        .requires(cs -> cs.hasPermission(2))
+        .executes(command)
         .then(Commands.literal("entities").executes(command::killEntities))
         .then(Commands.literal("items").executes(command::killItems));
   }
 
   @Override
   public int run(CommandContext<CommandSourceStack> context) {
-    sendFeedback(context,
+    sendFeedback(
+        context,
         "kill entities: kill all entities except players\nkill items: kill items entities");
     return 0;
   }
@@ -51,5 +53,4 @@ public class KillCommand extends CustomCommand {
     CommandManager.executeUserCommand("kill @e[type=item,distance=0..]");
     return 0;
   }
-
 }
