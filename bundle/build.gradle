@@ -223,3 +223,10 @@ modrinth {
 tasks.withType(JavaCompile).configureEach {
   options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
+
+// This will eventually be migrated to ForgeGradle so modders don't need to manually do it.
+sourceSets.each {
+  def dir = layout.buildDirectory.dir("sourcesSets/$it.name")
+  it.output.resourcesDir = dir
+  it.java.destinationDirectory = dir
+}

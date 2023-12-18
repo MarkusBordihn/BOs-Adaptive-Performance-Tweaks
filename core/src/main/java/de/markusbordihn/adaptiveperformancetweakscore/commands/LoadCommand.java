@@ -23,6 +23,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLevelLoad;
+import de.markusbordihn.adaptiveperformancetweakscore.server.ServerManager;
 import java.util.Map;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -39,10 +40,12 @@ public class LoadCommand extends CustomCommand {
   @Override
   public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
     Map<ServerLevel, Double> serverLevelLoad = ServerLevelLoad.getLevelLoad();
+    sendFeedback(context, "-= Server Load =-");
+    sendFeedback(
+        context, String.format("○ Average %sms", ServerManager.getAverageTickTime()));
     if (serverLevelLoad.isEmpty()) {
       sendFeedback(context, "Unable to find any levels. Is Server / Level are already loaded?");
     } else {
-      sendFeedback(context, "Level Overview\n===");
       for (Map.Entry<ServerLevel, Double> worldEntry : serverLevelLoad.entrySet()) {
         ServerLevel serverLevel = worldEntry.getKey();
         String levelName = serverLevel.getLevel().dimension().location().toString();

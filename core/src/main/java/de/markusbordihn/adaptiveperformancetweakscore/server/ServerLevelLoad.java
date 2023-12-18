@@ -61,8 +61,6 @@ public class ServerLevelLoad {
     for (ServerLevel serverLevel : ServerManager.getAllLevels()) {
       // Get average tick times.
       double avgTickTime = ServerManager.getAverageTickTime(serverLevel);
-
-      ServerManager.getMinecraftServer().getAverageTickTime();
       if (avgTickTime <= 0) {
         continue;
       }

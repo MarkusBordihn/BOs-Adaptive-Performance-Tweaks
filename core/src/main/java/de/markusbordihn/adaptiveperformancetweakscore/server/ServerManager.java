@@ -156,7 +156,7 @@ public class ServerManager {
   }
 
   public static float getAverageTickTime() {
-    return minecraftServer != null ? minecraftServer.getAverageTickTime() : 50F;
+    return minecraftServer != null ? (minecraftServer.getAverageTickTimeNanos() / 1000000f) : 50F;
   }
 
   public static Iterable<ServerLevel> getAllLevels() {
