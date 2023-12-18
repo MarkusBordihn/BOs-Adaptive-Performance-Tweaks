@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -24,18 +24,5 @@ import net.minecraftforge.eventbus.api.Event;
 
 public class OptimizationEvent extends Event {
 
-  private Dist dist;
-
-  public OptimizationEvent(Dist dist) {
-    this.dist = dist;
-  }
-
-  public boolean isDedicatedServer() {
-    return this.dist.isDedicatedServer();
-  }
-
-  public boolean isClient() {
-    return this.dist.isClient();
-  }
-
+  public OptimizationEvent(Dist dist) {}
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,13 +19,12 @@
 
 package de.markusbordihn.adaptiveperformancetweaks;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.NetworkConstants;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Mod(Constants.MOD_ID)
 public class AdaptivePerformanceTweaks {
@@ -34,9 +33,11 @@ public class AdaptivePerformanceTweaks {
 
   public AdaptivePerformanceTweaks() {
     log.info(Constants.LOG_THANKS);
-    ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class,
-        () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY,
-            (a, b) -> true));
+    ModLoadingContext.get()
+        .registerExtensionPoint(
+            IExtensionPoint.DisplayTest.class,
+            () ->
+                new IExtensionPoint.DisplayTest(
+                    () -> NetworkConstants.IGNORESERVERONLY, (a, b) -> true));
   }
-
 }
