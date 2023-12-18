@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,10 +19,9 @@
 
 package de.markusbordihn.adaptiveperformancetweaks;
 
+import net.minecraftforge.fml.common.Mod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import net.minecraftforge.fml.common.Mod;
 
 @Mod(Constants.MOD_ID)
 public class AdaptivePerformanceTweaks {

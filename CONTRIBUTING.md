@@ -1,6 +1,7 @@
 # Contributing
 
-Want to contribute? Great! First, read this page. We follow a code of conduct as our guide for community behavior.
+Want to contribute? Great! First, read this page. We follow a code of conduct as our guide for
+community behavior.
 
 ## Before you contribute
 

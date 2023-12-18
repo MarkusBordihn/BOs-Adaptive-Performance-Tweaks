@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,20 +19,17 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.server;
 
+import de.markusbordihn.adaptiveperformancetweakscore.Constants;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-
-import de.markusbordihn.adaptiveperformancetweakscore.Constants;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber(Dist.DEDICATED_SERVER)
 public class ServerHandler {
@@ -45,7 +42,6 @@ public class ServerHandler {
 
   private static long serverAboutToStartTime;
   private static long serverStartingTime;
-  private static long serverStartedTime;
 
   protected ServerHandler() {}
 
@@ -54,7 +50,9 @@ public class ServerHandler {
     if (!showedServerAboutToStart) {
       RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
       serverAboutToStartTime = System.currentTimeMillis();
-      log.info("{} ⏲ Phase 1/3 - Server took about {} sec to load ...", Constants.LOG_PREFIX,
+      log.info(
+          "{} ⏲ Phase 1/3 - Server took about {} sec to load ...",
+          Constants.LOG_PREFIX,
           (serverAboutToStartTime - runtimeMXBean.getStartTime()) / 1000f);
       showedServerAboutToStart = true;
     }
@@ -65,8 +63,10 @@ public class ServerHandler {
     if (!showedServerStartingEvent) {
       RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
       serverStartingTime = System.currentTimeMillis();
-      log.info("{} ⏲ Phase 2/3 - Server took about {} sec to starting (∆: {} secs)...",
-          Constants.LOG_PREFIX, (serverStartingTime - runtimeMXBean.getStartTime()) / 1000f,
+      log.info(
+          "{} ⏲ Phase 2/3 - Server took about {} sec to starting (∆: {} secs)...",
+          Constants.LOG_PREFIX,
+          (serverStartingTime - runtimeMXBean.getStartTime()) / 1000f,
           (serverStartingTime - serverAboutToStartTime) / 1000f);
       showedServerStartingEvent = true;
     }
@@ -76,25 +76,13 @@ public class ServerHandler {
   public static void handleServerStartedEvent(ServerStartedEvent event) {
     if (!showedServerStarted) {
       RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-      serverStartedTime = System.currentTimeMillis();
+      long serverStartedTime = System.currentTimeMillis();
       log.info(
           "{} ⏲ Phase 3/3 - Server took about {} sec to be available and ready to play (∆: {} secs) ...",
-          Constants.LOG_PREFIX, (serverStartedTime - runtimeMXBean.getStartTime()) / 1000f,
+          Constants.LOG_PREFIX,
+          (serverStartedTime - runtimeMXBean.getStartTime()) / 1000f,
           (serverStartedTime - serverStartingTime) / 1000f);
       showedServerStarted = true;
     }
   }
-
-  public static long getServerAboutToStartTime() {
-    return serverAboutToStartTime;
-  }
-
-  public static long getServerStartingTime() {
-    return serverStartingTime;
-  }
-
-  public static long getServerStartedTime() {
-    return serverStartedTime;
-  }
-
 }

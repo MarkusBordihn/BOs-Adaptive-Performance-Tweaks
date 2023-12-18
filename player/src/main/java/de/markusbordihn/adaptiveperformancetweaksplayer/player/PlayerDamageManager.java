@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,19 +19,16 @@
 
 package de.markusbordihn.adaptiveperformancetweaksplayer.player;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import de.markusbordihn.adaptiveperformancetweaksplayer.Constants;
+import de.markusbordihn.adaptiveperformancetweaksplayer.config.CommonConfig;
 import net.minecraft.server.level.ServerPlayer;
-
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-
-import de.markusbordihn.adaptiveperformancetweaksplayer.Constants;
-import de.markusbordihn.adaptiveperformancetweaksplayer.config.CommonConfig;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber
 public class PlayerDamageManager {
@@ -45,14 +42,16 @@ public class PlayerDamageManager {
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
     if (COMMON.childPlayerHurtDamageReduction.get() > 0) {
-      log.info("Child player hurt damage will be reduced by {}% for {}",
+      log.info(
+          "Child player hurt damage will be reduced by {}% for {}",
           COMMON.childPlayerHurtDamageReduction.get(), COMMON.childPlayerProtectionList.get());
     } else {
       log.warn("Child player hurt damage will not be reduced!");
     }
 
     if (COMMON.childPlayerAttackDamageIncrease.get() > 0) {
-      log.info("Child player attack damage will be increased by {}% for {}",
+      log.info(
+          "Child player attack damage will be increased by {}% for {}",
           COMMON.childPlayerAttackDamageIncrease.get(), COMMON.childPlayerProtectionList.get());
     } else {
       log.warn("Child player attack damage will not be increased!");
@@ -76,8 +75,8 @@ public class PlayerDamageManager {
         // Calculate new hurt damage based on damage reduction.
         float reducedHurtDamage =
             hurtDamage - (hurtDamage / (100f / COMMON.childPlayerHurtDamageReduction.get()));
-        log.debug("Reduce hurt damage for {} from {} to {}", serverPlayer, hurtDamage,
-            reducedHurtDamage);
+        log.debug(
+            "Reduce hurt damage for {} from {} to {}", serverPlayer, hurtDamage, reducedHurtDamage);
         event.setAmount(reducedHurtDamage);
       }
     }
@@ -87,16 +86,19 @@ public class PlayerDamageManager {
   public static void handleLivingDamageEvent(LivingDamageEvent event) {
     // Increase attack damage for child players.
     if (COMMON.childPlayerAttackDamageIncrease.get() > 0
-        && !COMMON.childPlayerProtectionList.get().isEmpty() && event.getSource() != null
+        && !COMMON.childPlayerProtectionList.get().isEmpty()
+        && event.getSource() != null
         && event.getSource().getEntity() instanceof ServerPlayer serverPlayer
         && COMMON.childPlayerProtectionList.get().contains(serverPlayer.getName().getString())) {
       float attackDamage = event.getAmount();
       float increasedAttackDamage =
           attackDamage + (attackDamage / (100f / COMMON.childPlayerAttackDamageIncrease.get()));
-      log.debug("Increase attack damage for {} from {} to {}", serverPlayer, attackDamage,
+      log.debug(
+          "Increase attack damage for {} from {} to {}",
+          serverPlayer,
+          attackDamage,
           increasedAttackDamage);
       event.setAmount(increasedAttackDamage);
     }
   }
-
 }

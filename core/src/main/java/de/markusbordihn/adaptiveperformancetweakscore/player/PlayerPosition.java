@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,12 +19,10 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.player;
 
+import de.markusbordihn.adaptiveperformancetweakscore.viewarea.ViewArea;
 import java.util.UUID;
-
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-
-import de.markusbordihn.adaptiveperformancetweakscore.viewarea.ViewArea;
 
 public class PlayerPosition {
 
@@ -33,12 +31,9 @@ public class PlayerPosition {
   private static final int CHUNK_SIZE = 16;
 
   private final ViewArea viewArea;
-
-  private String levelName = "";
-  private String playerName = "";
-  private UUID playerUUID;
-  private int simulationDistance = 4;
-  private int viewDistance = 8;
+  private final UUID playerUUID;
+  private String levelName;
+  private String playerName;
 
   public PlayerPosition(ServerPlayer player, int viewDistance, int simulationDistance) {
     this.playerName = player.getName().getString();
@@ -51,20 +46,29 @@ public class PlayerPosition {
     this.viewArea = new ViewArea(player, viewAreaDistance);
   }
 
+  public static int getViewAreaDistance(
+      ServerPlayer serverPlayer, String levelName, int viewDistance, int simulationDistance) {
+
+    // Get players meta data
+    boolean isNether = levelName.equals(NETHER);
+    boolean isTheEnd = levelName.equals(THE_END);
+    boolean canSeeSky = !isNether && serverPlayer.level().canSeeSky(serverPlayer.blockPosition());
+    boolean isUnderWater = !isNether && serverPlayer.isUnderWater();
+
+    // Calculate view area distance in blocks based on surrounding factors like dimension, player
+    // can see sky or is underwater.
+    if ((!isNether && !isTheEnd && !canSeeSky) || isUnderWater) {
+      return (Math.min(simulationDistance, viewDistance - 1)) * CHUNK_SIZE;
+    }
+    return viewDistance * CHUNK_SIZE;
+  }
+
   public String getPlayerName() {
     return this.playerName;
   }
 
-  public UUID getPlayerUUID() {
-    return this.playerUUID;
-  }
-
-  public String getLevelName() {
-    return this.levelName;
-  }
-
-  public boolean update(ServerPlayer serverPlayer, String levelName, int viewDistance,
-      int simulationDistance) {
+  public boolean update(
+      ServerPlayer serverPlayer, String levelName, int viewDistance, int simulationDistance) {
 
     // Update level name and calculate view area distance.
     this.levelName = levelName;
@@ -87,28 +91,21 @@ public class PlayerPosition {
     return this.viewArea.isInside(entity, levelName);
   }
 
-  public static int getViewAreaDistance(ServerPlayer serverPlayer, String levelName,
-      int viewDistance, int simulationDistance) {
-
-    // Get players meta data
-    boolean isNether = levelName.equals(NETHER);
-    boolean isTheEnd = levelName.equals(THE_END);
-    boolean canSeeSky = !isNether && serverPlayer.level().canSeeSky(serverPlayer.blockPosition());
-    boolean isUnderWater = !isNether && serverPlayer.isUnderWater();
-
-    // Calculate view area distance in blocks based on surrounding factors like dimension, player
-    // can see sky or is under water.
-    if ((!isNether && !isTheEnd && !canSeeSky) || isUnderWater) {
-      return (simulationDistance < viewDistance - 1 ? simulationDistance : viewDistance - 1)
-          * CHUNK_SIZE;
-    }
-    return viewDistance * CHUNK_SIZE;
-  }
-
   public String toString() {
-    return "PlayerPosition[player='" + this.playerName + "', uuid=" + this.playerUUID + ", level='"
-        + this.levelName + "', viewDistance=" + this.viewDistance + ", simulationDistance="
-        + this.simulationDistance + ", viewArea=" + this.viewArea.toString() + "]";
+    int viewDistance = 8;
+    int simulationDistance = 4;
+    return "PlayerPosition[player='"
+        + this.playerName
+        + "', uuid="
+        + this.playerUUID
+        + ", level='"
+        + this.levelName
+        + "', viewDistance="
+        + viewDistance
+        + ", simulationDistance="
+        + simulationDistance
+        + ", viewArea="
+        + this.viewArea.toString()
+        + "]";
   }
-
 }

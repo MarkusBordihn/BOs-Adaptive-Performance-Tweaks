@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,24 +19,12 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.entity;
 
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.item.ItemEntity;
-
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
+import net.minecraft.world.entity.item.ItemEntity;
 
 public class CoreItemEntityManager {
 
   protected CoreItemEntityManager() {}
-
-  public static boolean isRelevantItemEntity(Entity entity) {
-    if (entity == null || entity.isRemoved()) {
-      return false;
-    }
-    if (entity instanceof ItemEntity itemEntity) {
-      return isRelevantItemEntity(itemEntity);
-    }
-    return false;
-  }
 
   @SuppressWarnings("java:S1126")
   public static boolean isRelevantItemEntity(ItemEntity itemEntity) {
@@ -69,5 +57,4 @@ public class CoreItemEntityManager {
 
     return true;
   }
-
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2021 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,17 +19,15 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.server;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import de.markusbordihn.adaptiveperformancetweakscore.Constants;
+import de.markusbordihn.adaptiveperformancetweakscore.config.CommonConfig;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-
-import de.markusbordihn.adaptiveperformancetweakscore.Constants;
-import de.markusbordihn.adaptiveperformancetweakscore.config.CommonConfig;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber
 public class ServerLoad {
@@ -45,10 +43,6 @@ public class ServerLoad {
   private static ServerLoadLevel lastServerLoad = ServerLoadLevel.NORMAL;
   private static double avgTickTime = 50.0;
   private static double lastAvgTickTime = 45.0;
-
-  public enum ServerLoadLevel {
-    VERY_LOW, LOW, NORMAL, MEDIUM, HIGH, VERY_HIGH
-  }
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
@@ -71,11 +65,16 @@ public class ServerLoad {
     currentServerLoad = getServerLoadLevelFromTickTime(avgTickTime);
 
     // Report change to server log, if enabled.
-    if (currentServerLoad != lastServerLoad
-        && Boolean.TRUE.equals(COMMON.logServerLoad.get())) {
+    if (currentServerLoad != lastServerLoad && Boolean.TRUE.equals(COMMON.logServerLoad.get())) {
       String loadIndicator = lastAvgTickTime > avgTickTime ? "↓" : "↑";
-      log.info("{} {} Server load changed from {} (avg. {}) to {} (avg. {})", Constants.LOG_PREFIX,
-          loadIndicator, lastServerLoad, lastAvgTickTime, currentServerLoad, avgTickTime);
+      log.info(
+          "{} {} Server load changed from {} (avg. {}) to {} (avg. {})",
+          Constants.LOG_PREFIX,
+          loadIndicator,
+          lastServerLoad,
+          lastAvgTickTime,
+          currentServerLoad,
+          avgTickTime);
     }
 
     // Post result to the event bus.
@@ -103,34 +102,17 @@ public class ServerLoad {
     return ServerLoadLevel.NORMAL;
   }
 
-  public static ServerLoadLevel getServerLoad() {
-    return currentServerLoad;
-  }
-
-  public static ServerLoadLevel getLastServerLoad() {
-    return lastServerLoad;
-  }
-
-  public static boolean hasVeryHighServerLoad() {
-    return currentServerLoad == ServerLoadLevel.VERY_HIGH;
-  }
-
-  public static boolean hasHighServerLoad() {
-    return currentServerLoad == ServerLoadLevel.MEDIUM || currentServerLoad == ServerLoadLevel.HIGH
-        || currentServerLoad == ServerLoadLevel.VERY_HIGH;
-  }
-
-  public static boolean hasNormalServerLoad() {
-    return currentServerLoad == ServerLoadLevel.NORMAL;
-  }
-
   public static boolean hasLowServerLoad() {
     return currentServerLoad == ServerLoadLevel.VERY_LOW
         || currentServerLoad == ServerLoadLevel.LOW;
   }
 
-  public static double getAvgTickTime() {
-    return avgTickTime;
+  public enum ServerLoadLevel {
+    VERY_LOW,
+    LOW,
+    NORMAL,
+    MEDIUM,
+    HIGH,
+    VERY_HIGH
   }
-
 }
