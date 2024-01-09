@@ -43,6 +43,6 @@ side = "BOTH"
 [[dependencies.adaptive_performance_tweaks_spawn]]
 modId = "adaptive_performance_tweaks_core"
 mandatory = true
-versionRange = "[10.2.0,11.0.0)"
+versionRange = "[11.0.0,12.0.0)"
 ordering = "NONE"
 side = "SERVER"

@@ -7,7 +7,7 @@ Adaptive Performance Tweaks (APTweaks) is a collection of Minecraft Forge server
 automatically adjust specific settings on the server to allow a more balanced TPS/FPS.
 The goal of this mod is to allow a smoother experience on a server with several (=> 180) Mods.
 
-**⚠️ Note: For the version 1.16.5, please got
+**⚠️ Note: For the version 1.16.5, please go
 to [Adaptive-Performance-Tweaks (legacy)][adaptive_performance_tweaks_legacy] instead.**
 
 If you want to install all modules together use the bundled version:

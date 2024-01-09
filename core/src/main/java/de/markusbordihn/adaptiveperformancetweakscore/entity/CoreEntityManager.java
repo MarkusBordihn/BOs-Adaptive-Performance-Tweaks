@@ -76,11 +76,9 @@ public class CoreEntityManager {
   private static final short VERIFICATION_TICK = 25 * 20;
   private static final String ENTITY_OWNER_TAG = "Owner";
   private static final String PERSISTENCE_REQUIRED = "PersistenceRequired";
-  // Entity Chunk Map to determine if any mob was spawned in a specific chunk.
   private static final ConcurrentHashMap<String, Boolean> entityChunkMap =
       new ConcurrentHashMap<>();
   private static short ticks = 0;
-  // Entity map to store all entities, per chunk, per world and global.
   private static ConcurrentHashMap<String, Set<Entity>> entityMap = new ConcurrentHashMap<>();
   private static ConcurrentHashMap<String, Set<Entity>> entityMapPerChunk =
       new ConcurrentHashMap<>();
