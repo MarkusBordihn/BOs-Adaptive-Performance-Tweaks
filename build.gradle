@@ -2,7 +2,7 @@ subprojects {
 
   apply plugin: 'java'
 
-  java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+  java.toolchain.languageVersion = JavaLanguageVersion.of(21)
   java.withSourcesJar()
   java.withJavadocJar()
 
@@ -14,10 +14,14 @@ subprojects {
         includeGroup "curse.maven"
       }
     }
+    maven {
+      name = "Maven (local)"
+      url = "file:///${project.projectDir}/.mcmodsrepo"
+    }
   }
 
   tasks.register('wrapper', Wrapper) {
-    gradleVersion = '7.6.3'
+    gradleVersion = '8.7'
   }
 
   tasks.withType(JavaCompile).configureEach {

@@ -1,7 +1,21 @@
 pluginManagement {
   repositories {
     gradlePluginPortal()
+    maven {
+      name = 'MinecraftForge'
+      url = 'https://maven.minecraftforge.net/'
+    }
+    maven {
+      url "https://www.cursemaven.com"
+      content {
+        includeGroup "curse.maven"
+      }
+    }
   }
+}
+
+plugins {
+  id 'org.gradle.toolchains.foojay-resolver-convention' version '0.5.0'
 }
 
 rootProject.name = 'Adaptive Performance Tweaks'

@@ -41,8 +41,7 @@ public class LoadCommand extends CustomCommand {
   public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
     Map<ServerLevel, Double> serverLevelLoad = ServerLevelLoad.getLevelLoad();
     sendFeedback(context, "-= Server Load =-");
-    sendFeedback(
-        context, String.format("○ Average %sms", ServerManager.getAverageTickTime()));
+    sendFeedback(context, String.format("○ Average %sms", ServerManager.getAverageTickTime()));
     if (serverLevelLoad.isEmpty()) {
       sendFeedback(context, "Unable to find any levels. Is Server / Level are already loaded?");
     } else {

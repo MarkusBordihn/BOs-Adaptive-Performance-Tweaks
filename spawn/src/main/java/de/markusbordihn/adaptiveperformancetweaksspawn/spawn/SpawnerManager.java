@@ -100,7 +100,7 @@ public class SpawnerManager {
         BlockPos blockPos = blockEntity.getBlockPos();
         Level level = blockEntity.getLevel();
         String levelName = level != null ? level.dimension().location().toString() : "";
-        CompoundTag spawnerData = blockEntity.serializeNBT();
+        CompoundTag spawnerData = blockEntity.saveWithId(level.getServer().registryAccess());
         String spawnerId = spawnerData.getString("id");
         String spawnEntityId =
             spawnerData.getCompound("SpawnData").getCompound("entity").getString("id");

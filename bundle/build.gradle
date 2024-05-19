@@ -1,27 +1,14 @@
-buildscript {
-  repositories {
-    maven { url = 'https://maven.minecraftforge.net' }
-    mavenCentral()
-  }
-  dependencies {
-    classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '6.+', changing: true
-  }
-}
-
 plugins {
   id 'com.matthewprenger.cursegradle' version '1.4.0'
   id 'nu.studer.credentials' version '3.0'
   id "com.modrinth.minotaur" version "2.+"
+  id 'net.minecraftforge.gradle' version '[6.0.24,6.2)'
 }
 
-apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
 archivesBaseName = "${mod_id}_${project.minecraft_version}"
-
-// Mojang ships Java 17 to end users in 1.18+.
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 minecraft {
@@ -31,7 +18,8 @@ minecraft {
   // Use non-default mappings at your own risk. they may not always work.
   // Simply re-run your setup task after changing the mappings to update your workspace.
   mappings channel: 'official', version: "${project.minecraft_version}"
-  // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
+  reobf = false
+  copyIdeResources = true
 
   // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -128,23 +116,26 @@ dependencies {
 
   // Required: Bo's Adaptive Performance Tweaks: Core (dev dependency)
   //compileOnly project(":core")
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweakscore:core:${project.version}")
+  runtimeOnly "de.markusbordihn.adaptiveperformancetweakscore:core:${project.version}"
 
   // Required: Bo's Adaptive Performance Tweaks: Gamerules (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksgamerules:gamerules:${project.version}")
+  runtimeOnly "de.markusbordihn.adaptiveperformancetweaksgamerules:gamerules:${project.version}"
 
   // Required: Bo's Adaptive Performance Tweaks: Items (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksitems:items:${project.version}")
+  runtimeOnly "de.markusbordihn.adaptiveperformancetweaksitems:items:${project.version}"
 
   // Required: Bo's Adaptive Performance Tweaks: Player (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksplayer:player:${project.version}")
+  runtimeOnly "de.markusbordihn.adaptiveperformancetweaksplayer:player:${project.version}"
 
   // Required: Bo's Adaptive Performance Tweaks: Spawn (runtime dependency)
-  runtimeOnly fg.deobf("de.markusbordihn.adaptiveperformancetweaksspawn:spawn:${project.version}")
+  runtimeOnly "de.markusbordihn.adaptiveperformancetweaksspawn:spawn:${project.version}"
 
   // Additional helpful Mods for development (runtime dependency)
-  runtimeOnly fg.deobf("curse.maven:xaeros_minimap-263420:${project.xaeros_minimap_mod}")
-  runtimeOnly fg.deobf("curse.maven:spark-361579:${project.spark_mod}")
+  runtimeOnly "curse.maven:xaeros_minimap-263420:${project.xaeros_minimap_mod}"
+  // runtimeOnly "curse.maven:spark-361579:${project.spark_mod}"
+
+  // Hack fix for now, force jopt-simple to be exactly 5.0.4 because Mojang ships that version, but some transtive dependencies request 6.0+
+  implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..
@@ -161,12 +152,6 @@ jar {
     ])
   }
 }
-
-// Example configuration to allow publishing using the maven-publish task
-// This is the preferred method to reobfuscate your jar file
-jar.finalizedBy('reobfJar')
-// However if you are in a multi-project build, dev time needs unobfed jar files, so you can delay the obfuscation until publishing by doing
-//publish.dependsOn('reobfJar')
 
 publishing {
   publications {
