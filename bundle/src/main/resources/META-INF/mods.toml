@@ -37,7 +37,7 @@ side = "BOTH"
 [[dependencies.adaptive_performance_tweaks]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.20.3,1.21)"
+versionRange = "[1.20.4,1.21)"
 ordering = "NONE"
 side = "BOTH"
 
