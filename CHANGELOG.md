@@ -5,6 +5,11 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [GitHub History][history] instead.
 
+### v11.1.0
+
+- Fixed #65 by detecting villager zombie conversion and automatically allowing the conversion.
+- Smaller code optimizations and improvements.
+
 ### v11.0.0
 
 - As requested, separated the Mods optimization module into a independent mod
