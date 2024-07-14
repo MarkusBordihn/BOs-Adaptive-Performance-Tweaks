@@ -19,10 +19,9 @@
 
 package de.markusbordihn.adaptiveperformancetweakscore.server;
 
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.Event;
 
 public class OptimizationEvent extends Event {
 
-  public OptimizationEvent(Dist dist) {}
+  public OptimizationEvent() {}
 }

@@ -21,7 +21,6 @@ package de.markusbordihn.adaptiveperformancetweakscore.server;
 
 import de.markusbordihn.adaptiveperformancetweakscore.Constants;
 import de.markusbordihn.adaptiveperformancetweakscore.config.CommonConfig;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -49,7 +48,7 @@ public class ServerLoad {
     timeBetweenUpdates = COMMON.timeBetweenUpdates.get() * 1000;
   }
 
-  public static void measureLoadAndPost(Dist dist) {
+  public static void measureLoadAndPost() {
     double currentAverageTickTime = ServerManager.getAverageTickTime();
 
     // Restrict and smoother high to low server load updates
@@ -79,7 +78,7 @@ public class ServerLoad {
 
     // Post result to the event bus.
     MinecraftForge.EVENT_BUS.post(
-        new ServerLoadEvent(currentServerLoad, lastServerLoad, avgTickTime, lastAvgTickTime, dist));
+        new ServerLoadEvent(currentServerLoad, lastServerLoad, avgTickTime, lastAvgTickTime));
 
     // Update the last update time
     lastUpdateTime = System.currentTimeMillis();

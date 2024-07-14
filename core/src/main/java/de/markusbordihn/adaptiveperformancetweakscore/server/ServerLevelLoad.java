@@ -24,7 +24,6 @@ import de.markusbordihn.adaptiveperformancetweakscore.config.CommonConfig;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -54,7 +53,7 @@ public class ServerLevelLoad {
     timeBetweenUpdates = COMMON.timeBetweenUpdates.get() * 1000;
   }
 
-  public static void measureLoadAndPost(Dist dist) {
+  public static void measureLoadAndPost() {
     // Precalculate of specific values.
     long currentTime = System.currentTimeMillis();
 
@@ -99,7 +98,7 @@ public class ServerLevelLoad {
       // Post result to the event bus.
       MinecraftForge.EVENT_BUS.post(
           new ServerLevelLoadEvent(
-              serverLevel, loadLevel, lastLoadLevel, avgTickTime, lastAvgTickTime, dist));
+              serverLevel, loadLevel, lastLoadLevel, avgTickTime, lastAvgTickTime));
     }
 
     // Update the last update time

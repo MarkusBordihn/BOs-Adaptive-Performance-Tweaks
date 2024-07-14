@@ -20,7 +20,6 @@
 package de.markusbordihn.adaptiveperformancetweakscore.server;
 
 import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLoad.ServerLoadLevel;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.Event;
 
 public class ServerLoadEvent extends Event {
@@ -32,8 +31,7 @@ public class ServerLoadEvent extends Event {
       ServerLoadLevel currentServerLoad,
       ServerLoadLevel lastServerLoad,
       double avgTickTime,
-      double lastAvgTickTim,
-      Dist dist) {
+      double lastAvgTickTim) {
     super();
     this.lastServerLoadLevel = lastServerLoad;
     this.serverLoadLevel = currentServerLoad;

@@ -28,8 +28,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.DifficultyChangeEvent;
 import net.minecraftforge.event.TickEvent;
@@ -84,21 +82,9 @@ public class ServerManager {
         "{} Max number of remote players is set to {}", Constants.LOG_PREFIX, maxNumberOfPlayers);
   }
 
-  @SubscribeEvent
-  @OnlyIn(Dist.CLIENT)
-  public static void handleClientServerTickEvent(TickEvent.ServerTickEvent event) {
+  public static void handleServerTickEvent(TickEvent.ServerTickEvent event) {
     if (event.phase == TickEvent.Phase.START) {
-      handleServerTickEvent(Dist.CLIENT);
-    } else {
-      ticks++;
-    }
-  }
-
-  @SubscribeEvent
-  @OnlyIn(Dist.DEDICATED_SERVER)
-  public static void handleDedicatedServerTickEvent(TickEvent.ServerTickEvent event) {
-    if (event.phase == TickEvent.Phase.START) {
-      handleServerTickEvent(Dist.DEDICATED_SERVER);
+      handleServerTickEvent();
     } else {
       ticks++;
     }
@@ -124,13 +110,13 @@ public class ServerManager {
     numberOfPlayers = getMinecraftServer().getPlayerList().getPlayerCount();
   }
 
-  public static void handleServerTickEvent(Dist dist) {
+  public static void handleServerTickEvent() {
     if (ticks == SERVER_LOAD_TICK) {
-      ServerLoad.measureLoadAndPost(dist);
+      ServerLoad.measureLoadAndPost();
     } else if (ticks == WORLD_LOAD_TICK) {
-      ServerLevelLoad.measureLoadAndPost(dist);
+      ServerLevelLoad.measureLoadAndPost();
     } else if (ticks == OPTIMIZATION_TICK) {
-      MinecraftForge.EVENT_BUS.post(new OptimizationEvent(dist));
+      MinecraftForge.EVENT_BUS.post(new OptimizationEvent());
     } else if (ticks >= RESET_TICK) {
       ticks = 0;
     }

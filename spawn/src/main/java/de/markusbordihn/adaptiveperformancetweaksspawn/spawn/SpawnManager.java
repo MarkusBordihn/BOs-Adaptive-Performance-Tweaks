@@ -616,13 +616,10 @@ public class SpawnManager {
 
   // Cancel spawn event.
   private static void cancelSpawnEvent(EntityEvent event) {
-    if (event instanceof FinalizeSpawn finalizeSpawnEvent) {
-      event.setCanceled(true);
-      finalizeSpawnEvent.setSpawnCancelled(true);
-      lastBlockedSpawnEntity = event.getEntity();
-    } else if (event instanceof EntityJoinLevelEvent) {
-      event.setCanceled(true);
-      lastBlockedSpawnEntity = event.getEntity();
+    if (event.isCanceled() || !event.isCancelable()) {
+      return;
     }
+    event.setCanceled(true);
+    lastBlockedSpawnEntity = event.getEntity();
   }
 }
