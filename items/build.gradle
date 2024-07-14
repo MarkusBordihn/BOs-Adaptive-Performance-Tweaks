@@ -159,7 +159,7 @@ curseforge {
   apiKey = "${credentials.forKey('curseforge_api_token')}"
   project {
     id = "${curseforge_project_id}"
-    changelog = file("../CHANGELOG.md")
+    changelog = rootProject.file("CHANGELOG.md")
     changelogType = 'markdown'
     releaseType = "${project.curseforge_release_type}"
     addGameVersion("${project.minecraft_version}")
@@ -182,6 +182,8 @@ modrinth {
   projectId = "${modrinth_project_id}"
   versionNumber = "${version}"
   versionType = "${project.modrinth_release_type}"
+  versionName = "${mod_name} ${project.version}"
+  changelog = rootProject.file("CHANGELOG.md").text
   uploadFile = jar
   gameVersions = ["${project.minecraft_version}"]
   loaders = ["forge"]
