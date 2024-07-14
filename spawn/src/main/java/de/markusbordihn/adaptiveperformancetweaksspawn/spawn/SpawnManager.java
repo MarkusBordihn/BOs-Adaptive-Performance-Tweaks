@@ -38,10 +38,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.living.LivingConversionEvent;
 import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.event.entity.living.MobSpawnEvent.FinalizeSpawn;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
@@ -69,11 +71,12 @@ public class SpawnManager {
   private static Set<String> ignoreDimensionList = new HashSet<>();
 
   // Cache
-  private static Entity lastAllowedSpawnEntity;
-  private static Entity lastBlockedSpawnEntity;
+  private static boolean allowZombieVillagerConversion = false;
   private static boolean hasHighServerLoad = false;
   private static boolean serverStarted = false;
   private static boolean serverStartedDelay = false;
+  private static Entity lastAllowedSpawnEntity;
+  private static Entity lastBlockedSpawnEntity;
   private static int friendlyChunkCounter = 0;
   private static int serverStartedDelayTicks = 0;
   private static int spawnLimiter = 0;
@@ -257,6 +260,23 @@ public class SpawnManager {
     handleSpawnEvent(event);
   }
 
+  // LivingConversionEvent is fired when an Entity is converted from one type to another.
+  // This event is used to detect villagers that are converted to zombies.
+  @SubscribeEvent(priority = EventPriority.HIGHEST)
+  public static void handleLivingConversionEvent(LivingConversionEvent.Pre event) {
+    handleConversionEvent(event);
+  }
+
+  private static void handleConversionEvent(LivingConversionEvent.Pre event) {
+    if (event.getEntity() != null
+        && event.getEntity().getType() == EntityType.VILLAGER
+        && event.getOutcome() == EntityType.ZOMBIE_VILLAGER) {
+      log.debug(
+          "[Zombie Villager Conversion] Convert {} to {}", event.getEntity(), event.getOutcome());
+      allowZombieVillagerConversion = true;
+    }
+  }
+
   private static void handleSpawnEvent(EntityEvent event) {
 
     // Ignore events which are already canceled or denied.
@@ -308,6 +328,14 @@ public class SpawnManager {
 
     // Skip already checked entities.
     if (lastAllowedSpawnEntity == entity || lastBlockedSpawnEntity == entity) {
+      return;
+    }
+
+    // Skip zombie villager conversion if allowed.
+    if (allowZombieVillagerConversion && "minecraft:zombie_villager".equals(entityName)) {
+      log.debug(
+          "[Zombie Villager Conversion] Allow {} event for {} in {}", eventType, entity, levelName);
+      allowZombieVillagerConversion = false;
       return;
     }
 
