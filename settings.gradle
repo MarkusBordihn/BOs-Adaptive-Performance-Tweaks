@@ -18,7 +18,7 @@ plugins {
   id 'org.gradle.toolchains.foojay-resolver-convention' version '0.7.0'
 }
 
-rootProject.name = 'Adaptive Performance Tweaks'
+rootProject.name = 'Adaptive Performance Tweaks 1.21'
 include("core")
 include("gamerules", "items", "player", "spawn")
 include("bundle")
