@@ -5,6 +5,12 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [GitHub History][history] instead.
 
+### v11.2.0
+
+- Fixed #73 by ignoring corpse entities.
+- Fixed #71 by adding additional checks for the spawn module.
+- Smaller code optimizations and improvements.
+
 ### v11.1.0
 
 - Fixed #65 by detecting villager zombie conversion and automatically allowing the conversion.

@@ -61,6 +61,9 @@ public final class CoreConstants {
   public static final String COFH_CORE_MOD = "cofh_core";
   public static final String COFH_CORE_NAME = "CoFH Core";
   public static final boolean COFH_CORE_LOADED = ModList.get().isLoaded(COFH_CORE_MOD);
+  public static final String CORPSE_MOD = "corpse";
+  public static final String CORPSE_NAME = "Corpse";
+  public static final boolean CORPSE_LOADED = ModList.get().isLoaded(CORPSE_MOD);
   public static final String CLUMPS_MOD = "clumps";
   public static final String CLUMPS_NAME = "Clumps";
   public static final boolean CLUMPS_LOADED = ModList.get().isLoaded(CLUMPS_MOD);
