@@ -4,7 +4,7 @@ pluginManagement {
   }
 }
 
-rootProject.name = 'Adaptive Performance Tweaks'
+rootProject.name = 'Adaptive Performance Tweaks 1.19.4'
 include("core")
 include("gamerules", "items", "player", "spawn")
 include("bundle")

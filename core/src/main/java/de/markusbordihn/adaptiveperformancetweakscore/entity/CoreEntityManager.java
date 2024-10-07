@@ -423,17 +423,19 @@ public class CoreEntityManager {
 
   private static int removeDiscardedEntities(ConcurrentMap<String, Set<Entity>> entityMapToCheck) {
     int removedEntries = 0;
-    if (entityMapToCheck != null && entityMapToCheck.size() > 0) {
-      // Remove entities which are no longer valid like removed onces.
-      for (Set<Entity> entities : entityMapToCheck.values()) {
-        Iterator<Entity> entityIterator = entities.iterator();
-        while (entityIterator.hasNext()) {
-          // Check if the entity is still valid.
-          Entity entity = entityIterator.next();
-          if (entity == null || entity.isRemoved()) {
-            entityIterator.remove();
-            removedEntries++;
-          }
+    if (entityMapToCheck == null || entityMapToCheck.isEmpty()) {
+      return removedEntries;
+    }
+
+    // Remove entities which are no longer valid like removed entities.
+    for (Set<Entity> entities : entityMapToCheck.values()) {
+      Iterator<Entity> entityIterator = entities.iterator();
+      while (entityIterator.hasNext()) {
+        // Check if the entity is still valid.
+        Entity entity = entityIterator.next();
+        if (entity == null || entity.isRemoved()) {
+          entityIterator.remove();
+          removedEntries++;
         }
       }
     }
@@ -515,6 +517,7 @@ public class CoreEntityManager {
             && entityName.startsWith(CoreConstants.BIGGER_REACTORS_MOD))
         || (CoreConstants.BOTANIA_LOADED && entityName.startsWith(CoreConstants.BOTANIA_MOD))
         || (CoreConstants.CREATE_LOADED && entityName.startsWith(CoreConstants.CREATE_MOD))
+        || (CoreConstants.CORPSE_LOADED && entityName.startsWith(CoreConstants.CORPSE_MOD))
         || (CoreConstants.EASY_NPC_LOADED && entityName.startsWith(CoreConstants.EASY_NPC_MOD))
         || (CoreConstants.FLUX_NETWORKS_LOADED
             && entityName.startsWith(CoreConstants.FLUX_NETWORKS_MOD))
@@ -555,12 +558,10 @@ public class CoreEntityManager {
     if (compoundTag.contains(ENTITY_OWNER_TAG) && compoundTag.get(ENTITY_OWNER_TAG) != null) {
       return false;
     }
-    if (compoundTag.contains(PERSISTENCE_REQUIRED)
-        && compoundTag.get(PERSISTENCE_REQUIRED) != null
-        && compoundTag.getBoolean(PERSISTENCE_REQUIRED)) {
-      return false;
-    }
 
-    return true;
+    // Checking if entity is persistence required.
+    return !compoundTag.contains(PERSISTENCE_REQUIRED)
+        || compoundTag.get(PERSISTENCE_REQUIRED) == null
+        || !compoundTag.getBoolean(PERSISTENCE_REQUIRED);
   }
 }
