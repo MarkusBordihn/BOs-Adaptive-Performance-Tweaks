@@ -5,6 +5,12 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [GitHub History][history] instead.
 
+### v11.3.0
+
+- Fixed #72 and #75 by moving the `removeWhenFarAway` check to a later stage to exclude the check
+  for the Endergetic Expansion mod.
+- Smaller code optimizations and performance improvements.
+
 ### v11.2.0
 
 - Fixed #73 by ignoring corpse entities.

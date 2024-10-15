@@ -42,9 +42,10 @@ public class WarnMessages {
         modName, modName);
   }
 
-  public static String knownIssuesModWarning(String modName) {
+  public static String knownIssuesGeneralModWarning(String modName) {
     return String.format(
-        "⚠ There are known issue with the %s mod, please do not report any issue!", modName);
+        "⚠ There are known issues with the %s mod, please report any related issues to the %s mod author first!",
+        modName, modName);
   }
 
   public static String knownIssuesSpawnModWarning(String modName) {

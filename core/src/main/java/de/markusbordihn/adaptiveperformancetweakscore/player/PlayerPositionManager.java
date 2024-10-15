@@ -80,22 +80,14 @@ public class PlayerPositionManager {
     }
 
     PlayerList playerList = minecraftServer.getPlayerList();
-    if (playerList == null) {
+    if (playerList == null || playerList.getPlayerCount() == 0) {
+      playerPositionMap.clear();
       return;
     }
 
-    int numberOfPlayers = playerList.getPlayerCount();
-    if (numberOfPlayers == 0) {
-      if (!playerPositionMap.isEmpty()) {
-        playerPositionMap = new ConcurrentHashMap<>();
-      }
-      return;
-    }
-
-    List<ServerPlayer> serverPlayerList = playerList.getPlayers();
     int viewDistance = playerList.getViewDistance();
     int simulationDistance = playerList.getSimulationDistance();
-    for (ServerPlayer player : serverPlayerList) {
+    for (ServerPlayer player : playerList.getPlayers()) {
       if (player.isAlive() && !player.hasDisconnected()) {
         updatePlayerPosition(player, viewDistance, simulationDistance);
       }

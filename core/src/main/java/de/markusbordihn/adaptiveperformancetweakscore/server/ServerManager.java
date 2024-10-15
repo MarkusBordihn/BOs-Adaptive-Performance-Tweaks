@@ -147,10 +147,9 @@ public class ServerManager {
 
   public static double getAverageTickTime(ServerLevel serverLevel) {
     long[] tickTimes = getTickTime(serverLevel.dimension());
-    if (tickTimes != null) {
-      return Arrays.stream(tickTimes).average().orElse(Double.NaN) / 1000000;
-    }
-    return 0;
+    return (tickTimes != null)
+        ? Arrays.stream(tickTimes).average().orElse(Double.NaN) / 1000000
+        : 0;
   }
 
   public static float getAverageTickTime() {
@@ -177,19 +176,13 @@ public class ServerManager {
       return;
     }
     gameDifficulty = difficulty;
-    switch (difficulty) {
-      case EASY:
-        gameDifficultyFactor = COMMON.gameDifficultyFactorEasy.get();
-        break;
-      case PEACEFUL:
-        gameDifficultyFactor = COMMON.gameDifficultyFactorPeaceful.get();
-        break;
-      case HARD:
-        gameDifficultyFactor = COMMON.gameDifficultyFactorHard.get();
-        break;
-      default:
-        gameDifficultyFactor = COMMON.gameDifficultyFactorNormal.get();
-    }
+    gameDifficultyFactor =
+        switch (difficulty) {
+          case EASY -> COMMON.gameDifficultyFactorEasy.get();
+          case PEACEFUL -> COMMON.gameDifficultyFactorPeaceful.get();
+          case HARD -> COMMON.gameDifficultyFactorHard.get();
+          default -> COMMON.gameDifficultyFactorNormal.get();
+        };
     log.info(
         "{} Game difficulty is set to {} with a {} factor.",
         Constants.LOG_PREFIX,

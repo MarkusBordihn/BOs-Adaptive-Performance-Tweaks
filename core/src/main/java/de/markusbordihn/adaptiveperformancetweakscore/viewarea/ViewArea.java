@@ -148,23 +148,16 @@ public class ViewArea {
       return false;
     }
 
-    // Update position for change detection and debugging purpose.
+    // Update position and level for change detection and better view area calculation.
     this.posX = posX;
     this.posY = posY;
     this.posZ = posZ;
-
-    // Update level for better view area calculation.
     this.levelName = levelName;
     boolean isNether = levelName.equals(NETHER);
     boolean isTheEnd = levelName.equals(THE_END);
 
-    // Limit max view area distance to consider mods which changes these factors.
-    this.viewAreaDistance = viewAreaDistance;
-    if (viewAreaDistance > MAX_VIEW_AREA_DISTANCE) {
-      viewAreaDistance = MAX_VIEW_AREA_DISTANCE;
-    }
-
-    // Expand view area distance for Nether and The End.
+    // Limit max view area distance and expand for Nether and The End.
+    this.viewAreaDistance = Math.min(viewAreaDistance, MAX_VIEW_AREA_DISTANCE);
     if (isNether) {
       viewAreaDistance = (int) (viewAreaDistance * NETHER_EXPAND_FACTOR);
     } else if (isTheEnd) {
@@ -172,23 +165,16 @@ public class ViewArea {
     }
     this.blocksViewDistance = viewAreaDistance;
 
-    // Simple calculation for X
+    // Simple calculation for X, Y, and Z
     this.startX = posX - viewAreaDistance;
     this.stopX = posX + viewAreaDistance;
-
-    // Simple calculation for Y
-    if (this.levelName.equals(NETHER)) {
-      this.startY = Math.max(posY - viewAreaDistance, MIN_BUILD_HEIGHT);
-      this.stopY = Math.min(posY + viewAreaDistance, MAX_BUILD_HEIGHT_NETHER);
-    } else if (this.levelName.equals(THE_END)) {
-      this.startY = Math.max(posY - viewAreaDistance, MIN_BUILD_HEIGHT);
-      this.stopY = Math.min(posY + viewAreaDistance, MAX_BUILD_HEIGHT_THE_END);
-    } else {
-      this.startY = Math.max(posY - viewAreaDistance, MIN_BUILD_HEIGHT);
-      this.stopY = Math.min(posY + viewAreaDistance, MAX_BUILD_HEIGHT);
-    }
-
-    // Simple calculation for Z
+    this.startY = Math.max(posY - viewAreaDistance, MIN_BUILD_HEIGHT);
+    this.stopY =
+        Math.min(
+            posY + viewAreaDistance,
+            isNether
+                ? MAX_BUILD_HEIGHT_NETHER
+                : isTheEnd ? MAX_BUILD_HEIGHT_THE_END : MAX_BUILD_HEIGHT);
     this.startZ = posZ - viewAreaDistance;
     this.stopZ = posZ + viewAreaDistance;
 
