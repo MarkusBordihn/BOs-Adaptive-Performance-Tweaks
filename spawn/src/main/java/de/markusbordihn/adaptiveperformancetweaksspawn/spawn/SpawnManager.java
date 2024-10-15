@@ -106,6 +106,79 @@ public class SpawnManager {
     spawnLimitationMaxMobsPerServer = COMMON.spawnLimitationMaxMobsPerServer.get();
   }
 
+  private static void showModSpecificWarnings() {
+    // Added warning for chunk optimization Mods
+    if (CoreConstants.CHUNK_PREGEN_LOADED) {
+      log.warn(() -> WarnMessages.chunkPregeneratorModWarning(CoreConstants.CHUNK_PREGEN_NAME));
+    }
+
+    // Added optimization warning for specific Mods
+    if (CoreConstants.PERFORMANT_LOADED) {
+      log.warn(() -> WarnMessages.coreModWarning(CoreConstants.PERFORMANT_NAME));
+    }
+    if (CoreConstants.POKECUBE_AIO_LOADED) {
+      log.warn(() -> WarnMessages.knownIssuesSpawnModWarning(CoreConstants.POKECUBE_AIO_NAME));
+    }
+    if (CoreConstants.SODIUM_LOADED) {
+      log.error(() -> WarnMessages.coreModWarning(CoreConstants.SODIUM_NAME));
+    }
+    if (CoreConstants.RUBIDIUM_LOADED) {
+      log.error(() -> WarnMessages.coreModWarning(CoreConstants.RUBIDIUM_NAME));
+    }
+    if (CoreConstants.INCONTROL_LOADED) {
+      log.warn(
+          () ->
+              WarnMessages.conflictingFeaturesModWarning(
+                  CoreConstants.INCONTROL_NAME, "controls the mob spawns and entity spawns"));
+    }
+    if (CoreConstants.THE_ENDERGETIC_EXPANSION_LOADED) {
+      log.warn(
+          () ->
+              WarnMessages.knownIssuesGeneralModWarning(
+                  CoreConstants.THE_ENDERGETIC_EXPANSION_NAME));
+    }
+
+    // Disabled optimization warning for specific Mods
+    if (CoreConstants.CREATE_LOADED) {
+      log.warn(() -> WarnMessages.disabledOptimizationModWarning(CoreConstants.CREATE_NAME));
+    }
+    if (CoreConstants.BIGGER_REACTORS_LOADED) {
+      log.warn(
+          () -> WarnMessages.disabledOptimizationModWarning(CoreConstants.BIGGER_REACTORS_NAME));
+    }
+    if (CoreConstants.BOTANIA_LOADED) {
+      log.warn(() -> WarnMessages.disabledOptimizationModWarning(CoreConstants.BOTANIA_NAME));
+    }
+    if (CoreConstants.INDUSTRIAL_FOREGOING_LOADED) {
+      log.warn(
+          () ->
+              WarnMessages.disabledOptimizationModWarning(CoreConstants.INDUSTRIAL_FOREGOING_NAME));
+    }
+    if (CoreConstants.MEKANISM_LOADED) {
+      log.warn(() -> WarnMessages.disabledOptimizationModWarning(CoreConstants.MEKANISM_NAME));
+    }
+    if (CoreConstants.PIPEZ_LOADED) {
+      log.warn(() -> WarnMessages.disabledOptimizationModWarning(CoreConstants.PIPEZ_NAME));
+    }
+    if (CoreConstants.POKECUBE_AIO_LOADED) {
+      log.warn(() -> WarnMessages.disabledOptimizationModWarning(CoreConstants.POKECUBE_AIO_NAME));
+    }
+    if (CoreConstants.REFINED_STORAGE_LOADED) {
+      log.warn(
+          () -> WarnMessages.disabledOptimizationModWarning(CoreConstants.REFINED_STORAGE_NAME));
+    }
+    if (CoreConstants.ULTIMATE_CAR_LOADED) {
+      log.warn(() -> WarnMessages.disabledOptimizationModWarning(CoreConstants.ULTIMATE_CAR_NAME));
+    }
+    if (CoreConstants.VIESCRAFT_MACHINES_LOADED) {
+      log.warn(
+          () -> WarnMessages.disabledOptimizationModWarning(CoreConstants.VIESCRAFT_MACHINES_NAME));
+    }
+    if (CoreConstants.XNET_LOADED) {
+      log.warn(() -> WarnMessages.disabledOptimizationModWarning(CoreConstants.XNET_NAME));
+    }
+  }
+
   @SubscribeEvent
   public static void handleServerStarting(ServerStartingEvent event) {
     if (!allowList.isEmpty()) {
@@ -147,73 +220,7 @@ public class SpawnManager {
       }
     }
 
-    // Added warning for chunk optimization Mods
-    if (CoreConstants.CHUNK_PREGEN_LOADED) {
-      log.warn(() -> WarnMessages.chunkPregeneratorModWarning(CoreConstants.CHUNK_PREGEN_NAME));
-    }
-
-    // Added optimization warning for specific Mods
-    if (CoreConstants.PERFORMANT_LOADED) {
-      log.warn(() -> WarnMessages.coreModWarning(CoreConstants.PERFORMANT_NAME));
-    }
-    if (CoreConstants.POKECUBE_AIO_LOADED) {
-      log.warn(() -> WarnMessages.knownIssuesSpawnModWarning(CoreConstants.POKECUBE_AIO_NAME));
-    }
-    if (CoreConstants.SODIUM_LOADED) {
-      log.error(() -> WarnMessages.coreModWarning(CoreConstants.SODIUM_NAME));
-    }
-    if (CoreConstants.RUBIDIUM_LOADED) {
-      log.error(() -> WarnMessages.coreModWarning(CoreConstants.RUBIDIUM_NAME));
-    }
-    if (CoreConstants.INCONTROL_LOADED) {
-      log.warn(
-          () ->
-              WarnMessages.conflictingFeaturesModWarning(
-                  CoreConstants.INCONTROL_NAME, "controls the mob spawns and entity spawns"));
-    }
-
-    // Disabled optimization warning for specific Mods
-    if (CoreConstants.CREATE_LOADED) {
-      log.warn(() -> WarnMessages.disabledOptimizationModWarning(CoreConstants.CREATE_NAME));
-    }
-    if (CoreConstants.BIGGER_REACTORS_LOADED) {
-      log.warn(
-          () -> WarnMessages.disabledOptimizationModWarning(CoreConstants.BIGGER_REACTORS_NAME));
-    }
-    if (CoreConstants.BOTANIA_LOADED) {
-      log.warn(() -> WarnMessages.disabledOptimizationModWarning(CoreConstants.BOTANIA_NAME));
-    }
-    if (CoreConstants.CREATE_LOADED) {
-      log.warn(() -> WarnMessages.disabledOptimizationModWarning(CoreConstants.CREATE_NAME));
-    }
-    if (CoreConstants.INDUSTRIAL_FOREGOING_LOADED) {
-      log.warn(
-          () ->
-              WarnMessages.disabledOptimizationModWarning(CoreConstants.INDUSTRIAL_FOREGOING_NAME));
-    }
-    if (CoreConstants.MEKANISM_LOADED) {
-      log.warn(() -> WarnMessages.disabledOptimizationModWarning(CoreConstants.MEKANISM_NAME));
-    }
-    if (CoreConstants.PIPEZ_LOADED) {
-      log.warn(() -> WarnMessages.disabledOptimizationModWarning(CoreConstants.PIPEZ_NAME));
-    }
-    if (CoreConstants.POKECUBE_AIO_LOADED) {
-      log.warn(() -> WarnMessages.disabledOptimizationModWarning(CoreConstants.POKECUBE_AIO_NAME));
-    }
-    if (CoreConstants.REFINED_STORAGE_LOADED) {
-      log.warn(
-          () -> WarnMessages.disabledOptimizationModWarning(CoreConstants.REFINED_STORAGE_NAME));
-    }
-    if (CoreConstants.ULTIMATE_CAR_LOADED) {
-      log.warn(() -> WarnMessages.disabledOptimizationModWarning(CoreConstants.ULTIMATE_CAR_NAME));
-    }
-    if (CoreConstants.VIESCRAFT_MACHINES_LOADED) {
-      log.warn(
-          () -> WarnMessages.disabledOptimizationModWarning(CoreConstants.VIESCRAFT_MACHINES_NAME));
-    }
-    if (CoreConstants.XNET_LOADED) {
-      log.warn(() -> WarnMessages.disabledOptimizationModWarning(CoreConstants.XNET_NAME));
-    }
+    showModSpecificWarnings();
   }
 
   @SubscribeEvent

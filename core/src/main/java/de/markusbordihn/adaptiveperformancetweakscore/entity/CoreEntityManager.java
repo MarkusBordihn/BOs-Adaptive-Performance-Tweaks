@@ -425,10 +425,7 @@ public class CoreEntityManager {
         || (entity instanceof TamableAnimal tamableAnimal
             && (tamableAnimal.getOwner() != null || tamableAnimal.getOwnerUUID() != null))
         || (entity instanceof Mob mob
-            && (mob.isLeashed()
-                || mob.isPersistenceRequired()
-                || mob.requiresCustomPersistence()
-                || !mob.removeWhenFarAway(512)))
+            && (mob.isLeashed() || mob.isPersistenceRequired() || mob.requiresCustomPersistence()))
         || (entity instanceof Bee bee && bee.hasHive())
         || entity.hasCustomName());
   }
@@ -499,6 +496,14 @@ public class CoreEntityManager {
         || (CoreConstants.WEATHER_STORMS_TORNADOES_LOADED
             && entityName.startsWith(CoreConstants.WEATHER_STORMS_TORNADOES_MOD))
         || (CoreConstants.XNET_LOADED && entityName.startsWith(CoreConstants.XNET_MOD))) {
+      return false;
+    }
+
+    // Disable specific checks for mods which accessing chunk data during entity spawn / despawn.
+    if (!(CoreConstants.THE_ENDERGETIC_EXPANSION_LOADED
+            && entityName.startsWith(CoreConstants.THE_ENDERGETIC_EXPANSION_MOD))
+        && entity instanceof Mob mob
+        && !mob.removeWhenFarAway(512)) {
       return false;
     }
 
