@@ -111,6 +111,10 @@ public class PlayerPositionManager {
 
   private static void updatePlayerPosition(
       ServerPlayer player, int viewDistance, int simulationDistance) {
+    if (player == null) {
+      return;
+    }
+
     PlayerPosition playerPosition =
         playerPositionMap.computeIfAbsent(
             player.getStringUUID(),

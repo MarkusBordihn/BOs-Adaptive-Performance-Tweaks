@@ -80,10 +80,7 @@ public final class BornInChaosSpawnConfig {
       enabled = builder.define("Enabled", true);
       id = builder.define("Id", CoreConstants.BORN_IN_CHAOS_MOD);
 
-      hostileMobsPerPlayer =
-          builder
-              .comment("e.g. mobs which will always attack yon ...")
-              .defineInRange("HostileMobsPerPlayer", 16, 1, 64);
+      hostileMobsPerPlayer = builder.defineInRange("HostileMobsPerPlayer", 16, 1, 64);
       hostileMobsPerWorld = builder.defineInRange("HostileMobsPerWorld", 32, 1, 512);
       hostileMobsPerServer = builder.defineInRange("HostileMobsPerServer", 320, 1, 1024);
       hostileMobsList =

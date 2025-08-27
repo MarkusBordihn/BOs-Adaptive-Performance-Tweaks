@@ -144,7 +144,7 @@ public class ViewArea {
         && this.posY == posY
         && this.posZ == posZ
         && this.viewAreaDistance == viewAreaDistance
-        && this.levelName.equals(levelName)) {
+        && levelName.equals(this.levelName)) {
       return false;
     }
 
@@ -158,27 +158,42 @@ public class ViewArea {
 
     // Limit max view area distance and expand for Nether and The End.
     this.viewAreaDistance = Math.min(viewAreaDistance, MAX_VIEW_AREA_DISTANCE);
-    if (isNether) {
-      viewAreaDistance = (int) (viewAreaDistance * NETHER_EXPAND_FACTOR);
-    } else if (isTheEnd) {
-      viewAreaDistance = (int) (viewAreaDistance * THE_END_EXPAND_FACTOR);
-    }
-    this.blocksViewDistance = viewAreaDistance;
+    int calculatedViewAreaDistance = this.viewAreaDistance;
 
-    // Simple calculation for X, Y, and Z
-    this.startX = posX - viewAreaDistance;
-    this.stopX = posX + viewAreaDistance;
-    this.startY = Math.max(posY - viewAreaDistance, MIN_BUILD_HEIGHT);
+    // Expand view area distance for Nether and The End dimensions
+    if (isNether) {
+      calculatedViewAreaDistance = (int) (calculatedViewAreaDistance * NETHER_EXPAND_FACTOR);
+    } else if (isTheEnd) {
+      calculatedViewAreaDistance = (int) (calculatedViewAreaDistance * THE_END_EXPAND_FACTOR);
+    }
+    this.blocksViewDistance = calculatedViewAreaDistance;
+
+    // Calculate view area boundaries for X and Z axes
+    this.startX = posX - calculatedViewAreaDistance;
+    this.stopX = posX + calculatedViewAreaDistance;
+    this.startZ = posZ - calculatedViewAreaDistance;
+    this.stopZ = posZ + calculatedViewAreaDistance;
+
+    // Calculate view area boundaries for Y axis with dimension-specific height limits
+    this.startY = Math.max(posY - calculatedViewAreaDistance, MIN_BUILD_HEIGHT);
     this.stopY =
-        Math.min(
-            posY + viewAreaDistance,
-            isNether
-                ? MAX_BUILD_HEIGHT_NETHER
-                : isTheEnd ? MAX_BUILD_HEIGHT_THE_END : MAX_BUILD_HEIGHT);
-    this.startZ = posZ - viewAreaDistance;
-    this.stopZ = posZ + viewAreaDistance;
+        calculateMaxHeightForDimension(posY, calculatedViewAreaDistance, isNether, isTheEnd);
 
     return true;
+  }
+
+  private int calculateMaxHeightForDimension(
+      int posY, int viewAreaDistance, boolean isNether, boolean isTheEnd) {
+    int maxHeight;
+    if (isNether) {
+      maxHeight = MAX_BUILD_HEIGHT_NETHER;
+    } else if (isTheEnd) {
+      maxHeight = MAX_BUILD_HEIGHT_THE_END;
+    } else {
+      maxHeight = MAX_BUILD_HEIGHT;
+    }
+
+    return Math.min(posY + viewAreaDistance, maxHeight);
   }
 
   public String toString() {

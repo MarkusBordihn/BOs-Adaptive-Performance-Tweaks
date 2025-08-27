@@ -24,6 +24,7 @@ import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.AlexsMobsSpa
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.AquacultureSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.BornInChaosSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.CustomSpawnConfig;
+import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.ExoticBirdsSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.FishOfThievesSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.FriendsAndFoesSpawnConfig;
 import de.markusbordihn.adaptiveperformancetweaksspawn.config.spawn.GothicSpawnConfig;
@@ -60,6 +61,8 @@ public class SpawnConfigManager {
   private static final BornInChaosSpawnConfig.Config BORN_IN_CHAOS_CONFIG =
       BornInChaosSpawnConfig.COMMON;
   private static final CustomSpawnConfig.Config CUSTOM_CONFIG = CustomSpawnConfig.COMMON;
+  private static final ExoticBirdsSpawnConfig.Config EXOTIC_BIRDS_CONFIG =
+      ExoticBirdsSpawnConfig.COMMON;
   private static final FishOfThievesSpawnConfig.Config FISH_OF_THIEVES_CONFIG =
       FishOfThievesSpawnConfig.COMMON;
   private static final FriendsAndFoesSpawnConfig.Config FRIENDS_AND_FOES_CONFIG =
@@ -226,6 +229,17 @@ public class SpawnConfigManager {
           FRIENDS_AND_FOES_CONFIG.passiveMobsPerPlayer.get(),
           FRIENDS_AND_FOES_CONFIG.passiveMobsPerWorld.get(),
           FRIENDS_AND_FOES_CONFIG.passiveMobsPerServer.get());
+    }
+
+    // Exotic Birds
+    if (Boolean.TRUE.equals(EXOTIC_BIRDS_CONFIG.enabled.get())
+        && modList.isLoaded(EXOTIC_BIRDS_CONFIG.id.get())) {
+      addSpawnRatesForPassiveMobs(
+          EXOTIC_BIRDS_CONFIG.id.get(),
+          new HashSet<>(EXOTIC_BIRDS_CONFIG.passiveMobsList.get()),
+          EXOTIC_BIRDS_CONFIG.passiveMobsPerPlayer.get(),
+          EXOTIC_BIRDS_CONFIG.passiveMobsPerWorld.get(),
+          EXOTIC_BIRDS_CONFIG.passiveMobsPerServer.get());
     }
 
     // Gothic RPG

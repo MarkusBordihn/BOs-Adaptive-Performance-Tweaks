@@ -127,7 +127,9 @@ public class SpawnerManager {
     while (spawnerIterator.hasNext()) {
       BaseSpawner spawner = spawnerIterator.next();
       BlockEntity spawnerBlockEntity = spawner != null ? spawner.getSpawnerBlockEntity() : null;
-      if (spawner != null && spawnerBlockEntity != null && spawnerBlockEntity.isRemoved()) {
+
+      // Remove invalid spawners: null spawner, null block entity, or removed block entity
+      if (spawner == null || spawnerBlockEntity == null || spawnerBlockEntity.isRemoved()) {
         spawnerIterator.remove();
         removedEntries++;
       }

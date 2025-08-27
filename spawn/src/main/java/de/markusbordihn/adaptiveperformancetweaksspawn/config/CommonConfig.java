@@ -75,6 +75,8 @@ public final class CommonConfig {
     public final ForgeConfigSpec.IntValue spawnLimitationMaxMobsPerWorld;
     public final ForgeConfigSpec.IntValue spawnLimitationMaxMobsPerServer;
 
+    public final ForgeConfigSpec.BooleanValue spawnEggBypassLimitations;
+
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
@@ -140,6 +142,15 @@ public final class CommonConfig {
               .comment(
                   "Defines the max. number of entities of a specific type, which could spawn within the server. Use 0 to disable this optimization.")
               .defineInRange("spawnLimitationMaxMobsPerServer", 512, 0, 1024);
+      builder.pop();
+
+      builder.push("Spawn Egg Configuration");
+      spawnEggBypassLimitations =
+          builder
+              .comment(
+                  "Enable/Disable bypassing spawn limitations when using spawn eggs. "
+                      + "When enabled, spawn eggs will bypass player-based spawn limitations.")
+              .define("spawnEggBypassLimitations", true);
       builder.pop();
     }
   }
