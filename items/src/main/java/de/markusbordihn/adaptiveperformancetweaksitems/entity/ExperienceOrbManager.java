@@ -186,10 +186,14 @@ public class ExperienceOrbManager {
         experienceOrbEntity.value,
         levelName);
 
-    // Remove item from level type map.
+    // Remove orb from level map and clean up empty sets
     Set<ExperienceOrb> experienceOrbWorldEntities = experienceOrbEntityMap.get(levelName);
     if (experienceOrbWorldEntities != null) {
       experienceOrbWorldEntities.remove(experienceOrbEntity);
+      // Remove empty set to prevent memory leaks
+      if (experienceOrbWorldEntities.isEmpty()) {
+        experienceOrbEntityMap.remove(levelName);
+      }
     }
   }
 }

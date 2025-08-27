@@ -35,7 +35,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
-public final class BornInChaosSpawnConfig {
+public final class ExoticBirdsSpawnConfig {
 
   public static final ForgeConfigSpec commonSpec;
   public static final Config COMMON;
@@ -47,8 +47,7 @@ public final class BornInChaosSpawnConfig {
         new ForgeConfigSpec.Builder().configure(Config::new);
     commonSpec = specPair.getRight();
     COMMON = specPair.getLeft();
-    log.info(
-        "Registering {} {} Spawn config ...", Constants.MOD_NAME, CoreConstants.BORN_IN_CHAOS_NAME);
+    log.info("Registering {} Exotic Birds spawn config ...", Constants.MOD_NAME);
     try {
       FileUtils.getOrCreateDirectory(
           FMLPaths.CONFIGDIR.get().resolve(CoreConstants.CONFIG_ID), CoreConstants.CONFIG_ID);
@@ -59,68 +58,79 @@ public final class BornInChaosSpawnConfig {
         .registerConfig(
             ModConfig.Type.COMMON,
             commonSpec,
-            CoreConstants.CONFIG_ID_PREFIX + "/spawn/BornInChaosSpawn.toml");
+            CoreConstants.CONFIG_ID_PREFIX + "/spawn/ExoticBirdsSpawn.toml");
   }
 
-  private BornInChaosSpawnConfig() {}
+  private ExoticBirdsSpawnConfig() {}
 
   public static class Config {
 
     public final ForgeConfigSpec.BooleanValue enabled;
     public final ForgeConfigSpec.ConfigValue<String> id;
 
-    public final ForgeConfigSpec.IntValue hostileMobsPerPlayer;
-    public final ForgeConfigSpec.IntValue hostileMobsPerWorld;
-    public final ForgeConfigSpec.IntValue hostileMobsPerServer;
-    public final ForgeConfigSpec.ConfigValue<List<String>> hostileMobsList;
+    public final ForgeConfigSpec.IntValue passiveMobsPerPlayer;
+    public final ForgeConfigSpec.IntValue passiveMobsPerWorld;
+    public final ForgeConfigSpec.IntValue passiveMobsPerServer;
+
+    public final ForgeConfigSpec.ConfigValue<List<String>> passiveMobsList;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment(Constants.MOD_NAME);
 
-      builder.push("Born in Chaos Spawn Config");
+      builder.push("Exotic Birds Spawn Config");
       enabled = builder.define("Enabled", true);
-      id = builder.define("Id", CoreConstants.BORN_IN_CHAOS_MOD);
+      id = builder.define("Id", "exoticbirds");
 
-      hostileMobsPerPlayer = builder.defineInRange("HostileMobsPerPlayer", 16, 1, 64);
-      hostileMobsPerWorld = builder.defineInRange("HostileMobsPerWorld", 32, 1, 512);
-      hostileMobsPerServer = builder.defineInRange("HostileMobsPerServer", 320, 1, 1024);
-      hostileMobsList =
+      passiveMobsPerPlayer = builder.defineInRange("MaxPassiveMobsPerPlayer", 4, 1, 64);
+      passiveMobsPerWorld = builder.defineInRange("MaxPassiveMobsPerWorld", 16, 1, 512);
+      passiveMobsPerServer = builder.defineInRange("MaxPassiveMobsPerServer", 64, 1, 1024);
+      passiveMobsList =
           builder
-              .comment(Constants.CONFIG_LIST_HOSTILE_MOBS)
+              .comment(Constants.CONFIG_LIST_PASSIVE_MOBS)
               .define(
-                  "HostileMobsList",
+                  "PassiveMobsList",
                   new ArrayList<>(
                       Arrays.asList(
                           // @formatter:off
-                          "born_in_chaos_v1:baby_s_2",
-                          "born_in_chaos_v1:baby_skeleton",
-                          "born_in_chaos_v1:bone_imp",
-                          "born_in_chaos_v1:bone_imp_2",
-                          "born_in_chaos_v1:bonescaller",
-                          "born_in_chaos_v1:dark_vortex",
-                          "born_in_chaos_v1:decaying_zombie",
-                          "born_in_chaos_v1:decrepit_skeleton",
-                          "born_in_chaos_v1:diamond_thermite",
-                          "born_in_chaos_v1:dread_hound",
-                          "born_in_chaos_v1:fallen_chaos_knight",
-                          "born_in_chaos_v1:firelight",
-                          "born_in_chaos_v1:mr_pumpkin",
-                          "born_in_chaos_v1:nightmare_stalker",
-                          "born_in_chaos_v1:phantom_creeper",
-                          "born_in_chaos_v1:pumpkin_spirit",
-                          "born_in_chaos_v1:restless_spirit",
-                          "born_in_chaos_v1:scarletpersecutor",
-                          "born_in_chaos_v1:seared_spirit",
-                          "born_in_chaos_v1:shy_spirit",
-                          "born_in_chaos_v1:skeleton_bomb",
-                          "born_in_chaos_v1:skeleton_thrasher",
-                          "born_in_chaos_v1:spirit_guide_assistant",
-                          "born_in_chaos_v1:spiritual_guide",
-                          "born_in_chaos_v1:supreme_bonecaller",
-                          "born_in_chaos_v1:wither_strider",
-                          "born_in_chaos_v1:zombie_clown",
-                          "born_in_chaos_v1:zombiesina_barrel",
-                          "born_in_chaos_v1:zombieswith_door"
+                          "exoticbirds:peafowl",
+                          "exoticbirds:hummingbird",
+                          "exoticbirds:woodpecker",
+                          "exoticbirds:kingfisher",
+                          "exoticbirds:roadrunner",
+                          "exoticbirds:toucan",
+                          "exoticbirds:swan",
+                          "exoticbirds:macaw",
+                          "exoticbirds:cassowary",
+                          "exoticbirds:magpie",
+                          "exoticbirds:flamingo",
+                          "exoticbirds:kiwi",
+                          "exoticbirds:owl",
+                          "exoticbirds:pelican",
+                          "exoticbirds:lyrebird",
+                          "exoticbirds:ostrich",
+                          "exoticbirds:gouldianfinch",
+                          "exoticbirds:gull",
+                          "exoticbirds:pigeon",
+                          "exoticbirds:duck",
+                          "exoticbirds:penguin",
+                          "exoticbirds:heron",
+                          "exoticbirds:booby",
+                          "exoticbirds:bluejay",
+                          "exoticbirds:cardinal",
+                          "exoticbirds:robin",
+                          "exoticbirds:crane",
+                          "exoticbirds:kookaburra",
+                          "exoticbirds:budgerigar",
+                          "exoticbirds:cockatoo",
+                          "exoticbirds:fire_phoenix",
+                          "exoticbirds:cloud_phoenix",
+                          "exoticbirds:water_phoenix",
+                          "exoticbirds:nether_phoenix",
+                          "exoticbirds:skeleton_phoenix",
+                          "exoticbirds:snowy_phoenix",
+                          "exoticbirds:desert_phoenix",
+                          "exoticbirds:ender_phoenix",
+                          "exoticbirds:twilight_phoenix"
                           // @formatter:on
                           )));
 

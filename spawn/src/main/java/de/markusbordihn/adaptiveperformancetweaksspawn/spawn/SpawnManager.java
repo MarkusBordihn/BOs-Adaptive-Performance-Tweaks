@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityEvent;
@@ -75,6 +76,7 @@ public class SpawnManager {
   private static int spawnLimitationMaxMobsPerPlayer = COMMON.spawnLimitationMaxMobsPerPlayer.get();
   private static int spawnLimitationMaxMobsPerWorld = COMMON.spawnLimitationMaxMobsPerWorld.get();
   private static int spawnLimitationMaxMobsPerServer = COMMON.spawnLimitationMaxMobsPerServer.get();
+  private static boolean spawnEggBypassLimitations = COMMON.spawnEggBypassLimitations.get();
 
   // Cache
   private static boolean allowZombieVillagerConversion = false;
@@ -104,6 +106,7 @@ public class SpawnManager {
     spawnLimitationMaxMobsPerPlayer = COMMON.spawnLimitationMaxMobsPerPlayer.get();
     spawnLimitationMaxMobsPerWorld = COMMON.spawnLimitationMaxMobsPerWorld.get();
     spawnLimitationMaxMobsPerServer = COMMON.spawnLimitationMaxMobsPerServer.get();
+    spawnEggBypassLimitations = COMMON.spawnEggBypassLimitations.get();
   }
 
   private static void showModSpecificWarnings() {
@@ -326,6 +329,17 @@ public class SpawnManager {
     // Pre-check for ignored dimension to avoid further checks
     if (ignoreDimensionList.contains(levelName)) {
       log.debug("[Ignored Dimension] Allow spawn event for {} in {}", entity, levelName);
+      return;
+    }
+
+    // Check if this is a spawn egg spawn and if bypass is enabled.
+    if (spawnEggBypassLimitations
+        && ((event instanceof LivingSpawnEvent.CheckSpawn checkSpawnEvent
+                && checkSpawnEvent.getSpawnReason() == MobSpawnType.SPAWN_EGG)
+            || (event instanceof SpecialSpawn specialSpawnEvent
+                && specialSpawnEvent.getSpawnReason() == MobSpawnType.SPAWN_EGG))) {
+      log.debug("[Spawn Egg] Allow spawn egg usage for {} in {}", entity, levelName);
+      lastAllowedSpawnEntity = entity;
       return;
     }
 

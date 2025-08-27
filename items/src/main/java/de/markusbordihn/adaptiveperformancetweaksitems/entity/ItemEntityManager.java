@@ -26,6 +26,7 @@ import de.markusbordihn.adaptiveperformancetweakscore.server.OptimizationEvent;
 import de.markusbordihn.adaptiveperformancetweakscore.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaksitems.Constants;
 import de.markusbordihn.adaptiveperformancetweaksitems.config.CommonConfig;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -253,17 +254,13 @@ public class ItemEntityManager {
     if (optimizeItems) {
       int numberOfItemWorldEntities = itemWorldEntities.size();
       if (numberOfItemWorldEntities > maxNumberOfItems) {
-        ItemEntity firsItemWorldEntity = itemWorldEntities.iterator().next();
+        ItemEntity firstItemWorldEntity = itemWorldEntities.iterator().next();
         log.debug(
             "[Item World Limit {}] Removing item {}",
             numberOfItemWorldEntities,
-            firsItemWorldEntity);
-        firsItemWorldEntity.remove(RemovalReason.DISCARDED);
-        itemWorldEntities.remove(firsItemWorldEntity);
-        Set<ItemEntity> itemEntities = itemTypeEntityMap.get('[' + levelName + ']' + itemName);
-        if (itemEntities != null) {
-          itemEntities.remove(firsItemWorldEntity);
-        }
+            firstItemWorldEntity);
+        // Remove item - this will trigger EntityLeaveWorldEvent which handles map cleanup
+        firstItemWorldEntity.remove(RemovalReason.DISCARDED);
       }
     }
 
@@ -276,9 +273,8 @@ public class ItemEntityManager {
       if (numberOfItemEntities > maxNumberOfItemsPerType) {
         ItemEntity firstItemEntity = itemTypeEntities.iterator().next();
         log.debug("[Item Type Limit {}] Removing item {}", numberOfItemEntities, firstItemEntity);
+        // Remove item - this will trigger EntityLeaveWorldEvent which handles map cleanup
         firstItemEntity.remove(RemovalReason.DISCARDED);
-        itemTypeEntities.remove(firstItemEntity);
-        itemWorldEntities.remove(firstItemEntity);
       }
     }
 
@@ -326,16 +322,26 @@ public class ItemEntityManager {
     // Get world name and start processing of data
     String levelName = level.dimension().location().toString();
 
-    // Remove item from world map.
+    // Remove item from world map and clean up empty sets
     Set<ItemEntity> itemWorldEntities = itemWorldEntityMap.get(levelName);
     if (itemWorldEntities != null) {
       itemWorldEntities.remove(itemEntity);
+      // Remove empty set to prevent memory leaks
+      if (itemWorldEntities.isEmpty()) {
+        itemWorldEntityMap.remove(levelName);
+      }
     }
 
-    // Remove item from world type map.
-    Set<ItemEntity> itemTypeEntities = itemTypeEntityMap.get('[' + levelName + ']' + itemName);
+    // Remove item from world type map and clean up empty sets
+    String itemTypeKey = '[' + levelName + ']' + itemName;
+    Set<ItemEntity> itemTypeEntities = itemTypeEntityMap.get(itemTypeKey);
     if (itemTypeEntities != null) {
       itemTypeEntities.remove(itemEntity);
+      // Remove empty set to prevent memory leaks
+      if (itemTypeEntities.isEmpty()) {
+        itemTypeEntityMap.remove(itemTypeKey);
+      }
+
       if (log.isDebugEnabled()) {
         log.debug(
             "[Item leaved {}] {} {}.",
@@ -358,42 +364,54 @@ public class ItemEntityManager {
 
     // Optimize Items by World
     int maxNumberOfOptimizedWorldItems = (int) Math.round(maxNumberOfItems * 0.9);
-    for (Map.Entry<String, Set<ItemEntity>> itemWorldEntities : itemWorldEntityMap.entrySet()) {
-      Set<ItemEntity> itemWorldEntitiesValues = itemWorldEntities.getValue();
+    for (Map.Entry<String, Set<ItemEntity>> itemWorldEntries : itemWorldEntityMap.entrySet()) {
+      Set<ItemEntity> itemWorldEntitiesValues = itemWorldEntries.getValue();
       if (itemWorldEntitiesValues.size() > maxNumberOfOptimizedWorldItems) {
         List<ItemEntity> sortedItemWorldEntitiesValues =
             itemWorldEntitiesValues.stream()
                 .sorted(Comparator.comparing(ItemEntity::getId))
                 .toList();
+
+        List<ItemEntity> itemsToRemove = new ArrayList<>();
         for (int i = 0;
             i < sortedItemWorldEntitiesValues.size() - maxNumberOfOptimizedWorldItems;
             i++) {
           ItemEntity itemEntity = sortedItemWorldEntitiesValues.get(i);
           if (itemEntity.isAddedToWorld()) {
-            itemEntity.remove(RemovalReason.DISCARDED);
-            numberOfRemovedItems++;
+            itemsToRemove.add(itemEntity);
           }
+        }
+
+        for (ItemEntity itemEntity : itemsToRemove) {
+          itemEntity.remove(RemovalReason.DISCARDED);
+          numberOfRemovedItems++;
         }
       }
     }
 
     // Optimize Items by Type and World
     int maxNumberOfOptimizedTypeItems = (int) Math.round(maxNumberOfItemsPerType * 0.9);
-    for (Map.Entry<String, Set<ItemEntity>> itemTypeEntities : itemTypeEntityMap.entrySet()) {
-      Set<ItemEntity> itemTypeEntitiesValues = itemTypeEntities.getValue();
+    for (Map.Entry<String, Set<ItemEntity>> itemTypeEntries : itemTypeEntityMap.entrySet()) {
+      Set<ItemEntity> itemTypeEntitiesValues = itemTypeEntries.getValue();
       if (itemTypeEntitiesValues.size() > maxNumberOfOptimizedTypeItems) {
         List<ItemEntity> sortedItemTypeEntitiesValues =
             itemTypeEntitiesValues.stream()
                 .sorted(Comparator.comparing(ItemEntity::getId))
                 .toList();
+
+        List<ItemEntity> itemsToRemove = new ArrayList<>();
         for (int i = 0;
             i < sortedItemTypeEntitiesValues.size() - maxNumberOfOptimizedTypeItems;
             i++) {
           ItemEntity itemEntity = sortedItemTypeEntitiesValues.get(i);
           if (itemEntity.isAddedToWorld()) {
-            itemEntity.remove(RemovalReason.DISCARDED);
-            numberOfRemovedItems++;
+            itemsToRemove.add(itemEntity);
           }
+        }
+
+        for (ItemEntity itemEntity : itemsToRemove) {
+          itemEntity.remove(RemovalReason.DISCARDED);
+          numberOfRemovedItems++;
         }
       }
     }
@@ -412,9 +430,15 @@ public class ItemEntityManager {
 
   public static void verifyEntities() {
     int removedEntries = 0;
+    int removedEmptySets = 0;
 
-    // Verify Entities in overall overview
-    for (Set<ItemEntity> entities : itemTypeEntityMap.values()) {
+    // Verify Entities in overall overview and remove empty sets
+    Iterator<Map.Entry<String, Set<ItemEntity>>> typeMapIterator =
+        itemTypeEntityMap.entrySet().iterator();
+    while (typeMapIterator.hasNext()) {
+      Map.Entry<String, Set<ItemEntity>> entry = typeMapIterator.next();
+      Set<ItemEntity> entities = entry.getValue();
+
       Iterator<ItemEntity> entityIterator = entities.iterator();
       while (entityIterator.hasNext()) {
         Entity entity = entityIterator.next();
@@ -423,10 +447,21 @@ public class ItemEntityManager {
           removedEntries++;
         }
       }
+
+      // Remove empty sets to prevent memory leaks
+      if (entities.isEmpty()) {
+        typeMapIterator.remove();
+        removedEmptySets++;
+      }
     }
 
-    // Verify Entities from world specific overview
-    for (Set<ItemEntity> entities : itemWorldEntityMap.values()) {
+    // Verify Entities from world specific overview and remove empty sets
+    Iterator<Map.Entry<String, Set<ItemEntity>>> worldMapIterator =
+        itemWorldEntityMap.entrySet().iterator();
+    while (worldMapIterator.hasNext()) {
+      Map.Entry<String, Set<ItemEntity>> entry = worldMapIterator.next();
+      Set<ItemEntity> entities = entry.getValue();
+
       Iterator<ItemEntity> entityIterator = entities.iterator();
       while (entityIterator.hasNext()) {
         Entity entity = entityIterator.next();
@@ -435,10 +470,17 @@ public class ItemEntityManager {
           removedEntries++;
         }
       }
+
+      // Remove empty sets to prevent memory leaks
+      if (entities.isEmpty()) {
+        worldMapIterator.remove();
+        removedEmptySets++;
+      }
     }
 
-    if (removedEntries > 0) {
-      log.debug("[Verification] Removed {} entries", removedEntries);
+    if (removedEntries > 0 || removedEmptySets > 0) {
+      log.debug(
+          "[Verification] Removed {} entries and {} empty sets", removedEntries, removedEmptySets);
     }
   }
 }

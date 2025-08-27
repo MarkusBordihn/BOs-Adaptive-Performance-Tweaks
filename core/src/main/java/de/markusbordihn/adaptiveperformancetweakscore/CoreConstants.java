@@ -80,6 +80,9 @@ public final class CoreConstants {
   public static final String EASY_NPC_MOD = "easy_npc";
   public static final String EASY_NPC_NAME = "Easy NPC";
   public static final boolean EASY_NPC_LOADED = ModList.get().isLoaded(EASY_NPC_MOD);
+  public static final String EXCOTIC_BIRDS_MOD = "exoticbirds";
+  public static final String EXCOTIC_BIRDS_NAME = "Exotic Birds";
+  public static final boolean EXCOTIC_BIRDS_LOADED = ModList.get().isLoaded(EXCOTIC_BIRDS_MOD);
   public static final String THE_ENDERGETIC_EXPANSION_MOD = "endergetic";
   public static final String THE_ENDERGETIC_EXPANSION_NAME = "The Endergetic Expansion";
   public static final boolean THE_ENDERGETIC_EXPANSION_LOADED =

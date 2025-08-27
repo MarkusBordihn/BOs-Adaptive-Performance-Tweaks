@@ -73,12 +73,16 @@ import org.apache.logging.log4j.Logger;
 public class CoreEntityManager {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-  private static final short VERIFICATION_TICK = 25 * 20;
+  private static final short VERIFICATION_TICK = 5 * 60 * 20; // 5 minutes
+  private static final int VERIFICATION_ADD_OPERATIONS_THRESHOLD = 500;
   private static final String ENTITY_OWNER_TAG = "Owner";
   private static final String PERSISTENCE_REQUIRED = "PersistenceRequired";
   private static final ConcurrentHashMap<String, Boolean> entityChunkMap =
       new ConcurrentHashMap<>();
+  private static final Object verificationLock = new Object();
   private static short ticks = 0;
+  private static int addOperationCounter = 0;
+  private static volatile boolean isVerifying = false;
   private static ConcurrentHashMap<String, Set<Entity>> entityMap = new ConcurrentHashMap<>();
   private static ConcurrentHashMap<String, Set<Entity>> entityMapPerChunk =
       new ConcurrentHashMap<>();
@@ -105,7 +109,7 @@ public class CoreEntityManager {
 
     // Verify entities to consider removed and unloaded entities.
     if (ticks >= VERIFICATION_TICK && event.haveTime()) {
-      verifyEntities();
+      triggerVerificationIfNotRunning("time-based");
       ticks = 0;
     }
   }
@@ -217,6 +221,22 @@ public class CoreEntityManager {
     removeEntity(entity, entityName, levelName);
   }
 
+  private static void triggerVerificationIfNotRunning(String triggerType) {
+    synchronized (verificationLock) {
+      if (!isVerifying) {
+        isVerifying = true;
+        try {
+          verifyEntities();
+          if ("operation-based".equals(triggerType)) {
+            addOperationCounter = 0;
+          }
+        } finally {
+          isVerifying = false;
+        }
+      }
+    }
+  }
+
   public static void addEntity(Entity entity, String entityName, String levelName) {
 
     // Store entities per type and world.
@@ -245,6 +265,11 @@ public class CoreEntityManager {
     entityChunkMap.put(entityChunkKey, true);
 
     log.debug("[Joined] Entity {} ({}) joined {}.", entityName, entity, levelName);
+
+    // Trigger verification if we reach the threshold of add operations.
+    if (++addOperationCounter >= VERIFICATION_ADD_OPERATIONS_THRESHOLD) {
+      triggerVerificationIfNotRunning("operation-based");
+    }
   }
 
   public static void removeEntity(Entity entity, String entityName, String levelName) {
@@ -253,6 +278,9 @@ public class CoreEntityManager {
     Set<Entity> entities = entityMap.get(getEntityMapKey(levelName, entityName));
     if (entities != null) {
       entities.remove(entity);
+      if (entities.isEmpty()) {
+        entityMap.remove(getEntityMapKey(levelName, entityName));
+      }
     }
 
     // Remove entity from per chunk and world map.
@@ -260,18 +288,27 @@ public class CoreEntityManager {
         entityMapPerChunk.get(getEntityChunkKey(levelName, entity.blockPosition()));
     if (entitiesPerChunk != null) {
       entitiesPerChunk.remove(entity);
+      if (entitiesPerChunk.isEmpty()) {
+        entityMapPerChunk.remove(getEntityChunkKey(levelName, entity.blockPosition()));
+      }
     }
 
     // Remove entity from per world map
     Set<Entity> entitiesPerWorld = entityMapPerWorld.get(levelName);
     if (entitiesPerWorld != null) {
       entitiesPerWorld.remove(entity);
+      if (entitiesPerWorld.isEmpty()) {
+        entityMapPerWorld.remove(levelName);
+      }
     }
 
     // Remove entity from global map
-    Set<Entity> entitiesGlobal = entityMapGlobal.get(levelName);
+    Set<Entity> entitiesGlobal = entityMapGlobal.get(entityName);
     if (entitiesGlobal != null) {
       entitiesGlobal.remove(entity);
+      if (entitiesGlobal.isEmpty()) {
+        entityMapGlobal.remove(entityName);
+      }
     }
 
     // Entity chunk map will not be updated here, because we want to keep the chunk in the map to
@@ -341,23 +378,19 @@ public class CoreEntityManager {
   }
 
   private static void verifyEntities() {
-    int removedEntries = 0;
-    int removedChunkEntries = 0;
-    int removedWorldEntries = 0;
-    int removedGlobalEntries = 0;
-
     // Verify Entities in overall overview
-    removedEntries += removeDiscardedEntities(entityMap);
+    int removedEntries = removeDiscardedEntities(entityMap);
 
     // Verify Entities from chunk specific overview
-    removedChunkEntries += removeDiscardedEntities(entityMapPerChunk);
+    int removedChunkEntries = removeDiscardedEntities(entityMapPerChunk);
 
     // Verify Entities from world specific overview
-    removedWorldEntries += removeDiscardedEntities(entityMapPerWorld);
+    int removedWorldEntries = removeDiscardedEntities(entityMapPerWorld);
 
     // Verify Entities from global overview
-    removedGlobalEntries += removeDiscardedEntities(entityMapGlobal);
+    int removedGlobalEntries = removeDiscardedEntities(entityMapGlobal);
 
+    // Log removed entities
     if (removedEntries > 0
         || removedChunkEntries > 0
         || removedWorldEntries > 0
@@ -374,12 +407,17 @@ public class CoreEntityManager {
 
   private static int removeDiscardedEntities(ConcurrentMap<String, Set<Entity>> entityMapToCheck) {
     int removedEntries = 0;
+    int removedEmptySets = 0;
     if (entityMapToCheck == null || entityMapToCheck.isEmpty()) {
       return removedEntries;
     }
 
-    // Remove entities which are no longer valid like removed entities.
-    for (Set<Entity> entities : entityMapToCheck.values()) {
+    // Remove entities which are no longer valid like removed entities and clean up empty sets
+    Iterator<Map.Entry<String, Set<Entity>>> mapIterator = entityMapToCheck.entrySet().iterator();
+    while (mapIterator.hasNext()) {
+      Map.Entry<String, Set<Entity>> entry = mapIterator.next();
+      Set<Entity> entities = entry.getValue();
+
       Iterator<Entity> entityIterator = entities.iterator();
       while (entityIterator.hasNext()) {
         // Check if the entity is still valid.
@@ -389,7 +427,19 @@ public class CoreEntityManager {
           removedEntries++;
         }
       }
+
+      // Remove empty sets to prevent memory leaks
+      if (entities.isEmpty()) {
+        mapIterator.remove();
+        removedEmptySets++;
+      }
     }
+
+    // Log empty sets removal for debugging
+    if (removedEmptySets > 0) {
+      log.debug("[Entity Manager] Cleaned up {} empty entity sets", removedEmptySets);
+    }
+
     return removedEntries;
   }
 
