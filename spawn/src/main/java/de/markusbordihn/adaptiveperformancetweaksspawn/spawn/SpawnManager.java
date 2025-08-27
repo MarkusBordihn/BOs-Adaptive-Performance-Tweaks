@@ -1,8 +1,8 @@
 /*
  * Copyright 2022 Markus Bordihn
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
@@ -10,8 +10,8 @@
  * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityEvent;
@@ -322,6 +323,25 @@ public class SpawnManager {
       return;
     }
 
+    // Check if this is a spawn egg spawn and if bypass is enabled.
+    if (Boolean.TRUE.equals(COMMON.spawnEggBypassLimitations.get())
+        && event instanceof FinalizeSpawn finalizeSpawnEvent) {
+      try {
+        MobSpawnType spawnType = finalizeSpawnEvent.getSpawnType();
+        if (spawnType == MobSpawnType.SPAWN_EGG) {
+          log.debug("[Spawn Egg] Allow spawn egg usage for {} in {}", entity, levelName);
+          lastAllowedSpawnEntity = entity;
+          return;
+        }
+      } catch (Exception e) {
+        log.debug(
+            "[Spawn Egg Detection] Could not determine spawn type for {} in {}: {}",
+            entity,
+            levelName,
+            e.getMessage());
+      }
+    }
+
     // Entity instance checks to ignore specific and short living entities like projectiles.
     if (!CoreEntityManager.isRelevantEntity(entity, entityName)) {
       return;
@@ -378,10 +398,11 @@ public class SpawnManager {
     if (spawnLimitationMaxMobsPerServer > 0
         && numberOfEntities >= spawnLimitationMaxMobsPerServer) {
       log.debug(
-          "[Spawn Limitations Server: {}] Blocked {} event for {} in {}.",
-          numberOfEntities,
+          "[Spawn Limitations Server] Blocked {} event for {} with {} entities of max {} in {}.",
           eventType,
           entity,
+          numberOfEntities,
+          spawnLimitationMaxMobsPerServer,
           levelName);
       cancelSpawnEvent(event);
       return;
@@ -393,10 +414,11 @@ public class SpawnManager {
     if (spawnLimitationMaxMobsPerWorld > 0
         && numberOfEntitiesPerWorld >= spawnLimitationMaxMobsPerWorld) {
       log.debug(
-          "[Spawn Limitations World: {}] Blocked {} event for {} in {}.",
-          numberOfEntitiesPerWorld,
+          "[Spawn Limitations World] Blocked {} event for {} with {} entities of max {} in {}.",
           eventType,
           entity,
+          numberOfEntitiesPerWorld,
+          spawnLimitationMaxMobsPerWorld,
           levelName);
       cancelSpawnEvent(event);
       return;

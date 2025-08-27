@@ -62,7 +62,7 @@ public class ItemsCommand extends CustomCommand {
 
   public int runOptimize(CommandContext<CommandSourceStack> context) {
     sendFeedback(context, "Running manual Item Optimization ...");
-    int numberOfRemovedItems = ItemEntityManager.optimizeWorldItems();
+    int numberOfRemovedItems = ItemEntityManager.optimizeItems();
     if (numberOfRemovedItems > 0) {
       sendFeedback(
           context, String.format("Removed items %s from all worlds!", numberOfRemovedItems));

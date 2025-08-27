@@ -5,6 +5,13 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [GitHub History][history] instead.
 
+### v11.4.0
+
+- Fixed #83 by implementing additional checks and cleanups to avoid memory leaks.
+- Fixed #77 by adding config option to ignore spawns from spawn eggs.
+- Fixed #74 by adding [Exotic Birds][exotic_birds] configuration to the spawn module.
+- Smaller code optimizations and performance improvements.
+
 ### v11.3.0
 
 - Fixed #72 and #75 by moving the `removeWhenFarAway` check to a later stage to exclude the check
@@ -290,6 +297,8 @@ As always make sure to create regular backups of your world!
 [create]: https://www.curseforge.com/minecraft/mc-mods/create
 
 [dynamic-view]: https://www.curseforge.com/minecraft/mc-mods/dynamic-view/
+
+[exotic_birds]: https://www.curseforge.com/minecraft/mc-mods/exotic-birds
 
 [farsight]: https://www.curseforge.com/minecraft/mc-mods/farsight
 
