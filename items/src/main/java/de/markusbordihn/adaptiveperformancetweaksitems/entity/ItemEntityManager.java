@@ -71,7 +71,6 @@ public class ItemEntityManager {
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
-
     // Reset cache to avoid side effects.
     itemTypeEntityMap = new ConcurrentHashMap<>();
     itemWorldEntityMap = new ConcurrentHashMap<>();
@@ -112,6 +111,7 @@ public class ItemEntityManager {
                 WarnMessages.conflictingFeaturesModWarning(
                     CoreConstants.GET_IT_TOGETHER_NAME, "clusters items in a specific radius"));
       }
+
     } else {
       log.info("Item Optimization is disabled!");
     }
@@ -137,7 +137,7 @@ public class ItemEntityManager {
   public static void handleOptimizationEvent(OptimizationEvent event) {
     if (needsOptimization) {
       if (Boolean.TRUE.equals(COMMON.optimizeItems.get())) {
-        optimizeWorldItems();
+        optimizeItems();
       }
       needsOptimization = false;
     }
@@ -223,8 +223,7 @@ public class ItemEntityManager {
           boolean existingItemCanSeeSky = level.canSeeSky(existingItemEntity.blockPosition());
           ItemStack existingItemStack = existingItemEntity.getItem();
 
-          // Check if they are in an equal position, if both could see the sky, ignore the
-          // y values.
+          // Check if they are in an equal position, if both could see the sky, ignore the y values.
           if (itemEntity.getId() != existingItemEntity.getId()
               && existingItemEntity.isAlive()
               && ItemEntity.areMergable(itemStack, existingItemStack)
@@ -249,24 +248,18 @@ public class ItemEntityManager {
     Set<ItemEntity> itemWorldEntities = itemWorldEntityMap.get(levelName);
     itemWorldEntities.add(itemEntity);
 
-    // Optimized items per world regardless of type if they exceeding
-    // COMMON.maxNumberOfItems.get()
-    // limit.
+    // Optimized items per world regardless of type if they're exceeding maxNumberOfItems limit.
     if (Boolean.TRUE.equals(COMMON.optimizeItems.get())) {
       int numberOfItemWorldEntities = itemWorldEntities.size();
       if (numberOfItemWorldEntities > COMMON.maxNumberOfItems.get()) {
-        ItemEntity firsItemWorldEntity = itemWorldEntities.iterator().next();
+        ItemEntity firstItemWorldEntity = itemWorldEntities.iterator().next();
         log.debug(
             "[Item World Limit {} exceeded {}] Removing item {}",
             COMMON.maxNumberOfItems.get(),
             numberOfItemWorldEntities,
-            firsItemWorldEntity);
-        firsItemWorldEntity.remove(RemovalReason.DISCARDED);
-        itemWorldEntities.remove(firsItemWorldEntity);
-        Set<ItemEntity> itemEntities = itemTypeEntityMap.get('[' + levelName + ']' + itemName);
-        if (itemEntities != null) {
-          itemEntities.remove(firsItemWorldEntity);
-        }
+            firstItemWorldEntity);
+        // Remove item - this will trigger EntityLeaveWorldEvent which handles map cleanup
+        firstItemWorldEntity.remove(RemovalReason.DISCARDED);
       }
     }
 
@@ -284,8 +277,6 @@ public class ItemEntityManager {
             numberOfItemEntities,
             firstItemEntity);
         firstItemEntity.remove(RemovalReason.DISCARDED);
-        itemTypeEntities.remove(firstItemEntity);
-        itemWorldEntities.remove(firstItemEntity);
       }
     }
 
@@ -336,16 +327,26 @@ public class ItemEntityManager {
     // Get world name and start processing of data
     String levelName = level.dimension().location().toString();
 
-    // Remove item from world map.
+    // Remove item from world map and clean up empty sets
     Set<ItemEntity> itemWorldEntities = itemWorldEntityMap.get(levelName);
     if (itemWorldEntities != null) {
       itemWorldEntities.remove(itemEntity);
+      // Remove empty set to prevent memory leaks
+      if (itemWorldEntities.isEmpty()) {
+        itemWorldEntityMap.remove(levelName);
+      }
     }
 
-    // Remove item from world type map.
-    Set<ItemEntity> itemTypeEntities = itemTypeEntityMap.get('[' + levelName + ']' + itemName);
+    // Remove item from world type map and clean up empty sets
+    String itemTypeKey = '[' + levelName + ']' + itemName;
+    Set<ItemEntity> itemTypeEntities = itemTypeEntityMap.get(itemTypeKey);
     if (itemTypeEntities != null) {
       itemTypeEntities.remove(itemEntity);
+      // Remove empty set to prevent memory leaks
+      if (itemTypeEntities.isEmpty()) {
+        itemTypeEntityMap.remove(itemTypeKey);
+      }
+
       if (log.isDebugEnabled()) {
         log.debug(
             "[Item leaved {}] {} {}.",
@@ -362,7 +363,7 @@ public class ItemEntityManager {
     }
   }
 
-  public static int optimizeWorldItems() {
+  public static int optimizeItems() {
     log.debug("[Optimize Items] Received request to optimize items ...");
     int numberOfRemovedItems = 0;
 
@@ -375,14 +376,20 @@ public class ItemEntityManager {
             itemWorldEntitiesValues.stream()
                 .sorted(Comparator.comparing(ItemEntity::getId))
                 .toList();
+
+        List<ItemEntity> itemsToRemove = new ArrayList<>();
         for (int i = 0;
             i < sortedItemWorldEntitiesValues.size() - maxNumberOfOptimizedWorldItems;
             i++) {
           ItemEntity itemEntity = sortedItemWorldEntitiesValues.get(i);
           if (itemEntity.isAddedToWorld()) {
-            itemEntity.remove(RemovalReason.DISCARDED);
-            numberOfRemovedItems++;
+            itemsToRemove.add(itemEntity);
           }
+        }
+
+        for (ItemEntity itemEntity : itemsToRemove) {
+          itemEntity.remove(RemovalReason.DISCARDED);
+          numberOfRemovedItems++;
         }
       }
     }
@@ -397,14 +404,20 @@ public class ItemEntityManager {
             itemTypeEntitiesValues.stream()
                 .sorted(Comparator.comparing(ItemEntity::getId))
                 .toList();
+
+        List<ItemEntity> itemsToRemove = new ArrayList<>();
         for (int i = 0;
             i < sortedItemTypeEntitiesValues.size() - maxNumberOfOptimizedTypeItems;
             i++) {
           ItemEntity itemEntity = sortedItemTypeEntitiesValues.get(i);
           if (itemEntity.isAddedToWorld()) {
-            itemEntity.remove(RemovalReason.DISCARDED);
-            numberOfRemovedItems++;
+            itemsToRemove.add(itemEntity);
           }
+        }
+
+        for (ItemEntity itemEntity : itemsToRemove) {
+          itemEntity.remove(RemovalReason.DISCARDED);
+          numberOfRemovedItems++;
         }
       }
     }
@@ -423,9 +436,15 @@ public class ItemEntityManager {
 
   public static void verifyEntities() {
     int removedEntries = 0;
+    int removedEmptySets = 0;
 
-    // Verify Entities in overall overview
-    for (Set<ItemEntity> entities : itemTypeEntityMap.values()) {
+    // Verify Entities in overall overview and remove empty sets
+    Iterator<Map.Entry<String, Set<ItemEntity>>> typeMapIterator =
+        itemTypeEntityMap.entrySet().iterator();
+    while (typeMapIterator.hasNext()) {
+      Map.Entry<String, Set<ItemEntity>> entry = typeMapIterator.next();
+      Set<ItemEntity> entities = entry.getValue();
+
       Iterator<ItemEntity> entityIterator = entities.iterator();
       while (entityIterator.hasNext()) {
         Entity entity = entityIterator.next();
@@ -434,10 +453,21 @@ public class ItemEntityManager {
           removedEntries++;
         }
       }
+
+      // Remove empty sets to prevent memory leaks
+      if (entities.isEmpty()) {
+        typeMapIterator.remove();
+        removedEmptySets++;
+      }
     }
 
-    // Verify Entities from world specific overview
-    for (Set<ItemEntity> entities : itemWorldEntityMap.values()) {
+    // Verify Entities from world specific overview and remove empty sets
+    Iterator<Map.Entry<String, Set<ItemEntity>>> worldMapIterator =
+        itemWorldEntityMap.entrySet().iterator();
+    while (worldMapIterator.hasNext()) {
+      Map.Entry<String, Set<ItemEntity>> entry = worldMapIterator.next();
+      Set<ItemEntity> entities = entry.getValue();
+
       Iterator<ItemEntity> entityIterator = entities.iterator();
       while (entityIterator.hasNext()) {
         Entity entity = entityIterator.next();
@@ -446,10 +476,17 @@ public class ItemEntityManager {
           removedEntries++;
         }
       }
+
+      // Remove empty sets to prevent memory leaks
+      if (entities.isEmpty()) {
+        worldMapIterator.remove();
+        removedEmptySets++;
+      }
     }
 
-    if (removedEntries > 0) {
-      log.debug("[Verification] Removed {} entries", removedEntries);
+    if (removedEntries > 0 || removedEmptySets > 0) {
+      log.debug(
+          "[Verification] Removed {} entries and {} empty sets", removedEntries, removedEmptySets);
     }
   }
 }
