@@ -1,74 +1,81 @@
-[![Adaptive Performance Tweaks Downloads](http://cf.way2muchnoise.eu/full_563963_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player)
-[![Adaptive Performance Tweaks Versions](http://cf.way2muchnoise.eu/versions/Minecraft_563963_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player)
+# 🛡️ Adaptive Performance Tweaks: Player
 
-# Adaptive Performance Tweaks: Player
+[![APTweaks: Player Versions](http://cf.way2muchnoise.eu/versions/Minecraft_563963_all.svg)][mod_page]
+
+[![Download on CurseForge](http://cf.way2muchnoise.eu/title/563963.svg)][mod_page]
+[![CurseForge Downloads](http://cf.way2muchnoise.eu/full_563963_downloads.svg)][mod_page]
+
+[![Download on Modrinth](https://img.shields.io/badge/dynamic/json?labelColor=black&color=grey&label=&query=title&url=https://api.modrinth.com/v2/project/jr5nzfKv&style=flat&logo=modrinth)][modrinth_page]
+[![Modrinth Downloads](https://img.shields.io/badge/dynamic/json?labelColor=black&color=grey&label=&suffix=%20downloads&query=downloads&url=https://api.modrinth.com/v2/project/jr5nzfKv&style=flat&logo=modrinth)][modrinth_page]
+
+[![Report an Issue](https://img.shields.io/badge/Report%20Issue%20%2F%20Bug%20%2F%20Crash-grey?style=flat&logo=github)][issues]
+[![Open Issues](https://img.shields.io/github/issues/MarkusBordihn/BOs-Adaptive-Performance-Tweaks?style=flat&logo=Github&color=red)][issues_open]
+[![Closed Issues](https://img.shields.io/github/issues-closed/MarkusBordihn/BOs-Adaptive-Performance-Tweaks?style=flat&logo=Github)][issues_closed]
 
 ![Adaptive Performance Tweaks: Player][header]
 
-Adaptive Performance Tweaks (APTweaks) is a collection of Minecraft Forge server-side Mod which
-automatically adjust specific settings on the server to allow a more balanced TPS/FPS.
-The goal of this mod is to allow a smoother experience on a server with several (=> 180) Mods.
+Server-side Forge module that smooths player login and offers optional child/novice player
+protection to reduce early damage spikes.
+Works standalone on the server; clients are optional.
 
-### ✨ Features
+## Status ✅
 
-- Optimize server performance effortlessly with server-side optimization; client installation is
-  entirely optional.
-- Customize your experience by selecting the specific optimization modules or features that suit
-  your needs.
-- Achieve compatibility with other mods seamlessly, as our optimization approach avoids core/Mixin
-  modding.
-- Enjoy precise control over optimizations through fine-tuning via the user-friendly config files.
-- Dive deeper into the intricacies of your server's performance with our built-in debug mode,
-  providing comprehensive information about the current state and any applied changes.
+Stable LTS (Long‑Term Support, Classic Forge).
+Actively maintained and recommended for new Forge modpacks.
+After 3+ years of development, this Classic line is highly optimized and battle‑tested.
+Critical fixes and compatibility updates will be provided when needed. 🛠️
 
-**⚠️Please make sure to create regular backup of your world in case something goes wrong.**
+If your pack runs fine on Classic, no action is required. 👍
 
-**⚠️Please make sure to create regular backup of your world in case something goes wrong.**
+### Requirements 🧩
 
-## 🛡️Player Login Optimization and Protection
+Requires [Adaptive Performance Tweaks: Core][core_mod]
 
-Sometimes it takes up to 30sec until the player is able to interact with the world after he is
-logged in.
-This mod automatically protects the user for the time between login and to be able to interactive
-with the world to make sure that he is not attacked by mobs during this time.
-Furthermore, other smaller optimization will be done to allow a smoother login process.
+## Features ✨
 
-## 🛡️🐨Child Player Protection
+- Server-side only; clients do not need to install the mod.
+- Pick only the modules you want; highly configurable via config files.
+- No core/mixin patches → broad mod compatibility.
+- Built-in debug info to see what the optimizer is doing.
 
-Playing together with less experience player or child's could be a challenge to find the right
-balance for all players.
+⚠️ Always keep regular backups of your world.
 
-Just add the child player names to the configuration and additional define how much hurt damage
-should be decreased and if any attack damage should be increased for them.
+## Player optimizations 🛡️
 
-This allows a more enjoying the game even if you are playing in hardcore mode or with less
-experience players or child's.
+- Login safety window to protect players until they can interact with the world.
+- Optional child/novice player adjustments: reduce incoming damage and tweak outgoing attack power
+  via config.
 
-### Bundled Modules
+## Bundled modules 📦
 
-If you want to install all modules together use the bundled version:
+Want everything at once? Install the bundled version:
 
-**➡️[Install the bundled version][bundled]**
+➡️ [Install the bundled version][bundled]
 
-## ℹ️ Explore Further Details
+## Learn more 📚
 
-For in-depth information, explore our wiki available
-at https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki.
-Delve into comprehensive documentation to gain a deeper understanding of the nuances and
-functionalities of our project.
+- Wiki: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki
+-
 
-## 🚩 Report Issues and Share Feature Requests
+Troubleshooting: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki/Troubleshooting
 
-Encountering any issues? Navigate to our troubleshooting guide
-at https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki/Troubleshooting for
-comprehensive assistance.
+- Issues: Report via GitHub Issues or the issue/comment feature on CurseForge/Modrinth where you got
+  the mod.
 
-To report issues or propose new features, utilize the Issues link above.
-Your feedback is invaluable, and we appreciate your contribution to enhancing the performance and
-functionality of
-our project.
-Thank you for helping us make it even better!
+[header]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki/images/aptweaks-header-only.png
 
-[header]: ../assets/aptweaks-header.png
+[eco-stack-manager]: https://www.curseforge.com/minecraft/mc-mods/eco-stack-manager
 
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
+
+[mod_page]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-player
+
+[modrinth_page]: https://modrinth.com/mod/jr5nzfKv
+
+[issues]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues
+
+[issues_open]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues
+
+[issues_closed]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues?q=is%3Aissue+is%3Aclosed
+
+[core_mod]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core
