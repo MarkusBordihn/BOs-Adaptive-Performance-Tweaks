@@ -1,58 +1,81 @@
-[![Adaptive Performance Tweaks Downloads](http://cf.way2muchnoise.eu/full_561137_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules)
-[![Adaptive Performance Tweaks Versions](http://cf.way2muchnoise.eu/versions/Minecraft_561137_all.svg)](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules)
+# 🎛️ Adaptive Performance Tweaks: Game Rules
 
-# Adaptive Performance Tweaks: Game Rules
+[![APTweaks: Game Rules Versions](http://cf.way2muchnoise.eu/versions/Minecraft_561137_all.svg)][mod_page]
+
+[![Download on CurseForge](http://cf.way2muchnoise.eu/title/561137.svg)][mod_page]
+[![CurseForge Downloads](http://cf.way2muchnoise.eu/full_561137_downloads.svg)][mod_page]
+
+[![Download on Modrinth](https://img.shields.io/badge/dynamic/json?labelColor=black&color=grey&label=&query=title&url=https://api.modrinth.com/v2/project/Rd89yO7d&style=flat&logo=modrinth)][modrinth_page]
+[![Modrinth Downloads](https://img.shields.io/badge/dynamic/json?labelColor=black&color=grey&label=&suffix=%20downloads&query=downloads&url=https://api.modrinth.com/v2/project/Rd89yO7d&style=flat&logo=modrinth)][modrinth_page]
+
+[![Report an Issue](https://img.shields.io/badge/Report%20Issue%20%2F%20Bug%20%2F%20Crash-grey?style=flat&logo=github)][issues]
+[![Open Issues](https://img.shields.io/github/issues/MarkusBordihn/BOs-Adaptive-Performance-Tweaks?style=flat&logo=Github&color=red)][issues_open]
+[![Closed Issues](https://img.shields.io/github/issues-closed/MarkusBordihn/BOs-Adaptive-Performance-Tweaks?style=flat&logo=Github)][issues_closed]
 
 ![Adaptive Performance Tweaks: Game Rules][header]
 
-Adaptive Performance Tweaks is a collection of Minecraft Forge server-side Mod which automatically
-adjust specific settings on the server to allow a more balanced TPS/FPS.
-The goal of this mod is to allow a smoother experience on a server with several (=> 180) Mods.
+Server-side Forge module that keeps TPS/FPS stable by dynamically adjusting selected game rules
+based on server load.
+Works standalone on the server; clients are optional.
 
-### ✨ Features
+## Status ✅
 
-- Optimize server performance effortlessly with server-side optimization; client installation is
-  entirely optional.
-- Customize your experience by selecting the specific optimization modules or features that suit
-  your needs.
-- Achieve compatibility with other mods seamlessly, as our optimization approach avoids core/Mixin
-  modding.
-- Enjoy precise control over optimizations through fine-tuning via the user-friendly config files.
-- Dive deeper into the intricacies of your server's performance with our built-in debug mode,
-  providing comprehensive information about the current state and any applied changes.
+Stable LTS (Long‑Term Support, Classic Forge).
+Actively maintained and recommended for new Forge modpacks.
+After 3+ years of development, this Classic line is highly optimized and battle‑tested.
+Critical fixes and compatibility updates will be provided when needed. 🛠️
 
-**⚠️Please make sure to create regular backup of your world in case something goes wrong.**
+If your pack runs fine on Classic Forge, no action is required. 👍
 
-## 🔀 Game Rule Optimizations
+## Requirements 🧩
 
-Automatically adjust the random tick speed, entity cramming, raids, patrol, trader and insomnia
-based on the current server load.
+Requires [Adaptive Performance Tweaks: Core][core_mod]
 
-### Bundled Modules
+## Features ✨
 
-If you want to install all modules together use the bundled version:
+- Server-side only; clients do not need to install the mod.
+- Pick only the modules you want; highly configurable via config files.
+- No core/mixin patches → broad mod compatibility.
+- Built-in debug info to see what the optimizer is doing.
 
-**➡️[Install the bundled version][bundled]**
+⚠️ Always keep regular backups of your world.
 
-## ℹ️ Explore Further Details
+## Game rule optimizations 🎛️
 
-For in-depth information, explore our wiki available
-at https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki.
-Delve into comprehensive documentation to gain a deeper understanding of the nuances and
-functionalities of our project.
+- Adjusts randomTickSpeed dynamically to the current server load.
+- Tunes entity cramming to reduce lag spikes.
+- Controls raids, patrols, wandering trader, and insomnia under high load.
 
-## 🚩 Report Issues and Share Feature Requests
+## Bundled modules 📦
 
-Encountering any issues? Navigate to our troubleshooting guide
-at https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki/Troubleshooting for
-comprehensive assistance.
+Want everything at once? Install the bundled version:
 
-To report issues or propose new features, utilize the Issues link above.
-Your feedback is invaluable, and we appreciate your contribution to enhancing the performance and
-functionality of
-our project.
-Thank you for helping us make it even better!
+➡️ [Install the bundled version][bundled]
 
-[header]: ../assets/aptweaks-header.png
+## Learn more 📚
+
+- Wiki: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki
+-
+
+Troubleshooting: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki/Troubleshooting
+
+- Issues: Report via GitHub Issues or the issue/comment feature on CurseForge/Modrinth where you got
+  the mod.
+
+[header]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki/images/aptweaks-header-only.png
+
+[eco-stack-manager]: https://www.curseforge.com/minecraft/mc-mods/eco-stack-manager
 
 [bundled]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
+
+[mod_page]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-gamerules
+
+[modrinth_page]: https://modrinth.com/mod/Rd89yO7d
+
+[issues]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues
+
+[issues_open]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues
+
+[issues_closed]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues?q=is%3Aissue+is%3Aclosed
+
+[core_mod]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks-core

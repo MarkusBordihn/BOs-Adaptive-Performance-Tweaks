@@ -122,6 +122,11 @@ public final class CommonConfig {
           builder
               .comment("Enable/Disable general spawn limitations.")
               .define("spawnLimitationEnabled", true);
+      spawnEggBypassLimitations =
+          builder
+              .comment(
+                  "Enable/Disable bypassing spawn limitations when using spawn eggs. When enabled, spawn eggs will bypass player-based spawn limitations.")
+              .define("spawnEggBypassLimitations", true);
       spawnLimitationLimiter =
           builder
               .comment(
@@ -142,15 +147,6 @@ public final class CommonConfig {
               .comment(
                   "Defines the max. number of entities of a specific type, which could spawn within the server. Use 0 to disable this optimization.")
               .defineInRange("spawnLimitationMaxMobsPerServer", 512, 0, 1024);
-      builder.pop();
-
-      builder.push("Spawn Egg Configuration");
-      spawnEggBypassLimitations =
-          builder
-              .comment(
-                  "Enable/Disable bypassing spawn limitations when using spawn eggs. "
-                      + "When enabled, spawn eggs will bypass player-based spawn limitations.")
-              .define("spawnEggBypassLimitations", true);
       builder.pop();
     }
   }

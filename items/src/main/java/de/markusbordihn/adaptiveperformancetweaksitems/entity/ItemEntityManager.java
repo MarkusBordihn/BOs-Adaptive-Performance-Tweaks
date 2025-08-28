@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -47,6 +48,7 @@ import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -258,8 +260,9 @@ public class ItemEntityManager {
             COMMON.maxNumberOfItems.get(),
             numberOfItemWorldEntities,
             firstItemWorldEntity);
-        // Remove item - this will trigger EntityLeaveWorldEvent which handles map cleanup
         firstItemWorldEntity.remove(RemovalReason.DISCARDED);
+        itemWorldEntities.remove(firstItemWorldEntity);
+        itemTypeEntities.remove(firstItemWorldEntity);
       }
     }
 
@@ -277,6 +280,8 @@ public class ItemEntityManager {
             numberOfItemEntities,
             firstItemEntity);
         firstItemEntity.remove(RemovalReason.DISCARDED);
+        itemTypeEntities.remove(firstItemEntity);
+        itemWorldEntities.remove(firstItemEntity);
       }
     }
 
@@ -331,7 +336,6 @@ public class ItemEntityManager {
     Set<ItemEntity> itemWorldEntities = itemWorldEntityMap.get(levelName);
     if (itemWorldEntities != null) {
       itemWorldEntities.remove(itemEntity);
-      // Remove empty set to prevent memory leaks
       if (itemWorldEntities.isEmpty()) {
         itemWorldEntityMap.remove(levelName);
       }
@@ -342,7 +346,6 @@ public class ItemEntityManager {
     Set<ItemEntity> itemTypeEntities = itemTypeEntityMap.get(itemTypeKey);
     if (itemTypeEntities != null) {
       itemTypeEntities.remove(itemEntity);
-      // Remove empty set to prevent memory leaks
       if (itemTypeEntities.isEmpty()) {
         itemTypeEntityMap.remove(itemTypeKey);
       }
@@ -387,8 +390,23 @@ public class ItemEntityManager {
           }
         }
 
+        // Remove items and immediately clean up maps
         for (ItemEntity itemEntity : itemsToRemove) {
           itemEntity.remove(RemovalReason.DISCARDED);
+          itemWorldEntitiesValues.remove(itemEntity);
+
+          // Also remove from type map - need to find the correct type key
+          ResourceLocation itemRegistryName =
+              ForgeRegistries.ITEMS.getKey(itemEntity.getItem().getItem());
+          String itemName =
+              itemRegistryName != null ? itemRegistryName.toString() : itemEntity.getEncodeId();
+          String levelName = itemWorldEntities.getKey();
+          String itemTypeKey = '[' + levelName + ']' + itemName;
+          Set<ItemEntity> typeEntities = itemTypeEntityMap.get(itemTypeKey);
+          if (typeEntities != null) {
+            typeEntities.remove(itemEntity);
+          }
+
           numberOfRemovedItems++;
         }
       }
@@ -415,8 +433,19 @@ public class ItemEntityManager {
           }
         }
 
+        // Remove items and immediately clean up maps
         for (ItemEntity itemEntity : itemsToRemove) {
           itemEntity.remove(RemovalReason.DISCARDED);
+          itemTypeEntitiesValues.remove(itemEntity);
+
+          // Also remove from world map - extract world name from type key
+          String typeKey = itemTypeEntities.getKey();
+          String levelName = typeKey.substring(1, typeKey.indexOf(']'));
+          Set<ItemEntity> worldEntities = itemWorldEntityMap.get(levelName);
+          if (worldEntities != null) {
+            worldEntities.remove(itemEntity);
+          }
+
           numberOfRemovedItems++;
         }
       }
