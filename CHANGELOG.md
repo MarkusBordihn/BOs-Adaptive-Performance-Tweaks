@@ -5,6 +5,11 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [GitHub History][history] instead.
 
+### v11.5.0
+
+- Fixed timing issue with item module which could cause issues with item cleanup.
+- Adjusted README.md files.
+
 ### v11.4.0
 
 - Fixed #83 by implementing additional checks and cleanups to avoid memory leaks.
