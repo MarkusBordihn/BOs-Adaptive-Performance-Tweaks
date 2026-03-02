@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -193,7 +192,7 @@ public class ItemEntityManager {
 
     // Check if items could be merged with other items
     String itemTypeEntityMapKey = '[' + levelName + ']' + itemName;
-    itemTypeEntityMap.computeIfAbsent(itemTypeEntityMapKey, k -> new LinkedHashSet<>());
+    itemTypeEntityMap.computeIfAbsent(itemTypeEntityMapKey, k -> ConcurrentHashMap.newKeySet());
     Set<ItemEntity> itemTypeEntities = itemTypeEntityMap.get(itemTypeEntityMapKey);
     if (Boolean.TRUE.equals(COMMON.optimizeItems.get())) {
       ItemStack itemStack = itemEntity.getItem();
@@ -246,7 +245,7 @@ public class ItemEntityManager {
     }
 
     // Storing items per world regardless of item type
-    itemWorldEntityMap.computeIfAbsent(levelName, k -> new LinkedHashSet<>());
+    itemWorldEntityMap.computeIfAbsent(levelName, k -> ConcurrentHashMap.newKeySet());
     Set<ItemEntity> itemWorldEntities = itemWorldEntityMap.get(levelName);
     itemWorldEntities.add(itemEntity);
 
@@ -303,11 +302,6 @@ public class ItemEntityManager {
 
     Entity entity = event.getEntity();
     if (!(entity instanceof ItemEntity itemEntity)) {
-      return;
-    }
-
-    // Make sure the Item is relevant for our use case.
-    if (!CoreItemEntityManager.isRelevantItemEntity(itemEntity)) {
       return;
     }
 
@@ -477,7 +471,7 @@ public class ItemEntityManager {
       Iterator<ItemEntity> entityIterator = entities.iterator();
       while (entityIterator.hasNext()) {
         Entity entity = entityIterator.next();
-        if (entity != null && entity.isRemoved()) {
+        if (entity == null || entity.isRemoved() || !entity.isAddedToWorld()) {
           entityIterator.remove();
           removedEntries++;
         }
@@ -500,7 +494,7 @@ public class ItemEntityManager {
       Iterator<ItemEntity> entityIterator = entities.iterator();
       while (entityIterator.hasNext()) {
         Entity entity = entityIterator.next();
-        if (entity != null && entity.isRemoved()) {
+        if (entity == null || entity.isRemoved() || !entity.isAddedToWorld()) {
           entityIterator.remove();
           removedEntries++;
         }
