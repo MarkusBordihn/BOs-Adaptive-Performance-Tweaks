@@ -92,10 +92,11 @@ public class SpawnManager {
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
-    // Reset start delay
+    // Reset start delay and stale references
     serverStarted = false;
     serverStartedDelay = false;
     serverStartedDelayTicks = 0;
+    lastAllowedSpawnEntity = null;
 
     // Reset cache
     allowList = new HashSet<>(COMMON.spawnAllowList.get());

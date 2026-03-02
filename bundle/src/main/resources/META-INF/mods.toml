@@ -43,28 +43,28 @@ side = "BOTH"
 [[dependencies.adaptive_performance_tweaks]]
 modId = "adaptive_performance_tweaks_core"
 mandatory = true
-versionRange = "[11.0.0,12.0.0)"
+versionRange = "[11.6.0,12.0.0)"
 ordering = "NONE"
 side = "SERVER"
 
 [[dependencies.adaptive_performance_tweaks]]
 modId = "adaptive_performance_tweaks_gamerules"
 mandatory = true
-versionRange = "[11.0.0,12.0.0)"
+versionRange = "[11.6.0,12.0.0)"
 ordering = "NONE"
 side = "SERVER"
 
 [[dependencies.adaptive_performance_tweaks]]
 modId = "adaptive_performance_tweaks_items"
 mandatory = true
-versionRange = "[11.0.0,12.0.0)"
+versionRange = "[11.6.0,12.0.0)"
 ordering = "NONE"
 side = "SERVER"
 
 [[dependencies.adaptive_performance_tweaks]]
 modId = "adaptive_performance_tweaks_player"
 mandatory = true
-versionRange = "[11.0.0,12.0.0)"
+versionRange = "[11.6.0,12.0.0)"
 ordering = "NONE"
 side = "SERVER"
 
@@ -72,6 +72,6 @@ side = "SERVER"
 modId = "adaptive_performance_tweaks_spawn"
 
 mandatory = true
-versionRange = "[11.0.0,12.0.0)"
+versionRange = "[11.6.0,12.0.0)"
 ordering = "NONE"
 side = "SERVER"

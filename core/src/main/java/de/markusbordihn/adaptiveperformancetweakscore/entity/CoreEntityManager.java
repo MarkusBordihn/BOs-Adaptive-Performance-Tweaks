@@ -89,15 +89,18 @@ public class CoreEntityManager {
   private static ConcurrentHashMap<String, Set<Entity>> entityMapPerWorld =
       new ConcurrentHashMap<>();
   private static ConcurrentHashMap<String, Set<Entity>> entityMapGlobal = new ConcurrentHashMap<>();
+  private static ConcurrentHashMap<Entity, String> entityChunkKeyMap = new ConcurrentHashMap<>();
 
   protected CoreEntityManager() {}
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
+    entityChunkMap.clear();
     entityMap = new ConcurrentHashMap<>();
     entityMapPerChunk = new ConcurrentHashMap<>();
     entityMapPerWorld = new ConcurrentHashMap<>();
     entityMapGlobal = new ConcurrentHashMap<>();
+    entityChunkKeyMap = new ConcurrentHashMap<>();
   }
 
   @SubscribeEvent
@@ -176,19 +179,15 @@ public class CoreEntityManager {
 
   @SubscribeEvent(priority = EventPriority.HIGH)
   public static void handleEntityLeaveWorldEvent(EntityLeaveWorldEvent event) {
-    // Ignore client side world.
     Level level = event.getWorld();
     if (level.isClientSide) {
       return;
     }
 
-    // Ignore entities which are handled by other instances or not relevant.
     Entity entity = event.getEntity();
-    if (!isRelevantEntity(entity)) {
+    if (entity == null) {
       return;
     }
-
-    // Skip other checks if unknown entity name.
     String entityName = entity.getEncodeId();
     if (entityName == null) {
       return;
@@ -199,10 +198,8 @@ public class CoreEntityManager {
 
   @SubscribeEvent(priority = EventPriority.HIGH)
   public static void handleLivingDeathEvent(LivingDeathEvent event) {
-
-    // Ignore entities which are handled by other instances or not relevant.
     Entity entity = event.getEntity();
-    if (!isRelevantEntity(entity)) {
+    if (entity == null) {
       return;
     }
 
@@ -245,11 +242,12 @@ public class CoreEntityManager {
             getEntityMapKey(levelName, entityName), key -> ConcurrentHashMap.newKeySet());
     entities.add(entity);
 
-    // Store entities per chunk and world.
+    // Store entities per chunk and world, and remember the chunk key for correct removal later.
     String entityChunkKey = getEntityChunkKey(levelName, entity.blockPosition());
     Set<Entity> entitiesPerChunk =
         entityMapPerChunk.computeIfAbsent(entityChunkKey, key -> ConcurrentHashMap.newKeySet());
     entitiesPerChunk.add(entity);
+    entityChunkKeyMap.put(entity, entityChunkKey);
 
     // Store entities per world.
     Set<Entity> entitiesPerWorld =
@@ -283,13 +281,15 @@ public class CoreEntityManager {
       }
     }
 
-    // Remove entity from per chunk and world map.
-    Set<Entity> entitiesPerChunk =
-        entityMapPerChunk.get(getEntityChunkKey(levelName, entity.blockPosition()));
-    if (entitiesPerChunk != null) {
-      entitiesPerChunk.remove(entity);
-      if (entitiesPerChunk.isEmpty()) {
-        entityMapPerChunk.remove(getEntityChunkKey(levelName, entity.blockPosition()));
+    // Remove entity from per chunk map using the chunk key from join time, not current position.
+    String originalChunkKey = entityChunkKeyMap.remove(entity);
+    if (originalChunkKey != null) {
+      Set<Entity> entitiesPerChunk = entityMapPerChunk.get(originalChunkKey);
+      if (entitiesPerChunk != null) {
+        entitiesPerChunk.remove(entity);
+        if (entitiesPerChunk.isEmpty()) {
+          entityMapPerChunk.remove(originalChunkKey);
+        }
       }
     }
 
@@ -310,9 +310,6 @@ public class CoreEntityManager {
         entityMapGlobal.remove(entityName);
       }
     }
-
-    // Entity chunk map will not be updated here, because we want to keep the chunk in the map to
-    // determine if any mob was spawned in a specific chunk over time.
 
     log.debug("[Left] Entity {} ({}) leaved {}.", entityName, entity, levelName);
   }
@@ -356,11 +353,12 @@ public class CoreEntityManager {
   public static Integer getNumberOfEntitiesInPlayerPositions(
       String levelName, String entityName, List<PlayerPosition> playerPositions) {
     String entityMapKey = getEntityMapKey(levelName, entityName);
-    if (!entityMap.containsKey(entityMapKey)) {
+    Set<Entity> rawSet = entityMap.get(entityMapKey);
+    if (rawSet == null) {
       return 0;
     }
     int counter = 0;
-    Set<Entity> entities = new HashSet<>(entityMap.get(entityMapKey));
+    Set<Entity> entities = new HashSet<>(rawSet);
     for (Entity entity : entities) {
       if (entity != null) {
         for (PlayerPosition playerPosition : playerPositions) {
@@ -422,8 +420,11 @@ public class CoreEntityManager {
       while (entityIterator.hasNext()) {
         // Check if the entity is still valid.
         Entity entity = entityIterator.next();
-        if (entity == null || entity.isRemoved()) {
+        if (entity == null || entity.isRemoved() || !entity.isAddedToWorld()) {
           entityIterator.remove();
+          if (entity != null) {
+            entityChunkKeyMap.remove(entity);
+          }
           removedEntries++;
         }
       }

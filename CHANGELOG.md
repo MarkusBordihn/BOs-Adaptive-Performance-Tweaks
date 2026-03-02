@@ -5,36 +5,49 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [GitHub History][history] instead.
 
-### v11.5.0
+### 11.6.0
+
+- Fixed #83 (follow-up) by removing `isRelevantEntity` gate from entity leave and death event
+  handlers to prevent permanent memory leaks when entity state changes after joining.
+- Fixed per-chunk entity map using wrong chunk key on removal when entities crossed chunk boundaries
+  and added `isAddedToWorld()` fallback check to catch orphaned entities with null `removalReason`.
+- Fixed `ItemEntityManager` and `ExperienceOrbManager` memory leaks: corrected leave handler gates,
+  verification logic, and replaced non-thread-safe `LinkedHashSet` with
+  `ConcurrentHashMap.newKeySet()`.
+- Fixed TOCTOU race condition in `getNumberOfEntitiesInPlayerPositions` that could cause a NPE.
+- Fixed `entityChunkMap` and `lastAllowedSpawnEntity` not being cleared on server start.
+- Added periodic verification for `ExperienceOrbManager` to clean up stale orb references.
+
+### 11.5.0
 
 - Fixed timing issue with item module which could cause issues with item cleanup.
 - Adjusted README.md files.
 
-### v11.4.0
+### 11.4.0
 
 - Fixed #83 by implementing additional checks and cleanups to avoid memory leaks.
 - Fixed #77 by adding config option to ignore spawns from spawn eggs.
 - Fixed #74 by adding [Exotic Birds][exotic_birds] configuration to the spawn module.
 - Smaller code optimizations and performance improvements.
 
-### v11.3.0
+### 11.3.0
 
 - Fixed #72 and #75 by moving the `removeWhenFarAway` check to a later stage to exclude the check
   for the Endergetic Expansion mod.
 - Smaller code optimizations and performance improvements.
 
-### v11.2.0
+### 11.2.0
 
 - Fixed #73 by ignoring corpse entities.
 - Fixed #71 by adding additional checks for the spawn module.
 - Smaller code optimizations and improvements.
 
-### v11.1.0
+### 11.1.0
 
 - Fixed #65 by detecting villager zombie conversion and automatically allowing the conversion.
 - Smaller code optimizations and improvements.
 
-### v11.0.0
+### 11.0.0
 
 - As requested, separated the Mods optimization module into a independent mod
   called [Mods Optimizer][mods-optimizer]
