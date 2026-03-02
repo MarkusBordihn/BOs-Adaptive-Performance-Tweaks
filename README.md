@@ -20,7 +20,7 @@ If you want to pick and choose your optimization mod, take a look at the core pa
 
 **➡️[Install separate modules][core-readme]**
 
-[header]: wiki/images/aptweaks-header.png
+[header]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki/images/aptweaks-header.png
 
 [core-readme]: ./core/README.md
 
