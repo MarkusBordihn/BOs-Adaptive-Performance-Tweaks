@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -47,7 +46,6 @@ import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -218,11 +216,14 @@ public class ItemEntityManager {
         // Compare information with known items.
         Set<ItemEntity> itemEntities = new HashSet<>(itemTypeEntities);
         for (ItemEntity existingItemEntity : itemEntities) {
+          ItemStack existingItemStack = existingItemEntity.getItem();
+          if (existingItemStack == null || existingItemStack.isEmpty()) {
+            continue;
+          }
           int xSub = (int) existingItemEntity.getX();
           int ySub = (int) existingItemEntity.getY();
           int zSub = (int) existingItemEntity.getZ();
           boolean existingItemCanSeeSky = level.canSeeSky(existingItemEntity.blockPosition());
-          ItemStack existingItemStack = existingItemEntity.getItem();
 
           // Check if they are in an equal position, if both could see the sky, ignore the y values.
           if (itemEntity.getId() != existingItemEntity.getId()
@@ -313,16 +314,6 @@ public class ItemEntityManager {
       itemName = itemEntity.getEncodeId();
     }
 
-    // Check if item is allowed to be optimized.
-    if (hasItemsAllowList && !itemsAllowList.contains(itemName)) {
-      return;
-    }
-
-    // Check if item is denied to be optimized.
-    if (hasItemsDenyList && itemsDenyList.contains(itemName)) {
-      return;
-    }
-
     // Get world name and start processing of data
     String levelName = level.dimension().location().toString();
 
@@ -352,11 +343,17 @@ public class ItemEntityManager {
             itemEntity.getDisplayName().getString());
       }
     } else {
-      log.warn(
-          "Item {} {} in {} was not tracked by item entity manager!",
-          itemName,
-          itemEntity.getDisplayName().getString(),
-          levelName);
+      if (itemName.equals("block.minecraft.air") || itemName.equals("minecraft:air")) {
+        log.debug(
+            "[Item left, not tracked] Skipping merged item entity with empty stack: {}",
+            itemEntity);
+      } else {
+        log.warn(
+            "Item {} {} in {} was not tracked by item entity manager!",
+            itemName,
+            itemEntity.getDisplayName().getString(),
+            levelName);
+      }
     }
   }
 
@@ -390,10 +387,10 @@ public class ItemEntityManager {
           itemWorldEntitiesValues.remove(itemEntity);
 
           // Also remove from type map - need to find the correct type key
-          ResourceLocation itemRegistryName =
-              ForgeRegistries.ITEMS.getKey(itemEntity.getItem().getItem());
-          String itemName =
-              itemRegistryName != null ? itemRegistryName.toString() : itemEntity.getEncodeId();
+          String itemName = itemEntity.getItem().getItem().getDescriptionId();
+          if (itemName == null) {
+            itemName = itemEntity.getEncodeId();
+          }
           String levelName = itemWorldEntities.getKey();
           String itemTypeKey = '[' + levelName + ']' + itemName;
           Set<ItemEntity> typeEntities = itemTypeEntityMap.get(itemTypeKey);

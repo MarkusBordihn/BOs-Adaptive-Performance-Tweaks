@@ -91,8 +91,13 @@ public class SpawnManager {
     serverStartedDelay = false;
     serverStartedDelayTicks = 0;
     lastAllowedSpawnEntity = null;
+    lastBlockedSpawnEntity = null;
 
     // Reset cache
+    serverLevelLoadLevel.clear();
+    hasHighServerLoad = false;
+    friendlyChunkCounter = 0;
+    spawnLimiter = 0;
     allowList = new HashSet<>(COMMON.spawnAllowList.get());
     denyList = new HashSet<>(COMMON.spawnDenyList.get());
     ignoreDimensionList = new HashSet<>(COMMON.spawnIgnoreDimensionList.get());
