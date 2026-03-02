@@ -23,7 +23,6 @@ import de.markusbordihn.adaptiveperformancetweaksitems.Constants;
 import de.markusbordihn.adaptiveperformancetweaksitems.config.CommonConfig;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,6 +32,7 @@ import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -46,10 +46,19 @@ public class ExperienceOrbManager {
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static final CommonConfig.Config COMMON = CommonConfig.COMMON;
-
+  private static final short VERIFICATION_TICK = 30 * 20;
   private static Map<String, Set<ExperienceOrb>> experienceOrbEntityMap = new ConcurrentHashMap<>();
+  private static short ticks = 0;
 
   protected ExperienceOrbManager() {}
+
+  @SubscribeEvent
+  public static void handleClientServerTickEvent(TickEvent.ServerTickEvent event) {
+    if (event.phase == TickEvent.Phase.END && ticks++ >= VERIFICATION_TICK) {
+      verifyEntities();
+      ticks = 0;
+    }
+  }
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
@@ -110,7 +119,7 @@ public class ExperienceOrbManager {
     }
 
     // Check if orb should be merged with existing orbs and ignore orb if it has 0 xp.
-    experienceOrbEntityMap.computeIfAbsent(levelName, k -> new LinkedHashSet<>());
+    experienceOrbEntityMap.computeIfAbsent(levelName, k -> ConcurrentHashMap.newKeySet());
     Set<ExperienceOrb> experienceOrbWorldEntities = experienceOrbEntityMap.get(levelName);
     if (Boolean.TRUE.equals(COMMON.optimizeExperienceOrbs.get() && !CoreConstants.CLUMPS_LOADED)
         && !experienceOrbWorldEntities.isEmpty()) {
@@ -196,6 +205,39 @@ public class ExperienceOrbManager {
       if (experienceOrbWorldEntities.isEmpty()) {
         experienceOrbEntityMap.remove(levelName);
       }
+    }
+  }
+
+  private static void verifyEntities() {
+    int removedEntries = 0;
+    int removedEmptySets = 0;
+
+    Iterator<Map.Entry<String, Set<ExperienceOrb>>> mapIterator =
+        experienceOrbEntityMap.entrySet().iterator();
+    while (mapIterator.hasNext()) {
+      Map.Entry<String, Set<ExperienceOrb>> entry = mapIterator.next();
+      Set<ExperienceOrb> entities = entry.getValue();
+
+      Iterator<ExperienceOrb> entityIterator = entities.iterator();
+      while (entityIterator.hasNext()) {
+        Entity entity = entityIterator.next();
+        if (entity == null || entity.isRemoved() || !entity.isAddedToWorld()) {
+          entityIterator.remove();
+          removedEntries++;
+        }
+      }
+
+      if (entities.isEmpty()) {
+        mapIterator.remove();
+        removedEmptySets++;
+      }
+    }
+
+    if (removedEntries > 0 || removedEmptySets > 0) {
+      log.debug(
+          "[XP Orb Verification] Removed {} entries and {} empty sets",
+          removedEntries,
+          removedEmptySets);
     }
   }
 }
