@@ -31,9 +31,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -92,11 +92,6 @@ public class ExperienceOrbManager {
     // Ignore everything else besides experience orbs.
     Entity entity = event.getEntity();
     if (!(entity instanceof ExperienceOrb experienceOrbEntity)) {
-      return;
-    }
-
-    // Ignore events which are already canceled
-    if (event.isCanceled()) {
       return;
     }
 
