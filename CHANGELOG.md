@@ -17,6 +17,7 @@ For the full changelog, please go to the [GitHub History][history] instead.
 - Fixed TOCTOU race condition in `getNumberOfEntitiesInPlayerPositions` that could cause a NPE.
 - Fixed `entityChunkMap` and `lastAllowedSpawnEntity` not being cleared on server start.
 - Fixed unnecessary log.warn message for air blocks and items.
+- Fixed player validation logic to avoid ConcurrentModificationException and improve readability.
 - Added periodic verification for `ExperienceOrbManager` to clean up stale orb references.
 - Refactored item entity management to improve memory handling and cleanup processes.
 

@@ -64,6 +64,13 @@ public class ServerManager {
 
   @SubscribeEvent
   public static void handleServerAboutToStartEvent(ServerAboutToStartEvent event) {
+    minecraftServer = null;
+    serverLevels = null;
+    numberOfPlayers = 0;
+    ticks = random.nextInt(15);
+    gameDifficulty = Difficulty.NORMAL;
+    gameDifficultyFactor = 1;
+
     log.info(
         "{} Game difficult factors EASY: {}, NORMAL: {}, PEACEFUL: {} and HARD: {}",
         Constants.LOG_PREFIX,
@@ -82,6 +89,7 @@ public class ServerManager {
         "{} Max number of remote players is set to {}", Constants.LOG_PREFIX, maxNumberOfPlayers);
   }
 
+  @SubscribeEvent
   public static void handleServerTickEvent(TickEvent.ServerTickEvent event) {
     if (event.phase == TickEvent.Phase.START) {
       handleServerTickEvent();

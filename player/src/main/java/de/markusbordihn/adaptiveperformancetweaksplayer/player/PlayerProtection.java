@@ -23,7 +23,8 @@ import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweakscore.message.WarnMessages;
 import de.markusbordihn.adaptiveperformancetweaksplayer.Constants;
 import de.markusbordihn.adaptiveperformancetweaksplayer.config.CommonConfig;
-import java.util.ConcurrentModificationException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -139,108 +140,83 @@ public class PlayerProtection {
     }
 
     if (!playerValidationList.isEmpty()) {
-      try {
-        // Check for any un-validated players and try to detect if they logged-in.
-        for (PlayerValidation playerValidation : playerValidationList) {
-          String username = playerValidation.getUsername();
-          if (playerValidation.hasPlayerMoved()) {
-            long validationTimeInSecs =
-                TimeUnit.MILLISECONDS.toSeconds(playerValidation.getValidationTimeElapsed());
-            log.info(
-                "{} {} was successful validated after {} secs.",
-                Boolean.TRUE.equals(COMMON.protectPlayerDuringLoginLogging.get())
-                    ? "Protected Player"
-                    : "Player",
-                username,
-                validationTimeInSecs);
-            addPlayer(username);
-          } else if (playerValidation.getValidationTimeElapsed()
-              >= TimeUnit.SECONDS.toMillis(COMMON.playerLoginValidationTimeout.get())) {
-            log.warn(
-                "User validation for {} timed out after {} secs.",
-                username,
-                COMMON.playerLoginValidationTimeout.get());
-            addPlayer(username);
-          }
+      List<String> playersToValidate = new ArrayList<>();
+      for (PlayerValidation playerValidation : playerValidationList) {
+        String username = playerValidation.getUsername();
+        if (playerValidation.hasPlayerMoved()) {
+          long validationTimeInSecs =
+              TimeUnit.MILLISECONDS.toSeconds(playerValidation.getValidationTimeElapsed());
+          log.info(
+              "{} {} was successful validated after {} secs.",
+              Boolean.TRUE.equals(COMMON.protectPlayerDuringLoginLogging.get())
+                  ? "Protected Player"
+                  : "Player",
+              username,
+              validationTimeInSecs);
+          playersToValidate.add(username);
+        } else if (playerValidation.getValidationTimeElapsed()
+            >= TimeUnit.SECONDS.toMillis(COMMON.playerLoginValidationTimeout.get())) {
+          log.warn(
+              "User validation for {} timed out after {} secs.",
+              username,
+              COMMON.playerLoginValidationTimeout.get());
+          playersToValidate.add(username);
         }
-      } catch (ConcurrentModificationException error) {
-        log.error(
-            "Unexpected error during user validation. Please report the following error under {} .\n{}",
-            CoreConstants.ISSUE_REPORT,
-            error);
+      }
+
+      // Process collected players outside the iteration.
+      for (String username : playersToValidate) {
+        addPlayer(username);
       }
     }
     ticker = 0;
   }
 
   private static void addPlayer(String username) {
-    try {
-      for (PlayerValidation playerValidation : playerValidationList) {
-        if (username.equals(playerValidation.getUsername())) {
-          ServerPlayer player =
-              ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
+    ServerPlayer player =
+        ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByName(username);
 
-          // Warn if we are unable to find server player by username.
-          if (player == null) {
-            log.warn("Unable to match username {} to server player!", username);
-            return;
-          }
+    if (player == null) {
+      log.warn("Unable to match username {} to server player!", username);
+      playerValidationList.removeIf(
+          playerValidation -> username.equals(playerValidation.getUsername()));
+      return;
+    }
 
-          log.debug("Found player {} with player validation {}", player, playerValidation);
-          if (Boolean.TRUE.equals(COMMON.protectPlayerDuringLogin.get())
-              && (player.isInvisible() || player.isInvulnerable())) {
+    log.debug("Found player {} for validation completion", player);
+    if (Boolean.TRUE.equals(COMMON.protectPlayerDuringLogin.get())
+        && (player.isInvisible() || player.isInvulnerable())) {
 
-            if (Boolean.TRUE.equals(COMMON.enableChildPlayerProtection.get())
-                && COMMON.childPlayerProtectionList.get().contains(username)) {
-              // Handle child player accounts.
-              if (player.isInvisible() && Boolean.FALSE.equals(COMMON.childPlayerInvisible.get())) {
-                log.info("Removing player protection invisible from child player {}!", username);
-                player.setInvisible(false);
-              }
-              if (player.isInvulnerable()
-                  && Boolean.FALSE.equals(COMMON.childPlayerInvulnerable.get())) {
-                log.info("Removing player protection invulnerable from child player {}!", username);
-                player.setInvulnerable(false);
-              }
-            } else {
-              // Handle normal player accounts.
-              if (player.isInvisible()) {
-                log.info("Removing player protection invisible from player {}!", username);
-                player.setInvisible(false);
-              }
-              if (player.isInvulnerable()) {
-                log.info("Removing player protection invulnerable from player {}!", username);
-                player.setInvulnerable(false);
-              }
-            }
-          }
-          playerValidationList.remove(playerValidation);
-          break;
+      if (Boolean.TRUE.equals(COMMON.enableChildPlayerProtection.get())
+          && COMMON.childPlayerProtectionList.get().contains(username)) {
+        if (player.isInvisible() && Boolean.FALSE.equals(COMMON.childPlayerInvisible.get())) {
+          log.info("Removing player protection invisible from child player {}!", username);
+          player.setInvisible(false);
+        }
+        if (player.isInvulnerable() && Boolean.FALSE.equals(COMMON.childPlayerInvulnerable.get())) {
+          log.info("Removing player protection invulnerable from child player {}!", username);
+          player.setInvulnerable(false);
+        }
+      } else {
+        if (player.isInvisible()) {
+          log.info("Removing player protection invisible from player {}!", username);
+          player.setInvisible(false);
+        }
+        if (player.isInvulnerable()) {
+          log.info("Removing player protection invulnerable from player {}!", username);
+          player.setInvulnerable(false);
         }
       }
-    } catch (ConcurrentModificationException error) {
-      log.error(
-          "Unexpected error during adding player. Please report the following error under {} .\n{}",
-          CoreConstants.ISSUE_REPORT,
-          error);
     }
+
+    playerValidationList.removeIf(
+        playerValidation -> username.equals(playerValidation.getUsername()));
     log.debug("Added player {}", username);
   }
 
   private static void removePlayer(String username) {
-    try {
-      for (PlayerValidation playerValidation : playerValidationList) {
-        if (username.equals(playerValidation.getUsername())) {
-          playerValidationList.remove(playerValidation);
-          break;
-        }
-      }
-    } catch (ConcurrentModificationException error) {
-      log.error(
-          "Unexpected error during removing player. Please report the following error under {} .\n{}",
-          CoreConstants.ISSUE_REPORT,
-          error);
-    }
+    playerValidationList.removeIf(
+        playerValidation -> username.equals(playerValidation.getUsername()));
     log.debug("Remove player {}", username);
   }
 }
