@@ -5,6 +5,18 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [GitHub History][history] instead.
 
+### 11.6.1
+
+- Fixed #85 and #86 ghost item entities on clients by adding `event.setCanceled(true)` to the merge
+  branch in `ItemEntityManager`, preventing client-server sync issues.
+- Fixed world-limit removal cleaning up the wrong type map entry for cross-type items.
+- Fixed potential `NullPointerException` in leave handler when `itemName` is unresolvable.
+- Added `/aptweaks test full_double_chest` command to spawn a double chest of items for testing item
+  cleanup.
+- Suppressed spurious `WARN` for `minecraft:air` items left over from merged stacks.
+- Replaced `ConcurrentHashMap.newKeySet()` with `ConcurrentSkipListSet` to improve `optimizeItems()`
+  performance.
+
 ### 11.6.0
 
 - Fixed #83 (follow-up) by removing `isRelevantEntity` gate from entity leave and death event

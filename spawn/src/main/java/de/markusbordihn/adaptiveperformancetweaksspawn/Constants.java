@@ -27,6 +27,7 @@ public final class Constants {
   public static final String MOD_ID = "adaptive_performance_tweaks_spawn";
   public static final String MOD_NAME = "Adaptive Performance Tweaks: Spawn";
   public static final String MODULE_NAME = "Spawn";
+
   // Config Descriptions
   public static final String CONFIG_LIST_PASSIVE_MOBS =
       "List of passive Mobs to optimize in the format [\"minecraft:bat\", \"minecraft:cat\", ..]";

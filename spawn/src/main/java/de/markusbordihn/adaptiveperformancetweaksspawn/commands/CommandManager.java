@@ -41,11 +41,8 @@ public class CommandManager {
     CommandDispatcher<CommandSourceStack> commandDispatcher = event.getDispatcher();
     commandDispatcher.register(
         Commands.literal(Constants.MOD_COMMAND)
-            // @formatter:off
             .then(DebugCommand.register())
             .then(SpawnRulesCommand.register())
-            .then(SpawnerCommand.register())
-        // @formatter:on
-        );
+            .then(SpawnerCommand.register()));
   }
 }

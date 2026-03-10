@@ -45,14 +45,12 @@ public class CommandManager {
     CommandDispatcher<CommandSourceStack> commandDispatcher = event.getDispatcher();
     commandDispatcher.register(
         Commands.literal(Constants.MOD_COMMAND)
-            // @formatter:off
             .then(DebugCommand.register())
             .then(EntityCommand.register())
             .then(KillCommand.register())
             .then(LoadCommand.register())
             .then(PlayerPositionCommand.register())
-        // @formatter:on
-        );
+            .then(TestCommand.register()));
   }
 
   public static void executeGameRuleCommand(GameRules.Key<?> gameRule, int value) {
