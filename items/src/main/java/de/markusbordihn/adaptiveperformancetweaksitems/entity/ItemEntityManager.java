@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -64,7 +65,7 @@ public class ItemEntityManager {
   private static boolean needsOptimization = false;
   private static boolean hasItemsAllowList = false;
   private static boolean hasItemsDenyList = false;
-  private static short ticks = 0;
+  private static int ticks = 0;
 
   protected ItemEntityManager() {}
 
@@ -164,10 +165,11 @@ public class ItemEntityManager {
     // All items has the entity minecraft.item, so we are using the registry name
     // to better distinguish the different types of items and minecraft.item as
     // backup.
-    String itemName = itemEntity.getItem().getItem().getDescriptionId();
-    if (itemName == null) {
-      itemName = itemEntity.getEncodeId();
-    }
+    String itemDescriptionId = itemEntity.getItem().getItem().getDescriptionId();
+    String itemName =
+        (itemDescriptionId != null && !itemDescriptionId.isEmpty())
+            ? itemDescriptionId
+            : itemEntity.getEncodeId();
 
     // Check if item is allowed to be optimized.
     if (hasItemsAllowList && !itemsAllowList.contains(itemName)) {
@@ -190,7 +192,9 @@ public class ItemEntityManager {
 
     // Check if items could be merged with other items
     String itemTypeEntityMapKey = '[' + levelName + ']' + itemName;
-    itemTypeEntityMap.computeIfAbsent(itemTypeEntityMapKey, k -> ConcurrentHashMap.newKeySet());
+    itemTypeEntityMap.computeIfAbsent(
+        itemTypeEntityMapKey,
+        k -> new ConcurrentSkipListSet<>(Comparator.comparingInt(Entity::getId)));
     Set<ItemEntity> itemTypeEntities = itemTypeEntityMap.get(itemTypeEntityMapKey);
     if (Boolean.TRUE.equals(COMMON.optimizeItems.get())) {
       ItemStack itemStack = itemEntity.getItem();
@@ -229,6 +233,7 @@ public class ItemEntityManager {
           if (itemEntity.getId() != existingItemEntity.getId()
               && existingItemEntity.isAlive()
               && ItemEntity.areMergable(itemStack, existingItemStack)
+              && existingItemStack.getCount() < existingItemStack.getMaxStackSize()
               && (xStart < xSub && xSub < xEnd)
               && ((itemCanSeeSky && existingItemCanSeeSky) || (yStart < ySub && ySub < yEnd))
               && (zStart < zSub && zSub < zEnd)) {
@@ -239,6 +244,7 @@ public class ItemEntityManager {
             }
             ItemStack combinedItemStack = ItemEntity.merge(existingItemStack, itemStack, 64);
             existingItemEntity.setItem(combinedItemStack);
+            event.setCanceled(true);
             return;
           }
         }
@@ -246,7 +252,8 @@ public class ItemEntityManager {
     }
 
     // Storing items per world regardless of item type
-    itemWorldEntityMap.computeIfAbsent(levelName, k -> ConcurrentHashMap.newKeySet());
+    itemWorldEntityMap.computeIfAbsent(
+        levelName, k -> new ConcurrentSkipListSet<>(Comparator.comparingInt(Entity::getId)));
     Set<ItemEntity> itemWorldEntities = itemWorldEntityMap.get(levelName);
     itemWorldEntities.add(itemEntity);
 
@@ -260,9 +267,20 @@ public class ItemEntityManager {
             COMMON.maxNumberOfItems.get(),
             numberOfItemWorldEntities,
             firstItemWorldEntity);
+        String firstItemDescriptionId = firstItemWorldEntity.getItem().getItem().getDescriptionId();
         firstItemWorldEntity.remove(RemovalReason.DISCARDED);
         itemWorldEntities.remove(firstItemWorldEntity);
-        itemTypeEntities.remove(firstItemWorldEntity);
+        String firstItemName =
+            (firstItemDescriptionId != null && !firstItemDescriptionId.isEmpty())
+                ? firstItemDescriptionId
+                : firstItemWorldEntity.getEncodeId();
+        if (firstItemName != null && !firstItemName.isEmpty()) {
+          String firstItemTypeKey = '[' + levelName + ']' + firstItemName;
+          Set<ItemEntity> firstItemTypeEntities = itemTypeEntityMap.get(firstItemTypeKey);
+          if (firstItemTypeEntities != null) {
+            firstItemTypeEntities.remove(firstItemWorldEntity);
+          }
+        }
       }
     }
 
@@ -307,11 +325,14 @@ public class ItemEntityManager {
     }
 
     // All items have the entity minecraft.item, so we are using the translation key
-    // to better distinguish the different types of items and minecraft.item as
-    // backup.
-    String itemName = itemEntity.getItem().getItem().getDescriptionId();
-    if (itemName == null) {
-      itemName = itemEntity.getEncodeId();
+    // to better distinguish the different types of items and minecraft.item as backup.
+    String itemDescriptionId = itemEntity.getItem().getItem().getDescriptionId();
+    String itemName =
+        (itemDescriptionId != null && !itemDescriptionId.isEmpty())
+            ? itemDescriptionId
+            : itemEntity.getEncodeId();
+    if (itemName == null || itemName.isEmpty()) {
+      return;
     }
 
     // Get world name and start processing of data
@@ -342,18 +363,12 @@ public class ItemEntityManager {
             itemName,
             itemEntity.getDisplayName().getString());
       }
-    } else {
-      if (itemName.equals("block.minecraft.air") || itemName.equals("minecraft:air")) {
-        log.debug(
-            "[Item left, not tracked] Skipping merged item entity with empty stack: {}",
-            itemEntity);
-      } else {
-        log.warn(
-            "Item {} {} in {} was not tracked by item entity manager!",
-            itemName,
-            itemEntity.getDisplayName().getString(),
-            levelName);
-      }
+    } else if (!itemName.equals("block.minecraft.air") && !itemName.equals("minecraft:air")) {
+      log.warn(
+          "Item {} {} in {} was not tracked by item entity manager!",
+          itemName,
+          itemEntity.getDisplayName().getString(),
+          levelName);
     }
   }
 
@@ -366,18 +381,13 @@ public class ItemEntityManager {
     for (Map.Entry<String, Set<ItemEntity>> itemWorldEntities : itemWorldEntityMap.entrySet()) {
       Set<ItemEntity> itemWorldEntitiesValues = itemWorldEntities.getValue();
       if (itemWorldEntitiesValues.size() > maxNumberOfOptimizedWorldItems) {
-        List<ItemEntity> sortedItemWorldEntitiesValues =
-            itemWorldEntitiesValues.stream()
-                .sorted(Comparator.comparing(ItemEntity::getId))
-                .toList();
-
         List<ItemEntity> itemsToRemove = new ArrayList<>();
-        for (int i = 0;
-            i < sortedItemWorldEntitiesValues.size() - maxNumberOfOptimizedWorldItems;
-            i++) {
-          ItemEntity itemEntity = sortedItemWorldEntitiesValues.get(i);
+        int toRemove = itemWorldEntitiesValues.size() - maxNumberOfOptimizedWorldItems;
+        for (ItemEntity itemEntity : itemWorldEntitiesValues) {
+          if (toRemove <= 0) break;
           if (itemEntity.isAddedToWorld()) {
             itemsToRemove.add(itemEntity);
+            toRemove--;
           }
         }
 
@@ -387,10 +397,11 @@ public class ItemEntityManager {
           itemWorldEntitiesValues.remove(itemEntity);
 
           // Also remove from type map - need to find the correct type key
-          String itemName = itemEntity.getItem().getItem().getDescriptionId();
-          if (itemName == null) {
-            itemName = itemEntity.getEncodeId();
-          }
+          String itemDescriptionId = itemEntity.getItem().getItem().getDescriptionId();
+          String itemName =
+              (itemDescriptionId != null && !itemDescriptionId.isEmpty())
+                  ? itemDescriptionId
+                  : itemEntity.getEncodeId();
           String levelName = itemWorldEntities.getKey();
           String itemTypeKey = '[' + levelName + ']' + itemName;
           Set<ItemEntity> typeEntities = itemTypeEntityMap.get(itemTypeKey);
@@ -409,18 +420,13 @@ public class ItemEntityManager {
     for (Map.Entry<String, Set<ItemEntity>> itemTypeEntities : itemTypeEntityMap.entrySet()) {
       Set<ItemEntity> itemTypeEntitiesValues = itemTypeEntities.getValue();
       if (itemTypeEntitiesValues.size() > maxNumberOfOptimizedTypeItems) {
-        List<ItemEntity> sortedItemTypeEntitiesValues =
-            itemTypeEntitiesValues.stream()
-                .sorted(Comparator.comparing(ItemEntity::getId))
-                .toList();
-
         List<ItemEntity> itemsToRemove = new ArrayList<>();
-        for (int i = 0;
-            i < sortedItemTypeEntitiesValues.size() - maxNumberOfOptimizedTypeItems;
-            i++) {
-          ItemEntity itemEntity = sortedItemTypeEntitiesValues.get(i);
+        int toRemove = itemTypeEntitiesValues.size() - maxNumberOfOptimizedTypeItems;
+        for (ItemEntity itemEntity : itemTypeEntitiesValues) {
+          if (toRemove <= 0) break;
           if (itemEntity.isAddedToWorld()) {
             itemsToRemove.add(itemEntity);
+            toRemove--;
           }
         }
 

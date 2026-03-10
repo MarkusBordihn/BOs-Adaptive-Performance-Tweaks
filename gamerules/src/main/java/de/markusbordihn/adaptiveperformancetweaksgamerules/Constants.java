@@ -22,8 +22,6 @@ package de.markusbordihn.adaptiveperformancetweaksgamerules;
 public final class Constants {
 
   // General Mod definitions
-  public static final String ISSUE_REPORT =
-      "https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues";
   public static final String LOG_NAME = "APTweaks(Gamerules)";
   public static final String MOD_COMMAND = "aptweaks";
   public static final String MOD_ID = "adaptive_performance_tweaks_gamerules";
