@@ -41,10 +41,6 @@ public class CommandManager {
     log.info("Registering /aptweaks commands for {} ...", Constants.MOD_NAME);
     CommandDispatcher<CommandSourceStack> commandDispatcher = event.getDispatcher();
     commandDispatcher.register(
-        Commands.literal(Constants.MOD_COMMAND)
-            // @formatter:off
-            .then(DebugCommand.register())
-        // @formatter:on
-        );
+        Commands.literal(Constants.MOD_COMMAND).then(DebugCommand.register()));
   }
 }
