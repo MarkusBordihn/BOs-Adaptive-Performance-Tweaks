@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Entity.RemovalReason;
@@ -196,7 +197,9 @@ public class ItemEntityManager {
 
     // Check if items could be merged with other items
     String itemTypeEntityMapKey = '[' + levelName + ']' + itemName;
-    itemTypeEntityMap.computeIfAbsent(itemTypeEntityMapKey, k -> ConcurrentHashMap.newKeySet());
+    itemTypeEntityMap.computeIfAbsent(
+        itemTypeEntityMapKey,
+        k -> new ConcurrentSkipListSet<>(Comparator.comparingInt(Entity::getId)));
     Set<ItemEntity> itemTypeEntities = itemTypeEntityMap.get(itemTypeEntityMapKey);
     if (optimizeItems) {
       ItemStack itemStack = itemEntity.getItem();
@@ -238,6 +241,7 @@ public class ItemEntityManager {
             }
             ItemStack combinedItemStack = ItemEntity.merge(existingItemStack, itemStack, 64);
             existingItemEntity.setItem(combinedItemStack);
+            event.setCanceled(true);
             return;
           }
         }
@@ -245,7 +249,8 @@ public class ItemEntityManager {
     }
 
     // Storing items per world regardless of item type
-    itemWorldEntityMap.computeIfAbsent(levelName, k -> ConcurrentHashMap.newKeySet());
+    itemWorldEntityMap.computeIfAbsent(
+        levelName, k -> new ConcurrentSkipListSet<>(Comparator.comparingInt(Entity::getId)));
     Set<ItemEntity> itemWorldEntities = itemWorldEntityMap.get(levelName);
     itemWorldEntities.add(itemEntity);
 
@@ -260,7 +265,19 @@ public class ItemEntityManager {
             firstItemWorldEntity);
         firstItemWorldEntity.remove(RemovalReason.DISCARDED);
         itemWorldEntities.remove(firstItemWorldEntity);
-        itemTypeEntities.remove(firstItemWorldEntity);
+        ResourceLocation firstItemRegistryName =
+            firstItemWorldEntity.getItem().getItem().getRegistryName();
+        String firstItemName =
+            firstItemRegistryName != null
+                ? firstItemRegistryName.toString()
+                : firstItemWorldEntity.getEncodeId();
+        if (firstItemName != null) {
+          String firstItemTypeKey = '[' + levelName + ']' + firstItemName;
+          Set<ItemEntity> firstItemTypeEntities = itemTypeEntityMap.get(firstItemTypeKey);
+          if (firstItemTypeEntities != null) {
+            firstItemTypeEntities.remove(firstItemWorldEntity);
+          }
+        }
       }
     }
 
@@ -304,6 +321,9 @@ public class ItemEntityManager {
     ResourceLocation itemRegistryName = itemEntity.getItem().getItem().getRegistryName();
     String itemName =
         itemRegistryName != null ? itemRegistryName.toString() : itemEntity.getEncodeId();
+    if (itemName == null) {
+      return;
+    }
 
     // Check if item is allowed to be optimized.
     if (hasItemsAllowList && !itemsAllowList.contains(itemName)) {
@@ -343,7 +363,7 @@ public class ItemEntityManager {
             itemName,
             itemEntity.getDisplayName().getString());
       }
-    } else {
+    } else if (!itemName.equals("block.minecraft.air") && !itemName.equals("minecraft:air")) {
       log.warn(
           "Item {} {} in {} was not tracked by item entity manager!",
           itemName,
@@ -361,18 +381,13 @@ public class ItemEntityManager {
     for (Map.Entry<String, Set<ItemEntity>> itemWorldEntries : itemWorldEntityMap.entrySet()) {
       Set<ItemEntity> itemWorldEntitiesValues = itemWorldEntries.getValue();
       if (itemWorldEntitiesValues.size() > maxNumberOfOptimizedWorldItems) {
-        List<ItemEntity> sortedItemWorldEntitiesValues =
-            itemWorldEntitiesValues.stream()
-                .sorted(Comparator.comparing(ItemEntity::getId))
-                .toList();
-
         List<ItemEntity> itemsToRemove = new ArrayList<>();
-        for (int i = 0;
-            i < sortedItemWorldEntitiesValues.size() - maxNumberOfOptimizedWorldItems;
-            i++) {
-          ItemEntity itemEntity = sortedItemWorldEntitiesValues.get(i);
+        int toRemove = itemWorldEntitiesValues.size() - maxNumberOfOptimizedWorldItems;
+        for (ItemEntity itemEntity : itemWorldEntitiesValues) {
+          if (toRemove <= 0) break;
           if (itemEntity.isAddedToWorld()) {
             itemsToRemove.add(itemEntity);
+            toRemove--;
           }
         }
 
@@ -402,18 +417,13 @@ public class ItemEntityManager {
     for (Map.Entry<String, Set<ItemEntity>> itemTypeEntries : itemTypeEntityMap.entrySet()) {
       Set<ItemEntity> itemTypeEntitiesValues = itemTypeEntries.getValue();
       if (itemTypeEntitiesValues.size() > maxNumberOfOptimizedTypeItems) {
-        List<ItemEntity> sortedItemTypeEntitiesValues =
-            itemTypeEntitiesValues.stream()
-                .sorted(Comparator.comparing(ItemEntity::getId))
-                .toList();
-
         List<ItemEntity> itemsToRemove = new ArrayList<>();
-        for (int i = 0;
-            i < sortedItemTypeEntitiesValues.size() - maxNumberOfOptimizedTypeItems;
-            i++) {
-          ItemEntity itemEntity = sortedItemTypeEntitiesValues.get(i);
+        int toRemove = itemTypeEntitiesValues.size() - maxNumberOfOptimizedTypeItems;
+        for (ItemEntity itemEntity : itemTypeEntitiesValues) {
+          if (toRemove <= 0) break;
           if (itemEntity.isAddedToWorld()) {
             itemsToRemove.add(itemEntity);
+            toRemove--;
           }
         }
 
