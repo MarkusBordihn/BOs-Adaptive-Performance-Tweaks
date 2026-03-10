@@ -22,11 +22,13 @@ package de.markusbordihn.adaptiveperformancetweaksitems.entity;
 import de.markusbordihn.adaptiveperformancetweakscore.CoreConstants;
 import de.markusbordihn.adaptiveperformancetweaksitems.Constants;
 import de.markusbordihn.adaptiveperformancetweaksitems.config.CommonConfig;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.ExperienceOrb;
@@ -115,7 +117,8 @@ public class ExperienceOrbManager {
     }
 
     // Check if orb should be merged with existing orbs and ignore orb if it has 0 xp.
-    experienceOrbEntityMap.computeIfAbsent(levelName, k -> ConcurrentHashMap.newKeySet());
+    experienceOrbEntityMap.computeIfAbsent(
+        levelName, k -> new ConcurrentSkipListSet<>(Comparator.comparingInt(Entity::getId)));
     Set<ExperienceOrb> experienceOrbWorldEntities = experienceOrbEntityMap.get(levelName);
     if (Boolean.TRUE.equals(COMMON.optimizeExperienceOrbs.get() && !CoreConstants.CLUMPS_LOADED)
         && !experienceOrbWorldEntities.isEmpty()) {
