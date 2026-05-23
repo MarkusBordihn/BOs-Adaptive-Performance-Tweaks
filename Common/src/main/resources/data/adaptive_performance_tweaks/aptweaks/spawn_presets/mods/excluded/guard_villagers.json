@@ -1,0 +1,6 @@
+﻿{
+  "mod_id": "guardvillagers",
+  "priority": 100,
+  "exclude_from_tracking": true,
+  "notes": "Guard Villagers entities are purposefully placed NPCs that should not be spawn-limited."
+}

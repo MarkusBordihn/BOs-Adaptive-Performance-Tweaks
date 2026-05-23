@@ -1,0 +1,22 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "de.markusbordihn.adaptiveperformancetweaks.fabric.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "BaseSpawnerMixin",
+    "ChunkGenThrottleMixin",
+    "ExperienceOrbAccessorMixin",
+    "MobAiThrottleMixin",
+    "MobMixin",
+    "NaturalSpawnerEntityMixin",
+    "NaturalSpawnerMixin",
+    "PlayerDamageMixin",
+    "VillagerConvertToMixin"
+  ],
+  "client": [],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

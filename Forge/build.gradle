@@ -1,0 +1,162 @@
+plugins {
+  id 'maven-publish'
+  id 'net.minecraftforge.gradle' version '6.+'
+  id 'org.spongepowered.mixin' version '0.7.+'
+  id 'com.matthewprenger.cursegradle' version '1.4.0'
+  id 'nu.studer.credentials' version '3.0'
+  id "com.modrinth.minotaur" version "2.+"
+}
+
+apply plugin: 'net.minecraftforge.gradle'
+
+base {
+  archivesName = "${mod_id}-forge-${minecraft_version}"
+}
+
+minecraft {
+  mappings channel: 'official', version: "${project.minecraft_version}"
+
+  accessTransformer = file("src/main/resources/META-INF/accesstransformer.cfg")
+
+  runs {
+    client {
+      workingDirectory project.file('run/client')
+      property 'forge.logging.markers', 'REGISTRIES'
+      property 'forge.logging.console.level', 'debug'
+      property 'forge.enabledGameTestNamespaces', "${project.mod_id}"
+      mods {
+        "${project.mod_id}" { source sourceSets.main }
+      }
+
+      // Mixin Support
+      property 'mixin.env.remapRefMap', 'true'
+      property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+    }
+
+    server {
+      workingDirectory project.file('run/server')
+      property 'forge.logging.markers', 'REGISTRIES'
+      property 'forge.logging.console.level', 'debug'
+      property 'forge.enabledGameTestNamespaces', "${project.mod_id}"
+      mods {
+        "${project.mod_id}" { source sourceSets.main }
+      }
+
+      // Mixin Support
+      property 'mixin.env.remapRefMap', 'true'
+      property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+    }
+
+    gameTestServer {
+      workingDirectory project.file('run/gametestserver')
+      property 'forge.logging.markers', 'REGISTRIES'
+      property 'forge.logging.console.level', 'debug'
+      property 'forge.enabledGameTestNamespaces', "${project.mod_id}"
+      mods {
+        "${project.mod_id}" { source sourceSets.main }
+      }
+
+      // Mixin Support
+      property 'mixin.env.remapRefMap', 'true'
+      property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+    }
+  }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+dependencies {
+  minecraft "net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}"
+
+  // Mixin dependencies
+  annotationProcessor "org.spongepowered:mixin:0.8.7:processor"
+
+  // Include Common code
+  implementation project(":Common")
+
+  // Test dependencies
+  testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+  // Additional helpful Mods for development (runtime dependency)
+  if (project.hasProperty('forge_spark_mod') && project.forge_spark_mod) {
+    runtimeOnly fg.deobf("curse.maven:spark-361579:${project.forge_spark_mod}")
+  }
+  if (project.hasProperty('forge_xaeros_minimap_mod') && project.forge_xaeros_minimap_mod) {
+    runtimeOnly fg.deobf("curse.maven:xaeros_minimap-263420:${project.forge_xaeros_minimap_mod}")
+  }
+}
+
+mixin {
+  config 'adaptiveperformancetweaks.mixins.json'
+
+  add sourceSets.main, "adaptiveperformancetweaks.refmap.json"
+  debug.verbose = true
+  debug.export = true
+}
+
+tasks.withType(JavaCompile).configureEach {
+  source(project(":Common").sourceSets.main.allSource)
+}
+
+processResources {
+  from project(":Common").sourceSets.main.resources
+}
+
+tasks.named('jar', Jar).configure {
+  manifest {
+    attributes([
+        "Specification-Title"     : "${project.mod_name}",
+        "Specification-Vendor"    : "${project.vendor_name}",
+        "Specification-Version"   : "1",
+        "Implementation-Title"    : project.name,
+        "Implementation-Version"  : "${project.version}",
+        "Implementation-Vendor"   : "${project.mod_id}",
+        "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+        "MixinConfigs"            : "adaptiveperformancetweaks.mixins.json",
+    ])
+  }
+
+  finalizedBy 'reobfJar'
+}
+
+tasks.named('build') {
+  dependsOn 'reobfJar'
+}
+
+test {
+  useJUnitPlatform()
+  exclude '**/*'
+}
+
+// CurseForge Publishing
+if (project.hasProperty('curseforge_project_id') && project.curseforge_project_id) {
+  curseforge {
+    apiKey = "${credentials.forKey('curseforge_api_token')}"
+    project {
+      id = "${project.curseforge_project_id}"
+      changelog = rootProject.file("CHANGELOG.md")
+      changelogType = 'markdown'
+      releaseType = "${project.curseforge_release_type}"
+      addGameVersion("${project.minecraft_version}")
+      addGameVersion("Forge")
+      addGameVersion("NeoForge")
+      mainArtifact(jar)
+    }
+  }
+}
+
+// Modrinth Publishing
+if (project.hasProperty('modrinth_project_id') && project.modrinth_project_id) {
+  modrinth {
+    token = "${credentials.forKey('modrinth_api_token')}"
+    projectId = "${project.modrinth_project_id}"
+    versionNumber = "${project.version}"
+    versionType = "${project.modrinth_release_type}"
+    versionName = "${project.mod_name} ${project.version}"
+    changelog = rootProject.file("CHANGELOG.md").text
+    uploadFile = jar
+    gameVersions = ["${project.minecraft_version}"]
+    loaders = ["forge", "neoforge"]
+  }
+}

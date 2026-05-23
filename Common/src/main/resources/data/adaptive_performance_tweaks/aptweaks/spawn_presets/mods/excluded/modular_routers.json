@@ -1,0 +1,6 @@
+﻿{
+  "mod_id": "modularrouters",
+  "priority": 100,
+  "exclude_from_tracking": true,
+  "notes": "Modular Routers entities are item-routing technical entities that should not be spawn-limited."
+}

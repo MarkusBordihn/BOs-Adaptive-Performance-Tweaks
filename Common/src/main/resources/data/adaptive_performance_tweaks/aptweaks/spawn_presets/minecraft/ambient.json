@@ -1,0 +1,26 @@
+{
+  "replace": false,
+  "mod_id": "minecraft",
+  "priority": 70,
+  "dimensions": {
+    "allow": ["minecraft:overworld"]
+  },
+  "entities": {
+    "allow_list": [
+      "bat"
+    ],
+    "per_player_max": 4,
+    "per_world_max": 16,
+    "per_server_max": 64,
+    "per_chunk_max": 2
+  },
+  "load_factors": {
+    "very_low": 1.0,
+    "low": 0.75,
+    "normal": 0.5,
+    "medium": 0.25,
+    "high": 0.1,
+    "very_high": 0.0
+  },
+  "notes": "Ambient mobs (bat) — no gameplay value on servers. Kept low to reduce entity tick overhead."
+}

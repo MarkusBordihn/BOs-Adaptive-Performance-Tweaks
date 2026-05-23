@@ -1,3 +1,14 @@
+apply plugin: 'java'
+
+def ghostRefScript = file(findProperty('ghostRefIndex') ?: '')
+if (ghostRefScript.exists()) apply from: ghostRefScript
+
+tasks.register('runAllGameTests') {
+  group = 'verification'
+  description = 'Runs both Fabric and Forge game tests.'
+  dependsOn ':Fabric:runGameTest', ':Forge:runGameTestServer'
+}
+
 subprojects {
 
   apply plugin: 'java'
@@ -17,7 +28,8 @@ subprojects {
   }
 
   tasks.register('wrapper', Wrapper) {
-    gradleVersion = '7.6.3'
+    gradleVersion = '8.14.5'
+    distributionType = Wrapper.DistributionType.BIN
   }
 
   tasks.withType(JavaCompile).configureEach {
@@ -33,5 +45,4 @@ subprojects {
   }
 
   tasks.register("prepareKotlinBuildScriptModel") {}
-
 }

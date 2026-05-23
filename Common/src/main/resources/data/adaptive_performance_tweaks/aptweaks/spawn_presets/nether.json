@@ -1,0 +1,23 @@
+{
+  "replace": false,
+  "mod_id": "minecraft",
+  "priority": 50,
+  "dimensions": {
+    "allow": ["minecraft:the_nether"]
+  },
+  "entities": {
+    "per_player_max": 28,
+    "per_world_max": 160,
+    "per_server_max": 512,
+    "per_chunk_max": -1
+  },
+  "load_factors": {
+    "very_low": 1.0,
+    "low": 1.0,
+    "normal": 0.9,
+    "medium": 0.7,
+    "high": 0.4,
+    "very_high": 0.1
+  },
+  "notes": "Vanilla nether mob limits. Tuned for ~4 players; scale per_player_max and per_world_max for larger servers."
+}

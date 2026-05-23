@@ -1,0 +1,6 @@
+﻿{
+  "mod_id": "industrialforegoing",
+  "priority": 100,
+  "exclude_from_tracking": true,
+  "notes": "Industrial Foregoing entities are machine/technical entities that should not be spawn-limited."
+}

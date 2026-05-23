@@ -1,0 +1,6 @@
+﻿{
+  "mod_id": "biggerreactors",
+  "priority": 100,
+  "exclude_from_tracking": true,
+  "notes": "Bigger Reactors entities are technical/machine entities that should not be spawn-limited."
+}

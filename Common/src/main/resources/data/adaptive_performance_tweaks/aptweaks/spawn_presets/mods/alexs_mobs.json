@@ -1,0 +1,20 @@
+{
+  "replace": false,
+  "mod_id": "alexsmobs",
+  "priority": 100,
+  "entities": {
+    "per_player_max": 10,
+    "per_world_max": 40,
+    "per_server_max": 320,
+    "per_chunk_max": 5
+  },
+  "load_factors": {
+    "very_low": 1.0,
+    "low": 1.0,
+    "normal": 0.9,
+    "medium": 0.7,
+    "high": 0.4,
+    "very_high": 0.1
+  },
+  "notes": "Alex's Mobs — limits all alexsmobs:* entities globally. Tuned for ~4 players; scale per_player_max and per_world_max for larger servers."
+}
