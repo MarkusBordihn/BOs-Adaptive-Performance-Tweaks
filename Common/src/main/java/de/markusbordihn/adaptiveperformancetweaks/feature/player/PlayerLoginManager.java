@@ -44,6 +44,12 @@ public final class PlayerLoginManager {
 
   public static void handleServerAboutToStart() {
     playerValidationList = ConcurrentHashMap.newKeySet();
+    ticker = 0;
+  }
+
+  public static void handleServerStopping() {
+    playerValidationList = ConcurrentHashMap.newKeySet();
+    ticker = 0;
   }
 
   public static void handlePlayerLoggedIn(ServerPlayer player) {

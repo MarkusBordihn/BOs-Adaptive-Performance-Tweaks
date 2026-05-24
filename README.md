@@ -1,6 +1,18 @@
-![Adaptive Performance Tweaks][header]
-
 # Adaptive Performance Tweaks (APTweaks)
+
+[![APTweaks: Bundle Versions](http://cf.way2muchnoise.eu/versions/Minecraft_450269_all.svg)][mod_page]
+
+[![Download on CurseForge](http://cf.way2muchnoise.eu/title/450269.svg)][mod_page]
+[![CurseForge Downloads](http://cf.way2muchnoise.eu/full_450269_downloads.svg)][mod_page]
+
+[![Download on Modrinth](https://img.shields.io/badge/dynamic/json?labelColor=black&color=grey&label=&query=title&url=https://api.modrinth.com/v2/project/kLawTYXp&style=flat&logo=modrinth)][modrinth_page]
+[![Modrinth Downloads](https://img.shields.io/badge/dynamic/json?labelColor=black&color=grey&label=&suffix=%20downloads&query=downloads&url=https://api.modrinth.com/v2/project/kLawTYXp&style=flat&logo=modrinth)][modrinth_page]
+
+[![Report an Issue](https://img.shields.io/badge/Report%20Issue%20%2F%20Bug%20%2F%20Crash-grey?style=flat&logo=github)][issues]
+[![Open Issues](https://img.shields.io/github/issues/MarkusBordihn/BOs-Adaptive-Performance-Tweaks?style=flat&logo=Github&color=red)][issues_open]
+[![Closed Issues](https://img.shields.io/github/issues-closed/MarkusBordihn/BOs-Adaptive-Performance-Tweaks?style=flat&logo=Github)][issues_closed]
+
+![Adaptive Performance Tweaks][header]
 
 > ⚠ **Alpha Version** — 12.x is currently in alpha. Please report issues on GitHub.
 >
@@ -29,16 +41,17 @@ distance adaptation, and server load monitoring are all bundled.
 
 ### ⚡ Pre-creation spawn check
 
-The most significant performance improvement over 11.x: mobs are denied **before** a Minecraft
-entity ID is allocated and before the entity enters the world. In 11.x, the mod cancelled the spawn
-event after the entity had already joined the level — wasting entity ID space and triggering
-unnecessary game logic. The 12.x architecture intercepts at the natural spawner level, meaning zero
-overhead for denied spawns.
+The most significant performance improvement over 11.x: preset `DENY` rules can block mobs
+**before** a Minecraft entity ID is allocated and before the entity enters the world. In 11.x, the
+mod cancelled the spawn event after the entity had already joined the level — wasting entity ID
+space and triggering unnecessary game logic. Count-based per-chunk, per-player, per-world, and
+per-server limits are still evaluated during spawn handling with tracked entity state.
 
 ### 🧪 Automated game tests
 
-Every build runs 38 game tests on a headless Fabric server, covering spawn limits, load scaling,
-friendly chunk bypass, and all major features. This ensures regressions are caught before release.
+The default verification path `./gradlew check` runs the shared unit test suite and both headless
+Fabric and Forge game test suites. This keeps spawn limits, load scaling, friendly chunk bypass,
+and the major performance features covered before release.
 
 ## 📥 Installation
 
@@ -80,3 +93,13 @@ See [wiki/Versions.md](wiki/Versions.md) for a comparison of 12.x vs 11.x and th
 the architecture change.
 
 [header]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki/images/aptweaks-header-only.png
+
+[mod_page]: https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks
+
+[modrinth_page]: https://modrinth.com/mod/kLawTYXp
+
+[issues]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues
+
+[issues_open]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues
+
+[issues_closed]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues?q=is%3Aissue+is%3Aclosed

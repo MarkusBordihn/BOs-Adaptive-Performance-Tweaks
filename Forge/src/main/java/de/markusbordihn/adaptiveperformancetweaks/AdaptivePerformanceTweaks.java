@@ -61,16 +61,17 @@ public class AdaptivePerformanceTweaks {
     Constants.CONFIG_DIR = FMLPaths.CONFIGDIR.get();
 
     boolean isDedicatedServer = FMLEnvironment.dist == Dist.DEDICATED_SERVER;
+
+    log.debug("{} Mod Compat ...", Constants.LOG_REGISTER_PREFIX);
+    ModCompat.setModLoadedChecker(
+      modId -> "minecraft".equals(modId) || ModList.get().isLoaded(modId));
+
     log.debug("{} Configuration ({}) ...", Constants.LOG_REGISTER_PREFIX,
       isDedicatedServer ? "server" : "client");
     Config.register(isDedicatedServer);
 
     log.debug("{} Feature Registry ...", Constants.LOG_REGISTER_PREFIX);
     FeatureRegistry.registerCommon();
-
-    log.debug("{} Mod Compat ...", Constants.LOG_REGISTER_PREFIX);
-    ModCompat.setModLoadedChecker(
-      modId -> "minecraft".equals(modId) || ModList.get().isLoaded(modId));
 
     DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
       () -> () -> new AdaptivePerformanceTweaksClient(modEventBus));

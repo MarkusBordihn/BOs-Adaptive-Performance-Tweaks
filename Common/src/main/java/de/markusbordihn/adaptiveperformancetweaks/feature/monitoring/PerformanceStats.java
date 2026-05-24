@@ -22,6 +22,7 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.monitoring;
 public final class PerformanceStats {
 
   public static long mobSpawnChecks;
+  public static long mobSpawnsExcluded;
   public static long mobSpawnsDenied;
   public static long naturalSpawnChecks;
   public static long naturalSpawnsDenied;
@@ -35,6 +36,7 @@ public final class PerformanceStats {
 
   public static void reset() {
     mobSpawnChecks = 0;
+    mobSpawnsExcluded = 0;
     mobSpawnsDenied = 0;
     naturalSpawnChecks = 0;
     naturalSpawnsDenied = 0;
@@ -46,13 +48,15 @@ public final class PerformanceStats {
 
   public static Snapshot snapshot() {
     return new Snapshot(
-      mobSpawnChecks, mobSpawnsDenied, naturalSpawnChecks, naturalSpawnsDenied,
+      mobSpawnChecks, mobSpawnsExcluded, mobSpawnsDenied,
+      naturalSpawnChecks, naturalSpawnsDenied,
       itemsMerged, itemsRemoved,
       xpOrbsMerged, xpOrbsRemoved);
   }
 
   public record Snapshot(
     long mobSpawnChecks,
+    long mobSpawnsExcluded,
     long mobSpawnsDenied,
     long naturalSpawnChecks,
     long naturalSpawnsDenied,

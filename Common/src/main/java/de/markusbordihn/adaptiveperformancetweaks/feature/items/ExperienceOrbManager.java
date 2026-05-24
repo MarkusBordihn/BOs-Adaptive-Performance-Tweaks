@@ -46,12 +46,30 @@ public final class ExperienceOrbManager {
   }
 
   public static void handleServerAboutToStart() {
-    experienceOrbEntityMap = new ConcurrentHashMap<>();
+    resetState();
     if (ExperienceOrbsConfig.optimizeExperienceOrbs) {
       log.info(
         "XP orb clustering enabled with radius of {} blocks.",
         ExperienceOrbsConfig.experienceOrbsClusterRange);
     }
+  }
+
+  public static void handleServerStopping() {
+    resetState();
+  }
+
+  public static int getTrackedExperienceOrbCount() {
+    int total = 0;
+    for (Set<ExperienceOrb> orbs : experienceOrbEntityMap.values()) {
+      total += orbs.size();
+    }
+
+    return total;
+  }
+
+  private static void resetState() {
+    experienceOrbEntityMap = new ConcurrentHashMap<>();
+    ticks = 0;
   }
 
   public static void handleServerTick() {

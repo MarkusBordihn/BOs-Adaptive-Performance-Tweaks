@@ -35,4 +35,9 @@ public class AiThrottleGameTest {
   public void testThrottleUnderVeryHighLoad(GameTestHelper helper) {
     AiThrottleTests.testThrottleUnderVeryHighLoad(helper);
   }
+
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
+  public void testThrottleOnlyInHighLoadLevel(GameTestHelper helper) {
+    AiThrottleTests.testThrottleOnlyInHighLoadLevel(helper);
+  }
 }

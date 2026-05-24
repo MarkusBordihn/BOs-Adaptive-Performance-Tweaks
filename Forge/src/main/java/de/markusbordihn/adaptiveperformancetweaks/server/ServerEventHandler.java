@@ -25,6 +25,7 @@ import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.feature.player.PlayerDamageManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnPresetLoader;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -75,6 +76,22 @@ public final class ServerEventHandler {
   }
 
   @SubscribeEvent
+  public static void handleLevelTick(TickEvent.LevelTickEvent event) {
+    if (!(event.level instanceof ServerLevel serverLevel)) {
+      return;
+    }
+
+    if (event.phase == TickEvent.Phase.START) {
+      CommonServerEventHandler.handleServerLevelTickStart(serverLevel);
+      return;
+    }
+
+    if (event.phase == TickEvent.Phase.END) {
+      CommonServerEventHandler.handleServerLevelTickEnd(serverLevel);
+    }
+  }
+
+  @SubscribeEvent
   public static void handleAddReloadListener(AddReloadListenerEvent event) {
     if (FeatureToggle.SPAWN.isEnabled()) {
       event.addListener(new SpawnPresetLoader());
@@ -83,7 +100,7 @@ public final class ServerEventHandler {
 
   @SubscribeEvent
   public static void handleFinalizeSpawn(MobSpawnEvent.FinalizeSpawn event) {
-    if (event.getLevel() instanceof net.minecraft.server.level.ServerLevel serverLevel
+    if (event.getLevel() instanceof ServerLevel serverLevel
       && SpawnManager.shouldDenyMobSpawn(event.getEntity(), serverLevel, event.getSpawnType())) {
       event.setSpawnCancelled(true);
     }

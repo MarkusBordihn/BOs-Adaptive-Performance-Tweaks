@@ -22,6 +22,7 @@ package de.markusbordihn.adaptiveperformancetweaks.core.server;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreEntityManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPositionManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.BenchmarkManager;
 import java.util.List;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -34,13 +35,13 @@ public final class ServerManager {
 
   private static final int BASE_TICK = 25;
   private static final int SERVER_LOAD_TICK = BASE_TICK;
-  private static final int WORLD_LOAD_TICK = 2 * BASE_TICK;
-  private static final int PLAYER_COUNT_TICK = 4 * BASE_TICK;
-  private static final int RESET_TICK = 6 * BASE_TICK;
+  private static final int PLAYER_COUNT_TICK = 2 * BASE_TICK;
+  private static final int RESET_TICK = 4 * BASE_TICK;
 
   private static MinecraftServer minecraftServer;
   private static int numberOfPlayers;
   private static int ticks;
+  private static long serverStartTime = 0;
 
   private ServerManager() {
   }
@@ -50,6 +51,7 @@ public final class ServerManager {
     minecraftServer = server;
     numberOfPlayers = 0;
     ticks = 0;
+    serverStartTime = System.currentTimeMillis();
     ServerLoad.reset();
     ServerLevelLoad.reset();
     PlayerPositionManager.reset();
@@ -67,18 +69,24 @@ public final class ServerManager {
     minecraftServer = null;
     numberOfPlayers = 0;
     ticks = 0;
+    ServerLoad.reset();
+    ServerLevelLoad.reset();
+    PlayerPositionManager.reset();
+    CoreEntityManager.reset();
   }
 
   public static void handleServerTick() {
     if (ticks == SERVER_LOAD_TICK) {
       ServerLoad.measureLoadAndPost();
-    } else if (ticks == WORLD_LOAD_TICK) {
       ServerLevelLoad.measureLoadAndPost();
     } else if (ticks == PLAYER_COUNT_TICK && minecraftServer != null) {
       numberOfPlayers = minecraftServer.getPlayerList().getPlayerCount();
     }
     CoreEntityManager.handleServerTick();
     PlayerPositionManager.handleServerTick();
+    if (BenchmarkManager.isRunning()) {
+      BenchmarkManager.onServerTick();
+    }
     if (++ticks >= RESET_TICK) {
       ticks = 0;
     }
@@ -90,6 +98,14 @@ public final class ServerManager {
     }
   }
 
+  public static void handleServerLevelTickStart(ServerLevel serverLevel) {
+    ServerLevelLoad.handleServerLevelTickStart(serverLevel);
+  }
+
+  public static void handleServerLevelTickEnd(ServerLevel serverLevel) {
+    ServerLevelLoad.handleServerLevelTickEnd(serverLevel);
+  }
+
   public static MinecraftServer getMinecraftServer() {
     return minecraftServer;
   }
@@ -99,7 +115,7 @@ public final class ServerManager {
   }
 
   public static double getAverageTickTime(ServerLevel serverLevel) {
-    return getAverageTickTime();
+    return ServerLevelLoad.getAverageTickTime(serverLevel);
   }
 
   public static Iterable<ServerLevel> getAllLevels() {
@@ -108,5 +124,9 @@ public final class ServerManager {
 
   public static int getNumberOfPlayers() {
     return numberOfPlayers;
+  }
+
+  public static long getUptimeMillis() {
+    return serverStartTime > 0 ? System.currentTimeMillis() - serverStartTime : 0;
   }
 }

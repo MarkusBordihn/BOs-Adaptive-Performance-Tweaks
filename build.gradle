@@ -9,6 +9,10 @@ tasks.register('runAllGameTests') {
   dependsOn ':Fabric:runGameTest', ':Forge:runGameTestServer'
 }
 
+tasks.named('check') {
+  dependsOn(tasks.named('runAllGameTests'))
+}
+
 subprojects {
 
   apply plugin: 'java'

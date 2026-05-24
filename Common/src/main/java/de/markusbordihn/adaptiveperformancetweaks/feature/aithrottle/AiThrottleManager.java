@@ -19,8 +19,10 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.aithrottle;
 
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLevelLoad;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Mob;
 
 public final class AiThrottleManager {
@@ -44,14 +46,24 @@ public final class AiThrottleManager {
       return false;
     }
 
-    return mob.tickCount % divisor != 0;
+    if (mob.tickCount % divisor == 0) {
+      return false;
+    }
+
+    return !hasNearbyPlayer(mob);
   }
 
   private static int getDivisorForCurrentLoad(Mob mob) {
-    return switch (currentLoadLevel) {
-      case MEDIUM -> hasNearbyPlayer(mob) ? 1 : AiThrottleConfig.aiThrottleMediumDivisor;
-      case HIGH -> hasNearbyPlayer(mob) ? 1 : AiThrottleConfig.aiThrottleHighDivisor;
-      case VERY_HIGH -> hasNearbyPlayer(mob) ? 1 : AiThrottleConfig.aiThrottleVeryHighDivisor;
+    ServerLoadLevel loadLevel = currentLoadLevel;
+    if (mob.level() instanceof ServerLevel serverLevel && ServerLevelLoad.hasMeasuredLoad(
+      serverLevel)) {
+      loadLevel = ServerLevelLoad.getLevelLoad(serverLevel);
+    }
+
+    return switch (loadLevel) {
+      case MEDIUM -> AiThrottleConfig.aiThrottleMediumDivisor;
+      case HIGH -> AiThrottleConfig.aiThrottleHighDivisor;
+      case VERY_HIGH -> AiThrottleConfig.aiThrottleVeryHighDivisor;
       default -> 1;
     };
   }

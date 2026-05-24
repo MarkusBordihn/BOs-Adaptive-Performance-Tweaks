@@ -49,15 +49,16 @@ public class AdaptivePerformanceTweaks implements ModInitializer {
     Constants.CONFIG_DIR = FabricLoader.getInstance().getConfigDir();
 
     boolean isDedicatedServer = FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER;
+
+    log.debug("{} Mod Compat ...", Constants.LOG_REGISTER_PREFIX);
+    ModCompat.setModLoadedChecker(FabricLoader.getInstance()::isModLoaded);
+
     log.debug("{} Configuration ({}) ...", Constants.LOG_REGISTER_PREFIX,
       isDedicatedServer ? "server" : "client");
     Config.register(isDedicatedServer);
 
     log.debug("{} Feature Registry ...", Constants.LOG_REGISTER_PREFIX);
     FeatureRegistry.registerCommon();
-
-    log.debug("{} Mod Compat ...", Constants.LOG_REGISTER_PREFIX);
-    ModCompat.setModLoadedChecker(FabricLoader.getInstance()::isModLoaded);
 
     log.debug("{} Server Event Handler ...", Constants.LOG_REGISTER_PREFIX);
     ServerEventHandler.register();

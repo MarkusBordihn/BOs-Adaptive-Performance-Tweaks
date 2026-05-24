@@ -23,9 +23,15 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
+import de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreEntityManager;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLevelLoad;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoad;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.items.ExperienceOrbManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.items.ItemEntityManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
+import java.util.Map;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.MinecraftServer;
@@ -44,36 +50,74 @@ public class StatsCommand extends CustomCommand {
       }));
   }
 
+  private static String formatUptime(long millis) {
+    long totalSeconds = millis / 1000;
+    long hours = totalSeconds / 3600;
+    long minutes = (totalSeconds % 3600) / 60;
+    if (hours > 0) {
+      return String.format("%dh %dm", hours, minutes);
+    }
+    return String.format("%dm %ds", minutes, totalSeconds % 60);
+  }
+
+  private static String formatBytes(long bytes) {
+    if (bytes >= 1_073_741_824L) {
+      return String.format("%.1f GB", bytes / 1_073_741_824.0);
+    }
+    return String.format("%.0f MB", bytes / 1_048_576.0);
+  }
+
   @Override
   public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
     PerformanceStats.Snapshot stats = PerformanceStats.snapshot();
+    MinecraftServer server = ServerManager.getMinecraftServer();
 
     double tps = Math.min(20.0, 1000.0 / Math.max(1.0, ServerLoad.getAvgTickTime()));
     sendFeedback(context, String.format("=== %s Performance Stats ===", Constants.MOD_NAME));
     sendFeedback(context, String.format(
-      "Server: TPS=%.1f (%.1fms)  Load=%s  Players=%d",
+      "Server: TPS=%.1f (%.1fms)  Load=%s  Uptime=%s",
       tps, ServerLoad.getAvgTickTime(),
       ServerLoad.getCurrentServerLoad(),
-      ServerManager.getNumberOfPlayers()));
+      formatUptime(ServerManager.getUptimeMillis())));
 
-    MinecraftServer server = ServerManager.getMinecraftServer();
+    Runtime runtime = Runtime.getRuntime();
+    long usedMemory = runtime.totalMemory() - runtime.freeMemory();
+    sendFeedback(context, String.format(
+      "Memory: %s used / %s alloc / %s max",
+      formatBytes(usedMemory), formatBytes(runtime.totalMemory()),
+      formatBytes(runtime.maxMemory())));
+
     if (server != null) {
-      int totalEntities = 0;
-      for (ServerLevel level : server.getAllLevels()) {
-        for (var ignored : level.getAllEntities()) {
-          totalEntities++;
-        }
-      }
-      sendFeedback(context, String.format("Entities in world: %d", totalEntities));
+      sendFeedback(context, String.format(
+        "Players: %d/%d",
+        server.getPlayerList().getPlayerCount(), server.getPlayerList().getMaxPlayers()));
     }
 
-    sendFeedback(context, "--- Since server start or last reset ---");
+    int mobs = CoreEntityManager.getTotalTrackedEntityCount();
+    int items = ItemEntityManager.getTrackedItemEntityCount();
+    int xpOrbs = ExperienceOrbManager.getTrackedExperienceOrbCount();
+    sendFeedback(context, String.format("Entities: %d mobs  %d items  %d XP orbs",
+      mobs, items, xpOrbs));
+
+    Map<ServerLevel, ServerLoadLevel> levelLoads = ServerLevelLoad.getAllLevelLoads();
+    if (!levelLoads.isEmpty()) {
+      StringBuilder dimensions = new StringBuilder("Dimensions:");
+      for (Map.Entry<ServerLevel, ServerLoadLevel> entry : levelLoads.entrySet()) {
+        ServerLevel level = entry.getKey();
+        dimensions.append(String.format("  %s=%.1fms (%s)",
+          level.dimension().location().getPath(),
+          ServerLevelLoad.getAverageTickTime(level),
+          entry.getValue()));
+      }
+      sendFeedback(context, dimensions.toString());
+    }
+
+    sendFeedback(context, "--- Since last server start or manual reset ---");
+    long spawnTotal = stats.mobSpawnChecks() + stats.mobSpawnsExcluded();
     sendFeedback(context, String.format(
-      "Spawn checks: %d total, %d denied (%.1f%%)",
-      stats.mobSpawnChecks(),
-      stats.mobSpawnsDenied(),
-      stats.mobSpawnChecks() == 0 ? 0.0
-        : 100.0 * stats.mobSpawnsDenied() / stats.mobSpawnChecks()));
+      "Spawn checks: %d total, %d excluded, %d checked, %d denied (%.1f%%)",
+      spawnTotal, stats.mobSpawnsExcluded(), stats.mobSpawnChecks(), stats.mobSpawnsDenied(),
+      spawnTotal == 0 ? 0.0 : 100.0 * stats.mobSpawnsDenied() / spawnTotal));
     sendFeedback(context, String.format(
       "Natural spawns: %d total, %d blocked (%.1f%%)",
       stats.naturalSpawnChecks(),

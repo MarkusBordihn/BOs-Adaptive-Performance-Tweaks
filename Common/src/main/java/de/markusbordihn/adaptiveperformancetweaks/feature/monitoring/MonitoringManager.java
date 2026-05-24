@@ -20,10 +20,12 @@
 package de.markusbordihn.adaptiveperformancetweaks.feature.monitoring;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
+import de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreEntityManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.items.ExperienceOrbManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.items.ItemEntityManager;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,6 +36,10 @@ public final class MonitoringManager {
   private static long lastLogTime = 0;
 
   private MonitoringManager() {
+  }
+
+  public static void reset() {
+    lastLogTime = 0;
   }
 
   public static void handleServerLoadEvent(ServerLoadEvent event) {
@@ -81,12 +87,9 @@ public final class MonitoringManager {
     }
 
     if (MonitoringConfig.monitoringLogEntities) {
-      int total = 0;
-      for (ServerLevel level : server.getAllLevels()) {
-        for (var ignored : level.getAllEntities()) {
-          total++;
-        }
-      }
+      int total = CoreEntityManager.getTotalTrackedEntityCount()
+        + ItemEntityManager.getTrackedItemEntityCount()
+        + ExperienceOrbManager.getTrackedExperienceOrbCount();
       status.append(" Entities=").append(total);
     }
 

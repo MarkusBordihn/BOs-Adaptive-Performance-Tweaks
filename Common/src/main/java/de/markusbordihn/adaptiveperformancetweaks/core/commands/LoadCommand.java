@@ -25,7 +25,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLevelLoad;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoad;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
-import java.util.Map;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.level.ServerLevel;
@@ -42,18 +42,22 @@ public class LoadCommand extends CustomCommand {
   public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
     ServerLoadLevel currentLoad = ServerLoad.getCurrentServerLoad();
     double avgTickTime = ServerLoad.getAvgTickTime();
-    sendFeedback(
-      context,
-      String.format(
-        "Server Load: %s (avg. %.1fms)\n===", currentLoad, avgTickTime));
+    StringBuilder message = new StringBuilder(String.format(
+      "Server Load: %s (avg. %.1fms)",
+      currentLoad, avgTickTime));
 
-    Map<ServerLevel, ServerLoadLevel> levelLoads = ServerLevelLoad.getAllLevelLoads();
-    if (!levelLoads.isEmpty()) {
-      for (Map.Entry<ServerLevel, ServerLoadLevel> entry : levelLoads.entrySet()) {
-        String levelName = entry.getKey().dimension().location().toString();
-        sendFeedback(context, String.format("○ %s — %s", levelName, entry.getValue()));
+    for (ServerLevel serverLevel : ServerManager.getAllLevels()) {
+      if (!ServerLevelLoad.hasMeasuredLoad(serverLevel)) {
+        continue;
       }
+
+      message.append(String.format("%n%s: %s (avg. %.1fms)",
+        serverLevel.dimension().location(),
+        ServerLevelLoad.getLevelLoad(serverLevel),
+        ServerLevelLoad.getAverageTickTime(serverLevel)));
     }
+
+    sendFeedback(context, message.toString());
 
     return 0;
   }

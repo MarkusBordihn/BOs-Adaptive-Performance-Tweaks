@@ -48,6 +48,7 @@ public final class CommandManager {
         .then(LoadCommand.register())
         .then(PlayerPositionCommand.register())
         .then(ReloadCommand.register())
+        .then(BenchmarkCommand.register())
         .then(StatsCommand.register())
         .then(StatusCommand.register()));
   }

@@ -24,7 +24,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -78,5 +81,14 @@ class ChunkGenThrottleManagerTest {
     int veryHigh = ChunkGenThrottleConfig.chunkGenThrottleVeryHighDivisor;
     assertTrue(medium < high, "MEDIUM divisor must be less than HIGH");
     assertTrue(high < veryHigh, "HIGH divisor must be less than VERY_HIGH");
+  }
+
+  @Test
+  void includesPerLevelLoadOverride() throws IOException {
+    String source = Files.readString(Path.of(
+      "src/main/java/de/markusbordihn/adaptiveperformancetweaks/feature/chunkgenthrottle/ChunkGenThrottleManager.java"));
+    assertTrue(source.contains("getThrottleDivisor(ServerLevel serverLevel)"));
+    assertTrue(source.contains("ServerLevelLoad.hasMeasuredLoad(serverLevel)"));
+    assertTrue(source.contains("ServerLevelLoad.getLevelLoad(serverLevel)"));
   }
 }

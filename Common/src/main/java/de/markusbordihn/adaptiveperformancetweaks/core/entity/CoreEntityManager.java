@@ -58,6 +58,7 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.Boat;
+import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -106,6 +107,7 @@ public final class CoreEntityManager {
     entityChunkKeyMap = new ConcurrentHashMap<>();
     ticks = 0;
     addOperationCounter = 0;
+    isVerifying = false;
   }
 
   public static void handleServerTick() {
@@ -205,6 +207,7 @@ public final class CoreEntityManager {
         entitiesPerChunk.remove(entity);
         if (entitiesPerChunk.isEmpty()) {
           entityMapPerChunk.remove(originalChunkKey);
+          entityChunkMap.remove(originalChunkKey);
         }
       }
     }
@@ -248,6 +251,23 @@ public final class CoreEntityManager {
     return entities != null ? entities.size() : 0;
   }
 
+  public static int getNumberOfEntitiesInChunk(String levelName, String entityName,
+    BlockPos blockPos) {
+    Set<Entity> entities = entityMapPerChunk.get(getEntityChunkKey(levelName, blockPos));
+    if (entities == null || entities.isEmpty()) {
+      return 0;
+    }
+
+    int counter = 0;
+    for (Entity entity : entities) {
+      if (entity != null && !entity.isRemoved() && hasEntityName(entity, entityName)) {
+        counter++;
+      }
+    }
+
+    return counter;
+  }
+
   public static int getNumberOfEntitiesInPlayerPositions(
     String levelName, String entityName, List<PlayerPosition> playerPositions) {
     Set<Entity> rawSet = entityMap.get(getEntityMapKey(levelName, entityName));
@@ -270,6 +290,41 @@ public final class CoreEntityManager {
       }
     }
     return counter;
+  }
+
+  public static int getNumberOfEntitiesNearPosition(
+    String levelName, String entityName, Vec3 center, double horizontalRange) {
+    Set<Entity> rawSet = entityMap.get(getEntityMapKey(levelName, entityName));
+    if (rawSet == null || rawSet.isEmpty()) {
+      return 0;
+    }
+
+    int counter = 0;
+    for (Entity entity : rawSet) {
+      if (entity == null || entity.isRemoved()) {
+        continue;
+      }
+
+      if (Math.abs(entity.getX() - center.x) <= horizontalRange
+        && Math.abs(entity.getZ() - center.z) <= horizontalRange) {
+        counter++;
+      }
+    }
+
+    return counter;
+  }
+
+  public static int getTrackedEntityCountInChunk(String levelName, BlockPos blockPos) {
+    return getActiveEntityCount(entityMapPerChunk.get(getEntityChunkKey(levelName, blockPos)));
+  }
+
+  public static int getTotalTrackedEntityCount() {
+    int total = 0;
+    for (Set<Entity> entities : entityMapGlobal.values()) {
+      total += getActiveEntityCount(entities);
+    }
+
+    return total;
   }
 
   public static boolean hasEntitySpawnedInChunk(String levelName, BlockPos blockPos) {
@@ -360,13 +415,18 @@ public final class CoreEntityManager {
     int removedEntries = removeDiscardedEntities(entityMap);
     int removedChunkEntries = removeDiscardedEntities(entityMapPerChunk);
     int removedGlobalEntries = removeDiscardedEntities(entityMapGlobal);
+    int removedChunkKeys = removeDiscardedChunkKeys();
+    int removedChunkMarkers = removeEmptyChunkMarkers();
 
-    if (removedEntries > 0 || removedChunkEntries > 0 || removedGlobalEntries > 0) {
+    if (removedEntries > 0 || removedChunkEntries > 0 || removedGlobalEntries > 0
+      || removedChunkKeys > 0 || removedChunkMarkers > 0) {
       log.debug(
-        "[Entity Manager] 🗑 Removed {} from overview, {} from chunk overview, {} from global overview.",
+        "[Entity Manager] Cleanup removed {} overview entries, {} chunk entries, {} global entries, {} stale chunk keys and {} chunk markers.",
         removedEntries,
         removedChunkEntries,
-        removedGlobalEntries);
+        removedGlobalEntries,
+        removedChunkKeys,
+        removedChunkMarkers);
     }
   }
 
@@ -398,5 +458,63 @@ public final class CoreEntityManager {
     }
 
     return removedEntries;
+  }
+
+  private static int removeDiscardedChunkKeys() {
+    if (entityChunkKeyMap.isEmpty()) {
+      return 0;
+    }
+
+    int removedEntries = 0;
+    Iterator<Map.Entry<Entity, String>> iterator = entityChunkKeyMap.entrySet().iterator();
+    while (iterator.hasNext()) {
+      Map.Entry<Entity, String> entry = iterator.next();
+      Entity entity = entry.getKey();
+      if (entity == null || entity.isRemoved()) {
+        iterator.remove();
+        removedEntries++;
+      }
+    }
+
+    return removedEntries;
+  }
+
+  private static int removeEmptyChunkMarkers() {
+    if (entityChunkMap.isEmpty()) {
+      return 0;
+    }
+
+    int removedEntries = 0;
+    Iterator<Map.Entry<String, Boolean>> iterator = entityChunkMap.entrySet().iterator();
+    while (iterator.hasNext()) {
+      Map.Entry<String, Boolean> entry = iterator.next();
+      Set<Entity> entities = entityMapPerChunk.get(entry.getKey());
+      if (entities == null || entities.isEmpty()) {
+        iterator.remove();
+        removedEntries++;
+      }
+    }
+
+    return removedEntries;
+  }
+
+  private static int getActiveEntityCount(Set<Entity> entities) {
+    if (entities == null || entities.isEmpty()) {
+      return 0;
+    }
+
+    int count = 0;
+    for (Entity entity : entities) {
+      if (entity != null && !entity.isRemoved()) {
+        count++;
+      }
+    }
+
+    return count;
+  }
+
+  private static boolean hasEntityName(Entity entity, String entityName) {
+    ResourceLocation entityKey = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+    return entityKey != null && entityName.equals(entityKey.toString());
   }
 }

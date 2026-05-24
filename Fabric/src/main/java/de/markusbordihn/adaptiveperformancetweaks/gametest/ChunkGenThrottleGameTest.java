@@ -35,4 +35,9 @@ public class ChunkGenThrottleGameTest {
   public void testDivisorIncreasesUnderVeryHighLoad(GameTestHelper helper) {
     ChunkGenThrottleTests.testDivisorIncreasesUnderVeryHighLoad(helper);
   }
+
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
+  public void testDivisorUsesPerLevelLoad(GameTestHelper helper) {
+    ChunkGenThrottleTests.testDivisorUsesPerLevelLoad(helper);
+  }
 }

@@ -19,13 +19,23 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.core.entity;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.SharedConstants;
+import net.minecraft.server.Bootstrap;
+import net.minecraft.world.entity.Entity;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -33,22 +43,54 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 class CoreEntityManagerTest {
 
+  @BeforeAll
+  static void bootstrapMinecraft() {
+    SharedConstants.tryDetectVersion();
+    Bootstrap.bootStrap();
+    Bootstrap.validate();
+  }
+
   private static void setExcludedNamespacesViaReflection(Set<String> value) throws Exception {
     Field field = CoreEntityManager.class.getDeclaredField("excludedModNamespaces");
     field.setAccessible(true);
     field.set(null, value);
   }
 
+  @SuppressWarnings("unchecked")
+  private static <T> T readStaticField(String fieldName) throws Exception {
+    Field field = CoreEntityManager.class.getDeclaredField(fieldName);
+    field.setAccessible(true);
+    return (T) field.get(null);
+  }
+
+  private static void writeStaticField(String fieldName, Object value) throws Exception {
+    Field field = CoreEntityManager.class.getDeclaredField(fieldName);
+    field.setAccessible(true);
+    field.set(null, value);
+  }
+
+  private static Entity mockEntity(boolean removed) {
+    Entity entity = mock(Entity.class);
+    when(entity.isRemoved()).thenReturn(removed);
+    return entity;
+  }
+
+  private static Set<Entity> newEntitySet(Entity... entities) {
+    Set<Entity> entitySet = ConcurrentHashMap.newKeySet();
+    Collections.addAll(entitySet, entities);
+    return entitySet;
+  }
+
   @BeforeEach
   void resetExcludedNamespaces() throws Exception {
     setExcludedNamespacesViaReflection(Collections.emptySet());
+    CoreEntityManager.reset();
   }
-
-  // --- isExcludedModNamespace ---
 
   @AfterEach
   void cleanupExcludedNamespaces() throws Exception {
     setExcludedNamespacesViaReflection(Collections.emptySet());
+    CoreEntityManager.reset();
   }
 
   @Test
@@ -107,7 +149,7 @@ class CoreEntityManagerTest {
 
   @Test
   void setExcludedModNamespacesIsImmutable() {
-    java.util.HashSet<String> mutable = new java.util.HashSet<>(Set.of("create"));
+    HashSet<String> mutable = new HashSet<>(Set.of("create"));
     CoreEntityManager.setExcludedModNamespaces(mutable);
     mutable.add("botania");
     assertFalse(CoreEntityManager.isExcludedModNamespace("botania:spark"),
@@ -141,8 +183,6 @@ class CoreEntityManagerTest {
     assertFalse(CoreEntityManager.isExcludedModNamespace("mekanismadditions:baby_creeper"));
   }
 
-  // --- setExcludedModNamespaces reset behavior ---
-
   @Test
   void nullEntityReturnsFalse() {
     assertFalse(CoreEntityManager.isRelevantEntity(null));
@@ -165,5 +205,55 @@ class CoreEntityManagerTest {
     CoreEntityManager.setExcludedModNamespaces(Collections.emptySet());
     assertFalse(CoreEntityManager.isExcludedModNamespace("create:contraption"));
     assertFalse(CoreEntityManager.isExcludedModNamespace("botania:spark"));
+  }
+
+  @Test
+  void verifyEntitiesRemovesDiscardedEntityReferencesFromAllTrackingMaps() throws Exception {
+    Entity activeEntity = mockEntity(false);
+    Entity removedEntity = mockEntity(true);
+    String levelName = "minecraft:overworld";
+    String entityName = "minecraft:zombie";
+    String entityMapKey = CoreEntityManager.getEntityMapKey(levelName, entityName);
+    String activeChunkKey = "[minecraft:overworld:0x0]";
+    String staleChunkKey = "[minecraft:overworld:1x1]";
+
+    ConcurrentHashMap<String, Set<Entity>> entityMap = new ConcurrentHashMap<>();
+    entityMap.put(entityMapKey, newEntitySet(activeEntity, removedEntity));
+
+    ConcurrentHashMap<String, Set<Entity>> entityMapPerChunk = new ConcurrentHashMap<>();
+    entityMapPerChunk.put(activeChunkKey, newEntitySet(activeEntity, removedEntity));
+
+    ConcurrentHashMap<String, Set<Entity>> entityMapGlobal = new ConcurrentHashMap<>();
+    entityMapGlobal.put(entityName, newEntitySet(activeEntity, removedEntity));
+
+    ConcurrentHashMap<Entity, String> entityChunkKeyMap = new ConcurrentHashMap<>();
+    entityChunkKeyMap.put(activeEntity, activeChunkKey);
+    entityChunkKeyMap.put(removedEntity, activeChunkKey);
+
+    writeStaticField("entityMap", entityMap);
+    writeStaticField("entityMapPerChunk", entityMapPerChunk);
+    writeStaticField("entityMapGlobal", entityMapGlobal);
+    writeStaticField("entityChunkKeyMap", entityChunkKeyMap);
+    Map<String, Boolean> entityChunkMap = readStaticField("entityChunkMap");
+    entityChunkMap.clear();
+    entityChunkMap.put(activeChunkKey, true);
+    entityChunkMap.put(staleChunkKey, true);
+
+    Method method = CoreEntityManager.class.getDeclaredMethod("verifyEntities");
+    method.setAccessible(true);
+    method.invoke(null);
+
+    Map<String, Set<Entity>> cleanedEntityMap = readStaticField("entityMap");
+    Map<String, Set<Entity>> cleanedEntityMapPerChunk = readStaticField("entityMapPerChunk");
+    Map<String, Set<Entity>> cleanedEntityMapGlobal = readStaticField("entityMapGlobal");
+    Map<Entity, String> cleanedChunkKeyMap = readStaticField("entityChunkKeyMap");
+    Map<String, Boolean> cleanedChunkMap = readStaticField("entityChunkMap");
+
+    assertEquals(Set.of(activeEntity), cleanedEntityMap.get(entityMapKey));
+    assertEquals(Set.of(activeEntity), cleanedEntityMapPerChunk.get(activeChunkKey));
+    assertEquals(Set.of(activeEntity), cleanedEntityMapGlobal.get(entityName));
+    assertEquals(Map.of(activeEntity, activeChunkKey), cleanedChunkKeyMap);
+    assertTrue(cleanedChunkMap.containsKey(activeChunkKey));
+    assertFalse(cleanedChunkMap.containsKey(staleChunkKey));
   }
 }

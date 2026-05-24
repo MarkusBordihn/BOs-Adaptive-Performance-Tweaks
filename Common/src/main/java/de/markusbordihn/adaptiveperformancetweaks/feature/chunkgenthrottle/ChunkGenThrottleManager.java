@@ -19,8 +19,10 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.chunkgenthrottle;
 
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLevelLoad;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
+import net.minecraft.server.level.ServerLevel;
 
 public final class ChunkGenThrottleManager {
 
@@ -34,7 +36,18 @@ public final class ChunkGenThrottleManager {
   }
 
   public static int getThrottleDivisor() {
-    return switch (currentLoadLevel) {
+    return getThrottleDivisor(currentLoadLevel);
+  }
+
+  public static int getThrottleDivisor(ServerLevel serverLevel) {
+    ServerLoadLevel loadLevel = ServerLevelLoad.hasMeasuredLoad(serverLevel)
+      ? ServerLevelLoad.getLevelLoad(serverLevel)
+      : currentLoadLevel;
+    return getThrottleDivisor(loadLevel);
+  }
+
+  private static int getThrottleDivisor(ServerLoadLevel loadLevel) {
+    return switch (loadLevel) {
       case MEDIUM -> ChunkGenThrottleConfig.chunkGenThrottleMediumDivisor;
       case HIGH -> ChunkGenThrottleConfig.chunkGenThrottleHighDivisor;
       case VERY_HIGH -> ChunkGenThrottleConfig.chunkGenThrottleVeryHighDivisor;

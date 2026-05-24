@@ -65,6 +65,11 @@ public final class GameRuleManager {
     logOptimizationInfo();
   }
 
+  public static void handleServerStopping() {
+    gameRules = null;
+    lastUpdateTime = System.currentTimeMillis();
+  }
+
   public static void handleServerLoadEvent(ServerLoadEvent event) {
     MinecraftServer minecraftServer = ServerManager.getMinecraftServer();
     if (minecraftServer == null) {
@@ -377,17 +382,20 @@ public final class GameRuleManager {
   public static void setMaxEntityCramming(int maxEntity) {
     int clamped = Math.max(GameRulesConfig.minEntityCramming,
       Math.min(maxEntity, GameRulesConfig.maxEntityCramming));
+    int preAdjustedClamped = clamped;
     if (ModCompat.isModLoaded("minecolonies")
       && clamped < GameRulesConfig.minEntityCrammingMineColonies) {
-      log.warn(
-        "{} MineColonies detected: raising minEntityCramming from {} to {} to prevent stuck entities",
-        LOG_PREFIX,
-        clamped,
-        GameRulesConfig.minEntityCrammingMineColonies);
       clamped = GameRulesConfig.minEntityCrammingMineColonies;
     }
     int current = gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
     if (current != clamped) {
+      if (clamped != preAdjustedClamped) {
+        log.warn(
+          "{} MineColonies detected: raising minEntityCramming from {} to {} to prevent stuck entities",
+          LOG_PREFIX,
+          preAdjustedClamped,
+          GameRulesConfig.minEntityCrammingMineColonies);
+      }
       log.debug("{} maxEntityCramming: {} → {}", LOG_PREFIX, current, clamped);
       CommandManager.executeGameRuleCommand(GameRules.RULE_MAX_ENTITY_CRAMMING, clamped);
     }

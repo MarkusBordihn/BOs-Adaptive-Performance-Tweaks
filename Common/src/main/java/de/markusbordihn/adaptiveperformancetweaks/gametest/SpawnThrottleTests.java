@@ -20,6 +20,7 @@
 package de.markusbordihn.adaptiveperformancetweaks.gametest;
 
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLevelLoad;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnConfig;
@@ -36,6 +37,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public final class SpawnThrottleTests {
@@ -45,6 +47,7 @@ public final class SpawnThrottleTests {
 
   public static void testSpawnerNotThrottledUnderNormalLoad(GameTestHelper helper) {
     SpawnManager.handleServerAboutToStart();
+    ServerLevelLoad.reset();
     GameTestHelpers.assertTrue(
       helper,
       "Spawner should NOT be throttled under NORMAL load",
@@ -53,6 +56,7 @@ public final class SpawnThrottleTests {
   }
 
   public static void testSpawnerThrottledUnderVeryHighLoad(GameTestHelper helper) {
+    ServerLevelLoad.reset();
     SpawnManager.handleServerLoadEvent(
       new ServerLoadEvent(ServerLoadLevel.VERY_HIGH, ServerLoadLevel.NORMAL, 200.0, 50.0));
     GameTestHelpers.assertTrue(
@@ -60,6 +64,31 @@ public final class SpawnThrottleTests {
       "Spawner should be throttled under VERY_HIGH load",
       SpawnManager.shouldThrottleSpawner(helper.getLevel()));
     SpawnManager.handleServerAboutToStart();
+    helper.succeed();
+  }
+
+  public static void testSpawnerThrottleOnlyInHighLoadLevel(GameTestHelper helper) {
+    SpawnManager.handleServerAboutToStart();
+    ServerLevelLoad.reset();
+    SpawnManager.handleServerLoadEvent(
+      new ServerLoadEvent(ServerLoadLevel.NORMAL, ServerLoadLevel.NORMAL, 50.0, 50.0));
+
+    ServerLevel overworld = helper.getLevel();
+    ServerLevel nether = GameTestHelpers.getRequiredLevel(helper, Level.NETHER);
+    GameTestHelpers.setMeasuredLevelLoad(overworld, ServerLoadLevel.VERY_HIGH, 200.0);
+    GameTestHelpers.setMeasuredLevelLoad(nether, ServerLoadLevel.NORMAL, 50.0);
+
+    GameTestHelpers.assertTrue(
+      helper,
+      "Spawner should be throttled in the measured high-load level",
+      SpawnManager.shouldThrottleSpawner(overworld));
+    GameTestHelpers.assertFalse(
+      helper,
+      "Spawner should not be throttled in the measured normal-load level",
+      SpawnManager.shouldThrottleSpawner(nether));
+
+    SpawnManager.handleServerAboutToStart();
+    ServerLevelLoad.reset();
     helper.succeed();
   }
 
@@ -95,8 +124,7 @@ public final class SpawnThrottleTests {
     }
 
     int allowed = spawnedZombies.size();
-    spawnedZombies.forEach(
-      z -> z.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED));
+    spawnedZombies.forEach(z -> z.remove(Entity.RemovalReason.DISCARDED));
     FeatureToggle.SPAWN.setEnabled(wasSpawnEnabled);
     SpawnConfig.spawnLimitationMaxMobsPerWorld = originalWorldMax;
     SpawnConfig.friendlyChunkSpawnRate = originalFriendlyRate;
@@ -104,7 +132,7 @@ public final class SpawnThrottleTests {
 
     GameTestHelpers.assertTrue(
       helper,
-      "Spawn limit not enforced: " + allowed + " zombies allowed (expected > 0 and ≤ " + LIMIT
+      "Spawn limit not enforced: " + allowed + " zombies allowed (expected > 0 and <= " + LIMIT
         + ")",
       allowed > 0 && allowed <= LIMIT);
     helper.succeed();
@@ -159,7 +187,7 @@ public final class SpawnThrottleTests {
 
     GameTestHelpers.assertTrue(
       helper,
-      "Server limit not enforced: " + allowed + " zombies allowed (expected > 0 and \u2264 " + LIMIT
+      "Server limit not enforced: " + allowed + " zombies allowed (expected > 0 and <= " + LIMIT
         + ")",
       allowed > 0 && allowed <= LIMIT);
     helper.succeed();
@@ -214,7 +242,7 @@ public final class SpawnThrottleTests {
 
     GameTestHelpers.assertTrue(
       helper,
-      "Chunk limit not enforced: " + allowed + " zombies allowed (expected > 0 and \u2264 " + LIMIT
+      "Chunk limit not enforced: " + allowed + " zombies allowed (expected > 0 and <= " + LIMIT
         + ")",
       allowed > 0 && allowed <= LIMIT);
     helper.succeed();
@@ -273,7 +301,7 @@ public final class SpawnThrottleTests {
 
     GameTestHelpers.assertTrue(
       helper,
-      "Virtual zone limit not enforced: " + allowed + " zombies allowed (expected > 0 and \u2264 "
+      "Virtual zone limit not enforced: " + allowed + " zombies allowed (expected > 0 and <= "
         + LIMIT + ")",
       allowed > 0 && allowed <= LIMIT);
     helper.succeed();

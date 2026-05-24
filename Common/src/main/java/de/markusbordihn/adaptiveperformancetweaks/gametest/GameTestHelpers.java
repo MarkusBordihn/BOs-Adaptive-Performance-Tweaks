@@ -19,7 +19,15 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.gametest;
 
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLevelLoad;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.Objects;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 
 public final class GameTestHelpers {
 
@@ -46,8 +54,55 @@ public final class GameTestHelpers {
 
   public static void assertEquals(
     GameTestHelper helper, String message, Object expected, Object actual) {
-    if (!java.util.Objects.equals(expected, actual)) {
+    if (!Objects.equals(expected, actual)) {
       helper.fail(message + " (expected=" + expected + ", actual=" + actual + ")");
     }
+  }
+
+  public static ServerLevel getRequiredLevel(GameTestHelper helper, ResourceKey<Level> levelKey) {
+    ServerLevel serverLevel = helper.getLevel().getServer().getLevel(levelKey);
+    if (serverLevel == null) {
+      helper.fail("Expected level not available: " + levelKey.location());
+      return helper.getLevel();
+    }
+    return serverLevel;
+  }
+
+  public static void resetMeasuredLevelLoad() {
+    ServerLevelLoad.reset();
+  }
+
+  public static void setMeasuredLevelLoad(ServerLevel serverLevel, ServerLoadLevel loadLevel,
+    double averageTickTime) {
+    try {
+      getLevelTickTimes().put(serverLevel, averageTickTime);
+      getReportedLevelTickTimes().put(serverLevel, averageTickTime);
+      getLevelLoadLevels().put(serverLevel, loadLevel);
+    } catch (ReflectiveOperationException exception) {
+      throw new IllegalStateException("Unable to set measured level load for tests", exception);
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Map<ServerLevel, Double> getLevelTickTimes() throws ReflectiveOperationException {
+    Field field = ServerLevelLoad.class.getDeclaredField("levelTickTimes");
+    field.setAccessible(true);
+    return (Map<ServerLevel, Double>) field.get(null);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Map<ServerLevel, Double> getReportedLevelTickTimes()
+    throws ReflectiveOperationException {
+    Field field = ServerLevelLoad.class.getDeclaredField("levelReportedTickTimes");
+    field.setAccessible(true);
+    return (Map<ServerLevel, Double>) field.get(null);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Map<ServerLevel, ServerLoadLevel> getLevelLoadLevels()
+    throws ReflectiveOperationException {
+    Field field = ServerLevelLoad.class.getDeclaredField("levelLoadLevels");
+    field.setAccessible(true);
+    return (Map<ServerLevel, ServerLoadLevel>) field.get(null);
   }
 }

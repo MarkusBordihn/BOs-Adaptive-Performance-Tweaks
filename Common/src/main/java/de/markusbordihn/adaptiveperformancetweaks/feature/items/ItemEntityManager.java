@@ -55,8 +55,7 @@ public final class ItemEntityManager {
   }
 
   public static void handleServerAboutToStart() {
-    itemTypeEntityMap = new ConcurrentHashMap<>();
-    itemWorldEntityMap = new ConcurrentHashMap<>();
+    resetState();
     hasItemsAllowList = !ItemsConfig.itemsAllowList.isEmpty();
     hasItemsDenyList = !ItemsConfig.itemsDenyList.isEmpty();
 
@@ -67,6 +66,28 @@ public final class ItemEntityManager {
         ItemsConfig.maxNumberOfItems,
         ItemsConfig.itemsClusterRange);
     }
+  }
+
+  public static void handleServerStopping() {
+    resetState();
+  }
+
+  public static int getTrackedItemEntityCount() {
+    int total = 0;
+    for (Set<ItemEntity> entities : itemWorldEntityMap.values()) {
+      total += entities.size();
+    }
+
+    return total;
+  }
+
+  private static void resetState() {
+    itemTypeEntityMap = new ConcurrentHashMap<>();
+    itemWorldEntityMap = new ConcurrentHashMap<>();
+    hasHighServerLoad = false;
+    hasItemsAllowList = !ItemsConfig.itemsAllowList.isEmpty();
+    hasItemsDenyList = !ItemsConfig.itemsDenyList.isEmpty();
+    ticks = 0;
   }
 
   public static void handleServerLoadEvent(ServerLoadEvent event) {

@@ -22,15 +22,19 @@ package de.markusbordihn.adaptiveperformancetweaks.server;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPositionManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.BenchmarkManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimDistanceManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.distance.ViewDistanceManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.gamerules.GameRuleManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ExperienceOrbManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ItemEntityManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.MonitoringManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import de.markusbordihn.adaptiveperformancetweaks.feature.player.PlayerDamageManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.player.PlayerLoginManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnManager;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 
 public final class CommonServerEventHandler {
@@ -39,6 +43,10 @@ public final class CommonServerEventHandler {
   }
 
   public static void handleServerAboutToStart(MinecraftServer server) {
+    PerformanceStats.reset();
+    MonitoringManager.reset();
+    BenchmarkManager.reset();
+
     ServerManager.handleServerAboutToStart(server);
     if (FeatureToggle.ITEMS.isEnabled()) {
       ItemEntityManager.handleServerAboutToStart();
@@ -77,6 +85,25 @@ public final class CommonServerEventHandler {
   }
 
   public static void handleServerStopping(MinecraftServer server) {
+    PerformanceStats.reset();
+    MonitoringManager.reset();
+    BenchmarkManager.reset();
+
+    if (FeatureToggle.GAMERULES.isEnabled()) {
+      GameRuleManager.handleServerStopping();
+    }
+    if (FeatureToggle.SPAWN.isEnabled()) {
+      SpawnManager.handleServerStopping();
+    }
+    if (FeatureToggle.ITEMS.isEnabled()) {
+      ItemEntityManager.handleServerStopping();
+    }
+    if (FeatureToggle.EXPERIENCE_ORBS.isEnabled()) {
+      ExperienceOrbManager.handleServerStopping();
+    }
+    if (FeatureToggle.PLAYER_LOGIN_PROTECTION.isEnabled()) {
+      PlayerLoginManager.handleServerStopping();
+    }
     ServerManager.handleServerStopping(server);
   }
 
@@ -94,6 +121,14 @@ public final class CommonServerEventHandler {
     if (FeatureToggle.PLAYER_LOGIN_PROTECTION.isEnabled()) {
       PlayerLoginManager.handleServerTick();
     }
+  }
+
+  public static void handleServerLevelTickStart(ServerLevel serverLevel) {
+    ServerManager.handleServerLevelTickStart(serverLevel);
+  }
+
+  public static void handleServerLevelTickEnd(ServerLevel serverLevel) {
+    ServerManager.handleServerLevelTickEnd(serverLevel);
   }
 
   public static void handlePlayerLoggedIn(ServerPlayer serverPlayer) {

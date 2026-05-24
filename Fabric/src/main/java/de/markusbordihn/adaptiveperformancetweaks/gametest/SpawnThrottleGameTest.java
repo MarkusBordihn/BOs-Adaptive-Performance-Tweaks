@@ -37,6 +37,11 @@ public class SpawnThrottleGameTest {
   }
 
   @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
+  public void testSpawnerThrottleOnlyInHighLoadLevel(GameTestHelper helper) {
+    SpawnThrottleTests.testSpawnerThrottleOnlyInHighLoadLevel(helper);
+  }
+
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testEntityWorldLimitBlocksSpawnAt10(GameTestHelper helper) {
     SpawnThrottleTests.testEntityWorldLimitBlocksSpawnAt10(helper);
   }

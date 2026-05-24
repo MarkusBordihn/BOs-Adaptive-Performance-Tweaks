@@ -21,30 +21,36 @@ package de.markusbordihn.adaptiveperformancetweaks.fabric.mixin;
 
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.feature.chunkgenthrottle.ChunkGenThrottleManager;
-import java.util.function.BooleanSupplier;
-import net.minecraft.server.level.ChunkMap;
+import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.server.level.ServerLevel;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(ChunkMap.class)
+@Mixin(ServerChunkCache.class)
 public abstract class ChunkGenThrottleMixin {
+
+  @Shadow
+  @Final
+  private ServerLevel level;
 
   @Unique
   private int aptweaks_genThrottleCounter = 0;
 
-  @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
-  private void aptweaks_tick(BooleanSupplier hasTimeLeft, CallbackInfo ci) {
+  @Inject(method = "runDistanceManagerUpdates", at = @At("HEAD"), cancellable = true)
+  private void aptweaks_runDistanceManagerUpdates(CallbackInfoReturnable<Boolean> cir) {
     if (!FeatureToggle.CHUNK_GEN_THROTTLE.isEnabled()) {
       return;
     }
 
     this.aptweaks_genThrottleCounter++;
-    int divisor = ChunkGenThrottleManager.getThrottleDivisor();
+    int divisor = ChunkGenThrottleManager.getThrottleDivisor(this.level);
     if (divisor > 1 && (this.aptweaks_genThrottleCounter & Integer.MAX_VALUE) % divisor != 0) {
-      ci.cancel();
+      cir.setReturnValue(false);
     }
   }
 }

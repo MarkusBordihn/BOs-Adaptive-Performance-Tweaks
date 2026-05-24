@@ -25,6 +25,7 @@ import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.entity.CommonEntityEventHandler;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnPresetLoader;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
@@ -57,8 +58,7 @@ public final class ServerEventHandler {
           public CompletableFuture<Void> reload(
             PreparationBarrier barrier, ResourceManager manager,
             ProfilerFiller preparationsProfiler, ProfilerFiller reloadProfiler,
-            java.util.concurrent.Executor backgroundExecutor,
-            java.util.concurrent.Executor gameExecutor) {
+            Executor backgroundExecutor, Executor gameExecutor) {
             return loader.reload(barrier, manager, preparationsProfiler, reloadProfiler,
               backgroundExecutor, gameExecutor);
           }
@@ -78,6 +78,9 @@ public final class ServerEventHandler {
 
     ServerTickEvents.END_SERVER_TICK.register(
       server -> CommonServerEventHandler.handleServerTick());
+    ServerTickEvents.START_WORLD_TICK.register(
+      CommonServerEventHandler::handleServerLevelTickStart);
+    ServerTickEvents.END_WORLD_TICK.register(CommonServerEventHandler::handleServerLevelTickEnd);
 
     ServerPlayConnectionEvents.JOIN.register((handler, sender, server) ->
       CommonServerEventHandler.handlePlayerLoggedIn(handler.player));

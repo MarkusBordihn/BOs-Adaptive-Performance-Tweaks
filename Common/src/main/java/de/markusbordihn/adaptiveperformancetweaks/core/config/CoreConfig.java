@@ -91,9 +91,12 @@ public class CoreConfig extends Config {
   }
 
   public static boolean isFeatureEnabled(FeatureToggle toggle) {
-    return featureFlags.getOrDefault(
-      toggle,
-      ModConflictDetector.resolveFeatureState(toggle, toggle.getDefaultState()));
+    if (!featureFlags.containsKey(toggle)) {
+      boolean resolved = ModConflictDetector.resolveFeatureState(toggle, toggle.getDefaultState());
+      featureFlags.put(toggle, resolved);
+      return resolved;
+    }
+    return featureFlags.get(toggle);
   }
 
   public static void setFeatureEnabled(FeatureToggle toggle, boolean enabled) {

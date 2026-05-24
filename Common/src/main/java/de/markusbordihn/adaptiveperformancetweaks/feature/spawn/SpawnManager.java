@@ -20,7 +20,9 @@
 package de.markusbordihn.adaptiveperformancetweaks.feature.spawn;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
+import de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreEntityManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLevelLoad;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
@@ -38,7 +40,6 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -47,7 +48,6 @@ public final class SpawnManager {
 
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME_SPAWN);
   private static final int SERVER_STARTED_DELAY_TICKS = 20 * 20;
-  private static final Map<String, Map<String, Integer>> worldCountBase = new HashMap<>();
   private static final Map<String, Map<String, Integer>> worldCountDelta = new HashMap<>();
   private static volatile ServerLoadLevel currentLoadLevel = ServerLoadLevel.NORMAL;
   private static volatile boolean serverStarted = false;
@@ -64,8 +64,12 @@ public final class SpawnManager {
     serverStartedDelay = false;
     serverStartedDelayTicks = 0;
     friendlyChunkCounter = 0;
-    worldCountBase.clear();
     worldCountDelta.clear();
+  }
+
+  public static void handleServerStopping() {
+    handleServerAboutToStart();
+    VirtualPlayerManager.clearAll();
   }
 
   public static void handleServerStarted() {
@@ -75,7 +79,6 @@ public final class SpawnManager {
   }
 
   public static void handleServerTick() {
-    worldCountBase.clear();
     worldCountDelta.clear();
     if (serverStarted && !serverStartedDelay) {
       if (++serverStartedDelayTicks >= SERVER_STARTED_DELAY_TICKS) {
@@ -95,7 +98,8 @@ public final class SpawnManager {
       return false;
     }
 
-    double effectivePassRate = getNaturalSpawnPassRate(currentLoadLevel);
+    ServerLoadLevel loadLevel = getLoadLevel(level);
+    double effectivePassRate = getNaturalSpawnPassRate(loadLevel);
     if (SpawnConfig.naturalSpawnPrioritizeByTimeOfDay
       && !level.dimensionType().hasFixedTime()
       && level.isNight()) {
@@ -112,8 +116,8 @@ public final class SpawnManager {
     if (denied) {
       PerformanceStats.naturalSpawnsDenied++;
       if (log.isDebugEnabled()) {
-        log.debug("[Natural Spawn] Denied {} at {},{} in {} — load={} passRate={}",
-          category, pos.getX(), pos.getZ(), level.dimension().location(), currentLoadLevel,
+        log.debug("[Natural Spawn] Denied {} at {},{} in {} - load={} passRate={}",
+          category, pos.getX(), pos.getZ(), level.dimension().location(), loadLevel,
           String.format("%.2f", effectivePassRate));
       }
     }
@@ -129,7 +133,6 @@ public final class SpawnManager {
     BlockPos pos, MobSpawnType spawnType) {
     String entityId = BuiltInRegistries.ENTITY_TYPE.getKey(entityType).toString();
     String dimensionId = level.dimension().location().toString();
-    PerformanceStats.mobSpawnChecks++;
     boolean deny = evaluateDenyMobSpawn(entityType, level, pos, spawnType, entityId, dimensionId);
     if (deny) {
       PerformanceStats.mobSpawnsDenied++;
@@ -139,94 +142,83 @@ public final class SpawnManager {
     return deny;
   }
 
-  public static boolean shouldDenyMobSpawnBeforeCreation(EntityType<?> entityType,
-    ServerLevel level) {
-    if (!FeatureToggle.SPAWN.isEnabled() || !SpawnConfig.spawnLimitationEnabled
-      || !serverStartedDelay) {
-      return false;
-    }
-    String entityId = BuiltInRegistries.ENTITY_TYPE.getKey(entityType).toString();
-    String dimensionId = level.dimension().location().toString();
-    if (SpawnPresetRegistry.evaluate(entityId, dimensionId) == SpawnDecision.DENY) {
-      PerformanceStats.mobSpawnChecks++;
-      PerformanceStats.mobSpawnsDenied++;
-      return true;
-    }
-    return false;
-  }
-
   private static boolean evaluateDenyMobSpawn(EntityType<?> entityType, ServerLevel level,
     BlockPos pos, MobSpawnType spawnType, String entityId, String dimensionId) {
     if (!FeatureToggle.SPAWN.isEnabled() || !SpawnConfig.spawnLimitationEnabled
       || !serverStartedDelay) {
+      PerformanceStats.mobSpawnsExcluded++;
       return false;
     }
 
     if (SpawnConfig.spawnEggBypassLimitations && spawnType == MobSpawnType.SPAWN_EGG) {
       log.debug("[Spawn Egg] Allow {} in {}", entityId, dimensionId);
+      PerformanceStats.mobSpawnsExcluded++;
       return false;
     }
 
     SpawnDecision decision = SpawnPresetRegistry.evaluate(entityId, dimensionId);
+    if (decision == SpawnDecision.IGNORE_DIMENSION) {
+      log.debug("[Ignored Dimension] Allow {} in {}", entityId, dimensionId);
+      PerformanceStats.mobSpawnsExcluded++;
+      return false;
+    }
+
+    PerformanceStats.mobSpawnChecks++;
     if (decision == SpawnDecision.DENY) {
       log.debug("[Denied Entity] Deny {} at {} in {}", entityId, pos, dimensionId);
       return true;
     }
 
-    if (decision == SpawnDecision.IGNORE_DIMENSION) {
-      log.debug("[Ignored Dimension] Allow {} in {}", entityId, dimensionId);
-      return false;
-    }
-
+    ServerLoadLevel loadLevel = getLoadLevel(level);
     int perChunkMax = SpawnPresetRegistry.getEffectivePerChunkMax(entityId, dimensionId,
-      currentLoadLevel);
+      loadLevel);
     if (perChunkMax >= 0) {
       int inChunk = countInChunk(entityType, pos, level);
       if (inChunk >= perChunkMax) {
-        log.debug("[Per-Chunk Limit] Deny {} at {} in {} — {}/{}", entityId, pos,
+        log.debug("[Per-Chunk Limit] Deny {} at {} in {} - {}/{}", entityId, pos,
           dimensionId, inChunk, perChunkMax);
         return true;
       }
     }
 
     int perPlayerMax = SpawnPresetRegistry.getEffectivePerPlayerMax(entityId, dimensionId,
-      currentLoadLevel);
+      loadLevel);
     if (perPlayerMax >= 0) {
       int nearPlayer = countNearPlayer(entityType, Vec3.atCenterOf(pos), level);
       if (nearPlayer >= perPlayerMax) {
-        log.debug("[Per-Player Limit] Deny {} at {} in {} — {}/{}", entityId, pos,
+        log.debug("[Per-Player Limit] Deny {} at {} in {} - {}/{}", entityId, pos,
           dimensionId, nearPlayer, perPlayerMax);
         return true;
       }
     }
 
     int perWorldMax = SpawnPresetRegistry.getEffectivePerWorldMax(entityId, dimensionId,
-      currentLoadLevel);
+      loadLevel);
     if (perWorldMax >= 0) {
       int inWorld = countInWorld(entityType, level);
       if (inWorld >= perWorldMax) {
         if (isFriendlyChunkSpawn(entityType, pos, level)) {
-          log.debug("[Friendly Chunk Spawn] Allow {} in {} — world limit {}/{} but chunk empty",
+          log.debug("[Friendly Chunk Spawn] Allow {} in {} - world limit {}/{} but chunk empty",
             entityId, dimensionId, inWorld, perWorldMax);
           return false;
         }
-        log.debug("[Per-World Limit] Deny {} at {} in {} — {}/{}", entityId, pos,
+        log.debug("[Per-World Limit] Deny {} at {} in {} - {}/{}", entityId, pos,
           dimensionId, inWorld, perWorldMax);
         return true;
       }
     }
 
     int perServerMax = SpawnPresetRegistry.getEffectivePerServerMax(entityId, dimensionId,
-      currentLoadLevel);
+      loadLevel);
     if (perServerMax >= 0) {
       int onServer = countOnServer(entityType);
       if (onServer >= perServerMax) {
         if (isFriendlyChunkSpawn(entityType, pos, level)) {
-          log.debug("[Friendly Chunk Spawn] Allow {} in {} — server limit {}/{} but chunk empty",
+          log.debug("[Friendly Chunk Spawn] Allow {} in {} - server limit {}/{} but chunk empty",
             entityId, dimensionId, onServer, perServerMax);
           return false;
         }
-        log.debug("[Per-Server Limit] Deny {} at {} in {} — {}/{}", entityId, pos,
+        log.debug("[Per-Server Limit] Deny {} at {} in {} - {}/{}", entityId, pos,
           dimensionId, onServer, perServerMax);
         return true;
       }
@@ -248,16 +240,13 @@ public final class SpawnManager {
       return false;
     }
 
-    if (currentLoadLevel != ServerLoadLevel.VERY_LOW && currentLoadLevel != ServerLoadLevel.LOW) {
+    ServerLoadLevel loadLevel = getLoadLevel(level);
+    if (loadLevel != ServerLoadLevel.VERY_LOW && loadLevel != ServerLoadLevel.LOW) {
       return false;
     }
 
-    int chunkX = pos.getX() >> 4;
-    int chunkZ = pos.getZ() >> 4;
-    AABB chunkBounds = new AABB(
-      chunkX * 16.0, level.getMinBuildHeight(), chunkZ * 16.0,
-      chunkX * 16.0 + 16.0, level.getMaxBuildHeight(), chunkZ * 16.0 + 16.0);
-    if (!level.getEntitiesOfClass(Mob.class, chunkBounds).isEmpty()) {
+    String dimensionId = level.dimension().location().toString();
+    if (CoreEntityManager.getTrackedEntityCountInChunk(dimensionId, pos) > 0) {
       return false;
     }
 
@@ -271,7 +260,7 @@ public final class SpawnManager {
   }
 
   public static boolean shouldThrottleSpawner(ServerLevel level) {
-    return SpawnConfig.spawnLimitationEnabled && currentLoadLevel == ServerLoadLevel.VERY_HIGH;
+    return SpawnConfig.spawnLimitationEnabled && getLoadLevel(level) == ServerLoadLevel.VERY_HIGH;
   }
 
   public static void handleEntityConversion(Entity entity) {
@@ -283,13 +272,10 @@ public final class SpawnManager {
   }
 
   private static int countInChunk(EntityType<?> entityType, BlockPos pos, ServerLevel level) {
-    int chunkX = pos.getX() >> 4;
-    int chunkZ = pos.getZ() >> 4;
-    AABB chunkBounds = new AABB(
-      chunkX * 16.0, level.getMinBuildHeight(), chunkZ * 16.0,
-      chunkX * 16.0 + 16.0, level.getMaxBuildHeight(), chunkZ * 16.0 + 16.0);
-    return level.getEntitiesOfClass(Mob.class, chunkBounds,
-      existingMob -> existingMob.getType() == entityType).size();
+    return CoreEntityManager.getNumberOfEntitiesInChunk(
+      level.dimension().location().toString(),
+      BuiltInRegistries.ENTITY_TYPE.getKey(entityType).toString(),
+      pos);
   }
 
   private static int countNearPlayer(EntityType<?> entityType, Vec3 spawnPos, ServerLevel level) {
@@ -300,7 +286,6 @@ public final class SpawnManager {
       return 0;
     }
 
-    AABB countArea;
     Vec3 anchorPos;
     if (virtualPos != null && (realPlayer == null
       || spawnPos.distanceToSqr(virtualPos) < spawnPos.distanceToSqr(realPlayer.position()))) {
@@ -308,29 +293,18 @@ public final class SpawnManager {
     } else {
       anchorPos = realPlayer.position();
     }
-    countArea = new AABB(
-      anchorPos.x - viewDistance, level.getMinBuildHeight(), anchorPos.z - viewDistance,
-      anchorPos.x + viewDistance, level.getMaxBuildHeight(), anchorPos.z + viewDistance);
 
-    return level.getEntitiesOfClass(Mob.class, countArea,
-      existingMob -> existingMob.getType() == entityType).size();
+    return CoreEntityManager.getNumberOfEntitiesNearPosition(
+      level.dimension().location().toString(),
+      BuiltInRegistries.ENTITY_TYPE.getKey(entityType).toString(),
+      anchorPos,
+      viewDistance);
   }
 
   private static int countInWorld(EntityType<?> entityType, ServerLevel level) {
     String dimensionId = level.dimension().location().toString();
     String entityTypeId = BuiltInRegistries.ENTITY_TYPE.getKey(entityType).toString();
-    Map<String, Integer> dimensionCache = worldCountBase.get(dimensionId);
-    if (dimensionCache == null) {
-      dimensionCache = new HashMap<>();
-      for (Entity entity : level.getAllEntities()) {
-        if (entity instanceof Mob mob && !mob.isRemoved() && !mob.hasCustomName()) {
-          dimensionCache.merge(
-            BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()).toString(), 1, Integer::sum);
-        }
-      }
-      worldCountBase.put(dimensionId, dimensionCache);
-    }
-    int base = dimensionCache.getOrDefault(entityTypeId, 0);
+    int base = CoreEntityManager.getNumberOfEntities(dimensionId, entityTypeId);
     int delta = worldCountDelta
       .getOrDefault(dimensionId, Map.of())
       .getOrDefault(entityTypeId, 0);
@@ -343,9 +317,10 @@ public final class SpawnManager {
       return 0;
     }
 
-    int total = 0;
-    for (ServerLevel level : server.getAllLevels()) {
-      total += countInWorld(entityType, level);
+    String entityTypeId = BuiltInRegistries.ENTITY_TYPE.getKey(entityType).toString();
+    int total = CoreEntityManager.getNumberOfEntities(entityTypeId);
+    for (Map<String, Integer> dimensionCounts : worldCountDelta.values()) {
+      total += dimensionCounts.getOrDefault(entityTypeId, 0);
     }
 
     return total;
@@ -360,5 +335,11 @@ public final class SpawnManager {
       case HIGH -> SpawnConfig.naturalSpawnPassRateHigh;
       case VERY_HIGH -> SpawnConfig.naturalSpawnPassRateVeryHigh;
     };
+  }
+
+  private static ServerLoadLevel getLoadLevel(ServerLevel level) {
+    return ServerLevelLoad.hasMeasuredLoad(level)
+      ? ServerLevelLoad.getLevelLoad(level)
+      : currentLoadLevel;
   }
 }

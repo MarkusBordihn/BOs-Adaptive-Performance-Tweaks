@@ -23,6 +23,7 @@ import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.biome.MobSpawnSettings;
@@ -55,6 +56,7 @@ public class NaturalSpawnerEntityMixin {
       spawnerData, mutableBlockPos, distance)) {
       return false;
     }
-    return !SpawnManager.shouldDenyMobSpawnBeforeCreation(spawnerData.type, serverLevel);
+    return !SpawnManager.shouldDenyMobSpawnAt(spawnerData.type, serverLevel, mutableBlockPos,
+      MobSpawnType.NATURAL);
   }
 }
