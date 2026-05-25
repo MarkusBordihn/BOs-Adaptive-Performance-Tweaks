@@ -32,13 +32,16 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.LogManager;
@@ -74,7 +77,8 @@ public final class BenchmarkManager {
   private static ServerPlayer pendingConfirmPlayer;
   private static ServerPlayer benchmarkPlayer;
   private static Vec3 playerStartPos;
-  private static List<Vec3> moveWaypoints = new ArrayList<>();
+  private static List<Vec3> baselineMoveWaypoints = new ArrayList<>();
+  private static List<Vec3> activeMoveWaypoints = new ArrayList<>();
   private static int currentWaypointIndex;
   private static long phaseStartMs;
   private static long transitionStartMs;
@@ -134,7 +138,9 @@ public final class BenchmarkManager {
     benchmarkPlayer = player;
     playerStartPos = player.position();
     if (autoMove) {
-      moveWaypoints = computeWaypoints(playerStartPos);
+      Set<Long> reservedChunkKeys = new HashSet<>(MOVE_WAYPOINT_COUNT * 2);
+      baselineMoveWaypoints = computeWaypoints(playerStartPos, reservedChunkKeys);
+      activeMoveWaypoints = computeWaypoints(playerStartPos, reservedChunkKeys);
       currentWaypointIndex = 0;
     }
 
@@ -170,8 +176,14 @@ public final class BenchmarkManager {
     state = BenchmarkState.PHASE_BASELINE;
 
     log.info("Benchmark Phase 1 (Baseline) started by {}", player.getName().getString());
-    sendMessage(player, "Benchmark Phase 1/2 (Baseline) started — mod features disabled.");
+    sendMessage(player, "Benchmark Phase 1/2 (Baseline) started - mod features disabled.");
     sendMessage(player, "Do not move! Phase duration: " + formatDuration(phaseDurationMs));
+    if (autoMove && !baselineMoveWaypoints.isEmpty()) {
+      sendMessage(player, String.format(
+        "[Benchmark] Auto-move uses %,d unique random chunks in Phase 1 and %,d new chunks in Phase 2.",
+        baselineMoveWaypoints.size(), activeMoveWaypoints.size()));
+      teleportToNextWaypoint(player, baselineMoveWaypoints);
+    }
   }
 
   public static void cancel(ServerPlayer player) {
@@ -249,11 +261,11 @@ public final class BenchmarkManager {
       lastStatusMs = now;
     }
 
+    List<Vec3> moveWaypoints =
+      state == BenchmarkState.PHASE_BASELINE ? baselineMoveWaypoints : activeMoveWaypoints;
     if (autoMove && benchmarkPlayer != null && !moveWaypoints.isEmpty()
       && now - lastMoveMs >= MOVE_INTERVAL_MS) {
-      Vec3 target = moveWaypoints.get(currentWaypointIndex % moveWaypoints.size());
-      currentWaypointIndex++;
-      teleportToSurface(benchmarkPlayer, target);
+      teleportToNextWaypoint(benchmarkPlayer, moveWaypoints);
       lastMoveMs = now;
     }
 
@@ -313,7 +325,7 @@ public final class BenchmarkManager {
       TRANSITION_DURATION_MS / 1000);
     if (benchmarkPlayer != null) {
       sendMessage(benchmarkPlayer, String.format(
-        "Phase 1 complete — mod features re-enabled. Starting Phase 2 in %s ...",
+        "Phase 1 complete - mod features re-enabled. Starting Phase 2 in %s ...",
         formatDuration(TRANSITION_DURATION_MS)));
     }
   }
@@ -324,17 +336,22 @@ public final class BenchmarkManager {
     lastStatusMs = now;
     lastMoveMs = now;
 
-    if (autoMove && benchmarkPlayer != null && playerStartPos != null) {
+    if (autoMove && benchmarkPlayer != null && !activeMoveWaypoints.isEmpty()) {
       currentWaypointIndex = 0;
-      teleportToSurface(benchmarkPlayer, playerStartPos);
+      teleportToNextWaypoint(benchmarkPlayer, activeMoveWaypoints);
     }
 
     state = BenchmarkState.PHASE_ACTIVE;
 
     log.info("Benchmark Phase 2 (Active) started");
     if (benchmarkPlayer != null) {
-      sendMessage(benchmarkPlayer, "Benchmark Phase 2/2 (Active) started — mod features enabled.");
+      sendMessage(benchmarkPlayer, "Benchmark Phase 2/2 (Active) started - mod features enabled.");
       sendMessage(benchmarkPlayer, "Phase duration: " + formatDuration(phaseDurationMs));
+      if (autoMove && !activeMoveWaypoints.isEmpty()) {
+        sendMessage(benchmarkPlayer, String.format(
+          "[Benchmark] Auto-move switched to %,d fresh random chunks for Phase 2.",
+          activeMoveWaypoints.size()));
+      }
     }
   }
 
@@ -363,6 +380,8 @@ public final class BenchmarkManager {
       Map.copyOf(activeLoadDist),
       activeHeapUsed, activeEntityCount,
       activeAvgCpu, activeMaxCpu,
+      autoMove, baselineMoveWaypoints.size(), activeMoveWaypoints.size(),
+      countSharedChunkTargets(baselineMoveWaypoints, activeMoveWaypoints),
       activeDelta, improvement, Instant.now());
 
     restoreFeatures();
@@ -462,7 +481,8 @@ public final class BenchmarkManager {
     playerStartPos = null;
     savedGameMode = null;
     lastCpuPercent = -1.0;
-    moveWaypoints.clear();
+    baselineMoveWaypoints.clear();
+    activeMoveWaypoints.clear();
     currentWaypointIndex = 0;
     baselineSamples.clear();
     activeSamples.clear();
@@ -474,15 +494,54 @@ public final class BenchmarkManager {
     savedDebugStates.clear();
   }
 
-  private static List<Vec3> computeWaypoints(Vec3 origin) {
+  private static List<Vec3> computeWaypoints(Vec3 origin, Set<Long> reservedChunkKeys) {
     List<Vec3> points = new ArrayList<>(MOVE_WAYPOINT_COUNT);
     Random rng = new Random();
-    for (int i = 0; i < MOVE_WAYPOINT_COUNT; i++) {
-      double x = origin.x + (rng.nextDouble() * 2 * MOVE_AREA_HALF_SIZE - MOVE_AREA_HALF_SIZE);
-      double z = origin.z + (rng.nextDouble() * 2 * MOVE_AREA_HALF_SIZE - MOVE_AREA_HALF_SIZE);
-      points.add(new Vec3(x, origin.y, z));
+    int originChunkX = blockToChunk(origin.x);
+    int originChunkZ = blockToChunk(origin.z);
+    int moveAreaHalfChunks = Math.max(1, MOVE_AREA_HALF_SIZE >> 4);
+    int maxAttempts = MOVE_WAYPOINT_COUNT * 50;
+    int attempts = 0;
+    while (points.size() < MOVE_WAYPOINT_COUNT && attempts++ < maxAttempts) {
+      int chunkX =
+        originChunkX + rng.nextInt(moveAreaHalfChunks * 2 + 1) - moveAreaHalfChunks;
+      int chunkZ =
+        originChunkZ + rng.nextInt(moveAreaHalfChunks * 2 + 1) - moveAreaHalfChunks;
+      long chunkKey = ChunkPos.asLong(chunkX, chunkZ);
+      if (!reservedChunkKeys.add(chunkKey)) {
+        continue;
+      }
+      points.add(new Vec3(chunkX * 16.0 + 8.0, origin.y, chunkZ * 16.0 + 8.0));
     }
     return points;
+  }
+
+  private static int blockToChunk(double blockCoord) {
+    return ((int) Math.floor(blockCoord)) >> 4;
+  }
+
+  private static int countSharedChunkTargets(List<Vec3> baselineTargets, List<Vec3> activeTargets) {
+    Set<Long> baselineChunkKeys = new HashSet<>(baselineTargets.size());
+    for (Vec3 target : baselineTargets) {
+      baselineChunkKeys.add(getChunkKey(target));
+    }
+    int sharedTargets = 0;
+    for (Vec3 target : activeTargets) {
+      if (baselineChunkKeys.contains(getChunkKey(target))) {
+        sharedTargets++;
+      }
+    }
+    return sharedTargets;
+  }
+
+  private static long getChunkKey(Vec3 target) {
+    return ChunkPos.asLong(blockToChunk(target.x), blockToChunk(target.z));
+  }
+
+  private static void teleportToNextWaypoint(ServerPlayer player, List<Vec3> moveWaypoints) {
+    Vec3 target = moveWaypoints.get(currentWaypointIndex % moveWaypoints.size());
+    currentWaypointIndex++;
+    teleportToSurface(player, target);
   }
 
   private static void teleportToSurface(ServerPlayer player, Vec3 target) {
@@ -595,6 +654,9 @@ public final class BenchmarkManager {
     Map<ServerLoadLevel, Integer> activeLoadDist,
     long activeHeapUsed, int activeEntityCount,
     double activeAvgCpu, double activeMaxCpu,
+    boolean autoMoveEnabled,
+    int baselineMoveTargetCount, int activeMoveTargetCount,
+    int sharedMoveTargetCount,
     PerformanceStats.Snapshot activeDelta,
     double tickTimeImprovementPercent,
     Instant timestamp) {
@@ -700,6 +762,15 @@ public final class BenchmarkManager {
             (heapDeltaBytes >= 0 ? "+" : "") + formatBytes(Math.abs(heapDeltaBytes)))
           .withStyle(heapColor)));
 
+      if (autoMoveEnabled) {
+        lines.add(Component.literal(String.format(
+          "%-14s %-12s %-12s overlap=%d",
+          "Auto-move",
+          String.format("%d chunks", baselineMoveTargetCount),
+          String.format("%d chunks", activeMoveTargetCount),
+          sharedMoveTargetCount)));
+      }
+
       lines.add(Component.literal(""));
       lines.add(Component.literal("Load distribution:         Baseline   Active")
         .withStyle(ChatFormatting.GRAY));
@@ -767,3 +838,4 @@ public final class BenchmarkManager {
     }
   }
 }
+
