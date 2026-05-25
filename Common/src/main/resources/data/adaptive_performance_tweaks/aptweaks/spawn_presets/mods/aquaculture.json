@@ -1,0 +1,20 @@
+{
+  "replace": false,
+  "mod_id": "aquaculture",
+  "priority": 100,
+  "entities": {
+    "per_player_max": 12,
+    "per_world_max": 48,
+    "per_server_max": 192,
+    "per_chunk_max": 6
+  },
+  "load_factors": {
+    "very_low": 1.0,
+    "low": 1.0,
+    "normal": 0.9,
+    "medium": 0.7,
+    "high": 0.4,
+    "very_high": 0.1
+  },
+  "notes": "Aquaculture 2 — limits all aquaculture:* fish entities."
+}

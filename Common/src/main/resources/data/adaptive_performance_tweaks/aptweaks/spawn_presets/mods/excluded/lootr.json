@@ -1,0 +1,6 @@
+﻿{
+  "mod_id": "lootr",
+  "priority": 100,
+  "exclude_from_tracking": true,
+  "notes": "Lootr entities represent loot chests and should not be spawn-limited."
+}

@@ -1,0 +1,6 @@
+﻿{
+  "mod_id": "viescraftmachines",
+  "priority": 100,
+  "exclude_from_tracking": true,
+  "notes": "ViesCraft Machines entities (airships) are user-controlled and should not be spawn-limited."
+}

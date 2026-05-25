@@ -1,0 +1,6 @@
+﻿{
+  "mod_id": "immersiveengineering",
+  "priority": 100,
+  "exclude_from_tracking": true,
+  "notes": "Immersive Engineering entities (e.g., wires, drones) are technical and should not be spawn-limited."
+}

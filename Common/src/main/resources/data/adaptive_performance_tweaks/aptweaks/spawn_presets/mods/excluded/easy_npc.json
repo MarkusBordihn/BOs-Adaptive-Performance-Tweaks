@@ -1,0 +1,6 @@
+﻿{
+  "mod_id": "easy_npc",
+  "priority": 100,
+  "exclude_from_tracking": true,
+  "notes": "Easy NPC entities are user-placed NPCs that should never be spawn-limited."
+}

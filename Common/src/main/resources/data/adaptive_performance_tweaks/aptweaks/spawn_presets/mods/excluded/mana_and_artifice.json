@@ -1,0 +1,6 @@
+﻿{
+  "mod_id": "mana-and-artifice",
+  "priority": 100,
+  "exclude_from_tracking": true,
+  "notes": "Mana and Artifice entities (e.g., residual_magic) are effect/technical entities that should not be spawn-limited."
+}

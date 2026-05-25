@@ -17,21 +17,22 @@ out
 # Gradle
 build
 run
+runs
 .gradle
+.gradle-*
 *local.properties
 
 # NodeJs
 node_modules
 npm-debug.log
-
-# Files from Forge MDK
-forge*changelog.txt
-
-# Local Maven repro
-.mcmodsrepo
+.npmrc
 
 # VSCode
 .vscode/launch.json
+.vscode/settings.json
+
+# Ghost Reference Index
+.ghost-reference-index
 
 # Other
 .DS_Store
@@ -42,12 +43,3 @@ logs
 *.log
 *.patch.txt
 *.stackdump
-
-# Launch files
-core/.vscode/launch.json
-gamerules/.vscode/launch.json
-items/.vscode/launch.json
-mods/.vscode/launch.json
-player/.vscode/launch.json
-server/.vscode/launch.json
-spawn/.vscode/launch.json

@@ -1,0 +1,30 @@
+{
+  "replace": false,
+  "mod_id": "minecraft",
+  "priority": 60,
+  "dimensions": {
+    "allow": ["minecraft:overworld"]
+  },
+  "entities": {
+    "allow_list": [
+      "chicken_jockey", "creeper", "ender_dragon", "endermite", "evoker",
+      "giant", "husk", "illusioner", "phantom", "pillager", "ravager",
+      "shulker", "silverfish", "skeleton", "slime", "stray", "vex",
+      "vindicator", "warden", "witch", "wither", "zoglin", "zombie",
+      "zombie_villager"
+    ],
+    "per_player_max": 10,
+    "per_world_max": 40,
+    "per_server_max": 320,
+    "per_chunk_max": -1
+  },
+  "load_factors": {
+    "very_low": 1.0,
+    "low": 1.0,
+    "normal": 0.9,
+    "medium": 0.7,
+    "high": 0.4,
+    "very_high": 0.1
+  },
+  "notes": "Vanilla overworld hostile mobs — per-entity-type limits. Tuned for ~4 players; scale per_player_max and per_world_max for larger servers."
+}

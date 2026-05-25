@@ -1,0 +1,10 @@
+{
+  "template": true,
+  "notes": "TEMPLATE — Use deny_list to permanently block specific entities from spawning. Remove 'template: true' to activate.",
+  "replace": false,
+  "mod_id": "your_mod_id",
+  "priority": 200,
+  "entities": {
+    "deny_list": ["your_mod_id:entity_to_block"]
+  }
+}

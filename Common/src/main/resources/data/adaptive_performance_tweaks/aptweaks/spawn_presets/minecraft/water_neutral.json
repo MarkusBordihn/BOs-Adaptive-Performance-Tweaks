@@ -1,0 +1,24 @@
+{
+  "replace": false,
+  "mod_id": "minecraft",
+  "priority": 60,
+  "dimensions": {
+    "allow": ["minecraft:overworld"]
+  },
+  "entities": {
+    "allow_list": ["dolphin", "squid"],
+    "per_player_max": 8,
+    "per_world_max": 32,
+    "per_server_max": 320,
+    "per_chunk_max": -1
+  },
+  "load_factors": {
+    "very_low": 1.0,
+    "low": 1.0,
+    "normal": 0.9,
+    "medium": 0.7,
+    "high": 0.4,
+    "very_high": 0.1
+  },
+  "notes": "Vanilla overworld neutral water mobs — per-entity-type limits. Tuned for ~4 players; scale per_player_max and per_world_max for larger servers."
+}

@@ -1,3 +1,13 @@
+plugins {
+  id 'idea'
+  id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.8"
+}
+
+apply plugin: 'java'
+
+def ghostRefScript = file(findProperty('ghostRefIndex') ?: '')
+if (ghostRefScript.exists()) apply from: ghostRefScript
+
 subprojects {
 
   apply plugin: 'java'
@@ -14,14 +24,11 @@ subprojects {
         includeGroup "curse.maven"
       }
     }
-    maven {
-      name = "Maven (local)"
-      url = "file:///${project.projectDir}/.mcmodsrepo"
-    }
   }
 
   tasks.register('wrapper', Wrapper) {
-    gradleVersion = '8.7'
+    gradleVersion = '8.14.5'
+    distributionType = Wrapper.DistributionType.BIN
   }
 
   tasks.withType(JavaCompile).configureEach {
@@ -37,5 +44,10 @@ subprojects {
   }
 
   tasks.register("prepareKotlinBuildScriptModel") {}
+}
 
+tasks.register('allGameTests') {
+  group = 'verification'
+  description = 'Runs Fabric, Forge, and NeoForge game tests.'
+  dependsOn ':Fabric:runGameTest', ':Forge:runGameTestServer', ':NeoForge:runGameTestServer'
 }

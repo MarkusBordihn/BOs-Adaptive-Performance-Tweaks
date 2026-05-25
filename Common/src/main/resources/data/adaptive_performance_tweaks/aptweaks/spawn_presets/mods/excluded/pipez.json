@@ -1,0 +1,6 @@
+﻿{
+  "mod_id": "pipez",
+  "priority": 100,
+  "exclude_from_tracking": true,
+  "notes": "Pipez entities are pipe/technical entities that should not be spawn-limited."
+}

@@ -1,0 +1,21 @@
+{
+  "template": true,
+  "notes": "TEMPLATE — Copy this file, rename it (without leading _), remove 'template: true'. Limits all mod_id:* entities globally.",
+  "replace": false,
+  "mod_id": "your_mod_id",
+  "priority": 100,
+  "entities": {
+    "per_player_max": 8,
+    "per_world_max": 32,
+    "per_server_max": 128,
+    "per_chunk_max": 4
+  },
+  "load_factors": {
+    "very_low": 1.0,
+    "low": 1.0,
+    "normal": 0.9,
+    "medium": 0.7,
+    "high": 0.4,
+    "very_high": 0.1
+  }
+}

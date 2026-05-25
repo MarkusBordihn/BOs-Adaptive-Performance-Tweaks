@@ -1,0 +1,187 @@
+/*
+ * Copyright 2024 Markus Bordihn
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+package de.markusbordihn.adaptiveperformancetweaks.feature.items;
+
+import de.markusbordihn.adaptiveperformancetweaks.Constants;
+import de.markusbordihn.adaptiveperformancetweaks.accessor.ExperienceOrbAccessor;
+import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Entity.RemovalReason;
+import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.level.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+public final class ExperienceOrbManager {
+
+  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME_ITEMS);
+  private static final int VERIFICATION_TICK = 30 * 20;
+
+  private static Map<String, Set<ExperienceOrb>> experienceOrbEntityMap = new ConcurrentHashMap<>();
+  private static short ticks = 0;
+
+  private ExperienceOrbManager() {}
+
+  public static void handleServerAboutToStart() {
+    resetState();
+    if (ExperienceOrbsConfig.optimizeExperienceOrbs) {
+      log.info(
+          "XP orb clustering enabled with radius of {} blocks.",
+          ExperienceOrbsConfig.experienceOrbsClusterRange);
+    }
+  }
+
+  public static void handleServerStopping() {
+    resetState();
+  }
+
+  public static int getTrackedExperienceOrbCount() {
+    int total = 0;
+    for (Set<ExperienceOrb> orbs : experienceOrbEntityMap.values()) {
+      total += orbs.size();
+    }
+
+    return total;
+  }
+
+  private static void resetState() {
+    experienceOrbEntityMap = new ConcurrentHashMap<>();
+    ticks = 0;
+  }
+
+  public static void handleServerTick() {
+    if (++ticks < VERIFICATION_TICK) {
+      return;
+    }
+
+    ticks = 0;
+    verifyEntities();
+  }
+
+  public static boolean handleExperienceOrbJoinLevel(ExperienceOrb orbEntity, Level level) {
+    if (level.isClientSide) {
+      return false;
+    }
+
+    String levelName = level.dimension().location().toString();
+
+    if (ExperienceOrbsConfig.optimizeExperienceOrbs
+        && ((ExperienceOrbAccessor) orbEntity).getValue() <= 0) {
+      log.debug(
+          "[XP Orb] Zero-value orb at {} in {} removed", orbEntity.blockPosition(), levelName);
+      orbEntity.remove(RemovalReason.DISCARDED);
+      PerformanceStats.xpOrbsRemoved++;
+      return true;
+    }
+
+    experienceOrbEntityMap.computeIfAbsent(levelName, ignored -> ConcurrentHashMap.newKeySet());
+    Set<ExperienceOrb> worldOrbs = experienceOrbEntityMap.get(levelName);
+
+    if (ExperienceOrbsConfig.optimizeExperienceOrbs && !worldOrbs.isEmpty()) {
+      int orbX = (int) orbEntity.getX();
+      int orbY = (int) orbEntity.getY();
+      int orbZ = (int) orbEntity.getZ();
+      int range = ExperienceOrbsConfig.experienceOrbsClusterRange;
+
+      Set<ExperienceOrb> snapshot = new HashSet<>(worldOrbs);
+      for (ExperienceOrb existing : snapshot) {
+        int existingX = (int) existing.getX();
+        int existingY = (int) existing.getY();
+        int existingZ = (int) existing.getZ();
+
+        if (orbEntity.getId() != existing.getId()
+            && existing.isAlive()
+            && (orbX - range < existingX && existingX < orbX + range)
+            && (orbY - range < existingY && existingY < orbY + range)
+            && (orbZ - range < existingZ && existingZ < orbZ + range)) {
+          ExperienceOrbAccessor existingAccessor = (ExperienceOrbAccessor) existing;
+          ExperienceOrbAccessor orbAccessor = (ExperienceOrbAccessor) orbEntity;
+          int mergedValue = existingAccessor.getValue() + orbAccessor.getValue();
+          log.debug(
+              "[XP Merge] {}+{}={} xp at {} in {}",
+              orbAccessor.getValue(),
+              existingAccessor.getValue(),
+              mergedValue,
+              orbEntity.blockPosition(),
+              levelName);
+          existingAccessor.setValue(mergedValue);
+          orbAccessor.setValue(0);
+          orbEntity.moveTo(existing.getX(), existing.getY(), existing.getZ());
+          orbEntity.remove(RemovalReason.DISCARDED);
+          PerformanceStats.xpOrbsMerged++;
+          return true;
+        }
+      }
+    }
+
+    worldOrbs.add(orbEntity);
+
+    return false;
+  }
+
+  public static void handleExperienceOrbLeaveLevel(ExperienceOrb orbEntity, Level level) {
+    if (level.isClientSide) {
+      return;
+    }
+
+    String levelName = level.dimension().location().toString();
+    Set<ExperienceOrb> worldOrbs = experienceOrbEntityMap.get(levelName);
+    if (worldOrbs != null) {
+      worldOrbs.remove(orbEntity);
+      if (worldOrbs.isEmpty()) {
+        experienceOrbEntityMap.remove(levelName);
+      }
+    }
+  }
+
+  private static void verifyEntities() {
+    Iterator<Map.Entry<String, Set<ExperienceOrb>>> mapIterator =
+        experienceOrbEntityMap.entrySet().iterator();
+    int removedEntries = 0;
+    int removedSets = 0;
+
+    while (mapIterator.hasNext()) {
+      Map.Entry<String, Set<ExperienceOrb>> entry = mapIterator.next();
+      Set<ExperienceOrb> orbs = entry.getValue();
+      Iterator<ExperienceOrb> orbIterator = orbs.iterator();
+      while (orbIterator.hasNext()) {
+        Entity entity = orbIterator.next();
+        if (entity == null || entity.isRemoved() || !entity.isAlive()) {
+          orbIterator.remove();
+          removedEntries++;
+        }
+      }
+      if (orbs.isEmpty()) {
+        mapIterator.remove();
+        removedSets++;
+      }
+    }
+
+    if (removedEntries > 0 || removedSets > 0) {
+      log.debug(
+          "[XP Verification] Removed {} stale orbs from {} worlds", removedEntries, removedSets);
+    }
+  }
+}

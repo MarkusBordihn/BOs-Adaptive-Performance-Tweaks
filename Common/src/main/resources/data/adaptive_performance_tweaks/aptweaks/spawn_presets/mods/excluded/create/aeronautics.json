@@ -1,0 +1,6 @@
+{
+  "mod_id": "aeronautics",
+  "priority": 100,
+  "exclude_from_tracking": true,
+  "notes": "Create: Aeronautics entities (airships, flying contraptions) are player-constructed mechanical structures and must not be spawn-limited."
+}

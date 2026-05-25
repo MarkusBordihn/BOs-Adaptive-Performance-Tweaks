@@ -1,0 +1,23 @@
+{
+  "replace": false,
+  "mod_id": "minecraft",
+  "priority": 45,
+  "dimensions": {
+    "allow": ["minecraft:overworld"]
+  },
+  "entities": {
+    "per_player_max": 40,
+    "per_world_max": 300,
+    "per_server_max": 1024,
+    "per_chunk_max": -1
+  },
+  "load_factors": {
+    "very_low": 1.0,
+    "low": 1.0,
+    "normal": 0.9,
+    "medium": 0.7,
+    "high": 0.4,
+    "very_high": 0.1
+  },
+  "notes": "Vanilla overworld catch-all fallback for any minecraft:* mobs not covered by specific presets. Tuned for ~4 players; scale per_player_max and per_world_max for larger servers."
+}
