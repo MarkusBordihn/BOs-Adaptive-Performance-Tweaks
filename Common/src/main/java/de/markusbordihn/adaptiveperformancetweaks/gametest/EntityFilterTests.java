@@ -38,11 +38,12 @@ public final class EntityFilterTests {
   private static final String ENTITY_ZOMBIE = "minecraft:zombie";
   private static final String ENTITY_WOLF = "minecraft:wolf";
 
-  private EntityFilterTests() {}
+  private EntityFilterTests() {
+  }
 
   public static void testNullEntityNotRelevant(GameTestHelper helper) {
     GameTestHelpers.assertFalse(
-        helper, "Null entity should not be relevant", CoreEntityManager.isRelevantEntity(null));
+      helper, "Null entity should not be relevant", CoreEntityManager.isRelevantEntity(null));
     helper.succeed();
   }
 
@@ -51,11 +52,11 @@ public final class EntityFilterTests {
     Zombie zombie = new Zombie(EntityType.ZOMBIE, level);
 
     GameTestHelpers.assertTrue(
-        helper, "Regular zombie should be relevant", CoreEntityManager.isRelevantEntity(zombie));
+      helper, "Regular zombie should be relevant", CoreEntityManager.isRelevantEntity(zombie));
     GameTestHelpers.assertTrue(
-        helper,
-        "Regular zombie with entity name should be relevant",
-        CoreEntityManager.isRelevantEntity(zombie, ENTITY_ZOMBIE));
+      helper,
+      "Regular zombie with entity name should be relevant",
+      CoreEntityManager.isRelevantEntity(zombie, ENTITY_ZOMBIE));
     helper.succeed();
   }
 
@@ -65,9 +66,9 @@ public final class EntityFilterTests {
     zombie.setCustomName(Component.literal("Bob"));
 
     GameTestHelpers.assertFalse(
-        helper,
-        "Named zombie should not be relevant (has custom name)",
-        CoreEntityManager.isRelevantEntity(zombie, ENTITY_ZOMBIE));
+      helper,
+      "Named zombie should not be relevant (has custom name)",
+      CoreEntityManager.isRelevantEntity(zombie, ENTITY_ZOMBIE));
     helper.succeed();
   }
 
@@ -77,9 +78,9 @@ public final class EntityFilterTests {
     zombie.setPersistenceRequired();
 
     GameTestHelpers.assertFalse(
-        helper,
-        "Persistence-required zombie should not be relevant",
-        CoreEntityManager.isRelevantEntity(zombie, ENTITY_ZOMBIE));
+      helper,
+      "Persistence-required zombie should not be relevant",
+      CoreEntityManager.isRelevantEntity(zombie, ENTITY_ZOMBIE));
     helper.succeed();
   }
 
@@ -90,9 +91,9 @@ public final class EntityFilterTests {
     passenger.startRiding(carrier);
 
     GameTestHelpers.assertFalse(
-        helper,
-        "Passenger zombie should not be relevant",
-        CoreEntityManager.isRelevantEntity(passenger, ENTITY_ZOMBIE));
+      helper,
+      "Passenger zombie should not be relevant",
+      CoreEntityManager.isRelevantEntity(passenger, ENTITY_ZOMBIE));
     helper.succeed();
   }
 
@@ -103,9 +104,9 @@ public final class EntityFilterTests {
     passenger.startRiding(carrier);
 
     GameTestHelpers.assertFalse(
-        helper,
-        "Vehicle zombie (carrying a passenger) should not be relevant",
-        CoreEntityManager.isRelevantEntity(carrier, ENTITY_ZOMBIE));
+      helper,
+      "Vehicle zombie (carrying a passenger) should not be relevant",
+      CoreEntityManager.isRelevantEntity(carrier, ENTITY_ZOMBIE));
     helper.succeed();
   }
 
@@ -114,9 +115,9 @@ public final class EntityFilterTests {
     Arrow arrow = new Arrow(EntityType.ARROW, level);
 
     GameTestHelpers.assertFalse(
-        helper,
-        "Arrow (projectile) should not be relevant",
-        CoreEntityManager.isRelevantEntity(arrow));
+      helper,
+      "Arrow (projectile) should not be relevant",
+      CoreEntityManager.isRelevantEntity(arrow));
     helper.succeed();
   }
 
@@ -125,7 +126,7 @@ public final class EntityFilterTests {
     ItemEntity item = new ItemEntity(level, 0, 1, 0, new ItemStack(Items.DIRT));
 
     GameTestHelpers.assertFalse(
-        helper, "Item entity should not be relevant", CoreEntityManager.isRelevantEntity(item));
+      helper, "Item entity should not be relevant", CoreEntityManager.isRelevantEntity(item));
     helper.succeed();
   }
 
@@ -135,9 +136,9 @@ public final class EntityFilterTests {
     wolf.setTame(true, false);
 
     GameTestHelpers.assertFalse(
-        helper,
-        "Tamed wolf should not be relevant",
-        CoreEntityManager.isRelevantEntity(wolf, ENTITY_WOLF));
+      helper,
+      "Tamed wolf should not be relevant",
+      CoreEntityManager.isRelevantEntity(wolf, ENTITY_WOLF));
     helper.succeed();
   }
 
@@ -147,14 +148,14 @@ public final class EntityFilterTests {
     Zombie zombie = new Zombie(EntityType.ZOMBIE, level);
 
     GameTestHelpers.assertFalse(
-        helper,
-        "Entity from excluded mod namespace should not be relevant",
-        CoreEntityManager.isRelevantEntity(zombie, "testmod:zombie"));
+      helper,
+      "Entity from excluded mod namespace should not be relevant",
+      CoreEntityManager.isRelevantEntity(zombie, "testmod:zombie"));
 
     GameTestHelpers.assertTrue(
-        helper,
-        "Entity from non-excluded namespace should still be relevant",
-        CoreEntityManager.isRelevantEntity(zombie, "minecraft:zombie"));
+      helper,
+      "Entity from non-excluded namespace should still be relevant",
+      CoreEntityManager.isRelevantEntity(zombie, "minecraft:zombie"));
 
     CoreEntityManager.setExcludedModNamespaces(Collections.emptySet());
     helper.succeed();

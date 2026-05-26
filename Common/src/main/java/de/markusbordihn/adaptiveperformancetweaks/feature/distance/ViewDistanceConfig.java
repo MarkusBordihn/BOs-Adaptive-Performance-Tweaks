@@ -30,12 +30,12 @@ public final class ViewDistanceConfig extends Config {
 
   public static final String CONFIG_FILE_NAME = "view_distance.cfg";
   private static final String CONFIG_FILE_HEADER =
-      """
+    """
        View Distance Feature Configuration
-
+      
        Dynamically adjusts chunk view distance for all players based on server load.
        Values are chunk counts. Min: 4, Max: 32.
-       This is a safety valve — only enable if view distance causes measurable lag.
+       This is a safety valve - only enable if view distance causes measurable lag.
       """;
 
   public static int viewDistanceVeryLow = 12;
@@ -48,7 +48,8 @@ public final class ViewDistanceConfig extends Config {
   public static int viewDistanceMin = 4;
   public static int viewDistanceMax = 32;
 
-  private ViewDistanceConfig() {}
+  private ViewDistanceConfig() {
+  }
 
   public static void registerConfig() {
     registerConfigFile(CONFIG_FILE_NAME, CONFIG_FILE_HEADER);
@@ -58,11 +59,11 @@ public final class ViewDistanceConfig extends Config {
     unmodified.putAll(properties);
 
     CoreConfig.setFeatureEnabled(
+      FeatureToggle.ADAPTIVE_VIEW_DISTANCE,
+      ModConflictDetector.resolveFeatureState(
         FeatureToggle.ADAPTIVE_VIEW_DISTANCE,
-        ModConflictDetector.resolveFeatureState(
-            FeatureToggle.ADAPTIVE_VIEW_DISTANCE,
-            parseConfigValue(
-                properties, "enabled", FeatureToggle.ADAPTIVE_VIEW_DISTANCE.getDefaultState())));
+        parseConfigValue(
+          properties, "enabled", FeatureToggle.ADAPTIVE_VIEW_DISTANCE.getDefaultState())));
 
     viewDistanceVeryLow = parseInt(properties, "viewDistanceVeryLow", viewDistanceVeryLow);
     viewDistanceLow = parseInt(properties, "viewDistanceLow", viewDistanceLow);
@@ -75,13 +76,13 @@ public final class ViewDistanceConfig extends Config {
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
     log.debug(
-        "View distance per load: VERY_LOW={} LOW={} NORMAL={} MEDIUM={} HIGH={} VERY_HIGH={}",
-        viewDistanceVeryLow,
-        viewDistanceLow,
-        viewDistanceNormal,
-        viewDistanceMedium,
-        viewDistanceHigh,
-        viewDistanceVeryHigh);
+      "View distance per load: VERY_LOW={} LOW={} NORMAL={} MEDIUM={} HIGH={} VERY_HIGH={}",
+      viewDistanceVeryLow,
+      viewDistanceLow,
+      viewDistanceNormal,
+      viewDistanceMedium,
+      viewDistanceHigh,
+      viewDistanceVeryHigh);
   }
 
   private static int parseInt(Properties props, String key, int defaultValue) {

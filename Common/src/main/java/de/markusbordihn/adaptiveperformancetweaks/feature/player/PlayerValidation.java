@@ -39,7 +39,7 @@ public class PlayerValidation {
 
   public boolean hasPlayerMoved() {
     return !this.initialPosition.equals(this.player.position())
-        || this.initialYHeadRot != this.player.getYHeadRot();
+      || this.initialYHeadRot != this.player.getYHeadRot();
   }
 
   public String getUsername() {

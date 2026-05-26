@@ -30,9 +30,9 @@ public class SmokeTest {
   @GameTest(template = Constants.MOD_ID + ":gametest.3x3x3")
   public void testModRegistered(GameTestHelper helper) {
     GameTestHelpers.assertTrue(
-        helper,
-        "Mod " + Constants.MOD_ID + " is not loaded!",
-        FabricLoader.getInstance().isModLoaded(Constants.MOD_ID));
+      helper,
+      "Mod " + Constants.MOD_ID + " is not loaded!",
+      FabricLoader.getInstance().isModLoaded(Constants.MOD_ID));
     helper.succeed();
   }
 }

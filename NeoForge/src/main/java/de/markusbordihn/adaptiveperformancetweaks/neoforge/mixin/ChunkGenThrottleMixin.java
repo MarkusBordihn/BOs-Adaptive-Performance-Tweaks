@@ -34,9 +34,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ServerChunkCache.class)
 public abstract class ChunkGenThrottleMixin {
 
-  @Shadow @Final private ServerLevel level;
+  @Shadow
+  @Final
+  private ServerLevel level;
 
-  @Unique private int aptweaks_genThrottleCounter = 0;
+  @Unique
+  private int aptweaks_genThrottleCounter = 0;
 
   @Inject(method = "runDistanceManagerUpdates", at = @At("HEAD"), cancellable = true)
   private void aptweaks_runDistanceManagerUpdates(CallbackInfoReturnable<Boolean> cir) {

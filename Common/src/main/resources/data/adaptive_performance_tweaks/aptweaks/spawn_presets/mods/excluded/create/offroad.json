@@ -1,6 +1,7 @@
 {
   "mod_id": "offroad",
   "priority": 100,
-  "exclude_from_tracking": true,
-  "notes": "Create: Aeronautics Offroad entities (ground vehicles, contraptions) are player-constructed mechanical structures and must not be spawn-limited."
+  "mode": "exclude_namespace",
+  "category": "vehicle_structure",
+  "reason": "Offroad vehicle entities should not be tracked."
 }

@@ -1,0 +1,27 @@
+{
+  "replace": false,
+  "mod_id": "born_in_chaos_v1",
+  "priority": 100,
+  "entities": {
+    "allow_list": [
+      "born_in_chaos_v1:bonescaller",
+      "born_in_chaos_v1:nightmare_stalker",
+      "born_in_chaos_v1:spirit_guide_assistant",
+      "born_in_chaos_v1:spiritual_guide",
+      "born_in_chaos_v1:supreme_bonecaller"
+    ],
+    "per_player_max": 17,
+    "per_world_max": 34,
+    "per_server_max": 64,
+    "per_chunk_max": 1
+  },
+  "load_factors": {
+    "very_low": 1.0,
+    "low": 1.0,
+    "normal": 0.9,
+    "medium": 0.7,
+    "high": 0.4,
+    "very_high": 0.1
+  },
+  "notes": "CPU intensive boss-type mobs."
+}

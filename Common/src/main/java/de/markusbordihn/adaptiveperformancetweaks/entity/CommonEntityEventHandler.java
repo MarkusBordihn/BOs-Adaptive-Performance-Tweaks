@@ -21,16 +21,19 @@ package de.markusbordihn.adaptiveperformancetweaks.entity;
 
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreEntityManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
+import de.markusbordihn.adaptiveperformancetweaks.feature.items.ArrowEntityManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ExperienceOrbManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ItemEntityManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.level.Level;
 
 public final class CommonEntityEventHandler {
 
-  private CommonEntityEventHandler() {}
+  private CommonEntityEventHandler() {
+  }
 
   public static boolean handleEntityJoinLevel(Entity entity, Level level) {
     if (FeatureToggle.ITEMS.isEnabled() && entity instanceof ItemEntity itemEntity) {
@@ -38,9 +41,11 @@ public final class CommonEntityEventHandler {
         return true;
       }
     } else if (FeatureToggle.EXPERIENCE_ORBS.isEnabled()
-        && entity instanceof ExperienceOrb orbEntity
-        && ExperienceOrbManager.handleExperienceOrbJoinLevel(orbEntity, level)) {
+      && entity instanceof ExperienceOrb orbEntity
+      && ExperienceOrbManager.handleExperienceOrbJoinLevel(orbEntity, level)) {
       return true;
+    } else if (FeatureToggle.ARROWS.isEnabled() && entity instanceof AbstractArrow arrowEntity) {
+      ArrowEntityManager.handleArrowJoinLevel(arrowEntity, level);
     }
 
     CoreEntityManager.handleEntityJoinLevel(entity, level.isClientSide());
@@ -52,8 +57,10 @@ public final class CommonEntityEventHandler {
     if (FeatureToggle.ITEMS.isEnabled() && entity instanceof ItemEntity itemEntity) {
       ItemEntityManager.handleItemEntityLeaveLevel(itemEntity, level);
     } else if (FeatureToggle.EXPERIENCE_ORBS.isEnabled()
-        && entity instanceof ExperienceOrb orbEntity) {
+      && entity instanceof ExperienceOrb orbEntity) {
       ExperienceOrbManager.handleExperienceOrbLeaveLevel(orbEntity, level);
+    } else if (FeatureToggle.ARROWS.isEnabled() && entity instanceof AbstractArrow arrowEntity) {
+      ArrowEntityManager.handleArrowLeaveLevel(arrowEntity, level);
     }
     CoreEntityManager.handleEntityLeaveLevel(entity, level.isClientSide());
   }

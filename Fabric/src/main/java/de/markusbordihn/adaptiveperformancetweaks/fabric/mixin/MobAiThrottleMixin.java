@@ -33,7 +33,7 @@ public abstract class MobAiThrottleMixin {
   @Inject(method = "aiStep", at = @At("HEAD"), cancellable = true)
   private void aptweaks_aiStep(CallbackInfo ci) {
     if (FeatureToggle.AI_THROTTLING.isEnabled()
-        && AiThrottleManager.shouldSkipAiThisTick((Mob) (Object) this)) {
+      && AiThrottleManager.shouldSkipAiThisTick((Mob) (Object) this)) {
       ci.cancel();
     }
   }

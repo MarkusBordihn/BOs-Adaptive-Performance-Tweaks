@@ -28,73 +28,60 @@ public final class SpawnPresetConfigTests {
 
   private static final String OVERWORLD = "minecraft:overworld";
 
-  private SpawnPresetConfigTests() {}
+  private SpawnPresetConfigTests() {
+  }
 
   public static void testBatPresetsLoaded(GameTestHelper helper) {
     new SpawnPresetLoader().loadPresetsFrom(helper.getLevel().getServer().getResourceManager());
     String entityId = "minecraft:bat";
-    GameTestHelpers.assertEquals(
-        helper,
-        entityId + " perPlayerMax mismatch — spawn presets may not be loaded",
-        4,
-        SpawnPresetRegistry.getEffectivePerPlayerMax(
-            entityId, OVERWORLD, ServerLoadLevel.VERY_LOW));
-    GameTestHelpers.assertEquals(
-        helper,
-        entityId + " perWorldMax mismatch — spawn presets may not be loaded",
-        16,
-        SpawnPresetRegistry.getEffectivePerWorldMax(entityId, OVERWORLD, ServerLoadLevel.VERY_LOW));
-    GameTestHelpers.assertEquals(
-        helper,
-        entityId + " perServerMax mismatch — spawn presets may not be loaded",
-        64,
-        SpawnPresetRegistry.getEffectivePerServerMax(
-            entityId, OVERWORLD, ServerLoadLevel.VERY_LOW));
-    GameTestHelpers.assertEquals(
-        helper,
-        entityId + " perChunkMax mismatch — spawn presets may not be loaded",
-        2,
-        SpawnPresetRegistry.getEffectivePerChunkMax(entityId, OVERWORLD, ServerLoadLevel.VERY_LOW));
+    GameTestHelpers.assertEquals(helper,
+      entityId + " perPlayerMax mismatch - spawn presets may not be loaded",
+      4,
+      SpawnPresetRegistry.getEffectivePerPlayerMax(entityId, OVERWORLD, ServerLoadLevel.VERY_LOW));
+    GameTestHelpers.assertEquals(helper,
+      entityId + " perWorldMax mismatch - spawn presets may not be loaded",
+      16,
+      SpawnPresetRegistry.getEffectivePerWorldMax(entityId, OVERWORLD, ServerLoadLevel.VERY_LOW));
+    GameTestHelpers.assertEquals(helper,
+      entityId + " perServerMax mismatch - spawn presets may not be loaded",
+      64,
+      SpawnPresetRegistry.getEffectivePerServerMax(entityId, OVERWORLD, ServerLoadLevel.VERY_LOW));
+    GameTestHelpers.assertEquals(helper,
+      entityId + " perChunkMax mismatch - spawn presets may not be loaded",
+      2,
+      SpawnPresetRegistry.getEffectivePerChunkMax(entityId, OVERWORLD, ServerLoadLevel.VERY_LOW));
     helper.succeed();
   }
 
   public static void testZombiePresetsLoaded(GameTestHelper helper) {
     new SpawnPresetLoader().loadPresetsFrom(helper.getLevel().getServer().getResourceManager());
     String entityId = "minecraft:zombie";
-    GameTestHelpers.assertEquals(
-        helper,
-        entityId + " perPlayerMax mismatch — spawn presets may not be loaded",
-        10,
-        SpawnPresetRegistry.getEffectivePerPlayerMax(
-            entityId, OVERWORLD, ServerLoadLevel.VERY_LOW));
-    GameTestHelpers.assertEquals(
-        helper,
-        entityId + " perWorldMax mismatch — spawn presets may not be loaded",
-        40,
-        SpawnPresetRegistry.getEffectivePerWorldMax(entityId, OVERWORLD, ServerLoadLevel.VERY_LOW));
-    GameTestHelpers.assertEquals(
-        helper,
-        entityId + " perServerMax mismatch — spawn presets may not be loaded",
-        320,
-        SpawnPresetRegistry.getEffectivePerServerMax(
-            entityId, OVERWORLD, ServerLoadLevel.VERY_LOW));
+    GameTestHelpers.assertEquals(helper,
+      entityId + " perPlayerMax mismatch - spawn presets may not be loaded",
+      10,
+      SpawnPresetRegistry.getEffectivePerPlayerMax(entityId, OVERWORLD, ServerLoadLevel.VERY_LOW));
+    GameTestHelpers.assertEquals(helper,
+      entityId + " perWorldMax mismatch - spawn presets may not be loaded",
+      40,
+      SpawnPresetRegistry.getEffectivePerWorldMax(entityId, OVERWORLD, ServerLoadLevel.VERY_LOW));
+    GameTestHelpers.assertEquals(helper,
+      entityId + " perServerMax mismatch - spawn presets may not be loaded",
+      320,
+      SpawnPresetRegistry.getEffectivePerServerMax(entityId, OVERWORLD, ServerLoadLevel.VERY_LOW));
     helper.succeed();
   }
 
   public static void testCowPresetsLoaded(GameTestHelper helper) {
     new SpawnPresetLoader().loadPresetsFrom(helper.getLevel().getServer().getResourceManager());
     String entityId = "minecraft:cow";
-    GameTestHelpers.assertEquals(
-        helper,
-        entityId + " perPlayerMax mismatch — spawn presets may not be loaded",
-        10,
-        SpawnPresetRegistry.getEffectivePerPlayerMax(
-            entityId, OVERWORLD, ServerLoadLevel.VERY_LOW));
-    GameTestHelpers.assertEquals(
-        helper,
-        entityId + " perWorldMax mismatch — spawn presets may not be loaded",
-        40,
-        SpawnPresetRegistry.getEffectivePerWorldMax(entityId, OVERWORLD, ServerLoadLevel.VERY_LOW));
+    GameTestHelpers.assertEquals(helper,
+      entityId + " perPlayerMax mismatch - spawn presets may not be loaded",
+      10,
+      SpawnPresetRegistry.getEffectivePerPlayerMax(entityId, OVERWORLD, ServerLoadLevel.VERY_LOW));
+    GameTestHelpers.assertEquals(helper,
+      entityId + " perWorldMax mismatch - spawn presets may not be loaded",
+      40,
+      SpawnPresetRegistry.getEffectivePerWorldMax(entityId, OVERWORLD, ServerLoadLevel.VERY_LOW));
     helper.succeed();
   }
 }

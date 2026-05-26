@@ -31,7 +31,8 @@ public final class VirtualPlayerManager {
 
   private static final Map<String, List<Vec3>> positions = new HashMap<>();
 
-  private VirtualPlayerManager() {}
+  private VirtualPlayerManager() {
+  }
 
   public static void add(ServerLevel level, Vec3 position) {
     positions.computeIfAbsent(dimensionId(level), k -> new ArrayList<>()).add(position);
@@ -50,7 +51,7 @@ public final class VirtualPlayerManager {
 
   public static List<Vec3> getPositions(ServerLevel level) {
     return Collections.unmodifiableList(
-        positions.getOrDefault(dimensionId(level), Collections.emptyList()));
+      positions.getOrDefault(dimensionId(level), Collections.emptyList()));
   }
 
   public static Vec3 nearest(ServerLevel level, Vec3 origin) {

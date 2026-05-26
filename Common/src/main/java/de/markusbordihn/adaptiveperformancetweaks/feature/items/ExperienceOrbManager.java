@@ -22,8 +22,8 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.items;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.accessor.ExperienceOrbAccessor;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,14 +42,15 @@ public final class ExperienceOrbManager {
   private static Map<String, Set<ExperienceOrb>> experienceOrbEntityMap = new ConcurrentHashMap<>();
   private static short ticks = 0;
 
-  private ExperienceOrbManager() {}
+  private ExperienceOrbManager() {
+  }
 
   public static void handleServerAboutToStart() {
     resetState();
     if (ExperienceOrbsConfig.optimizeExperienceOrbs) {
       log.info(
-          "XP orb clustering enabled with radius of {} blocks.",
-          ExperienceOrbsConfig.experienceOrbsClusterRange);
+        "XP orb clustering enabled with radius of {} blocks.",
+        ExperienceOrbsConfig.experienceOrbsClusterRange);
     }
   }
 
@@ -64,6 +65,17 @@ public final class ExperienceOrbManager {
     }
 
     return total;
+  }
+
+  public static Map<String, Integer> getTrackedExperienceOrbCountsByDimension() {
+    Map<String, Integer> result = new LinkedHashMap<>();
+    for (Map.Entry<String, Set<ExperienceOrb>> entry : experienceOrbEntityMap.entrySet()) {
+      int count = entry.getValue().size();
+      if (count > 0) {
+        result.put(entry.getKey(), count);
+      }
+    }
+    return result;
   }
 
   private static void resetState() {
@@ -88,9 +100,9 @@ public final class ExperienceOrbManager {
     String levelName = level.dimension().location().toString();
 
     if (ExperienceOrbsConfig.optimizeExperienceOrbs
-        && ((ExperienceOrbAccessor) orbEntity).getValue() <= 0) {
+      && ((ExperienceOrbAccessor) orbEntity).getValue() <= 0) {
       log.debug(
-          "[XP Orb] Zero-value orb at {} in {} removed", orbEntity.blockPosition(), levelName);
+        "[XP Orb] Zero-value orb at {} in {} removed", orbEntity.blockPosition(), levelName);
       orbEntity.remove(RemovalReason.DISCARDED);
       PerformanceStats.xpOrbsRemoved++;
       return true;
@@ -105,29 +117,32 @@ public final class ExperienceOrbManager {
       int orbZ = (int) orbEntity.getZ();
       int range = ExperienceOrbsConfig.experienceOrbsClusterRange;
 
-      Set<ExperienceOrb> snapshot = new HashSet<>(worldOrbs);
-      for (ExperienceOrb existing : snapshot) {
+      for (ExperienceOrb existing : worldOrbs) {
         int existingX = (int) existing.getX();
         int existingY = (int) existing.getY();
         int existingZ = (int) existing.getZ();
 
         if (orbEntity.getId() != existing.getId()
-            && existing.isAlive()
-            && (orbX - range < existingX && existingX < orbX + range)
-            && (orbY - range < existingY && existingY < orbY + range)
-            && (orbZ - range < existingZ && existingZ < orbZ + range)) {
+          && existing.isAlive()
+          && (orbX - range < existingX && existingX < orbX + range)
+          && (orbY - range < existingY && existingY < orbY + range)
+          && (orbZ - range < existingZ && existingZ < orbZ + range)) {
           ExperienceOrbAccessor existingAccessor = (ExperienceOrbAccessor) existing;
           ExperienceOrbAccessor orbAccessor = (ExperienceOrbAccessor) orbEntity;
           int mergedValue = existingAccessor.getValue() + orbAccessor.getValue();
           log.debug(
-              "[XP Merge] {}+{}={} xp at {} in {}",
-              orbAccessor.getValue(),
-              existingAccessor.getValue(),
-              mergedValue,
-              orbEntity.blockPosition(),
-              levelName);
+            "[XP Merge] {}+{}={} xp at {} in {}",
+            orbAccessor.getValue(),
+            existingAccessor.getValue(),
+            mergedValue,
+            orbEntity.blockPosition(),
+            levelName);
           existingAccessor.setValue(mergedValue);
           orbAccessor.setValue(0);
+          if (ExperienceOrbsConfig.movePositionToLastDrop) {
+            double newY = Math.max(existing.getY(), orbEntity.getY());
+            existing.setPos(orbEntity.getX(), newY, orbEntity.getZ());
+          }
           orbEntity.moveTo(existing.getX(), existing.getY(), existing.getZ());
           orbEntity.remove(RemovalReason.DISCARDED);
           PerformanceStats.xpOrbsMerged++;
@@ -158,7 +173,7 @@ public final class ExperienceOrbManager {
 
   private static void verifyEntities() {
     Iterator<Map.Entry<String, Set<ExperienceOrb>>> mapIterator =
-        experienceOrbEntityMap.entrySet().iterator();
+      experienceOrbEntityMap.entrySet().iterator();
     int removedEntries = 0;
     int removedSets = 0;
 
@@ -181,7 +196,7 @@ public final class ExperienceOrbManager {
 
     if (removedEntries > 0 || removedSets > 0) {
       log.debug(
-          "[XP Verification] Removed {} stale orbs from {} worlds", removedEntries, removedSets);
+        "[XP Verification] Removed {} stale orbs from {} worlds", removedEntries, removedSets);
     }
   }
 }

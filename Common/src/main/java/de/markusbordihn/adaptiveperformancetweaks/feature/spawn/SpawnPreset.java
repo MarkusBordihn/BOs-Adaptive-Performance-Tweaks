@@ -19,33 +19,41 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.spawn;
 
+import de.markusbordihn.adaptiveperformancetweaks.core.entity.TrackingCategory;
+import de.markusbordihn.adaptiveperformancetweaks.core.entity.TrackingMode;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import java.util.List;
 import java.util.Set;
 
 public record SpawnPreset(
-    boolean replace,
-    String modId,
-    List<String> requiredMods,
-    int priority,
-    DimensionFilter dimensions,
-    EntityLimits entities,
-    LoadFactors loadFactors,
-    boolean excludeFromTracking,
-    String notes) {
+  boolean replace,
+  String modId,
+  List<String> requiredMods,
+  int priority,
+  DimensionFilter dimensions,
+  EntityLimits entities,
+  LoadFactors loadFactors,
+  TrackingMode mode,
+  TrackingCategory category,
+  String reason,
+  Set<String> entityIds) {
 
-  public record DimensionFilter(List<String> allow, List<String> deny, List<String> ignore) {}
+  public record DimensionFilter(List<String> allow, List<String> deny, List<String> ignore) {
+
+  }
 
   public record EntityLimits(
-      Set<String> allowList,
-      Set<String> denyList,
-      int perPlayerMax,
-      int perWorldMax,
-      int perServerMax,
-      int perChunkMax) {}
+    Set<String> allowList,
+    Set<String> denyList,
+    int perPlayerMax,
+    int perWorldMax,
+    int perServerMax,
+    int perChunkMax) {
+
+  }
 
   public record LoadFactors(
-      double veryLow, double low, double normal, double medium, double high, double veryHigh) {
+    double veryLow, double low, double normal, double medium, double high, double veryHigh) {
 
     public static LoadFactors defaults() {
       return new LoadFactors(1.0, 1.0, 0.9, 0.7, 0.4, 0.1);

@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "xnet",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "storage_network",
+  "reason": "XNet entities are network infrastructure and should not be tracked."
+}

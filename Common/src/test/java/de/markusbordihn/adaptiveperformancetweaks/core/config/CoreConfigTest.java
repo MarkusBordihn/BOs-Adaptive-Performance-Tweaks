@@ -45,7 +45,7 @@ class CoreConfigTest {
     for (FeatureToggle toggle : FeatureToggle.values()) {
       boolean expected = toggle.getDefaultState() != FeatureState.DISABLED;
       assertEquals(
-          expected, CoreConfig.isFeatureEnabled(toggle), "Default mismatch for " + toggle.getId());
+        expected, CoreConfig.isFeatureEnabled(toggle), "Default mismatch for " + toggle.getId());
     }
   }
 
@@ -71,6 +71,10 @@ class CoreConfigTest {
   void otherConfigDefaults() {
     assertEquals(5, CoreConfig.timeBetweenUpdates);
     assertTrue(CoreConfig.logServerLoad);
+    assertFalse(CoreConfig.logServerLevelLoadChanges);
+    assertEquals(60, CoreConfig.serverLoadLogIntervalSeconds);
+    assertEquals(2, CoreConfig.serverLoadLogSignificantChangeSteps);
+    assertEquals(5, CoreConfig.serverLoadLogTopWorldCount);
   }
 
   @Test

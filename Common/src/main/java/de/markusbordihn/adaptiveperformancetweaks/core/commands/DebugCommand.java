@@ -32,21 +32,22 @@ import net.minecraft.network.chat.Component;
 
 public class DebugCommand extends CustomCommand {
 
-  private DebugCommand() {}
+  private DebugCommand() {
+  }
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
     var debugNode =
-        Commands.literal("debug")
-            .requires(source -> source.hasPermission(2))
-            .executes(ctx -> showAllStatus(ctx));
+      Commands.literal("debug")
+        .requires(source -> source.hasPermission(2))
+        .executes(DebugCommand::showAllStatus);
 
     for (DebugModule module : DebugModule.values()) {
       debugNode.then(
-          Commands.literal(module.getId())
-              .executes(ctx -> showModuleStatus(ctx, module))
-              .then(
-                  Commands.argument("enable", BoolArgumentType.bool())
-                      .executes(ctx -> setModuleDebug(ctx, module))));
+        Commands.literal(module.getId())
+          .executes(ctx -> showModuleStatus(ctx, module))
+          .then(
+            Commands.argument("enable", BoolArgumentType.bool())
+              .executes(ctx -> setModuleDebug(ctx, module))));
     }
 
     return debugNode;
@@ -55,51 +56,46 @@ public class DebugCommand extends CustomCommand {
   private static int showAllStatus(CommandContext<CommandSourceStack> context) {
     CommandSourceStack source = context.getSource();
     source.sendSuccess(
-        () -> Component.literal("=== APTweaks Debug Status ===").withStyle(ChatFormatting.GOLD),
-        false);
+      () -> Component.literal("=== APTweaks Debug Status ===").withStyle(ChatFormatting.GOLD),
+      false);
     for (DebugModule module : DebugModule.values()) {
       boolean active = DebugManager.isDebugLevel(module.getLoggerName());
       ChatFormatting color = active ? ChatFormatting.GREEN : ChatFormatting.GRAY;
-      String state = active ? "[ON] " : "[OFF]";
+      String state = active ? "[ON]" : "[OFF]";
       source.sendSuccess(
-          () ->
-              Component.literal(state + " " + module.getId() + " — " + module.getDescription())
-                  .withStyle(color),
-          false);
+        () ->
+          Component.literal(state + " " + module.getId() + " - " + module.getDescription())
+            .withStyle(color),
+        false);
     }
 
     source.sendSuccess(
-        () ->
-            Component.literal("Use '/aptweaks debug <module> <true|false>' to toggle a module.")
-                .withStyle(ChatFormatting.WHITE),
-        false);
+      () ->
+        Component.literal("Use '/aptweaks debug <module> <true|false>' to toggle a module.")
+          .withStyle(ChatFormatting.WHITE),
+      false);
 
     return 0;
   }
 
   private static int showModuleStatus(
-      CommandContext<CommandSourceStack> context, DebugModule module) {
+    CommandContext<CommandSourceStack> context, DebugModule module) {
     CommandSourceStack source = context.getSource();
     boolean active = DebugManager.isDebugLevel(module.getLoggerName());
     ChatFormatting color = active ? ChatFormatting.GREEN : ChatFormatting.GRAY;
-    String state = active ? "[ON] " : "[OFF]";
-    source.sendSuccess(
-        () ->
-            Component.literal(state + " " + module.getId() + " — " + module.getDescription())
-                .withStyle(color),
-        false);
-    source.sendSuccess(
-        () ->
-            Component.literal(
-                    "> Use '/aptweaks debug " + module.getId() + " " + !active + "' to toggle.")
-                .withStyle(ChatFormatting.WHITE),
-        false);
+    String state = active ? "[ON]" : "[OFF]";
+    source.sendSuccess(() -> Component.literal(
+        state + " " + module.getId() + " - " + module.getDescription())
+      .withStyle(color), false);
+    source.sendSuccess(() -> Component.literal(
+        "> Use '/aptweaks debug " + module.getId() + " " + !active + "' to toggle.")
+      .withStyle(ChatFormatting.WHITE), false);
 
     return 0;
   }
 
   private static int setModuleDebug(CommandContext<CommandSourceStack> context, DebugModule module)
-      throws CommandSyntaxException {
+    throws CommandSyntaxException {
     boolean enable = BoolArgumentType.getBool(context, "enable");
     sendDebugFeedback(context, module.getId(), enable);
     DebugManager.enableDebugLevel(module.getLoggerName(), enable);

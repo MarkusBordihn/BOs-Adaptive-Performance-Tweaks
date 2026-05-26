@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "integratedtunnels",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "storage_network",
+  "reason": "Integrated Tunnels transport entities are system-managed and should not be tracked."
+}

@@ -30,12 +30,12 @@ public final class ChunkGenThrottleConfig extends Config {
 
   public static final String CONFIG_FILE_NAME = "chunk_gen_throttle.cfg";
   private static final String CONFIG_FILE_HEADER =
-      """
+    """
        Chunk Generation Throttle Feature Configuration
-
+      
        Reduces the frequency of chunk generation processing ticks under server load.
-       Only activates at MEDIUM+ server load — no effect at normal load.
-
+       Only activates at MEDIUM+ server load - no effect at normal load.
+      
        Divisors control how many ticks are skipped between processing runs:
          2 = process every 2nd tick (50% reduction)
          4 = process every 4th tick (75% reduction)
@@ -46,7 +46,8 @@ public final class ChunkGenThrottleConfig extends Config {
   public static int chunkGenThrottleHighDivisor = 4;
   public static int chunkGenThrottleVeryHighDivisor = 8;
 
-  private ChunkGenThrottleConfig() {}
+  private ChunkGenThrottleConfig() {
+  }
 
   public static void registerConfig() {
     registerConfigFile(CONFIG_FILE_NAME, CONFIG_FILE_HEADER);
@@ -56,25 +57,25 @@ public final class ChunkGenThrottleConfig extends Config {
     unmodified.putAll(properties);
 
     CoreConfig.setFeatureEnabled(
+      FeatureToggle.CHUNK_GEN_THROTTLE,
+      ModConflictDetector.resolveFeatureState(
         FeatureToggle.CHUNK_GEN_THROTTLE,
-        ModConflictDetector.resolveFeatureState(
-            FeatureToggle.CHUNK_GEN_THROTTLE,
-            parseConfigValue(
-                properties, "enabled", FeatureToggle.CHUNK_GEN_THROTTLE.getDefaultState())));
+        parseConfigValue(
+          properties, "enabled", FeatureToggle.CHUNK_GEN_THROTTLE.getDefaultState())));
 
     chunkGenThrottleMediumDivisor =
-        parseInt(properties, "chunkGenThrottleMediumDivisor", chunkGenThrottleMediumDivisor);
+      parseInt(properties, "chunkGenThrottleMediumDivisor", chunkGenThrottleMediumDivisor);
     chunkGenThrottleHighDivisor =
-        parseInt(properties, "chunkGenThrottleHighDivisor", chunkGenThrottleHighDivisor);
+      parseInt(properties, "chunkGenThrottleHighDivisor", chunkGenThrottleHighDivisor);
     chunkGenThrottleVeryHighDivisor =
-        parseInt(properties, "chunkGenThrottleVeryHighDivisor", chunkGenThrottleVeryHighDivisor);
+      parseInt(properties, "chunkGenThrottleVeryHighDivisor", chunkGenThrottleVeryHighDivisor);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
     log.debug(
-        "Chunk gen throttle: divisors MEDIUM={} HIGH={} VERY_HIGH={}",
-        chunkGenThrottleMediumDivisor,
-        chunkGenThrottleHighDivisor,
-        chunkGenThrottleVeryHighDivisor);
+      "Chunk gen throttle: divisors MEDIUM={} HIGH={} VERY_HIGH={}",
+      chunkGenThrottleMediumDivisor,
+      chunkGenThrottleHighDivisor,
+      chunkGenThrottleVeryHighDivisor);
   }
 
   private static int parseInt(Properties props, String key, int defaultValue) {

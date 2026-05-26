@@ -33,23 +33,24 @@ public final class CommandManager {
 
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
-  private CommandManager() {}
+  private CommandManager() {
+  }
 
   public static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
     log.debug(
-        "{}Registering /{} commands ...", Constants.LOG_REGISTER_PREFIX, Constants.MOD_COMMAND);
+      "{}Registering /{} commands ...", Constants.LOG_REGISTER_PREFIX, Constants.MOD_COMMAND);
     dispatcher.register(
-        Commands.literal(Constants.MOD_COMMAND)
-            .then(DebugCommand.register())
-            .then(EntityCommand.register())
-            .then(FeatureCommand.register())
-            .then(KillCommand.register())
-            .then(LoadCommand.register())
-            .then(PlayerPositionCommand.register())
-            .then(ReloadCommand.register())
-            .then(BenchmarkCommand.register())
-            .then(StatsCommand.register())
-            .then(StatusCommand.register()));
+      Commands.literal(Constants.MOD_COMMAND)
+        .then(DebugCommand.register())
+        .then(EntityCommand.register())
+        .then(FeatureCommand.register())
+        .then(KillCommand.register())
+        .then(LoadCommand.register())
+        .then(PlayerPositionCommand.register())
+        .then(ReloadCommand.register())
+        .then(BenchmarkCommand.register())
+        .then(StatsCommand.register())
+        .then(StatusCommand.register()));
   }
 
   public static void executeUserCommand(String command) {
@@ -61,8 +62,8 @@ public final class CommandManager {
 
     log.debug("Executing user command: {}", command);
     minecraftServer
-        .getCommands()
-        .performPrefixedCommand(minecraftServer.createCommandSourceStack(), command);
+      .getCommands()
+      .performPrefixedCommand(minecraftServer.createCommandSourceStack(), command);
   }
 
   public static void executeGameRuleCommand(GameRules.Key<?> gameRule, int value) {
@@ -79,12 +80,11 @@ public final class CommandManager {
       return;
     }
     String command = String.format("gamerule %s %s", gameRule.getId(), value);
-    log.debug("Execute GameRule: /{}", command);
     Commands commands = minecraftServer.getCommands();
     commands.performCommand(
-        commands
-            .getDispatcher()
-            .parse(command, minecraftServer.createCommandSourceStack().withSuppressedOutput()),
-        command);
+      commands
+        .getDispatcher()
+        .parse(command, minecraftServer.createCommandSourceStack().withSuppressedOutput()),
+      command);
   }
 }

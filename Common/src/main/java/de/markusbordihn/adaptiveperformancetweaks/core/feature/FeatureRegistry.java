@@ -20,18 +20,20 @@
 package de.markusbordihn.adaptiveperformancetweaks.core.feature;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
+import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadDispatcher;
 import de.markusbordihn.adaptiveperformancetweaks.feature.aithrottle.AiThrottleConfig;
 import de.markusbordihn.adaptiveperformancetweaks.feature.aithrottle.AiThrottleManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.chunkgenthrottle.ChunkGenThrottleConfig;
 import de.markusbordihn.adaptiveperformancetweaks.feature.chunkgenthrottle.ChunkGenThrottleManager;
-import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimDistanceConfig;
-import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimDistanceManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimulationDistanceConfig;
+import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimulationDistanceManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.distance.ViewDistanceConfig;
 import de.markusbordihn.adaptiveperformancetweaks.feature.distance.ViewDistanceManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.gamerules.GameRuleManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.gamerules.GameRulesConfig;
+import de.markusbordihn.adaptiveperformancetweaks.feature.items.ArrowsConfig;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ExperienceOrbsConfig;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ItemsConfig;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.MonitoringConfig;
@@ -48,10 +50,12 @@ public final class FeatureRegistry {
 
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
-  private FeatureRegistry() {}
+  private FeatureRegistry() {
+  }
 
   public static void registerConfigs() {
     log.debug("{} Feature configurations ...", Constants.LOG_REGISTER_PREFIX);
+    ModConflictDetector.logCompatibilityWarnings();
     for (FeatureToggle toggle : FeatureToggle.values()) {
       if (toggle == FeatureToggle.CORE) {
         continue;
@@ -63,7 +67,7 @@ public final class FeatureRegistry {
 
   private static void applyFeatureConfig(FeatureToggle toggle) {
     switch (toggle) {
-      case ADAPTIVE_SIM_DISTANCE -> SimDistanceConfig.registerConfig();
+      case ADAPTIVE_SIMULATION_DISTANCE -> SimulationDistanceConfig.registerConfig();
       case ADAPTIVE_VIEW_DISTANCE -> ViewDistanceConfig.registerConfig();
       case AI_THROTTLING -> AiThrottleConfig.registerConfig();
       case CHUNK_GEN_THROTTLE -> ChunkGenThrottleConfig.registerConfig();
@@ -71,11 +75,13 @@ public final class FeatureRegistry {
       case MONITORING -> MonitoringConfig.registerConfig();
       case ITEMS -> ItemsConfig.registerConfig();
       case EXPERIENCE_ORBS -> ExperienceOrbsConfig.registerConfig();
+      case ARROWS -> ArrowsConfig.registerConfig();
       case PLAYER_LOGIN_PROTECTION -> PlayerLoginProtectionConfig.registerConfig();
       case PLAYER_EASY_CHILD_MODE -> PlayerEasyChildModeConfig.registerConfig();
       case PLAYER_STARTER_PROTECTION -> PlayerStarterProtectionConfig.registerConfig();
       case SPAWN -> SpawnConfig.registerConfig();
-      default -> {}
+      default -> {
+      }
     }
   }
 
@@ -85,9 +91,9 @@ public final class FeatureRegistry {
       if (!toggle.isEnabled()) {
         continue;
       }
-      log.debug("✓ Feature {} ({}) enabled", toggle.getId(), toggle.scope());
-      if (toggle == FeatureToggle.ADAPTIVE_SIM_DISTANCE) {
-        ServerLoadDispatcher.register(SimDistanceManager::handleServerLoadEvent);
+      log.debug("Feature {} ({}) enabled", toggle.getId(), toggle.scope());
+      if (toggle == FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE) {
+        ServerLoadDispatcher.register(SimulationDistanceManager::handleServerLoadEvent);
       }
       if (toggle == FeatureToggle.ADAPTIVE_VIEW_DISTANCE) {
         ServerLoadDispatcher.register(ViewDistanceManager::handleServerLoadEvent);
@@ -126,7 +132,7 @@ public final class FeatureRegistry {
     log.info("{} Feature Registry (client) ...", Constants.LOG_REGISTER_PREFIX);
     for (FeatureToggle toggle : FeatureToggle.values()) {
       if (toggle.scope() != FeatureToggle.Scope.SERVER && toggle.isEnabled()) {
-        log.debug("✓ Client feature {} enabled", toggle.getId());
+        log.debug("Client feature {} enabled", toggle.getId());
       }
     }
   }

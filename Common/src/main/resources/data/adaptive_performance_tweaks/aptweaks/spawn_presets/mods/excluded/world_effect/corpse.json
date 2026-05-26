@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "corpse",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "world_effect",
+  "reason": "Corpse entities are recovery containers and should not be tracked."
+}

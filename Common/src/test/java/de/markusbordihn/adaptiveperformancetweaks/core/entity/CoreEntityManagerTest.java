@@ -24,17 +24,21 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
+import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnPreset;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.Bootstrap;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.monster.Zombie;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -112,23 +116,23 @@ class CoreEntityManagerTest {
   }
 
   @ParameterizedTest
-  @ValueSource(
-      strings = {
-        "create:contraption",
-        "create:seat",
-        "create:super_glue",
-        "botania:spark",
-        "botania:mana_burst",
-        "mana-and-artifice:residual_magic",
-        "appliedenergistics2:meteor",
-        "mekanism:robit",
-        "minecolonies:citizen",
-        "immersiveengineering:tesla_coil",
-        "industrialforegoing:pink_slime",
-        "fluxnetworks:flux_point",
-        "guardvillagers:archer",
-        "xnet:connector"
-      })
+  @ValueSource(strings = {
+    "create:contraption",
+    "create:seat",
+    "create:super_glue",
+    "botania:spark",
+    "botania:mana_burst",
+    "mana-and-artifice:residual_magic",
+    "appliedenergistics2:meteor",
+    "mekanism:robit",
+    "minecolonies:citizen",
+    "immersive_aircraft:biplane",
+    "immersiveengineering:tesla_coil",
+    "industrialforegoing:pink_slime",
+    "fluxnetworks:flux_point",
+    "guardvillagers:archer",
+    "xnet:connector"
+  })
   void excludedNamespaceEntityIsExcluded(String entityId) {
     String namespace = entityId.substring(0, entityId.indexOf(':'));
     CoreEntityManager.setExcludedModNamespaces(Set.of(namespace));
@@ -137,14 +141,14 @@ class CoreEntityManagerTest {
 
   @ParameterizedTest
   @ValueSource(
-      strings = {
-        "minecraft:zombie",
-        "minecraft:skeleton",
-        "minecraft:creeper",
-        "alexsmobs:hammerhead_shark",
-        "exoticbirds:parrot",
-        "friendsandfoes:frog"
-      })
+    strings = {
+      "minecraft:zombie",
+      "minecraft:skeleton",
+      "minecraft:creeper",
+      "alexsmobs:hammerhead_shark",
+      "exoticbirds:parrot",
+      "friendsandfoes:frog"
+    })
   void nonExcludedNamespaceNotExcluded(String entityId) {
     CoreEntityManager.setExcludedModNamespaces(Set.of("create", "botania", "mekanism"));
     assertFalse(CoreEntityManager.isExcludedModNamespace(entityId));
@@ -156,38 +160,20 @@ class CoreEntityManagerTest {
     CoreEntityManager.setExcludedModNamespaces(mutable);
     mutable.add("botania");
     assertFalse(
-        CoreEntityManager.isExcludedModNamespace("botania:spark"),
-        "External modification of source set should not affect internal state");
+      CoreEntityManager.isExcludedModNamespace("botania:spark"),
+      "External modification of source set should not affect internal state");
   }
 
   @Test
   void multipleNamespacesAllExcluded() {
     CoreEntityManager.setExcludedModNamespaces(
-        Set.of(
-            "create",
-            "botania",
-            "mana-and-artifice",
-            "minecolonies",
-            "appliedenergistics2",
-            "mekanism",
-            "industrialforegoing",
-            "immersiveengineering",
-            "fluxnetworks",
-            "guardvillagers",
-            "human_companions",
-            "lootr",
-            "biggerreactors",
-            "modularrouters",
-            "pipez",
-            "pokecube_aio",
-            "refinedstorage",
-            "storagedrawers",
-            "ultimate_car",
-            "viescraft_machines",
-            "weather2",
-            "xnet",
-            "corpse",
-            "easy_npc"));
+      Set.of("create", "botania", "mana-and-artifice", "minecolonies",
+        "appliedenergistics2", "mekanism", "industrialforegoing",
+        "immersive_aircraft", "immersiveengineering", "fluxnetworks", "guardvillagers",
+        "human_companions", "lootr", "biggerreactors", "modularrouters",
+        "pipez", "pokecube_aio", "refinedstorage", "storagedrawers",
+        "ultimate_car", "viescraft_machines", "weather2", "xnet",
+        "corpse", "easy_npc"));
 
     assertTrue(CoreEntityManager.isExcludedModNamespace("create:contraption"));
     assertTrue(CoreEntityManager.isExcludedModNamespace("botania:mana_burst"));
@@ -195,6 +181,7 @@ class CoreEntityManagerTest {
     assertTrue(CoreEntityManager.isExcludedModNamespace("minecolonies:citizen"));
     assertTrue(CoreEntityManager.isExcludedModNamespace("appliedenergistics2:tiny_tnt"));
     assertTrue(CoreEntityManager.isExcludedModNamespace("mekanism:robit"));
+    assertTrue(CoreEntityManager.isExcludedModNamespace("immersive_aircraft:biplane"));
     assertTrue(CoreEntityManager.isExcludedModNamespace("industrialforegoing:pink_slime"));
     assertTrue(CoreEntityManager.isExcludedModNamespace("fluxnetworks:flux_point"));
     assertTrue(CoreEntityManager.isExcludedModNamespace("guardvillagers:archer"));
@@ -211,14 +198,36 @@ class CoreEntityManagerTest {
   }
 
   @Test
+  void protectNamespaceRuleKeepsManagedLivingEntitiesOutOfTracking() {
+    SpawnPreset preset = new SpawnPreset(
+      false,
+      "testnpc",
+      List.of(),
+      100,
+      new SpawnPreset.DimensionFilter(List.of(), List.of(), List.of()),
+      new SpawnPreset.EntityLimits(Set.of(), Set.of(), 1, 1, 1, 1),
+      SpawnPreset.LoadFactors.defaults(),
+      TrackingMode.PROTECT_NAMESPACE,
+      TrackingCategory.MANAGED_LIVING,
+      "Managed living test namespace",
+      Set.of());
+    CoreEntityManager.reloadTrackingRules(List.of(preset));
+
+    Zombie zombie = new Zombie(EntityType.ZOMBIE, mock(ServerLevel.class));
+    assertFalse(CoreEntityManager.isRelevantEntity(zombie, "testnpc:guard"));
+    assertFalse(CoreEntityManager.isRelevantEntity(zombie, "testnpc:guard"),
+      "Second call should use the cached namespace decision");
+  }
+
+  @Test
   void replacingExclusionSetTakesPrecedence() {
     CoreEntityManager.setExcludedModNamespaces(Set.of("create"));
     assertTrue(CoreEntityManager.isExcludedModNamespace("create:contraption"));
 
     CoreEntityManager.setExcludedModNamespaces(Set.of("botania"));
     assertFalse(
-        CoreEntityManager.isExcludedModNamespace("create:contraption"),
-        "Old exclusion set should be fully replaced");
+      CoreEntityManager.isExcludedModNamespace("create:contraption"),
+      "Old exclusion set should be fully replaced");
     assertTrue(CoreEntityManager.isExcludedModNamespace("botania:spark"));
   }
 

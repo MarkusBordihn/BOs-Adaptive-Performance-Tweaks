@@ -21,6 +21,7 @@ package de.markusbordihn.adaptiveperformancetweaks.core.server;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreEntityManager;
+import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPositionManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.BenchmarkManager;
 import java.util.List;
@@ -43,7 +44,8 @@ public final class ServerManager {
   private static int ticks;
   private static long serverStartTime = 0;
 
-  private ServerManager() {}
+  private ServerManager() {
+  }
 
   public static void handleServerAboutToStart(MinecraftServer server) {
     log.info("Server starting ...");
@@ -82,7 +84,9 @@ public final class ServerManager {
       numberOfPlayers = minecraftServer.getPlayerList().getPlayerCount();
     }
     CoreEntityManager.handleServerTick();
-    PlayerPositionManager.handleServerTick();
+    if (FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled()) {
+      PlayerPositionManager.handleServerTick();
+    }
     if (BenchmarkManager.isRunning()) {
       BenchmarkManager.onServerTick();
     }
@@ -111,8 +115,8 @@ public final class ServerManager {
 
   public static float getAverageTickTime() {
     return minecraftServer != null
-        ? (float) (minecraftServer.getAverageTickTimeNanos() / 1_000_000.0)
-        : 50f;
+      ? (float) (minecraftServer.getAverageTickTimeNanos() / 1_000_000.0)
+      : 50f;
   }
 
   public static double getAverageTickTime(ServerLevel serverLevel) {

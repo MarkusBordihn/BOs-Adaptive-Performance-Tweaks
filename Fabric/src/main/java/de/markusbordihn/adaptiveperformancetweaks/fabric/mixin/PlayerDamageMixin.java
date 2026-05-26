@@ -32,15 +32,15 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 public abstract class PlayerDamageMixin {
 
   @ModifyArgs(
-      method = "actuallyHurt",
-      at =
-          @At(
-              value = "INVOKE",
-              target =
-                  "Lnet/minecraft/world/entity/LivingEntity;getDamageAfterArmorAbsorb(Lnet/minecraft/world/damagesource/DamageSource;F)F"))
+    method = "actuallyHurt",
+    at =
+    @At(
+      value = "INVOKE",
+      target =
+        "Lnet/minecraft/world/entity/LivingEntity;getDamageAfterArmorAbsorb(Lnet/minecraft/world/damagesource/DamageSource;F)F"))
   private void aptweaks_modifyPlayerDamage(Args args) {
     if (!FeatureToggle.PLAYER_EASY_CHILD_MODE.isEnabled()
-        && !FeatureToggle.PLAYER_STARTER_PROTECTION.isEnabled()) {
+      && !FeatureToggle.PLAYER_STARTER_PROTECTION.isEnabled()) {
       return;
     }
 

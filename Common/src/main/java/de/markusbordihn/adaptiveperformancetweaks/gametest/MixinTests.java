@@ -26,21 +26,22 @@ import net.minecraft.world.entity.ExperienceOrb;
 
 public final class MixinTests {
 
-  private MixinTests() {}
+  private MixinTests() {
+  }
 
   public static void testExperienceOrbAccessorMixin(GameTestHelper helper) {
     ExperienceOrb orb = new ExperienceOrb(EntityType.EXPERIENCE_ORB, helper.getLevel());
     GameTestHelpers.assertTrue(
-        helper,
-        "ExperienceOrbAccessor mixin was not applied — check mixin config and refmap!",
-        orb instanceof ExperienceOrbAccessor);
+      helper,
+      "ExperienceOrbAccessor mixin was not applied - check mixin config and refmap!",
+      orb instanceof ExperienceOrbAccessor);
     ExperienceOrbAccessor accessor = (ExperienceOrbAccessor) orb;
     accessor.setValue(42);
     GameTestHelpers.assertEquals(
-        helper,
-        "ExperienceOrbAccessor.getValue() returned wrong value — field remapping broken?",
-        42,
-        accessor.getValue());
+      helper,
+      "ExperienceOrbAccessor.getValue() returned wrong value - field remapping broken?",
+      42,
+      accessor.getValue());
     helper.succeed();
   }
 }

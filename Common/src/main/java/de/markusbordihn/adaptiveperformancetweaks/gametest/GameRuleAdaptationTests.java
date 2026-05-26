@@ -28,7 +28,8 @@ import net.minecraft.world.level.GameRules;
 
 public final class GameRuleAdaptationTests {
 
-  private GameRuleAdaptationTests() {}
+  private GameRuleAdaptationTests() {
+  }
 
   public static void testVeryHighLoadDisablesGameRules(GameTestHelper helper) {
     MinecraftServer server = helper.getLevel().getServer();
@@ -40,20 +41,20 @@ public final class GameRuleAdaptationTests {
     GameRuleManager.enableInsomnia();
 
     GameRuleManager.handleServerLoadEvent(
-        new ServerLoadEvent(ServerLoadLevel.VERY_HIGH, ServerLoadLevel.NORMAL, 200.0, 50.0));
+      new ServerLoadEvent(ServerLoadLevel.VERY_HIGH, ServerLoadLevel.NORMAL, 200.0, 50.0));
 
     GameTestHelpers.assertTrue(
-        helper,
-        "patrolSpawning should be disabled under VERY_HIGH load",
-        !rules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING));
+      helper,
+      "patrolSpawning should be disabled under VERY_HIGH load",
+      !rules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING));
     GameTestHelpers.assertTrue(
-        helper,
-        "raids should be disabled under VERY_HIGH load",
-        rules.getBoolean(GameRules.RULE_DISABLE_RAIDS));
+      helper,
+      "raids should be disabled under VERY_HIGH load",
+      rules.getBoolean(GameRules.RULE_DISABLE_RAIDS));
     GameTestHelpers.assertTrue(
-        helper,
-        "insomnia should be disabled under VERY_HIGH load",
-        !rules.getBoolean(GameRules.RULE_DOINSOMNIA));
+      helper,
+      "insomnia should be disabled under VERY_HIGH load",
+      !rules.getBoolean(GameRules.RULE_DOINSOMNIA));
 
     GameRuleManager.enablePatrolSpawning();
     GameRuleManager.enableRaids();

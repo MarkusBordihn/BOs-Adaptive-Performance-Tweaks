@@ -54,18 +54,20 @@ public class ReloadCommand extends CustomCommand {
       boolean isNowEnabled = toggle.isEnabled();
       if (wasEnabled != isNowEnabled) {
         sendFeedback(
-            context,
-            String.format(
-                "  [!] %s: %s → %s (restart required to take effect)",
-                toggle.getId(), wasEnabled ? "ON" : "off", isNowEnabled ? "ON" : "off"));
+          context,
+          String.format(
+            "  [!] %s: %s -> %s (restart required to take effect)",
+            toggle.getId(),
+            wasEnabled ? "ON" : "off",
+            isNowEnabled ? "ON" : "off"));
         restartRequired = true;
       }
     }
 
     if (restartRequired) {
       sendFeedback(
-          context,
-          "Note: Feature enable/disable changes require a server restart to fully take effect.");
+        context,
+        "Note: Feature enable/disable changes require a server restart to fully take effect.");
     }
 
     return SINGLE_SUCCESS;

@@ -30,6 +30,7 @@ import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.VirtualPlayerMan
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
@@ -42,26 +43,27 @@ import net.minecraft.world.phys.Vec3;
 
 public final class SpawnThrottleTests {
 
-  private SpawnThrottleTests() {}
+  private SpawnThrottleTests() {
+  }
 
   public static void testSpawnerNotThrottledUnderNormalLoad(GameTestHelper helper) {
     SpawnManager.handleServerAboutToStart();
     ServerLevelLoad.reset();
     GameTestHelpers.assertTrue(
-        helper,
-        "Spawner should NOT be throttled under NORMAL load",
-        !SpawnManager.shouldThrottleSpawner(helper.getLevel()));
+      helper,
+      "Spawner should NOT be throttled under NORMAL load",
+      !SpawnManager.shouldThrottleSpawner(helper.getLevel()));
     helper.succeed();
   }
 
   public static void testSpawnerThrottledUnderVeryHighLoad(GameTestHelper helper) {
     ServerLevelLoad.reset();
     SpawnManager.handleServerLoadEvent(
-        new ServerLoadEvent(ServerLoadLevel.VERY_HIGH, ServerLoadLevel.NORMAL, 200.0, 50.0));
+      new ServerLoadEvent(ServerLoadLevel.VERY_HIGH, ServerLoadLevel.NORMAL, 200.0, 50.0));
     GameTestHelpers.assertTrue(
-        helper,
-        "Spawner should be throttled under VERY_HIGH load",
-        SpawnManager.shouldThrottleSpawner(helper.getLevel()));
+      helper,
+      "Spawner should be throttled under VERY_HIGH load",
+      SpawnManager.shouldThrottleSpawner(helper.getLevel()));
     SpawnManager.handleServerAboutToStart();
     helper.succeed();
   }
@@ -70,7 +72,7 @@ public final class SpawnThrottleTests {
     SpawnManager.handleServerAboutToStart();
     ServerLevelLoad.reset();
     SpawnManager.handleServerLoadEvent(
-        new ServerLoadEvent(ServerLoadLevel.NORMAL, ServerLoadLevel.NORMAL, 50.0, 50.0));
+      new ServerLoadEvent(ServerLoadLevel.NORMAL, ServerLoadLevel.NORMAL, 50.0, 50.0));
 
     ServerLevel overworld = helper.getLevel();
     ServerLevel nether = GameTestHelpers.getRequiredLevel(helper, Level.NETHER);
@@ -78,13 +80,13 @@ public final class SpawnThrottleTests {
     GameTestHelpers.setMeasuredLevelLoad(nether, ServerLoadLevel.NORMAL, 50.0);
 
     GameTestHelpers.assertTrue(
-        helper,
-        "Spawner should be throttled in the measured high-load level",
-        SpawnManager.shouldThrottleSpawner(overworld));
+      helper,
+      "Spawner should be throttled in the measured high-load level",
+      SpawnManager.shouldThrottleSpawner(overworld));
     GameTestHelpers.assertFalse(
-        helper,
-        "Spawner should not be throttled in the measured normal-load level",
-        SpawnManager.shouldThrottleSpawner(nether));
+      helper,
+      "Spawner should not be throttled in the measured normal-load level",
+      SpawnManager.shouldThrottleSpawner(nether));
 
     SpawnManager.handleServerAboutToStart();
     ServerLevelLoad.reset();
@@ -130,13 +132,13 @@ public final class SpawnThrottleTests {
     SpawnManager.handleServerAboutToStart();
 
     GameTestHelpers.assertTrue(
-        helper,
-        "Spawn limit not enforced: "
-            + allowed
-            + " zombies allowed (expected > 0 and <= "
-            + LIMIT
-            + ")",
-        allowed > 0 && allowed <= LIMIT);
+      helper,
+      "Spawn limit not enforced: "
+        + allowed
+        + " zombies allowed (expected > 0 and <= "
+        + LIMIT
+        + ")",
+      allowed > 0 && allowed <= LIMIT);
     helper.succeed();
   }
 
@@ -188,13 +190,13 @@ public final class SpawnThrottleTests {
     SpawnManager.handleServerAboutToStart();
 
     GameTestHelpers.assertTrue(
-        helper,
-        "Server limit not enforced: "
-            + allowed
-            + " zombies allowed (expected > 0 and <= "
-            + LIMIT
-            + ")",
-        allowed > 0 && allowed <= LIMIT);
+      helper,
+      "Server limit not enforced: "
+        + allowed
+        + " zombies allowed (expected > 0 and <= "
+        + LIMIT
+        + ")",
+      allowed > 0 && allowed <= LIMIT);
     helper.succeed();
   }
 
@@ -246,13 +248,13 @@ public final class SpawnThrottleTests {
     SpawnManager.handleServerAboutToStart();
 
     GameTestHelpers.assertTrue(
-        helper,
-        "Chunk limit not enforced: "
-            + allowed
-            + " zombies allowed (expected > 0 and <= "
-            + LIMIT
-            + ")",
-        allowed > 0 && allowed <= LIMIT);
+      helper,
+      "Chunk limit not enforced: "
+        + allowed
+        + " zombies allowed (expected > 0 and <= "
+        + LIMIT
+        + ")",
+      allowed > 0 && allowed <= LIMIT);
     helper.succeed();
   }
 
@@ -308,13 +310,170 @@ public final class SpawnThrottleTests {
     SpawnManager.handleServerAboutToStart();
 
     GameTestHelpers.assertTrue(
-        helper,
-        "Virtual zone limit not enforced: "
-            + allowed
-            + " zombies allowed (expected > 0 and <= "
-            + LIMIT
-            + ")",
-        allowed > 0 && allowed <= LIMIT);
+      helper,
+      "Virtual zone limit not enforced: "
+        + allowed
+        + " zombies allowed (expected > 0 and <= "
+        + LIMIT
+        + ")",
+      allowed > 0 && allowed <= LIMIT);
+    helper.succeed();
+  }
+
+  public static void testStructureSpawnGetsWorldBonus(GameTestHelper helper) {
+    final int WORLD_LIMIT = 3;
+    final int WORLD_BONUS = 4;
+    final int ATTEMPTS = 10;
+
+    boolean wasSpawnEnabled = FeatureToggle.SPAWN.isEnabled();
+    int originalWorldMax = SpawnConfig.spawnLimitationMaxMobsPerWorld;
+    int originalServerMax = SpawnConfig.spawnLimitationMaxMobsPerServer;
+    int originalChunkMax = SpawnConfig.spawnLimitationMaxMobsPerChunk;
+    int originalPlayerMax = SpawnConfig.spawnLimitationMaxMobsPerPlayer;
+    int originalFriendlyRate = SpawnConfig.friendlyChunkSpawnRate;
+    boolean originalSpecialBonusEnabled = SpawnConfig.specialSpawnTypeBonusEnabled;
+    Set<String> originalBonusTypes = Set.copyOf(SpawnConfig.specialSpawnBonusTypes);
+    int originalSpecialWorldBonus = SpawnConfig.specialSpawnBonusPerWorld;
+    int originalSpecialServerBonus = SpawnConfig.specialSpawnBonusPerServer;
+    int originalSpecialChunkBonus = SpawnConfig.specialSpawnBonusPerChunk;
+    int originalSpecialPlayerBonus = SpawnConfig.specialSpawnBonusPerPlayer;
+    ServerLoadLevel originalSpecialMaxLoadLevel = SpawnConfig.specialSpawnBonusMaxLoadLevel;
+
+    FeatureToggle.SPAWN.setEnabled(true);
+    SpawnConfig.spawnLimitationMaxMobsPerWorld = WORLD_LIMIT;
+    SpawnConfig.spawnLimitationMaxMobsPerServer = -1;
+    SpawnConfig.spawnLimitationMaxMobsPerChunk = -1;
+    SpawnConfig.spawnLimitationMaxMobsPerPlayer = -1;
+    SpawnConfig.friendlyChunkSpawnRate = 0;
+    SpawnConfig.specialSpawnTypeBonusEnabled = true;
+    SpawnConfig.specialSpawnBonusTypes = Set.of("structure");
+    SpawnConfig.specialSpawnBonusPerWorld = WORLD_BONUS;
+    SpawnConfig.specialSpawnBonusPerServer = 0;
+    SpawnConfig.specialSpawnBonusPerChunk = 0;
+    SpawnConfig.specialSpawnBonusPerPlayer = 0;
+    SpawnConfig.specialSpawnBonusMaxLoadLevel = ServerLoadLevel.MEDIUM;
+    SpawnPresetRegistry.reload(Collections.emptyList());
+
+    SpawnManager.handleServerAboutToStart();
+    SpawnManager.handleServerStarted();
+    for (int i = 0; i <= 20 * 20; i++) {
+      SpawnManager.handleServerTick();
+    }
+
+    ServerLevel level = helper.getLevel();
+    BlockPos spawnPos = helper.absolutePos(new BlockPos(0, 1, 0));
+    List<Zombie> spawnedZombies = new ArrayList<>();
+    for (int i = 0; i < ATTEMPTS; i++) {
+      Zombie zombie = new Zombie(EntityType.ZOMBIE, level);
+      zombie.setPos(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5);
+      if (!SpawnManager.shouldDenyMobSpawn(zombie, level, MobSpawnType.STRUCTURE)) {
+        level.addFreshEntity(zombie);
+        spawnedZombies.add(zombie);
+      }
+    }
+
+    int allowed = spawnedZombies.size();
+    spawnedZombies.forEach(z -> z.remove(Entity.RemovalReason.DISCARDED));
+    FeatureToggle.SPAWN.setEnabled(wasSpawnEnabled);
+    SpawnConfig.spawnLimitationMaxMobsPerWorld = originalWorldMax;
+    SpawnConfig.spawnLimitationMaxMobsPerServer = originalServerMax;
+    SpawnConfig.spawnLimitationMaxMobsPerChunk = originalChunkMax;
+    SpawnConfig.spawnLimitationMaxMobsPerPlayer = originalPlayerMax;
+    SpawnConfig.friendlyChunkSpawnRate = originalFriendlyRate;
+    SpawnConfig.specialSpawnTypeBonusEnabled = originalSpecialBonusEnabled;
+    SpawnConfig.specialSpawnBonusTypes = originalBonusTypes;
+    SpawnConfig.specialSpawnBonusPerWorld = originalSpecialWorldBonus;
+    SpawnConfig.specialSpawnBonusPerServer = originalSpecialServerBonus;
+    SpawnConfig.specialSpawnBonusPerChunk = originalSpecialChunkBonus;
+    SpawnConfig.specialSpawnBonusPerPlayer = originalSpecialPlayerBonus;
+    SpawnConfig.specialSpawnBonusMaxLoadLevel = originalSpecialMaxLoadLevel;
+    ServerLevelLoad.reset();
+    SpawnManager.handleServerAboutToStart();
+
+    GameTestHelpers.assertTrue(
+      helper,
+      "Structure spawn bonus not enforced: " + allowed + " zombies allowed (expected > "
+        + WORLD_LIMIT + " and <= " + (WORLD_LIMIT + WORLD_BONUS) + ")",
+      allowed > WORLD_LIMIT && allowed <= WORLD_LIMIT + WORLD_BONUS);
+    helper.succeed();
+  }
+
+  public static void testStructureSpawnBonusDisabledAboveMaxLoad(GameTestHelper helper) {
+    final int WORLD_LIMIT = 3;
+    final int WORLD_BONUS = 4;
+    final int ATTEMPTS = 10;
+
+    boolean wasSpawnEnabled = FeatureToggle.SPAWN.isEnabled();
+    int originalWorldMax = SpawnConfig.spawnLimitationMaxMobsPerWorld;
+    int originalServerMax = SpawnConfig.spawnLimitationMaxMobsPerServer;
+    int originalChunkMax = SpawnConfig.spawnLimitationMaxMobsPerChunk;
+    int originalPlayerMax = SpawnConfig.spawnLimitationMaxMobsPerPlayer;
+    int originalFriendlyRate = SpawnConfig.friendlyChunkSpawnRate;
+    boolean originalSpecialBonusEnabled = SpawnConfig.specialSpawnTypeBonusEnabled;
+    Set<String> originalBonusTypes = Set.copyOf(SpawnConfig.specialSpawnBonusTypes);
+    int originalSpecialWorldBonus = SpawnConfig.specialSpawnBonusPerWorld;
+    int originalSpecialServerBonus = SpawnConfig.specialSpawnBonusPerServer;
+    int originalSpecialChunkBonus = SpawnConfig.specialSpawnBonusPerChunk;
+    int originalSpecialPlayerBonus = SpawnConfig.specialSpawnBonusPerPlayer;
+    ServerLoadLevel originalSpecialMaxLoadLevel = SpawnConfig.specialSpawnBonusMaxLoadLevel;
+
+    FeatureToggle.SPAWN.setEnabled(true);
+    SpawnConfig.spawnLimitationMaxMobsPerWorld = WORLD_LIMIT;
+    SpawnConfig.spawnLimitationMaxMobsPerServer = -1;
+    SpawnConfig.spawnLimitationMaxMobsPerChunk = -1;
+    SpawnConfig.spawnLimitationMaxMobsPerPlayer = -1;
+    SpawnConfig.friendlyChunkSpawnRate = 0;
+    SpawnConfig.specialSpawnTypeBonusEnabled = true;
+    SpawnConfig.specialSpawnBonusTypes = Set.of("structure");
+    SpawnConfig.specialSpawnBonusPerWorld = WORLD_BONUS;
+    SpawnConfig.specialSpawnBonusPerServer = 0;
+    SpawnConfig.specialSpawnBonusPerChunk = 0;
+    SpawnConfig.specialSpawnBonusPerPlayer = 0;
+    SpawnConfig.specialSpawnBonusMaxLoadLevel = ServerLoadLevel.MEDIUM;
+    SpawnPresetRegistry.reload(Collections.emptyList());
+
+    SpawnManager.handleServerAboutToStart();
+    SpawnManager.handleServerStarted();
+    for (int i = 0; i <= 20 * 20; i++) {
+      SpawnManager.handleServerTick();
+    }
+
+    ServerLevel level = helper.getLevel();
+    GameTestHelpers.setMeasuredLevelLoad(level, ServerLoadLevel.HIGH, 100.0);
+    BlockPos spawnPos = helper.absolutePos(new BlockPos(0, 1, 0));
+    List<Zombie> spawnedZombies = new ArrayList<>();
+    for (int i = 0; i < ATTEMPTS; i++) {
+      Zombie zombie = new Zombie(EntityType.ZOMBIE, level);
+      zombie.setPos(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5);
+      if (!SpawnManager.shouldDenyMobSpawn(zombie, level, MobSpawnType.STRUCTURE)) {
+        level.addFreshEntity(zombie);
+        spawnedZombies.add(zombie);
+      }
+    }
+
+    int allowed = spawnedZombies.size();
+    spawnedZombies.forEach(z -> z.remove(Entity.RemovalReason.DISCARDED));
+    FeatureToggle.SPAWN.setEnabled(wasSpawnEnabled);
+    SpawnConfig.spawnLimitationMaxMobsPerWorld = originalWorldMax;
+    SpawnConfig.spawnLimitationMaxMobsPerServer = originalServerMax;
+    SpawnConfig.spawnLimitationMaxMobsPerChunk = originalChunkMax;
+    SpawnConfig.spawnLimitationMaxMobsPerPlayer = originalPlayerMax;
+    SpawnConfig.friendlyChunkSpawnRate = originalFriendlyRate;
+    SpawnConfig.specialSpawnTypeBonusEnabled = originalSpecialBonusEnabled;
+    SpawnConfig.specialSpawnBonusTypes = originalBonusTypes;
+    SpawnConfig.specialSpawnBonusPerWorld = originalSpecialWorldBonus;
+    SpawnConfig.specialSpawnBonusPerServer = originalSpecialServerBonus;
+    SpawnConfig.specialSpawnBonusPerChunk = originalSpecialChunkBonus;
+    SpawnConfig.specialSpawnBonusPerPlayer = originalSpecialPlayerBonus;
+    SpawnConfig.specialSpawnBonusMaxLoadLevel = originalSpecialMaxLoadLevel;
+    SpawnManager.handleServerAboutToStart();
+    ServerLevelLoad.reset();
+
+    GameTestHelpers.assertTrue(
+      helper,
+      "Structure spawn bonus should be disabled above max load: " + allowed
+        + " zombies allowed (expected > 0 and <= " + WORLD_LIMIT + ")",
+      allowed > 0 && allowed <= WORLD_LIMIT);
     helper.succeed();
   }
 }

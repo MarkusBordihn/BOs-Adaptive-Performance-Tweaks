@@ -19,6 +19,7 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.aithrottle;
 
+import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLevelLoad;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
@@ -29,9 +30,14 @@ public final class AiThrottleManager {
 
   private static volatile ServerLoadLevel currentLoadLevel = ServerLoadLevel.NORMAL;
 
-  private AiThrottleManager() {}
+  private AiThrottleManager() {
+  }
 
   public static void handleServerLoadEvent(ServerLoadEvent event) {
+    if (!FeatureToggle.AI_THROTTLING.isEnabled()) {
+      return;
+    }
+
     currentLoadLevel = event.getServerLoadLevel();
   }
 
@@ -55,7 +61,7 @@ public final class AiThrottleManager {
   private static int getDivisorForCurrentLoad(Mob mob) {
     ServerLoadLevel loadLevel = currentLoadLevel;
     if (mob.level() instanceof ServerLevel serverLevel
-        && ServerLevelLoad.hasMeasuredLoad(serverLevel)) {
+      && ServerLevelLoad.hasMeasuredLoad(serverLevel)) {
       loadLevel = ServerLevelLoad.getLevelLoad(serverLevel);
     }
 

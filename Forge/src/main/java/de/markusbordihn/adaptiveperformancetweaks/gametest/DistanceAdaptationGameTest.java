@@ -28,13 +28,13 @@ import net.minecraftforge.gametest.GameTestHolder;
 @GameTestHolder(Constants.MOD_ID)
 public class DistanceAdaptationGameTest {
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testViewDistanceDecreasesUnderVeryHighLoad(GameTestHelper helper) {
     DistanceAdaptationTests.testViewDistanceDecreasesUnderVeryHighLoad(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
-  public void testSimDistanceDecreasesUnderVeryHighLoad(GameTestHelper helper) {
-    DistanceAdaptationTests.testSimDistanceDecreasesUnderVeryHighLoad(helper);
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
+  public void testSimulationDistanceDecreasesUnderVeryHighLoad(GameTestHelper helper) {
+    DistanceAdaptationTests.testSimulationDistanceDecreasesUnderVeryHighLoad(helper);
   }
 }

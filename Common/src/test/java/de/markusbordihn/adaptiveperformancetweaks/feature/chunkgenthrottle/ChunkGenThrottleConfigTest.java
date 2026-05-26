@@ -36,11 +36,11 @@ class ChunkGenThrottleConfigTest {
   @Test
   void divisorsAreStrictlyAscending() {
     assertTrue(
-        ChunkGenThrottleConfig.chunkGenThrottleMediumDivisor
-            < ChunkGenThrottleConfig.chunkGenThrottleHighDivisor);
+      ChunkGenThrottleConfig.chunkGenThrottleMediumDivisor
+        < ChunkGenThrottleConfig.chunkGenThrottleHighDivisor);
     assertTrue(
-        ChunkGenThrottleConfig.chunkGenThrottleHighDivisor
-            < ChunkGenThrottleConfig.chunkGenThrottleVeryHighDivisor);
+      ChunkGenThrottleConfig.chunkGenThrottleHighDivisor
+        < ChunkGenThrottleConfig.chunkGenThrottleVeryHighDivisor);
   }
 
   @Test

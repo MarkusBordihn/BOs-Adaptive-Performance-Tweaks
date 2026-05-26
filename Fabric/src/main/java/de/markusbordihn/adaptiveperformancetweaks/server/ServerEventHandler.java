@@ -27,7 +27,9 @@ import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnPresetLoade
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -41,77 +43,84 @@ import net.minecraft.util.profiling.ProfilerFiller;
 
 public final class ServerEventHandler {
 
-  private ServerEventHandler() {}
+  private ServerEventHandler() {
+  }
 
   public static void register() {
     if (FeatureToggle.SPAWN.isEnabled()) {
       SpawnPresetLoader loader = new SpawnPresetLoader();
       ResourceManagerHelper.get(PackType.SERVER_DATA)
-          .registerReloadListener(
-              new IdentifiableResourceReloadListener() {
-                @Override
-                public ResourceLocation getFabricId() {
-                  return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "spawn_presets");
-                }
+        .registerReloadListener(
+          new IdentifiableResourceReloadListener() {
+            @Override
+            public ResourceLocation getFabricId() {
+              return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "spawn_presets");
+            }
 
-                @Override
-                public CompletableFuture<Void> reload(
-                    PreparationBarrier barrier,
-                    ResourceManager manager,
-                    ProfilerFiller preparationsProfiler,
-                    ProfilerFiller reloadProfiler,
-                    Executor backgroundExecutor,
-                    Executor gameExecutor) {
-                  return loader.reload(
-                      barrier,
-                      manager,
-                      preparationsProfiler,
-                      reloadProfiler,
-                      backgroundExecutor,
-                      gameExecutor);
-                }
-              });
+            @Override
+            public CompletableFuture<Void> reload(
+              PreparationBarrier barrier,
+              ResourceManager manager,
+              ProfilerFiller preparationsProfiler,
+              ProfilerFiller reloadProfiler,
+              Executor backgroundExecutor,
+              Executor gameExecutor) {
+              return loader.reload(
+                barrier,
+                manager,
+                preparationsProfiler,
+                reloadProfiler,
+                backgroundExecutor,
+                gameExecutor);
+            }
+          });
     }
 
     ServerLifecycleEvents.SERVER_STARTING.register(
-        server -> {
-          CommonServerEventHandler.handleServerAboutToStart(server);
-        });
+      server -> {
+        CommonServerEventHandler.handleServerAboutToStart(server);
+      });
 
     ServerLifecycleEvents.SERVER_STARTED.register(
-        server -> {
-          CommonServerEventHandler.handleServerStarting(server);
-          CommonServerEventHandler.handleServerStarted();
-        });
+      server -> {
+        CommonServerEventHandler.handleServerStarting(server);
+        CommonServerEventHandler.handleServerStarted();
+      });
 
     ServerLifecycleEvents.SERVER_STOPPING.register(CommonServerEventHandler::handleServerStopping);
 
     ServerTickEvents.END_SERVER_TICK.register(
-        server -> CommonServerEventHandler.handleServerTick());
+      server -> CommonServerEventHandler.handleServerTick());
     ServerTickEvents.START_WORLD_TICK.register(
-        CommonServerEventHandler::handleServerLevelTickStart);
+      CommonServerEventHandler::handleServerLevelTickStart);
     ServerTickEvents.END_WORLD_TICK.register(CommonServerEventHandler::handleServerLevelTickEnd);
 
     ServerPlayConnectionEvents.JOIN.register(
-        (handler, sender, server) -> CommonServerEventHandler.handlePlayerLoggedIn(handler.player));
+      (handler, sender, server) -> CommonServerEventHandler.handlePlayerLoggedIn(handler.player));
 
     ServerPlayConnectionEvents.DISCONNECT.register(
-        (handler, server) -> CommonServerEventHandler.handlePlayerLoggedOut(handler.player));
+      (handler, server) -> CommonServerEventHandler.handlePlayerLoggedOut(handler.player));
 
-    ServerEntityEvents.ENTITY_LOAD.register(
-        (entity, level) -> {
-          if (CommonEntityEventHandler.handleEntityJoinLevel(entity, level)) {
-            entity.discard();
-          }
-        });
+    ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) ->
+      CommonServerEventHandler.handlePlayerTeleported(newPlayer));
+
+    ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register(
+      (player, origin, destination) ->
+        CommonServerEventHandler.handlePlayerTeleported(player));
+
+    ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
+      if (CommonEntityEventHandler.handleEntityJoinLevel(entity, level)) {
+        entity.discard();
+      }
+    });
 
     ServerEntityEvents.ENTITY_UNLOAD.register(
-        (entity, level) -> CommonEntityEventHandler.handleEntityLeaveLevel(entity, level));
+      (entity, level) -> CommonEntityEventHandler.handleEntityLeaveLevel(entity, level));
 
     ServerLivingEntityEvents.AFTER_DEATH.register(
-        (entity, damageSource) -> CommonEntityEventHandler.handleLivingDeath(entity));
+      (entity, damageSource) -> CommonEntityEventHandler.handleLivingDeath(entity));
 
     CommandRegistrationCallback.EVENT.register(
-        (dispatcher, registryAccess, environment) -> CommandManager.registerCommands(dispatcher));
+      (dispatcher, registryAccess, environment) -> CommandManager.registerCommands(dispatcher));
   }
 }

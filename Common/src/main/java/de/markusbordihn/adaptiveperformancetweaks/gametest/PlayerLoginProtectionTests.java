@@ -30,30 +30,31 @@ import net.minecraft.server.level.ServerPlayer;
 
 public final class PlayerLoginProtectionTests {
 
-  private PlayerLoginProtectionTests() {}
+  private PlayerLoginProtectionTests() {
+  }
 
   public static void testProtectionAppliedOnLogin(GameTestHelper helper) {
     PlayerLoginManager.handleServerAboutToStart();
     PlayerLoginProtectionConfig.protectPlayerDuringLogin = true;
 
     ServerPlayer player =
-        new ServerPlayer(
-            helper.getLevel().getServer(),
-            helper.getLevel(),
-            new GameProfile(UUID.randomUUID(), "TestLoginPlayer"),
-            ClientInformation.createDefault());
+      new ServerPlayer(
+        helper.getLevel().getServer(),
+        helper.getLevel(),
+        new GameProfile(UUID.randomUUID(), "TestLoginPlayer"),
+        ClientInformation.createDefault());
 
     GameTestHelpers.assertTrue(
-        helper,
-        "Player should not be invulnerable before login protection",
-        !player.isInvulnerable());
+      helper,
+      "Player should not be invulnerable before login protection",
+      !player.isInvulnerable());
 
     PlayerLoginManager.handlePlayerLoggedIn(player);
 
     GameTestHelpers.assertTrue(
-        helper, "Player should be invulnerable after login", player.isInvulnerable());
+      helper, "Player should be invulnerable after login", player.isInvulnerable());
     GameTestHelpers.assertTrue(
-        helper, "Player should be invisible after login", player.isInvisible());
+      helper, "Player should be invisible after login", player.isInvisible());
 
     PlayerLoginManager.handleServerAboutToStart();
     helper.succeed();
@@ -64,20 +65,20 @@ public final class PlayerLoginProtectionTests {
     PlayerLoginProtectionConfig.protectPlayerDuringLogin = false;
 
     ServerPlayer player =
-        new ServerPlayer(
-            helper.getLevel().getServer(),
-            helper.getLevel(),
-            new GameProfile(UUID.randomUUID(), "TestLoginPlayer2"),
-            ClientInformation.createDefault());
+      new ServerPlayer(
+        helper.getLevel().getServer(),
+        helper.getLevel(),
+        new GameProfile(UUID.randomUUID(), "TestLoginPlayer2"),
+        ClientInformation.createDefault());
 
     boolean invulnerableBefore = player.isInvulnerable();
     PlayerLoginManager.handlePlayerLoggedIn(player);
 
     GameTestHelpers.assertEquals(
-        helper,
-        "Invulnerability should not change when login protection is disabled",
-        invulnerableBefore,
-        player.isInvulnerable());
+      helper,
+      "Invulnerability should not change when login protection is disabled",
+      invulnerableBefore,
+      player.isInvulnerable());
 
     PlayerLoginProtectionConfig.protectPlayerDuringLogin = true;
     PlayerLoginManager.handleServerAboutToStart();
@@ -86,24 +87,24 @@ public final class PlayerLoginProtectionTests {
 
   public static void testValidationDetectsMovement(GameTestHelper helper) {
     ServerPlayer player =
-        new ServerPlayer(
-            helper.getLevel().getServer(),
-            helper.getLevel(),
-            new GameProfile(UUID.randomUUID(), "TestMovePlayer"),
-            ClientInformation.createDefault());
+      new ServerPlayer(
+        helper.getLevel().getServer(),
+        helper.getLevel(),
+        new GameProfile(UUID.randomUUID(), "TestMovePlayer"),
+        ClientInformation.createDefault());
     player.setPos(0.5, 1.0, 0.5);
 
     PlayerValidation validation = new PlayerValidation(player);
 
     GameTestHelpers.assertTrue(
-        helper, "Player should not have moved initially", !validation.hasPlayerMoved());
+      helper, "Player should not have moved initially", !validation.hasPlayerMoved());
 
     player.setPos(5.0, 1.0, 5.0);
 
     GameTestHelpers.assertTrue(
-        helper,
-        "Player should be detected as moved after position change",
-        validation.hasPlayerMoved());
+      helper,
+      "Player should be detected as moved after position change",
+      validation.hasPlayerMoved());
 
     helper.succeed();
   }

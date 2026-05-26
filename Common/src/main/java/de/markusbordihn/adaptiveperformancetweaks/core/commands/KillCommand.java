@@ -31,16 +31,16 @@ public class KillCommand extends CustomCommand {
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
     return Commands.literal("kill")
-        .requires(source -> source.hasPermission(2))
-        .then(Commands.literal("all_items").executes(command::killAllItems))
-        .then(Commands.literal("all_dropped_items").executes(command::killAllDroppedItems));
+      .requires(source -> source.hasPermission(2))
+      .then(Commands.literal("all_items").executes(command::killAllItems))
+      .then(Commands.literal("all_dropped_items").executes(command::killAllDroppedItems));
   }
 
   @Override
   public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
     sendFeedback(
-        context,
-        """
+      context,
+      """
         Usage:
         /aptweaks kill all_items - kills all item entities
         /aptweaks kill all_dropped_items - kills all dropped item entities""");

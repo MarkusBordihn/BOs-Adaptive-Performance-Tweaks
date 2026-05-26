@@ -33,16 +33,16 @@ public final class PlayerStarterProtectionConfig extends Config {
 
   public static final String CONFIG_FILE_NAME = "player_starter_protection.cfg";
   private static final String CONFIG_FILE_HEADER =
-      """
+    """
        Player Starter Protection Configuration
-
+      
        Automatically applies damage reduction and attack bonuses to new players
        based on their experience level -- no name list required.
-
+      
        A player is considered a "starter" as long as their level is below
        starterMaxExperienceLevel. The protection is removed automatically when
        they level up past the threshold.
-
+      
        starterMaxExperienceLevel  -- XP level below which a player counts as starter (default: 20)
        starterHurtDamageReduction -- % of incoming damage absorbed for starters  (default: 25)
        starterAttackDamageIncrease -- % by which starter attack damage is boosted (default: 25)
@@ -55,7 +55,8 @@ public final class PlayerStarterProtectionConfig extends Config {
   public static int starterHurtDamageReduction = 25;
   public static int starterAttackDamageIncrease = 25;
 
-  private PlayerStarterProtectionConfig() {}
+  private PlayerStarterProtectionConfig() {
+  }
 
   public static void registerConfig() {
     registerConfigFile(CONFIG_FILE_NAME, CONFIG_FILE_HEADER);
@@ -65,24 +66,24 @@ public final class PlayerStarterProtectionConfig extends Config {
     unmodified.putAll(properties);
 
     CoreConfig.setFeatureEnabled(
+      FeatureToggle.PLAYER_STARTER_PROTECTION,
+      ModConflictDetector.resolveFeatureState(
         FeatureToggle.PLAYER_STARTER_PROTECTION,
-        ModConflictDetector.resolveFeatureState(
-            FeatureToggle.PLAYER_STARTER_PROTECTION,
-            parseConfigValue(
-                properties, "enabled", FeatureToggle.PLAYER_STARTER_PROTECTION.getDefaultState())));
+        parseConfigValue(
+          properties, "enabled", FeatureToggle.PLAYER_STARTER_PROTECTION.getDefaultState())));
 
     starterMaxExperienceLevel =
-        parseInt(properties, "starterMaxExperienceLevel", starterMaxExperienceLevel);
+      parseInt(properties, "starterMaxExperienceLevel", starterMaxExperienceLevel);
     starterHurtDamageReduction =
-        parseInt(properties, "starterHurtDamageReduction", starterHurtDamageReduction);
+      parseInt(properties, "starterHurtDamageReduction", starterHurtDamageReduction);
     starterAttackDamageIncrease =
-        parseInt(properties, "starterAttackDamageIncrease", starterAttackDamageIncrease);
+      parseInt(properties, "starterAttackDamageIncrease", starterAttackDamageIncrease);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
 
     log.debug(
-        "Starter protection config: maxLevel={}, hurtReduction={}%, attackIncrease={}%",
-        starterMaxExperienceLevel, starterHurtDamageReduction, starterAttackDamageIncrease);
+      "Starter protection config: maxLevel={}, hurtReduction={}%, attackIncrease={}%",
+      starterMaxExperienceLevel, starterHurtDamageReduction, starterAttackDamageIncrease);
   }
 
   private static int parseInt(Properties props, String key, int defaultValue) {

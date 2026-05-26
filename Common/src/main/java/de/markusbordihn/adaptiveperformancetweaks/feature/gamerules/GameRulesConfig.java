@@ -33,9 +33,9 @@ public final class GameRulesConfig extends Config {
 
   public static final String CONFIG_FILE_NAME = "gamerules.cfg";
   private static final String CONFIG_FILE_HEADER =
-      """
+    """
        GameRules Feature Configuration
-
+      
        Controls which game rules are automatically adjusted under high server load.
        Integer values define the min/max boundaries used during optimization.
       """;
@@ -61,7 +61,8 @@ public final class GameRulesConfig extends Config {
   public static boolean vinesSpreadEnabled = true;
   public static boolean wardenSpawningEnabled = true;
 
-  private GameRulesConfig() {}
+  private GameRulesConfig() {
+  }
 
   public static void registerConfig() {
     registerConfigFile(CONFIG_FILE_NAME, CONFIG_FILE_HEADER);
@@ -71,46 +72,46 @@ public final class GameRulesConfig extends Config {
     unmodified.putAll(properties);
 
     CoreConfig.setFeatureEnabled(
+      FeatureToggle.GAMERULES,
+      ModConflictDetector.resolveFeatureState(
         FeatureToggle.GAMERULES,
-        ModConflictDetector.resolveFeatureState(
-            FeatureToggle.GAMERULES,
-            parseConfigValue(properties, "enabled", FeatureToggle.GAMERULES.getDefaultState())));
+        parseConfigValue(properties, "enabled", FeatureToggle.GAMERULES.getDefaultState())));
 
     randomTickSpeedEnabled =
-        parseBoolean(properties, "randomTickSpeedEnabled", randomTickSpeedEnabled);
+      parseBoolean(properties, "randomTickSpeedEnabled", randomTickSpeedEnabled);
     randomTickSpeed = parseInt(properties, "randomTickSpeed", randomTickSpeed);
 
     entityCrammingEnabled =
-        parseBoolean(properties, "entityCrammingEnabled", entityCrammingEnabled);
+      parseBoolean(properties, "entityCrammingEnabled", entityCrammingEnabled);
     maxEntityCramming = parseInt(properties, "maxEntityCramming", maxEntityCramming);
     minEntityCramming = parseInt(properties, "minEntityCramming", minEntityCramming);
     minEntityCrammingMineColonies =
-        parseInt(properties, "minEntityCrammingMineColonies", minEntityCrammingMineColonies);
+      parseInt(properties, "minEntityCrammingMineColonies", minEntityCrammingMineColonies);
 
     blockExplodesEnabled = parseBoolean(properties, "blockExplodesEnabled", blockExplodesEnabled);
     elytraMovementCheckEnabled =
-        parseBoolean(properties, "elytraMovementCheckEnabled", elytraMovementCheckEnabled);
+      parseBoolean(properties, "elytraMovementCheckEnabled", elytraMovementCheckEnabled);
     insomniaEnabled = parseBoolean(properties, "insomniaEnabled", insomniaEnabled);
     mobExplodesEnabled = parseBoolean(properties, "mobExplodesEnabled", mobExplodesEnabled);
     patrolSpawningEnabled =
-        parseBoolean(properties, "patrolSpawningEnabled", patrolSpawningEnabled);
+      parseBoolean(properties, "patrolSpawningEnabled", patrolSpawningEnabled);
     raidsEnabled = parseBoolean(properties, "raidsEnabled", raidsEnabled);
     traderSpawningEnabled =
-        parseBoolean(properties, "traderSpawningEnabled", traderSpawningEnabled);
+      parseBoolean(properties, "traderSpawningEnabled", traderSpawningEnabled);
     tntExplodesEnabled = parseBoolean(properties, "tntExplodesEnabled", tntExplodesEnabled);
     vinesSpreadEnabled = parseBoolean(properties, "vinesSpreadEnabled", vinesSpreadEnabled);
     wardenSpawningEnabled =
-        parseBoolean(properties, "wardenSpawningEnabled", wardenSpawningEnabled);
+      parseBoolean(properties, "wardenSpawningEnabled", wardenSpawningEnabled);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
 
     log.debug(
-        "GameRules config loaded: randomTickSpeed={} (max {}), entityCramming={} ({}-{})",
-        randomTickSpeedEnabled,
-        randomTickSpeed,
-        entityCrammingEnabled,
-        minEntityCramming,
-        maxEntityCramming);
+      "GameRules config loaded: randomTickSpeed={} (max {}), entityCramming={} ({}-{})",
+      randomTickSpeedEnabled,
+      randomTickSpeed,
+      entityCrammingEnabled,
+      minEntityCramming,
+      maxEntityCramming);
   }
 
   private static boolean parseBoolean(Properties props, String key, boolean defaultValue) {

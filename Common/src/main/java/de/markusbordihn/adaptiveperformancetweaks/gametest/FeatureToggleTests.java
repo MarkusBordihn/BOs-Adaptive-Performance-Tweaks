@@ -24,11 +24,12 @@ import net.minecraft.gametest.framework.GameTestHelper;
 
 public final class FeatureToggleTests {
 
-  private FeatureToggleTests() {}
+  private FeatureToggleTests() {
+  }
 
   public static void testCoreFeatureEnabled(GameTestHelper helper) {
     GameTestHelpers.assertTrue(
-        helper, "CORE feature must always be enabled!", FeatureToggle.CORE.isEnabled());
+      helper, "CORE feature must always be enabled!", FeatureToggle.CORE.isEnabled());
     helper.succeed();
   }
 }

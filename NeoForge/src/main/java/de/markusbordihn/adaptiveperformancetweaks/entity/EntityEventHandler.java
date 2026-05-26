@@ -31,7 +31,8 @@ import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 @EventBusSubscriber(modid = Constants.MOD_ID)
 public final class EntityEventHandler {
 
-  private EntityEventHandler() {}
+  private EntityEventHandler() {
+  }
 
   @SubscribeEvent(priority = EventPriority.HIGH)
   public static void handleEntityJoinLevel(EntityJoinLevelEvent event) {

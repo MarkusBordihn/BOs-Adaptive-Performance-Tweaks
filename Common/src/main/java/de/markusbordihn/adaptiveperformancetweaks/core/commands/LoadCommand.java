@@ -43,7 +43,7 @@ public class LoadCommand extends CustomCommand {
     ServerLoadLevel currentLoad = ServerLoad.getCurrentServerLoad();
     double avgTickTime = ServerLoad.getAvgTickTime();
     StringBuilder message =
-        new StringBuilder(String.format("Server Load: %s (avg. %.1fms)", currentLoad, avgTickTime));
+      new StringBuilder(String.format("Server Load: %s (avg. %.1fms)", currentLoad, avgTickTime));
 
     for (ServerLevel serverLevel : ServerManager.getAllLevels()) {
       if (!ServerLevelLoad.hasMeasuredLoad(serverLevel)) {
@@ -51,11 +51,11 @@ public class LoadCommand extends CustomCommand {
       }
 
       message.append(
-          String.format(
-              "%n%s: %s (avg. %.1fms)",
-              serverLevel.dimension().location(),
-              ServerLevelLoad.getLevelLoad(serverLevel),
-              ServerLevelLoad.getAverageTickTime(serverLevel)));
+        String.format(
+          "%n%s: %s (avg. %.1fms)",
+          serverLevel.dimension().location(),
+          ServerLevelLoad.getLevelLoad(serverLevel),
+          ServerLevelLoad.getAverageTickTime(serverLevel)));
     }
 
     sendFeedback(context, message.toString());

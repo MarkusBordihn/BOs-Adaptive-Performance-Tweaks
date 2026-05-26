@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "biggerreactors",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "technical",
+  "reason": "Bigger Reactors entities are machine-managed helpers and should not be tracked."
+}

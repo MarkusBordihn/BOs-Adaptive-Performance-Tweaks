@@ -39,7 +39,8 @@ public final class PlayerLoginManager {
   private static Set<PlayerValidation> playerValidationList = ConcurrentHashMap.newKeySet();
   private static short ticker = 0;
 
-  private PlayerLoginManager() {}
+  private PlayerLoginManager() {
+  }
 
   public static void handleServerAboutToStart() {
     playerValidationList = ConcurrentHashMap.newKeySet();
@@ -60,10 +61,10 @@ public final class PlayerLoginManager {
 
     if (PlayerLoginProtectionConfig.protectPlayerDuringLoginLogging) {
       log.info(
-          "{} {}: Logged in, protecting for {} secs.",
-          LOG_PREFIX,
-          username,
-          PlayerLoginProtectionConfig.playerLoginValidationTimeout);
+        "{} {}: Logged in, protecting for {} secs.",
+        LOG_PREFIX,
+        username,
+        PlayerLoginProtectionConfig.playerLoginValidationTimeout);
     } else {
       log.debug("{} {}: Logged in.", LOG_PREFIX, username);
     }
@@ -97,23 +98,23 @@ public final class PlayerLoginManager {
       String username = validation.getUsername();
 
       boolean timedOut =
-          validation.getValidationTimeElapsed()
-              >= TimeUnit.SECONDS.toMillis(
-                  PlayerLoginProtectionConfig.playerLoginValidationTimeout);
+        validation.getValidationTimeElapsed()
+          >= TimeUnit.SECONDS.toMillis(
+          PlayerLoginProtectionConfig.playerLoginValidationTimeout);
 
       if (validation.hasPlayerMoved() || timedOut) {
         if (timedOut) {
           log.warn(
-              "{} {}: Validation timed out after {} secs.",
-              LOG_PREFIX,
-              username,
-              PlayerLoginProtectionConfig.playerLoginValidationTimeout);
+            "{} {}: Validation timed out after {} secs.",
+            LOG_PREFIX,
+            username,
+            PlayerLoginProtectionConfig.playerLoginValidationTimeout);
         } else {
           log.info(
-              "{} {}: Validated after {} secs.",
-              LOG_PREFIX,
-              username,
-              TimeUnit.MILLISECONDS.toSeconds(validation.getValidationTimeElapsed()));
+            "{} {}: Validated after {} secs.",
+            LOG_PREFIX,
+            username,
+            TimeUnit.MILLISECONDS.toSeconds(validation.getValidationTimeElapsed()));
         }
         restorePlayer(username);
         iterator.remove();

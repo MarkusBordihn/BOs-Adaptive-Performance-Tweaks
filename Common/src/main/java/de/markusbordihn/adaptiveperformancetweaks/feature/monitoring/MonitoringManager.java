@@ -21,6 +21,7 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.monitoring;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreEntityManager;
+import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ExperienceOrbManager;
@@ -35,13 +36,18 @@ public final class MonitoringManager {
 
   private static long lastLogTime = 0;
 
-  private MonitoringManager() {}
+  private MonitoringManager() {
+  }
 
   public static void reset() {
     lastLogTime = 0;
   }
 
   public static void handleServerLoadEvent(ServerLoadEvent event) {
+    if (!FeatureToggle.MONITORING.isEnabled()) {
+      return;
+    }
+
     boolean intervalElapsed = intervalElapsed();
     if (!intervalElapsed && !event.hasChanged()) {
       return;
@@ -87,9 +93,9 @@ public final class MonitoringManager {
 
     if (MonitoringConfig.monitoringLogEntities) {
       int total =
-          CoreEntityManager.getTotalTrackedEntityCount()
-              + ItemEntityManager.getTrackedItemEntityCount()
-              + ExperienceOrbManager.getTrackedExperienceOrbCount();
+        CoreEntityManager.getTotalTrackedEntityCount()
+          + ItemEntityManager.getTrackedItemEntityCount()
+          + ExperienceOrbManager.getTrackedExperienceOrbCount();
       status.append(" Entities=").append(total);
     }
 

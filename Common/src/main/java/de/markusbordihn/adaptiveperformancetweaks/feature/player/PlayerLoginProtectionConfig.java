@@ -33,9 +33,9 @@ public final class PlayerLoginProtectionConfig extends Config {
 
   public static final String CONFIG_FILE_NAME = "player_login_protection.cfg";
   private static final String CONFIG_FILE_HEADER =
-      """
+    """
        Player Login Protection Configuration
-
+      
        When enabled, players receive brief invisibility + invulnerability on login
        until they move (or until the timeout expires).
       """;
@@ -46,7 +46,8 @@ public final class PlayerLoginProtectionConfig extends Config {
   public static int playerLoginValidationTimeout = 30;
   public static boolean protectPlayerDuringLoginLogging = true;
 
-  private PlayerLoginProtectionConfig() {}
+  private PlayerLoginProtectionConfig() {
+  }
 
   public static void registerConfig() {
     registerConfigFile(CONFIG_FILE_NAME, CONFIG_FILE_HEADER);
@@ -56,19 +57,19 @@ public final class PlayerLoginProtectionConfig extends Config {
     unmodified.putAll(properties);
 
     CoreConfig.setFeatureEnabled(
+      FeatureToggle.PLAYER_LOGIN_PROTECTION,
+      ModConflictDetector.resolveFeatureState(
         FeatureToggle.PLAYER_LOGIN_PROTECTION,
-        ModConflictDetector.resolveFeatureState(
-            FeatureToggle.PLAYER_LOGIN_PROTECTION,
-            parseConfigValue(
-                properties, "enabled", FeatureToggle.PLAYER_LOGIN_PROTECTION.getDefaultState())));
+        parseConfigValue(
+          properties, "enabled", FeatureToggle.PLAYER_LOGIN_PROTECTION.getDefaultState())));
 
     protectPlayerDuringLogin =
-        parseBoolean(properties, "protectPlayerDuringLogin", protectPlayerDuringLogin);
+      parseBoolean(properties, "protectPlayerDuringLogin", protectPlayerDuringLogin);
     playerLoginValidationTimeout =
-        parseInt(properties, "playerLoginValidationTimeout", playerLoginValidationTimeout);
+      parseInt(properties, "playerLoginValidationTimeout", playerLoginValidationTimeout);
     protectPlayerDuringLoginLogging =
-        parseBoolean(
-            properties, "protectPlayerDuringLoginLogging", protectPlayerDuringLoginLogging);
+      parseBoolean(
+        properties, "protectPlayerDuringLoginLogging", protectPlayerDuringLoginLogging);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
 

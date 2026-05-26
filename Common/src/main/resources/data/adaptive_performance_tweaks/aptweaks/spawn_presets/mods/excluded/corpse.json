@@ -1,6 +1,0 @@
-﻿{
-  "mod_id": "corpse",
-  "priority": 100,
-  "exclude_from_tracking": true,
-  "notes": "Corpse mod entities represent player corpses and must not be spawn-limited or removed."
-}

@@ -24,8 +24,9 @@ import de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreItemEntityMana
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import java.util.Comparator;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -51,7 +52,8 @@ public final class ItemEntityManager {
   private static boolean hasItemsDenyList = false;
   private static short ticks = 0;
 
-  private ItemEntityManager() {}
+  private ItemEntityManager() {
+  }
 
   public static void handleServerAboutToStart() {
     resetState();
@@ -60,10 +62,10 @@ public final class ItemEntityManager {
 
     if (ItemsConfig.optimizeItems) {
       log.info(
-          "Item optimization enabled: maxPerType={}, maxPerWorld={}, clusterRange={}",
-          ItemsConfig.maxNumberOfItemsPerType,
-          ItemsConfig.maxNumberOfItems,
-          ItemsConfig.itemsClusterRange);
+        "Item optimization enabled: maxPerType={}, maxPerWorld={}, clusterRange={}",
+        ItemsConfig.maxNumberOfItemsPerType,
+        ItemsConfig.maxNumberOfItems,
+        ItemsConfig.itemsClusterRange);
     }
   }
 
@@ -78,6 +80,24 @@ public final class ItemEntityManager {
     }
 
     return total;
+  }
+
+  public static Map<String, Map<String, Integer>> getItemEntityCountsByDimension() {
+    Map<String, Map<String, Integer>> result = new LinkedHashMap<>();
+    for (Map.Entry<String, Set<ItemEntity>> entry : itemTypeEntityMap.entrySet()) {
+      String key = entry.getKey();
+      int bracketEnd = key.indexOf(']');
+      if (bracketEnd < 0) {
+        continue;
+      }
+      String dimension = key.substring(1, bracketEnd);
+      String itemName = key.substring(bracketEnd + 1);
+      int count = entry.getValue().size();
+      if (count > 0) {
+        result.computeIfAbsent(dimension, d -> new HashMap<>()).put(itemName, count);
+      }
+    }
+    return result;
   }
 
   private static void resetState() {
@@ -127,8 +147,8 @@ public final class ItemEntityManager {
     String itemTypeKey = '[' + levelName + ']' + itemName;
 
     itemTypeEntityMap.computeIfAbsent(
-        itemTypeKey,
-        ignored -> new ConcurrentSkipListSet<>(Comparator.comparingInt(Entity::getId)));
+      itemTypeKey,
+      ignored -> new ConcurrentSkipListSet<>(Comparator.comparingInt(Entity::getId)));
     Set<ItemEntity> itemTypeEntities = itemTypeEntityMap.get(itemTypeKey);
 
     if (ItemsConfig.optimizeItems && tryMergeItemEntity(itemEntity, itemTypeEntities, level)) {
@@ -137,7 +157,7 @@ public final class ItemEntityManager {
     }
 
     itemWorldEntityMap.computeIfAbsent(
-        levelName, ignored -> new ConcurrentSkipListSet<>(Comparator.comparingInt(Entity::getId)));
+      levelName, ignored -> new ConcurrentSkipListSet<>(Comparator.comparingInt(Entity::getId)));
     Set<ItemEntity> itemWorldEntities = itemWorldEntityMap.get(levelName);
     itemWorldEntities.add(itemEntity);
 
@@ -175,16 +195,16 @@ public final class ItemEntityManager {
   }
 
   private static boolean tryMergeItemEntity(
-      ItemEntity itemEntity, Set<ItemEntity> itemTypeEntities, Level level) {
+    ItemEntity itemEntity, Set<ItemEntity> itemTypeEntities, Level level) {
     if (itemTypeEntities.isEmpty()) {
       return false;
     }
 
     ItemStack itemStack = itemEntity.getItem();
     if (itemStack == null
-        || !itemStack.isStackable()
-        || itemStack.getCount() >= itemStack.getMaxStackSize()
-        || itemStack.getMaxStackSize() <= 1) {
+      || !itemStack.isStackable()
+      || itemStack.getCount() >= itemStack.getMaxStackSize()
+      || itemStack.getMaxStackSize() <= 1) {
       return false;
     }
 
@@ -194,8 +214,7 @@ public final class ItemEntityManager {
     int range = ItemsConfig.itemsClusterRange;
     boolean canSeeSky = level.canSeeSky(itemEntity.blockPosition());
 
-    Set<ItemEntity> snapshot = new HashSet<>(itemTypeEntities);
-    for (ItemEntity existing : snapshot) {
+    for (ItemEntity existing : itemTypeEntities) {
       ItemStack existingStack = existing.getItem();
       if (existingStack == null || existingStack.isEmpty()) {
         continue;
@@ -206,25 +225,26 @@ public final class ItemEntityManager {
       boolean existingCanSeeSky = level.canSeeSky(existing.blockPosition());
 
       boolean inRange =
-          (itemX - range < existingX && existingX < itemX + range)
-              && ((canSeeSky && existingCanSeeSky)
-                  || (itemY - range < existingY && existingY < itemY + range))
-              && (itemZ - range < existingZ && existingZ < itemZ + range);
+        (itemX - range < existingX && existingX < itemX + range)
+          && ((canSeeSky && existingCanSeeSky)
+          || (itemY - range < existingY && existingY < itemY + range))
+          && (itemZ - range < existingZ && existingZ < itemZ + range);
 
+      int effectiveMaxStack = Math.min(existingStack.getMaxStackSize(), ItemsConfig.maxStackSize);
       if (itemEntity.getId() != existing.getId()
-          && existing.isAlive()
-          && canMergeItemStacks(itemStack, existingStack)
-          && existingStack.getCount() < existingStack.getMaxStackSize()
-          && inRange) {
-        log.debug(
-            "[Item Merge] {} x{} → stack at {},{},{}",
-            BuiltInRegistries.ITEM.getKey(itemStack.getItem()),
-            itemStack.getCount(),
-            itemX,
-            itemY,
-            itemZ);
-        mergeItemStacks(existingStack, itemStack);
+        && existing.isAlive()
+        && canMergeItemStacks(itemStack, existingStack)
+        && existingStack.getCount() < effectiveMaxStack
+        && inRange) {
+        log.debug("[Item Merge] {} x{} -> stack at {},{},{}",
+          BuiltInRegistries.ITEM.getKey(itemStack.getItem()), itemStack.getCount(),
+          itemX, itemY, itemZ);
+        mergeItemStacks(existingStack, itemStack, effectiveMaxStack);
         existing.setItem(existingStack);
+        if (ItemsConfig.movePositionToLastDrop) {
+          double newY = Math.max(existing.getY(), itemEntity.getY());
+          existing.setPos(itemEntity.getX(), newY, itemEntity.getZ());
+        }
         return true;
       }
     }
@@ -234,15 +254,15 @@ public final class ItemEntityManager {
 
   private static boolean canMergeItemStacks(ItemStack incomingStack, ItemStack existingStack) {
     return !incomingStack.isEmpty()
-        && !existingStack.isEmpty()
-        && incomingStack.is(existingStack.getItem())
-        && incomingStack.getDamageValue() == existingStack.getDamageValue()
-        && incomingStack.getCount() < incomingStack.getMaxStackSize()
-        && ItemStack.isSameItemSameComponents(incomingStack, existingStack);
+      && !existingStack.isEmpty()
+      && incomingStack.is(existingStack.getItem())
+      && incomingStack.getDamageValue() == existingStack.getDamageValue()
+      && incomingStack.getCount() < incomingStack.getMaxStackSize()
+      && ItemStack.isSameItemSameComponents(incomingStack, existingStack);
   }
 
-  private static void mergeItemStacks(ItemStack target, ItemStack source) {
-    int transferAmount = Math.min(source.getCount(), target.getMaxStackSize() - target.getCount());
+  private static void mergeItemStacks(ItemStack target, ItemStack source, int maxStack) {
+    int transferAmount = Math.min(source.getCount(), maxStack - target.getCount());
     if (transferAmount > 0) {
       target.grow(transferAmount);
       source.shrink(transferAmount);
@@ -250,7 +270,7 @@ public final class ItemEntityManager {
   }
 
   private static void enforceWorldLimit(
-      Set<ItemEntity> worldEntities, String levelName, Map<String, Set<ItemEntity>> typeMap) {
+    Set<ItemEntity> worldEntities, String levelName, Map<String, Set<ItemEntity>> typeMap) {
     int count = worldEntities.size();
     if (count <= ItemsConfig.maxNumberOfItems) {
       return;
@@ -263,13 +283,13 @@ public final class ItemEntityManager {
 
     ItemEntity oldestItemEntity = iterator.next();
     String itemName =
-        BuiltInRegistries.ITEM.getKey(oldestItemEntity.getItem().getItem()).toString();
+      BuiltInRegistries.ITEM.getKey(oldestItemEntity.getItem().getItem()).toString();
     log.debug(
-        "[World Limit] {} at {} removed ({}/{})",
-        itemName,
-        oldestItemEntity.blockPosition(),
-        count,
-        ItemsConfig.maxNumberOfItems);
+      "[World Limit] {} at {} removed ({}/{})",
+      itemName,
+      oldestItemEntity.blockPosition(),
+      count,
+      ItemsConfig.maxNumberOfItems);
     oldestItemEntity.remove(RemovalReason.DISCARDED);
     PerformanceStats.itemsRemoved++;
     iterator.remove();
@@ -281,7 +301,7 @@ public final class ItemEntityManager {
   }
 
   private static void enforceTypeLimit(
-      Set<ItemEntity> typeEntities, Set<ItemEntity> worldEntities) {
+    Set<ItemEntity> typeEntities, Set<ItemEntity> worldEntities) {
     int count = typeEntities.size();
     if (count <= ItemsConfig.maxNumberOfItemsPerType) {
       return;
@@ -294,11 +314,11 @@ public final class ItemEntityManager {
 
     ItemEntity oldestItemEntity = iterator.next();
     log.debug(
-        "[Type Limit] {} at {} removed ({}/{})",
-        BuiltInRegistries.ITEM.getKey(oldestItemEntity.getItem().getItem()),
-        oldestItemEntity.blockPosition(),
-        count,
-        ItemsConfig.maxNumberOfItemsPerType);
+      "[Type Limit] {} at {} removed ({}/{})",
+      BuiltInRegistries.ITEM.getKey(oldestItemEntity.getItem().getItem()),
+      oldestItemEntity.blockPosition(),
+      count,
+      ItemsConfig.maxNumberOfItemsPerType);
     oldestItemEntity.remove(RemovalReason.DISCARDED);
     PerformanceStats.itemsRemoved++;
     iterator.remove();
@@ -308,15 +328,15 @@ public final class ItemEntityManager {
   private static void verifyEntities() {
     for (Map.Entry<String, Set<ItemEntity>> entry : itemTypeEntityMap.entrySet()) {
       entry
-          .getValue()
-          .removeIf(entity -> entity == null || entity.isRemoved() || !entity.isAlive());
+        .getValue()
+        .removeIf(entity -> entity == null || entity.isRemoved() || !entity.isAlive());
     }
 
     itemTypeEntityMap.entrySet().removeIf(entry -> entry.getValue().isEmpty());
     for (Map.Entry<String, Set<ItemEntity>> entry : itemWorldEntityMap.entrySet()) {
       entry
-          .getValue()
-          .removeIf(entity -> entity == null || entity.isRemoved() || !entity.isAlive());
+        .getValue()
+        .removeIf(entity -> entity == null || entity.isRemoved() || !entity.isAlive());
     }
 
     itemWorldEntityMap.entrySet().removeIf(entry -> entry.getValue().isEmpty());

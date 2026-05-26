@@ -32,9 +32,9 @@ public class SmokeTest {
   @GameTest(template = "adaptive_performance_tweaks:gametest.3x3x3")
   public void testModRegistered(GameTestHelper helper) {
     GameTestHelpers.assertTrue(
-        helper,
-        "Mod " + Constants.MOD_ID + " is not loaded!",
-        ModList.get().isLoaded(Constants.MOD_ID));
+      helper,
+      "Mod " + Constants.MOD_ID + " is not loaded!",
+      ModList.get().isLoaded(Constants.MOD_ID));
     helper.succeed();
   }
 }

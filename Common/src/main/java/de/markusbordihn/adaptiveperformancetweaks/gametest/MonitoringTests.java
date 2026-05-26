@@ -26,15 +26,16 @@ import net.minecraft.gametest.framework.GameTestHelper;
 
 public final class MonitoringTests {
 
-  private MonitoringTests() {}
+  private MonitoringTests() {
+  }
 
   public static void testMonitoringHandlesLoadEventsWithoutException(GameTestHelper helper) {
     MonitoringManager.handleServerLoadEvent(
-        new ServerLoadEvent(ServerLoadLevel.NORMAL, ServerLoadLevel.NORMAL, 50.0, 50.0));
+      new ServerLoadEvent(ServerLoadLevel.NORMAL, ServerLoadLevel.NORMAL, 50.0, 50.0));
     MonitoringManager.handleServerLoadEvent(
-        new ServerLoadEvent(ServerLoadLevel.VERY_HIGH, ServerLoadLevel.NORMAL, 200.0, 50.0));
+      new ServerLoadEvent(ServerLoadLevel.VERY_HIGH, ServerLoadLevel.NORMAL, 200.0, 50.0));
     MonitoringManager.handleServerLoadEvent(
-        new ServerLoadEvent(ServerLoadLevel.NORMAL, ServerLoadLevel.VERY_HIGH, 50.0, 200.0));
+      new ServerLoadEvent(ServerLoadLevel.NORMAL, ServerLoadLevel.VERY_HIGH, 50.0, 200.0));
     GameTestHelpers.assertTrue(helper, "MonitoringManager processed all load events", true);
     helper.succeed();
   }

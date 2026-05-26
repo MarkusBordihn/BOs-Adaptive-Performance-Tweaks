@@ -36,63 +36,63 @@ public class BenchmarkCommand extends CustomCommand {
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
     return Commands.literal("benchmark")
-        .requires(source -> source.hasPermission(2))
-        .executes(command)
-        .then(
-            Commands.literal("start")
-                .executes(ctx -> startBenchmark(ctx, DEFAULT_PHASE_SECONDS, true))
-                .then(
-                    Commands.argument("seconds", IntegerArgumentType.integer(30, 3600))
-                        .executes(
-                            ctx ->
-                                startBenchmark(
-                                    ctx, IntegerArgumentType.getInteger(ctx, "seconds"), false))
-                        .then(
-                            Commands.literal("move")
-                                .executes(
-                                    ctx ->
-                                        startBenchmark(
-                                            ctx,
-                                            IntegerArgumentType.getInteger(ctx, "seconds"),
-                                            true)))))
-        .then(
-            Commands.literal("confirm")
-                .executes(
-                    ctx -> {
-                      ServerPlayer player = ctx.getSource().getPlayerOrException();
-                      BenchmarkManager.confirm(player);
-                      return 0;
-                    }))
-        .then(
-            Commands.literal("cancel")
-                .executes(
-                    ctx -> {
-                      ServerPlayer player = ctx.getSource().getPlayerOrException();
-                      BenchmarkManager.cancel(player);
-                      return 0;
-                    }))
-        .then(
-            Commands.literal("report")
-                .executes(
-                    ctx -> {
-                      BenchmarkManager.BenchmarkCompareResult result =
-                          BenchmarkManager.getLastResult();
-                      if (result == null) {
-                        sendFeedback(
-                            ctx,
-                            "No benchmark result available. Run /aptweaks benchmark start first.");
-                      } else {
-                        for (Component line : result.format()) {
-                          sendFeedback(ctx, line);
-                        }
-                      }
-                      return 0;
-                    }));
+      .requires(source -> source.hasPermission(2))
+      .executes(command)
+      .then(
+        Commands.literal("start")
+          .executes(ctx -> startBenchmark(ctx, DEFAULT_PHASE_SECONDS, true))
+          .then(
+            Commands.argument("seconds", IntegerArgumentType.integer(30, 3600))
+              .executes(
+                ctx ->
+                  startBenchmark(
+                    ctx, IntegerArgumentType.getInteger(ctx, "seconds"), false))
+              .then(
+                Commands.literal("move")
+                  .executes(
+                    ctx ->
+                      startBenchmark(
+                        ctx,
+                        IntegerArgumentType.getInteger(ctx, "seconds"),
+                        true)))))
+      .then(
+        Commands.literal("confirm")
+          .executes(
+            ctx -> {
+              ServerPlayer player = ctx.getSource().getPlayerOrException();
+              BenchmarkManager.confirm(player);
+              return 0;
+            }))
+      .then(
+        Commands.literal("cancel")
+          .executes(
+            ctx -> {
+              ServerPlayer player = ctx.getSource().getPlayerOrException();
+              BenchmarkManager.cancel(player);
+              return 0;
+            }))
+      .then(
+        Commands.literal("report")
+          .executes(
+            ctx -> {
+              BenchmarkManager.BenchmarkCompareResult result =
+                BenchmarkManager.getLastResult();
+              if (result == null) {
+                sendFeedback(
+                  ctx,
+                  "No benchmark result available. Run /aptweaks benchmark start first.");
+              } else {
+                for (Component line : result.format()) {
+                  sendFeedback(ctx, line);
+                }
+              }
+              return 0;
+            }));
   }
 
   private static int startBenchmark(
-      CommandContext<CommandSourceStack> context, long seconds, boolean autoMove)
-      throws CommandSyntaxException {
+    CommandContext<CommandSourceStack> context, long seconds, boolean autoMove)
+    throws CommandSyntaxException {
     ServerPlayer player = context.getSource().getPlayerOrException();
     BenchmarkManager.requestStart(player, seconds, autoMove);
     return 0;
@@ -103,7 +103,7 @@ public class BenchmarkCommand extends CustomCommand {
     sendFeedback(context, BenchmarkManager.getStatusMessage());
     BenchmarkManager.BenchmarkCompareResult lastResult = BenchmarkManager.getLastResult();
     if (lastResult != null && !BenchmarkManager.isRunning()) {
-      sendFeedback(context, "Last result available — use /aptweaks benchmark report to view.");
+      sendFeedback(context, "Last result available - use /aptweaks benchmark report to view.");
     }
     return 0;
   }

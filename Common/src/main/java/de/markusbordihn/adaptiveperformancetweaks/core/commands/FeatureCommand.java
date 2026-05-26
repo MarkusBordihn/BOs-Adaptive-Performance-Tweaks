@@ -35,17 +35,17 @@ public class FeatureCommand extends CustomCommand {
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
     return Commands.literal("feature")
-        .requires(source -> source.hasPermission(2))
-        .then(
-            Commands.argument("id", StringArgumentType.word())
-                .suggests(
-                    (context, builder) -> {
-                      for (FeatureToggle toggle : FeatureToggle.values()) {
-                        builder.suggest(toggle.getId());
-                      }
-                      return builder.buildFuture();
-                    })
-                .then(Commands.argument("enabled", BoolArgumentType.bool()).executes(command)));
+      .requires(source -> source.hasPermission(2))
+      .then(
+        Commands.argument("id", StringArgumentType.word())
+          .suggests(
+            (context, builder) -> {
+              for (FeatureToggle toggle : FeatureToggle.values()) {
+                builder.suggest(toggle.getId());
+              }
+              return builder.buildFuture();
+            })
+          .then(Commands.argument("enabled", BoolArgumentType.bool()).executes(command)));
   }
 
   @Override
@@ -68,7 +68,7 @@ public class FeatureCommand extends CustomCommand {
 
     CoreConfig.setFeatureEnabled(target, enabled);
     sendFeedback(
-        context, String.format("Feature '%s' %s.", featureId, enabled ? "enabled" : "disabled"));
+      context, String.format("Feature '%s' %s.", featureId, enabled ? "enabled" : "disabled"));
     return 0;
   }
 }

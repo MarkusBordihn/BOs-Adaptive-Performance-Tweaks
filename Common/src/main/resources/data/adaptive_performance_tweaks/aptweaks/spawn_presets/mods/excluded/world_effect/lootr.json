@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "lootr",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "world_effect",
+  "reason": "Lootr helper entities are loot containers and should not be tracked."
+}

@@ -46,7 +46,7 @@ public class AdaptivePerformanceTweaks {
 
     log.debug("{} Debug Manager ...", Constants.LOG_REGISTER_PREFIX);
     Optional<String> version =
-        Launcher.INSTANCE.environment().getProperty(IEnvironment.Keys.VERSION.get());
+      Launcher.INSTANCE.environment().getProperty(IEnvironment.Keys.VERSION.get());
     if (version.isPresent() && "MOD_DEV".equals(version.get())) {
       DebugManager.setDevelopmentEnvironment(true);
     }
@@ -60,12 +60,12 @@ public class AdaptivePerformanceTweaks {
 
     log.debug("{} Mod Compat ...", Constants.LOG_REGISTER_PREFIX);
     ModCompat.setModLoadedChecker(
-        modId -> "minecraft".equals(modId) || ModList.get().isLoaded(modId));
+      modId -> "minecraft".equals(modId) || ModList.get().isLoaded(modId));
 
     log.debug(
-        "{} Configuration ({}) ...",
-        Constants.LOG_REGISTER_PREFIX,
-        isDedicatedServer ? "server" : "client");
+      "{} Configuration ({}) ...",
+      Constants.LOG_REGISTER_PREFIX,
+      isDedicatedServer ? "server" : "client");
     Config.register(isDedicatedServer);
 
     log.debug("{} Feature Registry ...", Constants.LOG_REGISTER_PREFIX);

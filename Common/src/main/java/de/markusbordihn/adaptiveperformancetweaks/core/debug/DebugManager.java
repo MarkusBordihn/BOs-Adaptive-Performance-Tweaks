@@ -32,7 +32,8 @@ public final class DebugManager {
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
   private static boolean isDevelopmentEnvironment = false;
 
-  private DebugManager() {}
+  private DebugManager() {
+  }
 
   public static void setLogLevel(Logger logger, Level logLevel) {
     if (logLevel == null || logLevel == logger.getLevel()) {
@@ -86,13 +87,13 @@ public final class DebugManager {
     } else {
       enableDebugLevel(loggerName, false);
       logger.warn(
-          () ->
-              String.format(
-                  "⚠ The log level for %s is set to %s. This logs all debug information and may cause "
-                      + "performance issues. This is expected in a developer environment or during "
-                      + "large-scale troubleshooting. To mitigate this, debug mode has been automatically "
-                      + "adjusted to info level. Use /aptweaks debug <module> to re-enable debug mode.",
-                  loggerName, logLevelName));
+        () ->
+          String.format(
+            "Warning: The log level for %s is set to %s. This logs all debug information and may cause "
+              + "performance issues. This is expected in a developer environment or during "
+              + "large-scale troubleshooting. To mitigate this, debug mode has been automatically "
+              + "adjusted to info level. Use /aptweaks debug <module> to re-enable debug mode.",
+            loggerName, logLevelName));
     }
   }
 

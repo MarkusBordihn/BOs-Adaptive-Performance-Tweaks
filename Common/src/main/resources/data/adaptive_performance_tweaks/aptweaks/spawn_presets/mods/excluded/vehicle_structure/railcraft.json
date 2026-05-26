@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "railcraft",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "vehicle_structure",
+  "reason": "Railcraft locomotive, cart, and train entities should not be tracked."
+}

@@ -22,47 +22,92 @@ package de.markusbordihn.adaptiveperformancetweaks.core.compat;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureState;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public final class ModConflictDetector {
 
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  private static final Map<String, String> LEGACY_MODULES = new LinkedHashMap<>();
+  private static boolean compatibilityWarningsLogged = false;
 
-  private ModConflictDetector() {}
+  static {
+    LEGACY_MODULES.put("adaptive_performance_tweaks_core", "APTweaks: Core");
+    LEGACY_MODULES.put("adaptive_performance_tweaks_spawn", "APTweaks: Spawn");
+    LEGACY_MODULES.put("adaptive_performance_tweaks_player", "APTweaks: Player/Login");
+    LEGACY_MODULES.put("adaptive_performance_tweaks_gamerules", "APTweaks: Gamerules");
+    LEGACY_MODULES.put("adaptive_performance_tweaks_items", "APTweaks: Items");
+  }
+
+  private ModConflictDetector() {
+  }
 
   public static boolean resolveFeatureState(FeatureToggle toggle, FeatureState configuredState) {
     if (configuredState == FeatureState.DISABLED) {
       return false;
     }
 
-    String conflictingMod = findFirstConflictingMod(toggle);
+    String conflictingMod = findFirstLoadedMod(toggle.getConflictingMods());
+    String warningMod = findFirstLoadedMod(toggle.getWarningOnlyMods());
 
     if (configuredState == FeatureState.ENABLED) {
       if (conflictingMod != null) {
         log.warn(
-            "Feature '{}' is ENABLED but mod '{}' also handles this functionality."
-                + " Consider setting 'feature.{}=auto' to let the mod take over.",
-            toggle.getId(),
-            conflictingMod,
-            toggle.getId());
+          "Feature '{}' is ENABLED but mod '{}' also handles this functionality."
+            + " Consider setting 'feature.{}=auto' to let the mod take over.",
+          toggle.getId(),
+          conflictingMod,
+          toggle.getId());
+      } else if (warningMod != null) {
+        log.warn(
+          "Feature '{}' is ENABLED while mod '{}' may overlap with this functionality."
+            + " Watch for duplicate behavior or unexpected performance changes.",
+          toggle.getId(),
+          warningMod);
       }
       return true;
     }
 
     if (conflictingMod != null) {
       log.warn(
-          "Feature '{}' auto-disabled: mod '{}' already handles this functionality.",
-          toggle.getId(),
-          conflictingMod);
+        "Feature '{}' auto-disabled: mod '{}' already handles this functionality.",
+        toggle.getId(),
+        conflictingMod);
       return false;
+    }
+
+    if (warningMod != null) {
+      log.warn(
+        "Feature '{}' remains enabled, but mod '{}' may overlap with this functionality.",
+        toggle.getId(),
+        warningMod);
     }
 
     return true;
   }
 
-  private static String findFirstConflictingMod(FeatureToggle toggle) {
-    for (String modId : toggle.getConflictingMods()) {
+  public static void logCompatibilityWarnings() {
+    if (compatibilityWarningsLogged) {
+      return;
+    }
+
+    compatibilityWarningsLogged = true;
+    for (Map.Entry<String, String> entry : LEGACY_MODULES.entrySet()) {
+      if (ModCompat.isModLoaded(entry.getKey())) {
+        log.warn(
+          "Detected legacy module '{}' (mod id '{}'). The bundled Adaptive Performance Tweaks mod"
+            + " already includes this functionality. Remove the old standalone module to avoid"
+            + " duplicate handlers and confusing config behavior.",
+          entry.getValue(),
+          entry.getKey());
+      }
+    }
+  }
+
+  private static String findFirstLoadedMod(Iterable<String> modIds) {
+    for (String modId : modIds) {
       if (ModCompat.isModLoaded(modId)) {
         return modId;
       }

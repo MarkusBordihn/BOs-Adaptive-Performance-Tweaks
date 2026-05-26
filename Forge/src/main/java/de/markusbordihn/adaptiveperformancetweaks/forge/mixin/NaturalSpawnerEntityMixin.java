@@ -38,43 +38,43 @@ public class NaturalSpawnerEntityMixin {
 
   @Shadow
   private static boolean isValidSpawnPostitionForType(
-      ServerLevel serverLevel,
-      MobCategory mobCategory,
-      StructureManager structureManager,
-      ChunkGenerator chunkGenerator,
-      MobSpawnSettings.SpawnerData spawnerData,
-      BlockPos.MutableBlockPos mutableBlockPos,
-      double d) {
+    ServerLevel serverLevel,
+    MobCategory mobCategory,
+    StructureManager structureManager,
+    ChunkGenerator chunkGenerator,
+    MobSpawnSettings.SpawnerData spawnerData,
+    BlockPos.MutableBlockPos mutableBlockPos,
+    double d) {
     return false;
   }
 
   @Redirect(
-      method =
-          "spawnCategoryForPosition(Lnet/minecraft/world/entity/MobCategory;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/ChunkAccess;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/NaturalSpawner$SpawnPredicate;Lnet/minecraft/world/level/NaturalSpawner$AfterSpawnCallback;)V",
-      at =
-          @At(
-              value = "INVOKE",
-              target =
-                  "Lnet/minecraft/world/level/NaturalSpawner;isValidSpawnPostitionForType(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/MobCategory;Lnet/minecraft/world/level/StructureManager;Lnet/minecraft/world/level/chunk/ChunkGenerator;Lnet/minecraft/world/level/biome/MobSpawnSettings$SpawnerData;Lnet/minecraft/core/BlockPos$MutableBlockPos;D)Z"))
+    method =
+      "spawnCategoryForPosition(Lnet/minecraft/world/entity/MobCategory;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/ChunkAccess;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/NaturalSpawner$SpawnPredicate;Lnet/minecraft/world/level/NaturalSpawner$AfterSpawnCallback;)V",
+    at =
+    @At(
+      value = "INVOKE",
+      target =
+        "Lnet/minecraft/world/level/NaturalSpawner;isValidSpawnPostitionForType(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/MobCategory;Lnet/minecraft/world/level/StructureManager;Lnet/minecraft/world/level/chunk/ChunkGenerator;Lnet/minecraft/world/level/biome/MobSpawnSettings$SpawnerData;Lnet/minecraft/core/BlockPos$MutableBlockPos;D)Z"))
   private static boolean aptweaks_preCheckBeforeEntityCreate(
-      ServerLevel serverLevel,
-      MobCategory mobCategory,
-      StructureManager structureManager,
-      ChunkGenerator chunkGenerator,
-      MobSpawnSettings.SpawnerData spawnerData,
-      BlockPos.MutableBlockPos mutableBlockPos,
-      double distance) {
+    ServerLevel serverLevel,
+    MobCategory mobCategory,
+    StructureManager structureManager,
+    ChunkGenerator chunkGenerator,
+    MobSpawnSettings.SpawnerData spawnerData,
+    BlockPos.MutableBlockPos mutableBlockPos,
+    double distance) {
     if (!isValidSpawnPostitionForType(
-        serverLevel,
-        mobCategory,
-        structureManager,
-        chunkGenerator,
-        spawnerData,
-        mutableBlockPos,
-        distance)) {
+      serverLevel,
+      mobCategory,
+      structureManager,
+      chunkGenerator,
+      spawnerData,
+      mutableBlockPos,
+      distance)) {
       return false;
     }
     return !SpawnManager.shouldDenyMobSpawnAt(
-        spawnerData.type, serverLevel, mutableBlockPos, MobSpawnType.NATURAL);
+      spawnerData.type, serverLevel, mutableBlockPos, MobSpawnType.NATURAL);
   }
 }

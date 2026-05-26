@@ -28,7 +28,7 @@ public final class Constants {
   public static final String MOD_NAME = "Adaptive Performance Tweaks";
   public static final String MOD_COMMAND = "aptweaks";
   public static final String ISSUE_REPORT =
-      "https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues";
+    "https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues";
   public static final String LOG_NAME = "APTweaks";
   public static final String LOG_NAME_AI = MOD_NAME + ".ai";
   public static final String LOG_NAME_CHUNKS = MOD_NAME + ".chunks";
@@ -43,5 +43,6 @@ public final class Constants {
   public static Path GAME_DIR = Paths.get("").toAbsolutePath();
   public static Path CONFIG_DIR = GAME_DIR.resolve("config");
 
-  private Constants() {}
+  private Constants() {
+  }
 }

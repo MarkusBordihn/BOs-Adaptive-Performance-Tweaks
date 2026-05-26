@@ -34,8 +34,8 @@ public class PlayerPositionCommand extends CustomCommand {
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
     return Commands.literal("playerPositions")
-        .requires(source -> source.hasPermission(2))
-        .executes(command);
+      .requires(source -> source.hasPermission(2))
+      .executes(command);
   }
 
   @Override
@@ -47,10 +47,15 @@ public class PlayerPositionCommand extends CustomCommand {
     }
 
     sendFeedback(
-        context, String.format("Player Positions (%s online)\n===", playerPositionMap.size()));
+      context, String.format("Player Positions (%s online)\n===", playerPositionMap.size()));
     for (Map.Entry<String, PlayerPosition> entry : playerPositionMap.entrySet()) {
       sendFeedback(
-          context, String.format("∟ %s %s", entry.getValue().getPlayerName(), entry.getValue()));
+        context,
+        String.format("-> %s %s movement=%.1f stable=%s",
+          entry.getValue().getPlayerName(),
+          entry.getValue(),
+          entry.getValue().getMovementWindowDistance(),
+          entry.getValue().isStableForTicks(PlayerPositionManager.getMovementUpdateTick())));
     }
 
     return 0;

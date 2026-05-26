@@ -6,8 +6,8 @@
     "allow": ["minecraft:the_nether"]
   },
   "entities": {
-    "per_player_max": 28,
-    "per_world_max": 160,
+    "per_player_max": 24,
+    "per_world_max": 80,
     "per_server_max": 512,
     "per_chunk_max": -1
   },
@@ -19,5 +19,5 @@
     "high": 0.4,
     "very_high": 0.1
   },
-  "notes": "Vanilla nether mob limits. Tuned for ~4 players; scale per_player_max and per_world_max for larger servers."
+  "notes": "Reduced from vanilla defaults (28/160) to calibrated values (24/80)."
 }

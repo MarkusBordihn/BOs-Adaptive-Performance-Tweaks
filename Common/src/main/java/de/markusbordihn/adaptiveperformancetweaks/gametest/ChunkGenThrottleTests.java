@@ -19,6 +19,7 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.gametest;
 
+import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLevelLoad;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
@@ -30,54 +31,70 @@ import net.minecraft.world.level.Level;
 
 public final class ChunkGenThrottleTests {
 
-  private ChunkGenThrottleTests() {}
+  private ChunkGenThrottleTests() {
+  }
 
   public static void testDivisorIsOneUnderNormalLoad(GameTestHelper helper) {
-    ChunkGenThrottleManager.handleServerLoadEvent(
+    FeatureToggle.CHUNK_GEN_THROTTLE.setEnabled(true);
+    try {
+      ChunkGenThrottleManager.handleServerLoadEvent(
         new ServerLoadEvent(ServerLoadLevel.NORMAL, ServerLoadLevel.NORMAL, 50.0, 50.0));
-    GameTestHelpers.assertEquals(
+      GameTestHelpers.assertEquals(
         helper,
         "Chunk gen throttle divisor should be 1 under NORMAL load",
         1,
         ChunkGenThrottleManager.getThrottleDivisor());
-    helper.succeed();
+      helper.succeed();
+    } finally {
+      FeatureToggle.CHUNK_GEN_THROTTLE.setEnabled(false);
+    }
   }
 
   public static void testDivisorIncreasesUnderVeryHighLoad(GameTestHelper helper) {
-    ChunkGenThrottleManager.handleServerLoadEvent(
+    FeatureToggle.CHUNK_GEN_THROTTLE.setEnabled(true);
+    try {
+      ChunkGenThrottleManager.handleServerLoadEvent(
         new ServerLoadEvent(ServerLoadLevel.VERY_HIGH, ServerLoadLevel.NORMAL, 200.0, 50.0));
-    GameTestHelpers.assertEquals(
+      GameTestHelpers.assertEquals(
         helper,
         "Chunk gen throttle divisor should equal config value under VERY_HIGH load",
         ChunkGenThrottleConfig.chunkGenThrottleVeryHighDivisor,
         ChunkGenThrottleManager.getThrottleDivisor());
-    ChunkGenThrottleManager.handleServerLoadEvent(
+      ChunkGenThrottleManager.handleServerLoadEvent(
         new ServerLoadEvent(ServerLoadLevel.NORMAL, ServerLoadLevel.VERY_HIGH, 50.0, 200.0));
-    helper.succeed();
+      helper.succeed();
+    } finally {
+      FeatureToggle.CHUNK_GEN_THROTTLE.setEnabled(false);
+    }
   }
 
   public static void testDivisorUsesPerLevelLoad(GameTestHelper helper) {
-    ServerLevelLoad.reset();
-    ChunkGenThrottleManager.handleServerLoadEvent(
+    FeatureToggle.CHUNK_GEN_THROTTLE.setEnabled(true);
+    try {
+      ServerLevelLoad.reset();
+      ChunkGenThrottleManager.handleServerLoadEvent(
         new ServerLoadEvent(ServerLoadLevel.NORMAL, ServerLoadLevel.NORMAL, 50.0, 50.0));
 
-    ServerLevel overworld = helper.getLevel();
-    ServerLevel nether = GameTestHelpers.getRequiredLevel(helper, Level.NETHER);
-    GameTestHelpers.setMeasuredLevelLoad(overworld, ServerLoadLevel.VERY_HIGH, 200.0);
-    GameTestHelpers.setMeasuredLevelLoad(nether, ServerLoadLevel.NORMAL, 50.0);
+      ServerLevel overworld = helper.getLevel();
+      ServerLevel nether = GameTestHelpers.getRequiredLevel(helper, Level.NETHER);
+      GameTestHelpers.setMeasuredLevelLoad(overworld, ServerLoadLevel.VERY_HIGH, 200.0);
+      GameTestHelpers.setMeasuredLevelLoad(nether, ServerLoadLevel.NORMAL, 50.0);
 
-    GameTestHelpers.assertEquals(
+      GameTestHelpers.assertEquals(
         helper,
         "Chunk gen throttle divisor should use the measured high-load level value",
         ChunkGenThrottleConfig.chunkGenThrottleVeryHighDivisor,
         ChunkGenThrottleManager.getThrottleDivisor(overworld));
-    GameTestHelpers.assertEquals(
+      GameTestHelpers.assertEquals(
         helper,
         "Chunk gen throttle divisor should stay at 1 for the measured normal-load level",
         1,
         ChunkGenThrottleManager.getThrottleDivisor(nether));
 
-    ServerLevelLoad.reset();
-    helper.succeed();
+      helper.succeed();
+    } finally {
+      ServerLevelLoad.reset();
+      FeatureToggle.CHUNK_GEN_THROTTLE.setEnabled(false);
+    }
   }
 }

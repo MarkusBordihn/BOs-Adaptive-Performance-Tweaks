@@ -33,9 +33,9 @@ public final class ExperienceOrbsConfig extends Config {
 
   public static final String CONFIG_FILE_NAME = "experience_orbs.cfg";
   private static final String CONFIG_FILE_HEADER =
-      """
+    """
        Experience Orbs Feature Configuration
-
+      
        Controls XP orb merging to reduce entity count.
        Orbs within clusterRange blocks will be merged into a single orb.
       """;
@@ -44,8 +44,10 @@ public final class ExperienceOrbsConfig extends Config {
 
   public static boolean optimizeExperienceOrbs = true;
   public static int experienceOrbsClusterRange = 2;
+  public static boolean movePositionToLastDrop = false;
 
-  private ExperienceOrbsConfig() {}
+  private ExperienceOrbsConfig() {
+  }
 
   public static void registerConfig() {
     registerConfigFile(CONFIG_FILE_NAME, CONFIG_FILE_HEADER);
@@ -55,23 +57,26 @@ public final class ExperienceOrbsConfig extends Config {
     unmodified.putAll(properties);
 
     CoreConfig.setFeatureEnabled(
+      FeatureToggle.EXPERIENCE_ORBS,
+      ModConflictDetector.resolveFeatureState(
         FeatureToggle.EXPERIENCE_ORBS,
-        ModConflictDetector.resolveFeatureState(
-            FeatureToggle.EXPERIENCE_ORBS,
-            parseConfigValue(
-                properties, "enabled", FeatureToggle.EXPERIENCE_ORBS.getDefaultState())));
+        parseConfigValue(
+          properties, "enabled", FeatureToggle.EXPERIENCE_ORBS.getDefaultState())));
 
-    optimizeExperienceOrbs =
-        parseBoolean(properties, "optimizeExperienceOrbs", optimizeExperienceOrbs);
-    experienceOrbsClusterRange =
-        parseInt(properties, "experienceOrbsClusterRange", experienceOrbsClusterRange);
+    optimizeExperienceOrbs = parseBoolean(properties, "optimizeExperienceOrbs",
+      optimizeExperienceOrbs);
+    experienceOrbsClusterRange = parseInt(properties, "experienceOrbsClusterRange",
+      experienceOrbsClusterRange);
+    movePositionToLastDrop = parseBoolean(properties, "movePositionToLastDrop",
+      movePositionToLastDrop);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
 
     log.debug(
-        "ExperienceOrbs config: optimize={}, clusterRange={}",
-        optimizeExperienceOrbs,
-        experienceOrbsClusterRange);
+      "ExperienceOrbs config: optimize={}, clusterRange={}, moveToLastDrop={}",
+      optimizeExperienceOrbs,
+      experienceOrbsClusterRange,
+      movePositionToLastDrop);
   }
 
   private static boolean parseBoolean(Properties props, String key, boolean defaultValue) {

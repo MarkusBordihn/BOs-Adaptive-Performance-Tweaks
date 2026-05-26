@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "tombstone",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "world_effect",
+  "reason": "Corail Tombstone grave and soul entities are death containers and should not be tracked."
+}

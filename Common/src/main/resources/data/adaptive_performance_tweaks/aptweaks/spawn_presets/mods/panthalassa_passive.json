@@ -1,0 +1,28 @@
+{
+  "replace": false,
+  "mod_id": "panthalassa",
+  "priority": 100,
+  "entities": {
+    "allow_list": [
+      "panthalassa:acrolepis",
+      "panthalassa:anomalocaris",
+      "panthalassa:archelon",
+      "panthalassa:basilosaurus",
+      "panthalassa:ceratodus",
+      "panthalassa:coelacanth",
+      "panthalassa:leedsichthys"
+    ],
+    "per_player_max": 4,
+    "per_world_max": 16,
+    "per_server_max": 320,
+    "per_chunk_max": 2
+  },
+  "load_factors": {
+    "very_low": 1.0,
+    "low": 1.0,
+    "normal": 0.9,
+    "medium": 0.7,
+    "high": 0.4,
+    "very_high": 0.1
+  }
+}

@@ -33,22 +33,22 @@ public class EntityCommand extends CustomCommand {
 
   private static final EntityCommand command = new EntityCommand();
   private static final String NO_ENTITIES_TEXT =
-      "Unable to find any entities. Is the server / world loaded?";
+    "Unable to find any entities. Is the server / world loaded?";
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
     return Commands.literal("entities")
-        .requires(source -> source.hasPermission(2))
-        .executes(command)
-        .then(Commands.literal("overview").executes(command::overview))
-        .then(Commands.literal("overview_per_chunk").executes(command::overviewPerChunk))
-        .then(Commands.literal("overview_per_level").executes(command::overviewPerLevel));
+      .requires(source -> source.hasPermission(2))
+      .executes(command)
+      .then(Commands.literal("overview").executes(command::overview))
+      .then(Commands.literal("overview_per_chunk").executes(command::overviewPerChunk))
+      .then(Commands.literal("overview_per_level").executes(command::overviewPerLevel));
   }
 
   @Override
   public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
     sendFeedback(
-        context,
-        """
+      context,
+      """
         Usage:
         /aptweaks entities overview - entities by type (global)
         /aptweaks entities overview_per_chunk - entities per chunk

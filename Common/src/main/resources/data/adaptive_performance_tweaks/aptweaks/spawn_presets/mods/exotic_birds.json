@@ -6,10 +6,51 @@
     "allow": ["minecraft:overworld"]
   },
   "entities": {
-    "per_player_max": 12,
-    "per_world_max": 48,
-    "per_server_max": 192,
-    "per_chunk_max": 4
+    "allow_list": [
+      "exoticbirds:peafowl",
+      "exoticbirds:hummingbird",
+      "exoticbirds:woodpecker",
+      "exoticbirds:kingfisher",
+      "exoticbirds:roadrunner",
+      "exoticbirds:toucan",
+      "exoticbirds:swan",
+      "exoticbirds:macaw",
+      "exoticbirds:cassowary",
+      "exoticbirds:magpie",
+      "exoticbirds:flamingo",
+      "exoticbirds:kiwi",
+      "exoticbirds:owl",
+      "exoticbirds:pelican",
+      "exoticbirds:lyrebird",
+      "exoticbirds:ostrich",
+      "exoticbirds:gouldianfinch",
+      "exoticbirds:gull",
+      "exoticbirds:pigeon",
+      "exoticbirds:duck",
+      "exoticbirds:penguin",
+      "exoticbirds:heron",
+      "exoticbirds:booby",
+      "exoticbirds:bluejay",
+      "exoticbirds:cardinal",
+      "exoticbirds:robin",
+      "exoticbirds:crane",
+      "exoticbirds:kookaburra",
+      "exoticbirds:budgerigar",
+      "exoticbirds:cockatoo",
+      "exoticbirds:fire_phoenix",
+      "exoticbirds:cloud_phoenix",
+      "exoticbirds:water_phoenix",
+      "exoticbirds:nether_phoenix",
+      "exoticbirds:skeleton_phoenix",
+      "exoticbirds:snowy_phoenix",
+      "exoticbirds:desert_phoenix",
+      "exoticbirds:ender_phoenix",
+      "exoticbirds:twilight_phoenix"
+    ],
+    "per_player_max": 4,
+    "per_world_max": 16,
+    "per_server_max": 64,
+    "per_chunk_max": 2
   },
   "load_factors": {
     "very_low": 1.0,
@@ -18,6 +59,5 @@
     "medium": 0.7,
     "high": 0.4,
     "very_high": 0.1
-  },
-  "notes": "Exotic Birds — limits all exoticbirds:* entities."
+  }
 }

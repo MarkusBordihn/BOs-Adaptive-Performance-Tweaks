@@ -1,6 +1,0 @@
-﻿{
-  "mod_id": "car",
-  "priority": 100,
-  "exclude_from_tracking": true,
-  "notes": "Ultimate Car mod entities (vehicles) are user-controlled and should not be spawn-limited."
-}

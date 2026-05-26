@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "mod_id": "ars_nouveau",
+  "priority": 100,
+  "entities": {
+    "allow_list": ["ars_nouveau:wilden_chimera"],
+    "per_player_max": 2,
+    "per_world_max": 6,
+    "per_server_max": 32,
+    "per_chunk_max": 1
+  },
+  "load_factors": {
+    "very_low": 1.0,
+    "low": 1.0,
+    "normal": 0.9,
+    "medium": 0.7,
+    "high": 0.4,
+    "very_high": 0.1
+  },
+  "notes": "Low limits due to CPU intensity and structure-based spawning. Fixes Issue #49."
+}

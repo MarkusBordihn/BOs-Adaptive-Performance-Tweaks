@@ -3,6 +3,40 @@
   "mod_id": "aquaculture",
   "priority": 100,
   "entities": {
+    "allow_list": [
+      "aquaculture:arapaima",
+      "aquaculture:arrau_turtle",
+      "aquaculture:atlantic_cod",
+      "aquaculture:atlantic_halibut",
+      "aquaculture:atlantic_herring",
+      "aquaculture:bayad",
+      "aquaculture:blackfish",
+      "aquaculture:bluegill",
+      "aquaculture:boulti",
+      "aquaculture:box_turtle",
+      "aquaculture:brown_shrooma",
+      "aquaculture:brown_trout",
+      "aquaculture:capitaine",
+      "aquaculture:carp",
+      "aquaculture:catfish",
+      "aquaculture:gar",
+      "aquaculture:jellyfish",
+      "aquaculture:minnow",
+      "aquaculture:muskellunge",
+      "aquaculture:pacific_halibut",
+      "aquaculture:perch",
+      "aquaculture:pink_salmon",
+      "aquaculture:piranha",
+      "aquaculture:pollock",
+      "aquaculture:rainbow_trout",
+      "aquaculture:red_grouper",
+      "aquaculture:red_shrooma",
+      "aquaculture:smallmouth_bass",
+      "aquaculture:starshell_turtle",
+      "aquaculture:synodontis",
+      "aquaculture:tambaqui",
+      "aquaculture:tuna"
+    ],
     "per_player_max": 12,
     "per_world_max": 48,
     "per_server_max": 192,
@@ -16,5 +50,5 @@
     "high": 0.4,
     "very_high": 0.1
   },
-  "notes": "Aquaculture 2 — limits all aquaculture:* fish entities."
+  "notes": "Excluded non-mob entities: fish_mounts, bobber, water_arrow."
 }

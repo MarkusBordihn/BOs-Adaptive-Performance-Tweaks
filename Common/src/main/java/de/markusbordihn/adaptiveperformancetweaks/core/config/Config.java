@@ -40,10 +40,11 @@ public class Config {
   private static final String LOG_PREFIX = "[Config]";
 
   private static Path configPath =
-      Paths.get("").toAbsolutePath().resolve("config").resolve(Constants.MOD_ID);
+    Paths.get("").toAbsolutePath().resolve("config").resolve(Constants.MOD_ID);
   private static boolean isLoaded = false;
 
-  protected Config() {}
+  protected Config() {
+  }
 
   public static void register(boolean isServer) {
     prepareConfiguration();
@@ -70,7 +71,7 @@ public class Config {
   }
 
   public static void registerConfigFile(
-      final String configFileName, final String configFileHeader) {
+    final String configFileName, final String configFileHeader) {
     File configFile = getConfigFile(configFileName.trim());
     if (configFile == null || !configFile.exists()) {
       createConfigFile(getConfigFile(configFileName.trim()), configFileHeader.trim());
@@ -123,10 +124,10 @@ public class Config {
   }
 
   public static void updateConfigFileIfChanged(
-      File configFile,
-      String configFileHeader,
-      Properties properties,
-      Properties unmodifiedProperties) {
+    File configFile,
+    String configFileHeader,
+    Properties properties,
+    Properties unmodifiedProperties) {
     if (!properties.equals(unmodifiedProperties)) {
       log.debug("{} Updating configuration file {}", LOG_PREFIX, configFile);
       try (FileWriter writer = new FileWriter(configFile)) {
@@ -138,7 +139,7 @@ public class Config {
   }
 
   protected static String parseConfigValue(
-      final Properties properties, final String key, final String defaultValue) {
+    final Properties properties, final String key, final String defaultValue) {
     if (properties.containsKey(key)) {
       try {
         return properties.getProperty(key).trim();
@@ -152,7 +153,7 @@ public class Config {
   }
 
   protected static int parseConfigValue(
-      final Properties properties, final String key, final int defaultValue) {
+    final Properties properties, final String key, final int defaultValue) {
     if (properties.containsKey(key)) {
       try {
         return Integer.parseInt(properties.getProperty(key).trim());
@@ -166,7 +167,7 @@ public class Config {
   }
 
   protected static double parseConfigValue(
-      final Properties properties, final String key, final double defaultValue) {
+    final Properties properties, final String key, final double defaultValue) {
     if (properties.containsKey(key)) {
       try {
         return Double.parseDouble(properties.getProperty(key).trim());
@@ -180,7 +181,7 @@ public class Config {
   }
 
   protected static boolean parseConfigValue(
-      final Properties properties, final String key, final boolean defaultValue) {
+    final Properties properties, final String key, final boolean defaultValue) {
     if (properties.containsKey(key)) {
       try {
         return Boolean.parseBoolean(properties.getProperty(key).trim());
@@ -194,7 +195,7 @@ public class Config {
   }
 
   protected static Set<String> parseConfigValue(
-      final Properties properties, final String key, final Set<String> defaultValue) {
+    final Properties properties, final String key, final Set<String> defaultValue) {
     if (properties.containsKey(key)) {
       try {
         String value = properties.getProperty(key).trim();
@@ -223,7 +224,7 @@ public class Config {
   }
 
   protected static FeatureState parseConfigValue(
-      final Properties properties, final String key, final FeatureState defaultValue) {
+    final Properties properties, final String key, final FeatureState defaultValue) {
     if (properties.containsKey(key)) {
       try {
         return FeatureState.parse(properties.getProperty(key));

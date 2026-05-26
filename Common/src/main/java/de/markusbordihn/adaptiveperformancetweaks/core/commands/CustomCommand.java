@@ -27,7 +27,8 @@ import net.minecraft.network.chat.Component;
 
 public abstract class CustomCommand implements Command<CommandSourceStack> {
 
-  protected CustomCommand() {}
+  protected CustomCommand() {
+  }
 
   public static void sendFeedback(CommandContext<CommandSourceStack> context, String feedback) {
     context.getSource().sendSuccess(() -> Component.literal(feedback), false);
@@ -38,36 +39,31 @@ public abstract class CustomCommand implements Command<CommandSourceStack> {
   }
 
   public static void sendDebugFeedback(
-      CommandContext<CommandSourceStack> context, String module, boolean enabled) {
+    CommandContext<CommandSourceStack> context, String module, boolean enabled) {
     CommandSourceStack source = context.getSource();
     String commandName = module.toLowerCase();
     if (enabled) {
       source.sendSuccess(
-          () ->
-              Component.literal(
-                      "► Enable debug for the "
-                          + module
-                          + " module, please check debug.log for the full output.")
-                  .withStyle(ChatFormatting.GREEN),
-          false);
+        () -> Component.literal(
+            "-> Enable debug for the " + module
+              + " module, please check debug.log for the full output.")
+          .withStyle(ChatFormatting.GREEN),
+        false);
       source.sendSuccess(
-          () ->
-              Component.literal(
-                      "> Use '/aptweaks debug " + commandName + " false' to disable the debug!")
-                  .withStyle(ChatFormatting.WHITE),
-          false);
+        () -> Component.literal(
+            "> Use '/aptweaks debug " + commandName + " false' to disable the debug!")
+          .withStyle(ChatFormatting.WHITE),
+        false);
     } else {
       source.sendSuccess(
-          () ->
-              Component.literal("■ Disable debug for the " + commandName + " module!")
-                  .withStyle(ChatFormatting.RED),
-          false);
+        () -> Component.literal("[x] Disable debug for the " + commandName + " module!")
+          .withStyle(ChatFormatting.RED),
+        false);
       source.sendSuccess(
-          () ->
-              Component.literal(
-                      "> Please check the latest.log and/or debug.log for the full output.")
-                  .withStyle(ChatFormatting.WHITE),
-          false);
+        () -> Component.literal(
+            "> Please check the latest.log and/or debug.log for the full output.")
+          .withStyle(ChatFormatting.WHITE),
+        false);
     }
   }
 }

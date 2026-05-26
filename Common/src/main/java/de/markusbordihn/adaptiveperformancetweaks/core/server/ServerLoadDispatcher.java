@@ -27,7 +27,8 @@ public final class ServerLoadDispatcher {
 
   private static final List<Consumer<ServerLoadEvent>> listeners = new ArrayList<>();
 
-  private ServerLoadDispatcher() {}
+  private ServerLoadDispatcher() {
+  }
 
   public static void register(Consumer<ServerLoadEvent> listener) {
     listeners.add(listener);

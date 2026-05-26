@@ -21,10 +21,13 @@ package de.markusbordihn.adaptiveperformancetweaks.core.server;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.server.level.ServerLevel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,14 +36,14 @@ public final class ServerLevelLoad {
 
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
   private static final double SMOOTHING_FACTOR = 0.2d;
-  private static final Map<ServerLevel, Long> levelTickStartTimes = new ConcurrentHashMap<>();
-  private static final Map<ServerLevel, Double> levelTickTimes = new ConcurrentHashMap<>();
-  private static final Map<ServerLevel, Double> levelReportedTickTimes = new ConcurrentHashMap<>();
-  private static final Map<ServerLevel, ServerLoadLevel> levelLoadLevels =
-      new ConcurrentHashMap<>();
+  private static final Map<ServerLevel, Long> levelTickStartTimes = new HashMap<>();
+  private static final Map<ServerLevel, Double> levelTickTimes = new HashMap<>();
+  private static final Map<ServerLevel, Double> levelReportedTickTimes = new HashMap<>();
+  private static final Map<ServerLevel, ServerLoadLevel> levelLoadLevels = new HashMap<>();
   private static long lastUpdateTime = System.currentTimeMillis();
 
-  private ServerLevelLoad() {}
+  private ServerLevelLoad() {
+  }
 
   public static void reset() {
     lastUpdateTime = System.currentTimeMillis();
@@ -61,12 +64,14 @@ public final class ServerLevelLoad {
     }
 
     double currentTickTime = (System.nanoTime() - startTime) / 1_000_000.0d;
-    levelTickTimes.compute(
-        serverLevel,
-        (level, previousTickTime) ->
-            previousTickTime == null
-                ? currentTickTime
-                : previousTickTime + (currentTickTime - previousTickTime) * SMOOTHING_FACTOR);
+    Double previousTickTime = levelTickTimes.get(serverLevel);
+    if (previousTickTime == null) {
+      levelTickTimes.put(serverLevel, currentTickTime);
+      return;
+    }
+
+    levelTickTimes.put(serverLevel,
+      previousTickTime + (currentTickTime - previousTickTime) * SMOOTHING_FACTOR);
   }
 
   public static void measureLoadAndPost() {
@@ -93,27 +98,25 @@ public final class ServerLevelLoad {
 
       double lastTickTime = levelReportedTickTimes.getOrDefault(serverLevel, 45.0d);
       if (lastTickTime >= currentAvgTickTime
-          && currentTime - lastUpdateTime < (long) CoreConfig.timeBetweenUpdates * 1000L) {
+        && currentTime - lastUpdateTime < (long) CoreConfig.timeBetweenUpdates * 1000L) {
         continue;
       }
 
       levelReportedTickTimes.put(serverLevel, currentAvgTickTime);
 
       ServerLoadLevel lastLoadLevel =
-          levelLoadLevels.getOrDefault(serverLevel, ServerLoadLevel.NORMAL);
+        levelLoadLevels.getOrDefault(serverLevel, ServerLoadLevel.NORMAL);
       ServerLoadLevel loadLevel = ServerLoadLevel.fromAverageTickTime(currentAvgTickTime);
       levelLoadLevels.put(serverLevel, loadLevel);
 
-      if (loadLevel != lastLoadLevel && CoreConfig.logServerLoad) {
-        String indicator = lastTickTime > currentAvgTickTime ? "down" : "up";
-        log.info(
-            "{} Level load for {} changed from {} (avg. {}ms) to {} (avg. {}ms)",
-            indicator,
-            serverLevel.dimension().location(),
-            lastLoadLevel,
-            String.format("%.1f", lastTickTime),
-            loadLevel,
-            String.format("%.1f", currentAvgTickTime));
+      if (loadLevel != lastLoadLevel && CoreConfig.logServerLevelLoadChanges
+        && log.isDebugEnabled()) {
+        String indicator = ServerLoad.getLoadChangeIndicator(lastTickTime, currentAvgTickTime);
+        log.debug("{} Level load for {} changed from {} (avg. {}ms) to {} (avg. {}ms)",
+          indicator,
+          serverLevel.dimension().location(),
+          lastLoadLevel, String.format("%.1f", lastTickTime),
+          loadLevel, String.format("%.1f", currentAvgTickTime));
       }
     }
 
@@ -134,5 +137,35 @@ public final class ServerLevelLoad {
 
   public static Map<ServerLevel, ServerLoadLevel> getAllLevelLoads() {
     return levelLoadLevels;
+  }
+
+  public static List<LevelLoadSnapshot> getTopLoadedLevels(int limit) {
+    if (limit <= 0 || levelTickTimes.isEmpty()) {
+      return List.of();
+    }
+
+    List<LevelLoadSnapshot> snapshots = new ArrayList<>();
+    for (Map.Entry<ServerLevel, Double> entry : levelTickTimes.entrySet()) {
+      ServerLevel serverLevel = entry.getKey();
+      double averageTickTime = entry.getValue();
+      if (serverLevel == null || averageTickTime <= 0.0d) {
+        continue;
+      }
+
+      snapshots.add(new LevelLoadSnapshot(
+        serverLevel.dimension().location().toString(),
+        ServerLoadLevel.fromAverageTickTime(averageTickTime),
+        averageTickTime));
+    }
+
+    snapshots.sort(Comparator.comparingDouble(LevelLoadSnapshot::averageTickTime).reversed());
+    return snapshots.size() <= limit ? snapshots : snapshots.subList(0, limit);
+  }
+
+  public record LevelLoadSnapshot(
+    String dimensionId,
+    ServerLoadLevel loadLevel,
+    double averageTickTime) {
+
   }
 }

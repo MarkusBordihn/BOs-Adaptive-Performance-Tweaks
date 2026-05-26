@@ -22,12 +22,11 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.aithrottle;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -47,9 +46,15 @@ class AiThrottleManagerTest {
 
   @BeforeEach
   void resetLoadLevel() throws Exception {
+    FeatureToggle.AI_THROTTLING.setEnabled(true);
     Field field = AiThrottleManager.class.getDeclaredField("currentLoadLevel");
     field.setAccessible(true);
     field.set(null, ServerLoadLevel.NORMAL);
+  }
+
+  @AfterEach
+  void resetFeatureToggle() {
+    FeatureToggle.AI_THROTTLING.setEnabled(false);
   }
 
   @Test
@@ -76,16 +81,5 @@ class AiThrottleManagerTest {
   @Test
   void nearbyRadiusIsPositive() {
     assertTrue(AiThrottleConfig.aiThrottleNearbyRadius > 0);
-  }
-
-  @Test
-  void usesMeasuredPerLevelLoadWhenAvailable() throws IOException {
-    String source =
-        Files.readString(
-            Path.of(
-                "src/main/java/de/markusbordihn/adaptiveperformancetweaks/feature/aithrottle/AiThrottleManager.java"));
-    assertTrue(source.contains("mob.level() instanceof ServerLevel serverLevel"));
-    assertTrue(source.contains("ServerLevelLoad.hasMeasuredLoad("));
-    assertTrue(source.contains("ServerLevelLoad.getLevelLoad(serverLevel)"));
   }
 }

@@ -30,11 +30,11 @@ public class ServerLevelLoadEvent {
   private final double lastAvgTickTime;
 
   public ServerLevelLoadEvent(
-      ServerLevel serverLevel,
-      ServerLoadLevel loadLevel,
-      ServerLoadLevel lastLoadLevel,
-      double avgTickTime,
-      double lastAvgTickTime) {
+    ServerLevel serverLevel,
+    ServerLoadLevel loadLevel,
+    ServerLoadLevel lastLoadLevel,
+    double avgTickTime,
+    double lastAvgTickTime) {
     this.serverLevel = serverLevel;
     this.loadLevel = loadLevel;
     this.lastLoadLevel = lastLoadLevel;

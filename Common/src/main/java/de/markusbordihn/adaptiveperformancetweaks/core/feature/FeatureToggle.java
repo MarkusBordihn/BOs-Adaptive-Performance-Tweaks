@@ -20,41 +20,82 @@
 package de.markusbordihn.adaptiveperformancetweaks.core.feature;
 
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
+import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimulationDistanceManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.distance.ViewDistanceManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.gamerules.GameRuleManager;
 import java.util.List;
 import java.util.Locale;
 
 public enum FeatureToggle {
-  CORE(FeatureState.ENABLED, List.of(), Scope.BOTH),
-  GAMERULES(FeatureState.AUTO, List.of(), Scope.SERVER),
-  ITEMS(FeatureState.AUTO, List.of("clumps", "getittogetherdrops"), Scope.SERVER),
-  EXPERIENCE_ORBS(FeatureState.AUTO, List.of("clumps"), Scope.SERVER),
-  PLAYER_LOGIN_PROTECTION(FeatureState.AUTO, List.of("logprot"), Scope.SERVER),
-  PLAYER_EASY_CHILD_MODE(FeatureState.AUTO, List.of(), Scope.SERVER),
-  PLAYER_STARTER_PROTECTION(FeatureState.AUTO, List.of(), Scope.SERVER),
-  SPAWN(FeatureState.AUTO, List.of("incontrol"), Scope.SERVER),
-  ADAPTIVE_VIEW_DISTANCE(FeatureState.DISABLED, List.of("dynview"), Scope.SERVER),
-  ADAPTIVE_SIM_DISTANCE(FeatureState.AUTO, List.of(), Scope.SERVER),
-  AI_THROTTLING(FeatureState.DISABLED, List.of(), Scope.SERVER),
-  CHUNK_GEN_THROTTLE(FeatureState.DISABLED, List.of(), Scope.SERVER),
-  CLIENT_AFK_OPTIMIZATION(FeatureState.DISABLED, List.of(), Scope.CLIENT),
-  MONITORING(FeatureState.DISABLED, List.of(), Scope.BOTH);
+  CORE(FeatureState.ENABLED, List.of(), List.of(), Scope.BOTH),
+  GAMERULES(FeatureState.AUTO, List.of(), List.of(), Scope.SERVER),
+  ITEMS(
+    FeatureState.AUTO,
+    List.of("getittogetherdrops", "eco_stack_manager"),
+    List.of("servercore"),
+    Scope.SERVER),
+  EXPERIENCE_ORBS(
+    FeatureState.AUTO,
+    List.of("clumps", "eco_stack_manager"),
+    List.of("servercore"),
+    Scope.SERVER),
+  ARROWS(
+    FeatureState.AUTO,
+    List.of("arrow_clean_up", "persistent_arrows"),
+    List.of(),
+    Scope.SERVER),
+  PLAYER_LOGIN_PROTECTION(
+    FeatureState.AUTO,
+    List.of("logprot"),
+    List.of("loadingprotection", "loadingprotectionrenewed", "joinprotection"),
+    Scope.SERVER),
+  PLAYER_EASY_CHILD_MODE(FeatureState.AUTO, List.of(), List.of(), Scope.SERVER),
+  PLAYER_STARTER_PROTECTION(FeatureState.AUTO, List.of(), List.of(), Scope.SERVER),
+  SPAWN(
+    FeatureState.AUTO,
+    List.of("incontrol", "badmobs"),
+    List.of("servercore"),
+    Scope.SERVER),
+  ADAPTIVE_VIEW_DISTANCE(
+    FeatureState.DISABLED,
+    List.of("dynview"),
+    List.of("servercore"),
+    Scope.SERVER),
+  ADAPTIVE_SIMULATION_DISTANCE(
+    FeatureState.AUTO,
+    List.of("dynview"),
+    List.of("servercore"),
+    Scope.SERVER),
+  AI_THROTTLING(
+    FeatureState.DISABLED,
+    List.of(),
+    List.of("aiimprovements", "servercore"),
+    Scope.SERVER),
+  CHUNK_GEN_THROTTLE(
+    FeatureState.DISABLED,
+    List.of(),
+    List.of("smoothchunksave"),
+    Scope.SERVER),
+  CLIENT_AFK_OPTIMIZATION(FeatureState.DISABLED, List.of(), List.of(), Scope.CLIENT),
+  MONITORING(FeatureState.DISABLED, List.of(), List.of("servercore"), Scope.BOTH);
 
-  private final String id;
   private final FeatureState defaultState;
   private final List<String> conflictingMods;
+  private final List<String> warningOnlyMods;
   private final Scope scope;
 
-  FeatureToggle(FeatureState defaultState, List<String> conflictingMods, Scope scope) {
-    this.id = name().toLowerCase(Locale.ROOT);
+  FeatureToggle(FeatureState defaultState, List<String> conflictingMods,
+    List<String> warningOnlyMods, Scope scope) {
     this.defaultState = defaultState;
     this.conflictingMods = conflictingMods;
+    this.warningOnlyMods = warningOnlyMods;
     this.scope = scope;
   }
 
   public static FeatureToggle fromId(String id) {
     String normalized = id.trim().toLowerCase(Locale.ROOT);
     for (FeatureToggle toggle : values()) {
-      if (toggle.id.equals(normalized)) {
+      if (toggle.getId().equals(normalized)) {
         return toggle;
       }
     }
@@ -62,7 +103,7 @@ public enum FeatureToggle {
   }
 
   public String getId() {
-    return this.id;
+    return this.name().toLowerCase(Locale.ROOT);
   }
 
   public FeatureState getDefaultState() {
@@ -71,6 +112,10 @@ public enum FeatureToggle {
 
   public List<String> getConflictingMods() {
     return this.conflictingMods;
+  }
+
+  public List<String> getWarningOnlyMods() {
+    return this.warningOnlyMods;
   }
 
   public Scope scope() {
@@ -90,7 +135,25 @@ public enum FeatureToggle {
       return;
     }
 
+    boolean wasEnabled = isEnabled();
+    if (wasEnabled == enabled) {
+      return;
+    }
+
     CoreConfig.setFeatureEnabled(this, enabled);
+    if (!enabled) {
+      restoreFeatureState();
+    }
+  }
+
+  private void restoreFeatureState() {
+    switch (this) {
+      case GAMERULES -> GameRuleManager.handleFeatureDisabled();
+      case ADAPTIVE_VIEW_DISTANCE -> ViewDistanceManager.handleFeatureDisabled();
+      case ADAPTIVE_SIMULATION_DISTANCE -> SimulationDistanceManager.handleFeatureDisabled();
+      default -> {
+      }
+    }
   }
 
   public enum Scope {

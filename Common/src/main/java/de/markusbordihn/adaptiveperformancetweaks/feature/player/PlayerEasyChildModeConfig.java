@@ -36,9 +36,9 @@ public final class PlayerEasyChildModeConfig extends Config {
 
   public static final String CONFIG_FILE_NAME = "player_easy_child_mode.cfg";
   private static final String CONFIG_FILE_HEADER =
-      """
+    """
        Player Easy Child Mode Configuration
-
+      
        List player names that should receive reduced hurt damage and increased attack damage.
        Percentages: 0 = disabled, 100 = full reduction/increase.
       """;
@@ -49,7 +49,8 @@ public final class PlayerEasyChildModeConfig extends Config {
   public static int childPlayerHurtDamageReduction = 50;
   public static int childPlayerAttackDamageIncrease = 50;
 
-  private PlayerEasyChildModeConfig() {}
+  private PlayerEasyChildModeConfig() {
+  }
 
   public static void registerConfig() {
     registerConfigFile(CONFIG_FILE_NAME, CONFIG_FILE_HEADER);
@@ -59,23 +60,23 @@ public final class PlayerEasyChildModeConfig extends Config {
     unmodified.putAll(properties);
 
     CoreConfig.setFeatureEnabled(
+      FeatureToggle.PLAYER_EASY_CHILD_MODE,
+      ModConflictDetector.resolveFeatureState(
         FeatureToggle.PLAYER_EASY_CHILD_MODE,
-        ModConflictDetector.resolveFeatureState(
-            FeatureToggle.PLAYER_EASY_CHILD_MODE,
-            parseConfigValue(
-                properties, "enabled", FeatureToggle.PLAYER_EASY_CHILD_MODE.getDefaultState())));
+        parseConfigValue(
+          properties, "enabled", FeatureToggle.PLAYER_EASY_CHILD_MODE.getDefaultState())));
 
     childPlayerNames = parseStringSet(properties, "childPlayerNames", childPlayerNames);
     childPlayerHurtDamageReduction =
-        parseInt(properties, "childPlayerHurtDamageReduction", childPlayerHurtDamageReduction);
+      parseInt(properties, "childPlayerHurtDamageReduction", childPlayerHurtDamageReduction);
     childPlayerAttackDamageIncrease =
-        parseInt(properties, "childPlayerAttackDamageIncrease", childPlayerAttackDamageIncrease);
+      parseInt(properties, "childPlayerAttackDamageIncrease", childPlayerAttackDamageIncrease);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
 
     log.debug(
-        "Child mode config: players={}, hurtReduction={}%, attackIncrease={}%",
-        childPlayerNames, childPlayerHurtDamageReduction, childPlayerAttackDamageIncrease);
+      "Child mode config: players={}, hurtReduction={}%, attackIncrease={}%",
+      childPlayerNames, childPlayerHurtDamageReduction, childPlayerAttackDamageIncrease);
   }
 
   private static int parseInt(Properties props, String key, int defaultValue) {
@@ -89,7 +90,7 @@ public final class PlayerEasyChildModeConfig extends Config {
   }
 
   private static Set<String> parseStringSet(
-      Properties props, String key, Set<String> defaultValue) {
+    Properties props, String key, Set<String> defaultValue) {
     props.putIfAbsent(key, "");
     String value = props.getProperty(key, "").trim();
     if (value.isEmpty()) {

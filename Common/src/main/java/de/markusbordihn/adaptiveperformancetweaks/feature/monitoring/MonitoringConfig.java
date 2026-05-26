@@ -30,9 +30,9 @@ public final class MonitoringConfig extends Config {
 
   public static final String CONFIG_FILE_NAME = "monitoring.cfg";
   private static final String CONFIG_FILE_HEADER =
-      """
+    """
        Monitoring Feature Configuration
-
+      
        Periodically logs server performance metrics to the server log.
        Set monitoringIntervalSeconds to 0 to log only on load-level changes.
       """;
@@ -43,7 +43,8 @@ public final class MonitoringConfig extends Config {
   public static boolean monitoringLogPlayers = true;
   public static boolean monitoringLogEntities = true;
 
-  private MonitoringConfig() {}
+  private MonitoringConfig() {
+  }
 
   public static void registerConfig() {
     registerConfigFile(CONFIG_FILE_NAME, CONFIG_FILE_HEADER);
@@ -53,28 +54,28 @@ public final class MonitoringConfig extends Config {
     unmodified.putAll(properties);
 
     CoreConfig.setFeatureEnabled(
+      FeatureToggle.MONITORING,
+      ModConflictDetector.resolveFeatureState(
         FeatureToggle.MONITORING,
-        ModConflictDetector.resolveFeatureState(
-            FeatureToggle.MONITORING,
-            parseConfigValue(properties, "enabled", FeatureToggle.MONITORING.getDefaultState())));
+        parseConfigValue(properties, "enabled", FeatureToggle.MONITORING.getDefaultState())));
 
     monitoringIntervalSeconds =
-        parseInt(properties, "monitoringIntervalSeconds", monitoringIntervalSeconds);
+      parseInt(properties, "monitoringIntervalSeconds", monitoringIntervalSeconds);
     monitoringLogTps = parseBoolean(properties, "monitoringLogTps", monitoringLogTps);
     monitoringLogLoadLevel =
-        parseBoolean(properties, "monitoringLogLoadLevel", monitoringLogLoadLevel);
+      parseBoolean(properties, "monitoringLogLoadLevel", monitoringLogLoadLevel);
     monitoringLogPlayers = parseBoolean(properties, "monitoringLogPlayers", monitoringLogPlayers);
     monitoringLogEntities =
-        parseBoolean(properties, "monitoringLogEntities", monitoringLogEntities);
+      parseBoolean(properties, "monitoringLogEntities", monitoringLogEntities);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
     log.debug(
-        "Monitoring enabled: interval={}s tps={} loadLevel={} players={} entities={}",
-        monitoringIntervalSeconds,
-        monitoringLogTps,
-        monitoringLogLoadLevel,
-        monitoringLogPlayers,
-        monitoringLogEntities);
+      "Monitoring enabled: interval={}s tps={} loadLevel={} players={} entities={}",
+      monitoringIntervalSeconds,
+      monitoringLogTps,
+      monitoringLogLoadLevel,
+      monitoringLogPlayers,
+      monitoringLogEntities);
   }
 
   private static int parseInt(Properties props, String key, int defaultValue) {

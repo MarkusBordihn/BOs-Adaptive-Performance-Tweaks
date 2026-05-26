@@ -23,17 +23,10 @@ import net.minecraft.world.entity.item.ItemEntity;
 
 public final class CoreItemEntityManager {
 
-  private CoreItemEntityManager() {}
+  private CoreItemEntityManager() {
+  }
 
   public static boolean isRelevantItemEntity(ItemEntity itemEntity) {
-    if (itemEntity == null || itemEntity.isRemoved()) {
-      return false;
-    }
-
-    if (itemEntity.getItem().isEmpty()) {
-      return false;
-    }
-
-    return !itemEntity.isRemoved();
+    return itemEntity != null && !itemEntity.isRemoved() && !itemEntity.getItem().isEmpty();
   }
 }

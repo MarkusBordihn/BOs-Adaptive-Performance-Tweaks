@@ -32,7 +32,8 @@ import net.minecraft.world.item.Items;
 
 public final class ItemOptimizationTests {
 
-  private ItemOptimizationTests() {}
+  private ItemOptimizationTests() {
+  }
 
   public static void testXpOrbClustering(GameTestHelper helper) {
     ServerLevel level = helper.getLevel();
@@ -44,7 +45,7 @@ public final class ItemOptimizationTests {
 
     boolean firstJoined = ExperienceOrbManager.handleExperienceOrbJoinLevel(orb1, level);
     GameTestHelpers.assertTrue(
-        helper, "First XP orb should not be merged (no existing orbs)", !firstJoined);
+      helper, "First XP orb should not be merged (no existing orbs)", !firstJoined);
 
     ExperienceOrb orb2 = new ExperienceOrb(EntityType.EXPERIENCE_ORB, level);
     ((ExperienceOrbAccessor) orb2).setValue(3);
@@ -52,12 +53,12 @@ public final class ItemOptimizationTests {
 
     boolean secondMerged = ExperienceOrbManager.handleExperienceOrbJoinLevel(orb2, level);
     GameTestHelpers.assertTrue(
-        helper, "Second XP orb within cluster range should be merged", secondMerged);
+      helper, "Second XP orb within cluster range should be merged", secondMerged);
     GameTestHelpers.assertEquals(
-        helper,
-        "Merged XP orb value should be sum of both (5 + 3 = 8)",
-        8,
-        ((ExperienceOrbAccessor) orb1).getValue());
+      helper,
+      "Merged XP orb value should be sum of both (5 + 3 = 8)",
+      8,
+      ((ExperienceOrbAccessor) orb1).getValue());
     GameTestHelpers.assertTrue(helper, "Merged orb should be marked as removed", orb2.isRemoved());
 
     ExperienceOrbManager.handleServerAboutToStart();
@@ -71,19 +72,19 @@ public final class ItemOptimizationTests {
     ItemEntity item1 = new ItemEntity(level, 0.5, 1.0, 0.5, new ItemStack(Items.DIRT, 1));
     boolean firstJoined = ItemEntityManager.handleItemEntityJoinLevel(item1, level);
     GameTestHelpers.assertTrue(
-        helper, "First item entity should not be merged (no existing items)", !firstJoined);
+      helper, "First item entity should not be merged (no existing items)", !firstJoined);
 
     ItemEntity item2 = new ItemEntity(level, 0.5, 1.0, 0.5, new ItemStack(Items.DIRT, 1));
     boolean secondMerged = ItemEntityManager.handleItemEntityJoinLevel(item2, level);
     GameTestHelpers.assertTrue(
-        helper,
-        "Second item entity of same type within cluster range should be merged",
-        secondMerged);
+      helper,
+      "Second item entity of same type within cluster range should be merged",
+      secondMerged);
     GameTestHelpers.assertEquals(
-        helper,
-        "Item stack of existing entity should grow to 2 after merge",
-        2,
-        item1.getItem().getCount());
+      helper,
+      "Item stack of existing entity should grow to 2 after merge",
+      2,
+      item1.getItem().getCount());
 
     ItemEntityManager.handleServerAboutToStart();
     helper.succeed();

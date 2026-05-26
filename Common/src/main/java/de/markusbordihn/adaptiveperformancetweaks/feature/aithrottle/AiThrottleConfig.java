@@ -30,12 +30,12 @@ public final class AiThrottleConfig extends Config {
 
   public static final String CONFIG_FILE_NAME = "ai_throttle.cfg";
   private static final String CONFIG_FILE_HEADER =
-      """
+    """
        AI Throttling Feature Configuration
-
+      
        Reduces AI goal evaluation frequency for mobs that are far from all players.
-       Throttling only activates at MEDIUM+ server load — zero effect at normal load.
-
+       Throttling only activates at MEDIUM+ server load - zero effect at normal load.
+      
        aiThrottleNearbyRadius: mobs within this radius (in blocks) are NEVER throttled.
        Divisors control how many ticks are skipped: 2 = every 2nd tick, 4 = every 4th tick.
       """;
@@ -45,7 +45,8 @@ public final class AiThrottleConfig extends Config {
   public static int aiThrottleHighDivisor = 4;
   public static int aiThrottleVeryHighDivisor = 8;
 
-  private AiThrottleConfig() {}
+  private AiThrottleConfig() {
+  }
 
   public static void registerConfig() {
     registerConfigFile(CONFIG_FILE_NAME, CONFIG_FILE_HEADER);
@@ -55,26 +56,26 @@ public final class AiThrottleConfig extends Config {
     unmodified.putAll(properties);
 
     CoreConfig.setFeatureEnabled(
+      FeatureToggle.AI_THROTTLING,
+      ModConflictDetector.resolveFeatureState(
         FeatureToggle.AI_THROTTLING,
-        ModConflictDetector.resolveFeatureState(
-            FeatureToggle.AI_THROTTLING,
-            parseConfigValue(
-                properties, "enabled", FeatureToggle.AI_THROTTLING.getDefaultState())));
+        parseConfigValue(
+          properties, "enabled", FeatureToggle.AI_THROTTLING.getDefaultState())));
 
     aiThrottleNearbyRadius = parseInt(properties, "aiThrottleNearbyRadius", aiThrottleNearbyRadius);
     aiThrottleMediumDivisor =
-        parseInt(properties, "aiThrottleMediumDivisor", aiThrottleMediumDivisor);
+      parseInt(properties, "aiThrottleMediumDivisor", aiThrottleMediumDivisor);
     aiThrottleHighDivisor = parseInt(properties, "aiThrottleHighDivisor", aiThrottleHighDivisor);
     aiThrottleVeryHighDivisor =
-        parseInt(properties, "aiThrottleVeryHighDivisor", aiThrottleVeryHighDivisor);
+      parseInt(properties, "aiThrottleVeryHighDivisor", aiThrottleVeryHighDivisor);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
     log.debug(
-        "AI throttling: nearbyRadius={} divisors: MEDIUM={} HIGH={} VERY_HIGH={}",
-        aiThrottleNearbyRadius,
-        aiThrottleMediumDivisor,
-        aiThrottleHighDivisor,
-        aiThrottleVeryHighDivisor);
+      "AI throttling: nearbyRadius={} divisors: MEDIUM={} HIGH={} VERY_HIGH={}",
+      aiThrottleNearbyRadius,
+      aiThrottleMediumDivisor,
+      aiThrottleHighDivisor,
+      aiThrottleVeryHighDivisor);
   }
 
   private static int parseInt(Properties props, String key, int defaultValue) {

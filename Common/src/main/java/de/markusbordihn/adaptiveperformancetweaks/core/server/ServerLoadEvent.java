@@ -27,10 +27,10 @@ public class ServerLoadEvent {
   private final double lastAvgTickTime;
 
   public ServerLoadEvent(
-      ServerLoadLevel serverLoadLevel,
-      ServerLoadLevel lastServerLoadLevel,
-      double avgTickTime,
-      double lastAvgTickTime) {
+    ServerLoadLevel serverLoadLevel,
+    ServerLoadLevel lastServerLoadLevel,
+    double avgTickTime,
+    double lastAvgTickTime) {
     this.serverLoadLevel = serverLoadLevel;
     this.lastServerLoadLevel = lastServerLoadLevel;
     this.avgTickTime = avgTickTime;
@@ -71,6 +71,6 @@ public class ServerLoadEvent {
 
   public boolean hasLowServerLoad() {
     return this.serverLoadLevel == ServerLoadLevel.VERY_LOW
-        || this.serverLoadLevel == ServerLoadLevel.LOW;
+      || this.serverLoadLevel == ServerLoadLevel.LOW;
   }
 }

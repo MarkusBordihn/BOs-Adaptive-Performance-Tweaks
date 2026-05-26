@@ -45,7 +45,8 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 @EventBusSubscriber(modid = Constants.MOD_ID)
 public final class ServerEventHandler {
 
-  private ServerEventHandler() {}
+  private ServerEventHandler() {
+  }
 
   @SubscribeEvent
   public static void handleServerAboutToStart(ServerAboutToStartEvent event) {
@@ -100,7 +101,7 @@ public final class ServerEventHandler {
   @SubscribeEvent
   public static void handleFinalizeSpawn(MobSpawnEvent.FinalizeSpawn event) {
     if (event.getLevel() instanceof ServerLevel serverLevel
-        && SpawnManager.shouldDenyMobSpawn(event.getEntity(), serverLevel, event.getSpawnType())) {
+      && SpawnManager.shouldDenyMobSpawn(event.getEntity(), serverLevel, event.getSpawnType())) {
       event.setSpawnCancelled(true);
     }
   }
@@ -125,9 +126,23 @@ public final class ServerEventHandler {
   }
 
   @SubscribeEvent
+  public static void handlePlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+    if (event.getEntity() instanceof ServerPlayer serverPlayer) {
+      CommonServerEventHandler.handlePlayerTeleported(serverPlayer);
+    }
+  }
+
+  @SubscribeEvent
+  public static void handlePlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+    if (event.getEntity() instanceof ServerPlayer serverPlayer) {
+      CommonServerEventHandler.handlePlayerTeleported(serverPlayer);
+    }
+  }
+
+  @SubscribeEvent
   public static void handleLivingHurt(LivingHurtEvent event) {
     if (!FeatureToggle.PLAYER_EASY_CHILD_MODE.isEnabled()
-        && !FeatureToggle.PLAYER_STARTER_PROTECTION.isEnabled()) {
+      && !FeatureToggle.PLAYER_STARTER_PROTECTION.isEnabled()) {
       return;
     }
     float modified = PlayerDamageManager.handleLivingHurt(event.getEntity(), event.getAmount());

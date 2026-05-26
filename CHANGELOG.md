@@ -5,6 +5,25 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [GitHub History][history] instead.
 
+### 12.2.0
+
+- Fixed #89 compatibility for many popular mods with special entities.
+- Fixed #88 and #84 by providing NeoForge version and fixed related issues.
+- Fixed #49 Ars Nouveau mob spawn handling and compatibility.
+- Fixed benchmark crashes with chunk optimization mods.
+- Fixed features are not completely disabled and downgrading benchmark phase 2 results.
+- Fixed the incorrect Forge "missing on client" log message on clients.
+- Added entity exclusion metadata (mod, category, reason) and entity tracking reports.
+- Added more third-party compatibility checks.
+- Added stuck arrow cleanup.
+- Added spawn-type-based handling for structures, chunk generation, reinforcements...
+- Added movement-aware simulation distance throttling.
+- Added more spawn presets for known mods and entities.
+- Added the missing "Eco Stack Manager" integration for the 12.x feature set.
+- Added unit and game tests for the new features and optimizations.
+- Improved benchmark measurement accuracy and result presentation.
+- Improved logging, server load summaries, and stats output while reducing noisy output.
+
 ### 12.1.0
 
 - Fixed issue with server load measurement per world was not accurate enough.

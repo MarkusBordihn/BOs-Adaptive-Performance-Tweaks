@@ -35,20 +35,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class NaturalSpawnerMixin {
 
   @Inject(
-      method =
-          "spawnCategoryForPosition(Lnet/minecraft/world/entity/MobCategory;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/ChunkAccess;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/NaturalSpawner$SpawnPredicate;Lnet/minecraft/world/level/NaturalSpawner$AfterSpawnCallback;)V",
-      at = @At("HEAD"),
-      cancellable = true)
+    method =
+      "spawnCategoryForPosition(Lnet/minecraft/world/entity/MobCategory;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/ChunkAccess;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/NaturalSpawner$SpawnPredicate;Lnet/minecraft/world/level/NaturalSpawner$AfterSpawnCallback;)V",
+    at = @At("HEAD"),
+    cancellable = true)
   private static void aptweaks_spawnCategoryForPosition(
-      MobCategory category,
-      ServerLevel level,
-      ChunkAccess chunk,
-      BlockPos pos,
-      NaturalSpawner.SpawnPredicate predicate,
-      NaturalSpawner.AfterSpawnCallback callback,
-      CallbackInfo ci) {
+    MobCategory category,
+    ServerLevel level,
+    ChunkAccess chunk,
+    BlockPos pos,
+    NaturalSpawner.SpawnPredicate predicate,
+    NaturalSpawner.AfterSpawnCallback callback,
+    CallbackInfo ci) {
     if (FeatureToggle.SPAWN.isEnabled()
-        && SpawnManager.shouldDenyNaturalSpawn(category, level, pos)) {
+      && SpawnManager.shouldDenyNaturalSpawn(category, level, pos)) {
       ci.cancel();
     }
   }

@@ -31,7 +31,8 @@ import net.minecraft.world.level.Level;
 
 public final class GameTestHelpers {
 
-  private GameTestHelpers() {}
+  private GameTestHelpers() {
+  }
 
   public static void assertTrue(GameTestHelper helper, String message, boolean condition) {
     if (!condition) {
@@ -52,7 +53,7 @@ public final class GameTestHelpers {
   }
 
   public static void assertEquals(
-      GameTestHelper helper, String message, Object expected, Object actual) {
+    GameTestHelper helper, String message, Object expected, Object actual) {
     if (!Objects.equals(expected, actual)) {
       helper.fail(message + " (expected=" + expected + ", actual=" + actual + ")");
     }
@@ -72,7 +73,7 @@ public final class GameTestHelpers {
   }
 
   public static void setMeasuredLevelLoad(
-      ServerLevel serverLevel, ServerLoadLevel loadLevel, double averageTickTime) {
+    ServerLevel serverLevel, ServerLoadLevel loadLevel, double averageTickTime) {
     try {
       getLevelTickTimes().put(serverLevel, averageTickTime);
       getReportedLevelTickTimes().put(serverLevel, averageTickTime);
@@ -91,7 +92,7 @@ public final class GameTestHelpers {
 
   @SuppressWarnings("unchecked")
   private static Map<ServerLevel, Double> getReportedLevelTickTimes()
-      throws ReflectiveOperationException {
+    throws ReflectiveOperationException {
     Field field = ServerLevelLoad.class.getDeclaredField("levelReportedTickTimes");
     field.setAccessible(true);
     return (Map<ServerLevel, Double>) field.get(null);
@@ -99,7 +100,7 @@ public final class GameTestHelpers {
 
   @SuppressWarnings("unchecked")
   private static Map<ServerLevel, ServerLoadLevel> getLevelLoadLevels()
-      throws ReflectiveOperationException {
+    throws ReflectiveOperationException {
     Field field = ServerLevelLoad.class.getDeclaredField("levelLoadLevels");
     field.setAccessible(true);
     return (Map<ServerLevel, ServerLoadLevel>) field.get(null);

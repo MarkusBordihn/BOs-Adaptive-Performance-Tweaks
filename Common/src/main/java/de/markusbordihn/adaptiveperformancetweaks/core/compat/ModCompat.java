@@ -25,7 +25,8 @@ public final class ModCompat {
 
   private static Predicate<String> modLoadedChecker = id -> false;
 
-  private ModCompat() {}
+  private ModCompat() {
+  }
 
   public static void setModLoadedChecker(Predicate<String> checker) {
     modLoadedChecker = checker;

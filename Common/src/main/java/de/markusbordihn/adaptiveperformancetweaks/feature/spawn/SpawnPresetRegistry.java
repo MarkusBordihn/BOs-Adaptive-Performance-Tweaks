@@ -34,10 +34,11 @@ import org.apache.logging.log4j.Logger;
 public final class SpawnPresetRegistry {
 
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME_SPAWN);
-  private static final Map<String, Optional<SpawnPreset>> entityPresetCache = new HashMap<>();
+  private static final Map<PresetCacheKey, Optional<SpawnPreset>> entityPresetCache = new HashMap<>();
   private static List<SpawnPreset> loadedPresets = Collections.emptyList();
 
-  private SpawnPresetRegistry() {}
+  private SpawnPresetRegistry() {
+  }
 
   public static void reload(List<SpawnPreset> presets) {
     entityPresetCache.clear();
@@ -48,15 +49,15 @@ public final class SpawnPresetRegistry {
     if (log.isDebugEnabled()) {
       for (SpawnPreset preset : loadedPresets) {
         log.debug(
-            "[Preset] mod={} priority={} perPlayer={} perWorld={} perServer={} perChunk={} allow={} deny={}",
-            preset.modId(),
-            preset.priority(),
-            preset.entities().perPlayerMax(),
-            preset.entities().perWorldMax(),
-            preset.entities().perServerMax(),
-            preset.entities().perChunkMax(),
-            preset.entities().allowList(),
-            preset.entities().denyList());
+          "[Preset] mod={} priority={} perPlayer={} perWorld={} perServer={} perChunk={} allow={} deny={}",
+          preset.modId(),
+          preset.priority(),
+          preset.entities().perPlayerMax(),
+          preset.entities().perWorldMax(),
+          preset.entities().perServerMax(),
+          preset.entities().perChunkMax(),
+          preset.entities().allowList(),
+          preset.entities().denyList());
       }
     }
   }
@@ -81,43 +82,43 @@ public final class SpawnPresetRegistry {
   }
 
   public static int getEffectivePerPlayerMax(
-      String entityId, String dimensionId, ServerLoadLevel loadLevel) {
+    String entityId, String dimensionId, ServerLoadLevel loadLevel) {
     return getEffectiveLimit(
-        entityId,
-        dimensionId,
-        loadLevel,
-        SpawnConfig.spawnLimitationMaxMobsPerPlayer,
-        preset -> preset.entities().perPlayerMax());
+      entityId,
+      dimensionId,
+      loadLevel,
+      SpawnConfig.spawnLimitationMaxMobsPerPlayer,
+      preset -> preset.entities().perPlayerMax());
   }
 
   public static int getEffectivePerWorldMax(
-      String entityId, String dimensionId, ServerLoadLevel loadLevel) {
+    String entityId, String dimensionId, ServerLoadLevel loadLevel) {
     return getEffectiveLimit(
-        entityId,
-        dimensionId,
-        loadLevel,
-        SpawnConfig.spawnLimitationMaxMobsPerWorld,
-        preset -> preset.entities().perWorldMax());
+      entityId,
+      dimensionId,
+      loadLevel,
+      SpawnConfig.spawnLimitationMaxMobsPerWorld,
+      preset -> preset.entities().perWorldMax());
   }
 
   public static int getEffectivePerServerMax(
-      String entityId, String dimensionId, ServerLoadLevel loadLevel) {
+    String entityId, String dimensionId, ServerLoadLevel loadLevel) {
     return getEffectiveLimit(
-        entityId,
-        dimensionId,
-        loadLevel,
-        SpawnConfig.spawnLimitationMaxMobsPerServer,
-        preset -> preset.entities().perServerMax());
+      entityId,
+      dimensionId,
+      loadLevel,
+      SpawnConfig.spawnLimitationMaxMobsPerServer,
+      preset -> preset.entities().perServerMax());
   }
 
   public static int getEffectivePerChunkMax(
-      String entityId, String dimensionId, ServerLoadLevel loadLevel) {
+    String entityId, String dimensionId, ServerLoadLevel loadLevel) {
     return getEffectiveLimit(
-        entityId,
-        dimensionId,
-        loadLevel,
-        SpawnConfig.spawnLimitationMaxMobsPerChunk,
-        preset -> preset.entities().perChunkMax());
+      entityId,
+      dimensionId,
+      loadLevel,
+      SpawnConfig.spawnLimitationMaxMobsPerChunk,
+      preset -> preset.entities().perChunkMax());
   }
 
   public static boolean isEntityInList(Set<String> list, String entityId) {
@@ -141,11 +142,11 @@ public final class SpawnPresetRegistry {
   }
 
   private static int getEffectiveLimit(
-      String entityId,
-      String dimensionId,
-      ServerLoadLevel loadLevel,
-      int globalDefault,
-      java.util.function.ToIntFunction<SpawnPreset> limitExtractor) {
+    String entityId,
+    String dimensionId,
+    ServerLoadLevel loadLevel,
+    int globalDefault,
+    java.util.function.ToIntFunction<SpawnPreset> limitExtractor) {
     SpawnPreset preset = getEffectivePreset(entityId, dimensionId);
     int rawLimit = preset != null ? limitExtractor.applyAsInt(preset) : globalDefault;
     if (rawLimit < 0) {
@@ -158,9 +159,8 @@ public final class SpawnPresetRegistry {
   }
 
   private static SpawnPreset getEffectivePreset(String entityId, String dimensionId) {
-    return entityPresetCache
-        .computeIfAbsent(entityId + "@" + dimensionId, key -> findPreset(entityId, dimensionId))
-        .orElse(null);
+    return entityPresetCache.computeIfAbsent(new PresetCacheKey(entityId, dimensionId),
+      key -> findPreset(entityId, dimensionId)).orElse(null);
   }
 
   private static Optional<SpawnPreset> findPreset(String entityId, String dimensionId) {
@@ -211,5 +211,11 @@ public final class SpawnPresetRegistry {
     }
 
     return true;
+  }
+
+  private record PresetCacheKey(
+    String entityId,
+    String dimensionId) {
+
   }
 }

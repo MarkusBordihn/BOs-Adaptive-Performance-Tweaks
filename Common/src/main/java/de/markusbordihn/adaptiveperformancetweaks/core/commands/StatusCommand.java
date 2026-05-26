@@ -44,10 +44,10 @@ public class StatusCommand extends CustomCommand {
     MinecraftServer server = ServerManager.getMinecraftServer();
     int playerCount = server != null ? server.getPlayerList().getPlayerCount() : 0;
     sendFeedback(
-        context,
-        String.format(
-            "Server Load: %s (avg. %.1fms) | Players: %d",
-            ServerLoad.getCurrentServerLoad(), ServerLoad.getAvgTickTime(), playerCount));
+      context,
+      String.format(
+        "Server Load: %s (avg. %.1fms) | Players: %d",
+        ServerLoad.getCurrentServerLoad(), ServerLoad.getAvgTickTime(), playerCount));
 
     sendFeedback(context, "--- Features ---");
     for (FeatureToggle toggle : FeatureToggle.values()) {

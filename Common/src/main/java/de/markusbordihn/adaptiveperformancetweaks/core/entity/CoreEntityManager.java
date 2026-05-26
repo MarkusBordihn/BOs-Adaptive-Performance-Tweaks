@@ -19,11 +19,24 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.core.entity;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
+import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPosition;
+import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
+import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnPreset;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,10 +47,13 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Marker;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.boss.EnderDragonPart;
@@ -65,26 +81,116 @@ import org.apache.logging.log4j.Logger;
 public final class CoreEntityManager {
 
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME_ENTITIES);
-
+  private static final Gson REPORT_GSON = new GsonBuilder().setPrettyPrinting().create();
   private static final int VERIFICATION_TICK = 5 * 60 * 20;
   private static final int VERIFICATION_ADD_OPERATIONS_THRESHOLD = 500;
+  private static final long OPERATION_VERIFICATION_MIN_INTERVAL_MS = 1_000L;
   private static final ConcurrentHashMap<String, Boolean> entityChunkMap =
-      new ConcurrentHashMap<>();
+    new ConcurrentHashMap<>();
+  private static final Object trackingRuleLock = new Object();
   private static final Object verificationLock = new Object();
+  private static final ConcurrentHashMap<String, CachedTrackingDecision> entityDecisionCache =
+    new ConcurrentHashMap<>();
   private static volatile Set<String> excludedModNamespaces = Collections.emptySet();
+  private static volatile Map<String, TrackingRuleInfo> manualNamespaceRules = Collections.emptyMap();
+  private static volatile Map<String, TrackingRuleInfo> manualEntityRules = Collections.emptyMap();
+  private static volatile Set<String> autoExcludedNamespaces = Collections.emptySet();
+  private static volatile Set<String> autoExcludedEntityIds = Collections.emptySet();
+  private static volatile Set<String> demotedNamespaces = Collections.emptySet();
+  private static volatile Map<String, TrackingCategory> autoNamespaceCategories =
+    Collections.emptyMap();
+  private static volatile Map<String, TrackingCategory> autoEntityCategories =
+    Collections.emptyMap();
+  private static volatile Map<String, NamespaceProfile> namespaceProfiles = Collections.emptyMap();
   private static int ticks = 0;
   private static int addOperationCounter = 0;
+  private static int operationVerificationStage = 0;
+  private static long lastOperationVerificationTime = 0L;
   private static volatile boolean isVerifying = false;
   private static ConcurrentHashMap<String, Set<Entity>> entityMap = new ConcurrentHashMap<>();
   private static ConcurrentHashMap<String, Set<Entity>> entityMapPerChunk =
-      new ConcurrentHashMap<>();
+    new ConcurrentHashMap<>();
   private static ConcurrentHashMap<String, Set<Entity>> entityMapGlobal = new ConcurrentHashMap<>();
   private static ConcurrentHashMap<Entity, String> entityChunkKeyMap = new ConcurrentHashMap<>();
 
-  private CoreEntityManager() {}
+  private CoreEntityManager() {
+  }
+
+  public static void reloadTrackingRules(List<SpawnPreset> presets) {
+    synchronized (trackingRuleLock) {
+      LinkedHashMap<String, TrackingRuleInfo> manualNamespaces = new LinkedHashMap<>();
+      LinkedHashMap<String, TrackingRuleInfo> manualEntities = new LinkedHashMap<>();
+
+      for (SpawnPreset preset : presets) {
+        TrackingMode mode = preset.mode();
+        if (mode == null) {
+          continue;
+        }
+
+        TrackingCategory category = preset.category() != null
+          ? preset.category()
+          : TrackingCategory.UNKNOWN;
+        String reason = preset.reason() != null ? preset.reason() : "";
+        Set<String> entityIds =
+          preset.entityIds() != null ? preset.entityIds() : Collections.emptySet();
+
+        switch (mode) {
+          case EXCLUDE_NAMESPACE, PROTECT_NAMESPACE -> {
+            if (preset.modId() != null) {
+              manualNamespaces.put(preset.modId(), new TrackingRuleInfo(mode, category, reason));
+            }
+          }
+          case EXCLUDE_ENTITY, PROTECT_ENTITY -> {
+            for (String entityId : entityIds) {
+              manualEntities.put(entityId, new TrackingRuleInfo(mode, category, reason));
+            }
+          }
+        }
+      }
+
+      NamespaceAnalysis analysis = analyzeRegisteredEntities(manualNamespaces.keySet(),
+        manualEntities.keySet());
+
+      excludedModNamespaces = Collections.unmodifiableSet(
+        getLegacyExcludedNamespaces(manualNamespaces));
+      manualNamespaceRules = Collections.unmodifiableMap(manualNamespaces);
+      manualEntityRules = Collections.unmodifiableMap(manualEntities);
+      autoExcludedNamespaces = Collections.unmodifiableSet(analysis.autoExcludedNamespaces());
+      autoExcludedEntityIds = Collections.unmodifiableSet(analysis.autoExcludedEntityIds());
+      autoNamespaceCategories = Collections.unmodifiableMap(analysis.autoNamespaceCategories());
+      autoEntityCategories = Collections.unmodifiableMap(analysis.autoEntityCategories());
+      namespaceProfiles = Collections.unmodifiableMap(analysis.namespaceProfiles());
+      demotedNamespaces = Collections.emptySet();
+      entityDecisionCache.clear();
+      writeTrackingReport(manualNamespaces, manualEntities, analysis);
+
+      log.debug(
+        "[Entity Manager] Tracking rules reloaded: {} manual namespaces, {} manual entity ids, {} auto namespaces, {} auto entity ids.",
+        manualNamespaceRules.size(), manualEntityRules.size(),
+        autoExcludedNamespaces.size(), autoExcludedEntityIds.size());
+    }
+  }
 
   public static void setExcludedModNamespaces(Set<String> namespaces) {
-    excludedModNamespaces = Set.copyOf(namespaces);
+    synchronized (trackingRuleLock) {
+      LinkedHashMap<String, TrackingRuleInfo> namespaceRules = new LinkedHashMap<>();
+      for (String namespace : namespaces) {
+        namespaceRules.put(namespace, new TrackingRuleInfo(
+          TrackingMode.EXCLUDE_NAMESPACE, TrackingCategory.UNKNOWN, "Legacy namespace exclusion"));
+      }
+
+      excludedModNamespaces = Set.copyOf(namespaces);
+      manualNamespaceRules = Collections.unmodifiableMap(namespaceRules);
+      manualEntityRules = Collections.emptyMap();
+      autoExcludedNamespaces = Collections.emptySet();
+      autoExcludedEntityIds = Collections.emptySet();
+      autoNamespaceCategories = Collections.emptyMap();
+      autoEntityCategories = Collections.emptyMap();
+      namespaceProfiles = Collections.emptyMap();
+      demotedNamespaces = Collections.emptySet();
+      entityDecisionCache.clear();
+    }
+
     log.debug("Excluded mod namespaces from entity tracking: {}", namespaces);
   }
 
@@ -92,8 +198,8 @@ public final class CoreEntityManager {
     if (entityId == null || excludedModNamespaces.isEmpty()) {
       return false;
     }
-    int colonIdx = entityId.indexOf(':');
 
+    int colonIdx = entityId.indexOf(':');
     return colonIdx > 0 && excludedModNamespaces.contains(entityId.substring(0, colonIdx));
   }
 
@@ -103,8 +209,11 @@ public final class CoreEntityManager {
     entityMapPerChunk = new ConcurrentHashMap<>();
     entityMapGlobal = new ConcurrentHashMap<>();
     entityChunkKeyMap = new ConcurrentHashMap<>();
+    entityDecisionCache.clear();
     ticks = 0;
     addOperationCounter = 0;
+    operationVerificationStage = 0;
+    lastOperationVerificationTime = 0L;
     isVerifying = false;
   }
 
@@ -116,7 +225,7 @@ public final class CoreEntityManager {
   }
 
   public static void handleEntityJoinLevel(Entity entity, boolean isClientSide) {
-    if (isClientSide) {
+    if (isClientSide || entity == null) {
       return;
     }
 
@@ -124,20 +233,22 @@ public final class CoreEntityManager {
     if (entityKey == null) {
       if (log.isDebugEnabled()) {
         log.debug(
-            "[Entity Manager] Skipping unregistered entity {} in {}.",
-            entity,
-            entity.level().dimension().location());
+          "[Entity Manager] Skipping unregistered entity {} in {}.",
+          entity,
+          entity.level().dimension().location());
       }
       return;
     }
 
     String entityName = entityKey.toString();
+    PerformanceStats.trackingEvaluations++;
     if (!isRelevantEntity(entity, entityName)) {
       return;
     }
 
     String levelName = entity.level().dimension().location().toString();
     addEntity(entity, entityName, levelName);
+    PerformanceStats.trackingTracked++;
   }
 
   public static void handleEntityLeaveLevel(Entity entity, boolean isClientSide) {
@@ -168,23 +279,24 @@ public final class CoreEntityManager {
 
   public static void addEntity(Entity entity, String entityName, String levelName) {
     Set<Entity> entities =
-        entityMap.computeIfAbsent(
-            getEntityMapKey(levelName, entityName), key -> ConcurrentHashMap.newKeySet());
+      entityMap.computeIfAbsent(
+        getEntityMapKey(levelName, entityName), key -> ConcurrentHashMap.newKeySet());
     entities.add(entity);
 
     String entityChunkKey = getEntityChunkKey(levelName, entity.blockPosition());
     Set<Entity> entitiesPerChunk =
-        entityMapPerChunk.computeIfAbsent(entityChunkKey, key -> ConcurrentHashMap.newKeySet());
+      entityMapPerChunk.computeIfAbsent(entityChunkKey, key -> ConcurrentHashMap.newKeySet());
     entitiesPerChunk.add(entity);
     entityChunkKeyMap.put(entity, entityChunkKey);
 
     Set<Entity> entitiesGlobal =
-        entityMapGlobal.computeIfAbsent(entityName, key -> ConcurrentHashMap.newKeySet());
+      entityMapGlobal.computeIfAbsent(entityName, key -> ConcurrentHashMap.newKeySet());
     entitiesGlobal.add(entity);
 
     entityChunkMap.put(entityChunkKey, true);
 
     if (++addOperationCounter >= VERIFICATION_ADD_OPERATIONS_THRESHOLD) {
+      addOperationCounter = 0;
       triggerVerificationIfNotRunning("operation-based");
     }
   }
@@ -252,7 +364,7 @@ public final class CoreEntityManager {
   }
 
   public static int getNumberOfEntitiesInChunk(
-      String levelName, String entityName, BlockPos blockPos) {
+    String levelName, String entityName, BlockPos blockPos) {
     Set<Entity> entities = entityMapPerChunk.get(getEntityChunkKey(levelName, blockPos));
     if (entities == null || entities.isEmpty()) {
       return 0;
@@ -269,7 +381,7 @@ public final class CoreEntityManager {
   }
 
   public static int getNumberOfEntitiesInPlayerPositions(
-      String levelName, String entityName, List<PlayerPosition> playerPositions) {
+    String levelName, String entityName, List<PlayerPosition> playerPositions) {
     Set<Entity> rawSet = entityMap.get(getEntityMapKey(levelName, entityName));
     if (rawSet == null) {
       return 0;
@@ -293,7 +405,7 @@ public final class CoreEntityManager {
   }
 
   public static int getNumberOfEntitiesNearPosition(
-      String levelName, String entityName, Vec3 center, double horizontalRange) {
+    String levelName, String entityName, Vec3 center, double horizontalRange) {
     Set<Entity> rawSet = entityMap.get(getEntityMapKey(levelName, entityName));
     if (rawSet == null || rawSet.isEmpty()) {
       return 0;
@@ -306,7 +418,7 @@ public final class CoreEntityManager {
       }
 
       if (Math.abs(entity.getX() - center.x) <= horizontalRange
-          && Math.abs(entity.getZ() - center.z) <= horizontalRange) {
+        && Math.abs(entity.getZ() - center.z) <= horizontalRange) {
         counter++;
       }
     }
@@ -336,79 +448,439 @@ public final class CoreEntityManager {
       return false;
     }
 
-    return !entity.isRemoved()
-        && !entity.isSpectator()
-        && !entity.isInvisible()
-        && !entity.isInvulnerable()
-        && !entity.isVehicle()
-        && !entity.isPassenger()
-        && !(entity instanceof Player)
-        && !(entity instanceof ExperienceOrb)
-        && !(entity instanceof Projectile)
-        && !(entity instanceof AreaEffectCloud)
-        && !(entity instanceof LightningBolt)
-        && !(entity instanceof FallingBlockEntity)
-        && !(entity instanceof EvokerFangs)
-        && !(entity instanceof EyeOfEnder)
-        && !(entity instanceof HangingEntity)
-        && !(entity instanceof Marker)
-        && !(entity instanceof EnderDragonPart)
-        && !(entity instanceof EndCrystal)
-        && !(entity instanceof AbstractMinecart)
-        && !(entity instanceof Boat)
-        && !(entity instanceof ArmorStand)
-        && !(entity instanceof ItemEntity)
-        && !(entity instanceof Npc)
-        && !(entity instanceof EnderDragon)
-        && !(entity instanceof WitherBoss)
-        && !(entity instanceof ElderGuardian)
-        && !(entity instanceof Warden)
-        && !entity.hasCustomName();
-  }
-
-  public static boolean isRelevantEntity(Entity entity, String entityName) {
-    if (!isRelevantEntity(entity)) {
+    if (!passesFastInstanceFilters(entity)) {
       return false;
     }
 
-    if (entity instanceof Mob mob
-        && (mob.isLeashed() || mob.isPersistenceRequired() || mob.requiresCustomPersistence())) {
+    return passesProtectedInstanceFilters(entity);
+  }
+
+  public static boolean isRelevantEntity(Entity entity, String entityName) {
+    if (entity == null || entityName == null || entityName.isBlank()) {
+      return false;
+    }
+
+    CachedTrackingDecision cachedDecision = entityDecisionCache.get(entityName);
+    if (cachedDecision != null) {
+      return applyCachedDecision(cachedDecision, entity);
+    }
+
+    CachedTrackingDecision decision = resolveBaseDecision(entity, entityName);
+    entityDecisionCache.put(entityName, decision);
+    if (!decision.track()) {
+      recordTrackingExclusion(decision, false);
+      return false;
+    }
+
+    if (decision.source() == TrackingSource.LIVING_GUARD) {
+      PerformanceStats.trackingProtectedLiving++;
+    }
+
+    if (!passesFastInstanceFilters(entity)) {
+      return false;
+    }
+
+    return passesProtectedInstanceFilters(entity);
+  }
+
+  private static boolean applyCachedDecision(CachedTrackingDecision decision, Entity entity) {
+    if (!decision.track()) {
+      recordTrackingExclusion(decision, true);
+      return false;
+    }
+
+    if (decision.source() == TrackingSource.LIVING_GUARD) {
+      PerformanceStats.trackingProtectedLiving++;
+    }
+
+    if (!passesFastInstanceFilters(entity)) {
+      return false;
+    }
+
+    return passesProtectedInstanceFilters(entity);
+  }
+
+  private static CachedTrackingDecision resolveBaseDecision(Entity entity, String entityId) {
+    TrackingRuleInfo manualEntityRule = manualEntityRules.get(entityId);
+    if (manualEntityRule != null) {
+      return CachedTrackingDecision.exclude(mapManualSource(manualEntityRule.mode()),
+        manualEntityRule.category(), manualEntityRule.reason());
+    }
+
+    String namespace = getNamespace(entityId);
+    TrackingRuleInfo manualNamespaceRule =
+      namespace != null ? manualNamespaceRules.get(namespace) : null;
+    if (manualNamespaceRule != null) {
+      return CachedTrackingDecision.exclude(mapManualSource(manualNamespaceRule.mode()),
+        manualNamespaceRule.category(), manualNamespaceRule.reason());
+    }
+
+    if (namespace != null && autoExcludedNamespaces.contains(namespace)) {
+      if (entity instanceof LivingEntity) {
+        demoteNamespace(namespace);
+        TrackingCategory category =
+          autoNamespaceCategories.getOrDefault(namespace, TrackingCategory.UNKNOWN);
+        return CachedTrackingDecision.livingGuard(
+          category, "LivingEntity prevented auto namespace exclusion");
+      }
+
+      return CachedTrackingDecision.exclude(
+        TrackingSource.AUTO_NAMESPACE,
+        autoNamespaceCategories.getOrDefault(namespace, TrackingCategory.TECHNICAL),
+        "Auto namespace classification");
+    }
+
+    if (autoExcludedEntityIds.contains(entityId)) {
+      if (entity instanceof LivingEntity) {
+        TrackingCategory category =
+          autoEntityCategories.getOrDefault(entityId, TrackingCategory.UNKNOWN);
+        return CachedTrackingDecision.livingGuard(
+          category, "LivingEntity prevented auto entity exclusion");
+      }
+
+      return CachedTrackingDecision.exclude(
+        TrackingSource.AUTO_ENTITY,
+        autoEntityCategories.getOrDefault(entityId, TrackingCategory.TECHNICAL),
+        "Auto entity classification");
+    }
+
+    return CachedTrackingDecision.allow();
+  }
+
+  private static boolean passesFastInstanceFilters(Entity entity) {
+    return !entity.isRemoved()
+      && !entity.isSpectator()
+      && !entity.isInvisible()
+      && !entity.isInvulnerable()
+      && !entity.isVehicle()
+      && !entity.isPassenger()
+      && !(entity instanceof Player)
+      && !(entity instanceof ExperienceOrb)
+      && !(entity instanceof Projectile)
+      && !(entity instanceof AreaEffectCloud)
+      && !(entity instanceof LightningBolt)
+      && !(entity instanceof FallingBlockEntity)
+      && !(entity instanceof EvokerFangs)
+      && !(entity instanceof EyeOfEnder)
+      && !(entity instanceof HangingEntity)
+      && !(entity instanceof Marker)
+      && !(entity instanceof EnderDragonPart)
+      && !(entity instanceof EndCrystal)
+      && !(entity instanceof AbstractMinecart)
+      && !(entity instanceof Boat)
+      && !(entity instanceof ArmorStand)
+      && !(entity instanceof ItemEntity)
+      && !(entity instanceof Npc)
+      && !(entity instanceof EnderDragon)
+      && !(entity instanceof WitherBoss)
+      && !(entity instanceof ElderGuardian)
+      && !(entity instanceof Warden);
+  }
+
+  private static boolean passesProtectedInstanceFilters(Entity entity) {
+    if (entity.hasCustomName()) {
+      PerformanceStats.trackingProtectedPersistent++;
       return false;
     }
 
     if (entity instanceof TamableAnimal tamableAnimal && tamableAnimal.isTame()) {
+      PerformanceStats.trackingProtectedPersistent++;
       return false;
     }
 
     if (entity instanceof Bee bee && bee.hasHive()) {
+      PerformanceStats.trackingProtectedPersistent++;
       return false;
     }
 
     if (entity instanceof Raider raider && raider.hasActiveRaid()) {
+      PerformanceStats.trackingProtectedPersistent++;
       return false;
     }
 
-    if (isExcludedModNamespace(entityName)) {
+    if (entity instanceof Mob mob
+      && (mob.isLeashed() || mob.isPersistenceRequired() || mob.requiresCustomPersistence())) {
+      PerformanceStats.trackingProtectedPersistent++;
       return false;
     }
 
     return true;
   }
 
-  private static void triggerVerificationIfNotRunning(String triggerType) {
-    synchronized (verificationLock) {
-      if (!isVerifying) {
-        isVerifying = true;
-        try {
-          verifyEntities();
-          if ("operation-based".equals(triggerType)) {
-            addOperationCounter = 0;
-          }
-        } finally {
-          isVerifying = false;
+  private static void recordTrackingExclusion(CachedTrackingDecision decision, boolean cached) {
+    if (!PerformanceStats.isDetailedTrackingStatsEnabled()) {
+      return;
+    }
+
+    if (cached) {
+      PerformanceStats.trackingExcludedEarlyCache++;
+    }
+
+    switch (decision.source()) {
+      case MANUAL_NAMESPACE -> PerformanceStats.trackingExcludedManualNamespace++;
+      case MANUAL_ENTITY -> PerformanceStats.trackingExcludedManualEntity++;
+      case AUTO_NAMESPACE -> PerformanceStats.trackingExcludedAutoNamespace++;
+      case AUTO_ENTITY -> PerformanceStats.trackingExcludedAutoEntity++;
+      default -> {
+      }
+    }
+
+    PerformanceStats.recordTrackingCategory(decision.category());
+  }
+
+  private static TrackingSource mapManualSource(TrackingMode mode) {
+    return switch (mode) {
+      case EXCLUDE_NAMESPACE, PROTECT_NAMESPACE -> TrackingSource.MANUAL_NAMESPACE;
+      case EXCLUDE_ENTITY, PROTECT_ENTITY -> TrackingSource.MANUAL_ENTITY;
+    };
+  }
+
+  private static void demoteNamespace(String namespace) {
+    synchronized (trackingRuleLock) {
+      if (!autoExcludedNamespaces.contains(namespace) || demotedNamespaces.contains(namespace)) {
+        return;
+      }
+
+      LinkedHashSet<String> updatedNamespaces = new LinkedHashSet<>(autoExcludedNamespaces);
+      updatedNamespaces.remove(namespace);
+      autoExcludedNamespaces = Collections.unmodifiableSet(updatedNamespaces);
+
+      LinkedHashSet<String> updatedDemotions = new LinkedHashSet<>(demotedNamespaces);
+      updatedDemotions.add(namespace);
+      demotedNamespaces = Collections.unmodifiableSet(updatedDemotions);
+
+      String namespacePrefix = namespace + ':';
+      for (String entityId : new ArrayList<>(entityDecisionCache.keySet())) {
+        if (entityId.startsWith(namespacePrefix)) {
+          entityDecisionCache.remove(entityId);
         }
       }
     }
+  }
+
+  private static NamespaceAnalysis analyzeRegisteredEntities(
+    Set<String> manualNamespaces, Set<String> manualEntityIds) {
+    LinkedHashMap<String, NamespaceProfileBuilder> builders = new LinkedHashMap<>();
+
+    for (EntityType<?> entityType : BuiltInRegistries.ENTITY_TYPE) {
+      ResourceLocation entityKey = BuiltInRegistries.ENTITY_TYPE.getKey(entityType);
+      if (entityKey == null) {
+        continue;
+      }
+
+      String entityId = entityKey.toString();
+      String namespace = entityKey.getNamespace();
+      NamespaceProfileBuilder builder =
+        builders.computeIfAbsent(namespace, ignored -> new NamespaceProfileBuilder());
+      builder.totalEntityTypes++;
+
+      if (entityType.getCategory() == MobCategory.MISC) {
+        builder.miscEntityIds.add(entityId);
+      } else {
+        builder.nonMiscEntityTypes++;
+      }
+    }
+
+    LinkedHashSet<String> autoNamespaces = new LinkedHashSet<>();
+    LinkedHashSet<String> autoEntityIds = new LinkedHashSet<>();
+    LinkedHashMap<String, TrackingCategory> autoNamespaceCategoryMap = new LinkedHashMap<>();
+    LinkedHashMap<String, TrackingCategory> autoEntityCategoryMap = new LinkedHashMap<>();
+    LinkedHashMap<String, NamespaceProfile> profiles = new LinkedHashMap<>();
+
+    for (Map.Entry<String, NamespaceProfileBuilder> entry : builders.entrySet()) {
+      String namespace = entry.getKey();
+      NamespaceProfileBuilder builder = entry.getValue();
+      boolean allTypesMisc =
+        builder.totalEntityTypes > 0 && builder.nonMiscEntityTypes == 0
+          && !builder.miscEntityIds.isEmpty();
+      boolean mixedTypes =
+        builder.nonMiscEntityTypes > 0 && !builder.miscEntityIds.isEmpty();
+      NamespaceProfile profile = new NamespaceProfile(
+        builder.totalEntityTypes,
+        builder.nonMiscEntityTypes,
+        Collections.unmodifiableSet(new LinkedHashSet<>(builder.miscEntityIds)),
+        allTypesMisc,
+        mixedTypes);
+      profiles.put(namespace, profile);
+
+      if (manualNamespaces.contains(namespace)) {
+        continue;
+      }
+
+      if (allTypesMisc) {
+        autoNamespaces.add(namespace);
+        autoNamespaceCategoryMap.put(namespace, TrackingCategory.TECHNICAL);
+        continue;
+      }
+
+      if (!mixedTypes) {
+        continue;
+      }
+
+      for (String entityId : builder.miscEntityIds) {
+        if (manualEntityIds.contains(entityId)) {
+          continue;
+        }
+
+        autoEntityIds.add(entityId);
+        autoEntityCategoryMap.put(entityId, TrackingCategory.TECHNICAL);
+      }
+    }
+
+    return new NamespaceAnalysis(autoNamespaces, autoEntityIds,
+      autoNamespaceCategoryMap, autoEntityCategoryMap, profiles);
+  }
+
+  private static Set<String> getLegacyExcludedNamespaces(
+    Map<String, TrackingRuleInfo> namespaceRules) {
+    LinkedHashSet<String> namespaces = new LinkedHashSet<>();
+    for (Map.Entry<String, TrackingRuleInfo> entry : namespaceRules.entrySet()) {
+      if (entry.getValue().mode() == TrackingMode.EXCLUDE_NAMESPACE) {
+        namespaces.add(entry.getKey());
+      }
+    }
+
+    return namespaces;
+  }
+
+  private static void writeTrackingReport(
+    Map<String, TrackingRuleInfo> manualNamespaces,
+    Map<String, TrackingRuleInfo> manualEntities,
+    NamespaceAnalysis analysis) {
+    if (!CoreConfig.writeEntityTrackingReport) {
+      return;
+    }
+    Path reportPath = Paths.get("config")
+      .resolve(Constants.MOD_ID)
+      .resolve("entity_tracking_report.json")
+      .toAbsolutePath();
+
+    LinkedHashMap<String, Object> report = new LinkedHashMap<>();
+    report.put("manual_namespaces", serializeRuleMap(manualNamespaces));
+    report.put("manual_entity_ids", serializeRuleMap(manualEntities));
+    report.put("auto_excluded_namespaces", new ArrayList<>(analysis.autoExcludedNamespaces()));
+    report.put("auto_excluded_entity_ids", new ArrayList<>(analysis.autoExcludedEntityIds()));
+    report.put("mixed_namespaces", getMixedNamespaces(analysis.namespaceProfiles()));
+    report.put("unknown_namespaces", getUnknownNamespaces(
+      analysis.namespaceProfiles(), manualNamespaces.keySet(),
+      analysis.autoExcludedNamespaces(), analysis.autoExcludedEntityIds()));
+    report.put("namespace_profiles", serializeNamespaceProfiles(analysis.namespaceProfiles()));
+
+    try {
+      Files.createDirectories(reportPath.getParent());
+      Files.writeString(reportPath, REPORT_GSON.toJson(report), StandardCharsets.UTF_8);
+    } catch (IOException exception) {
+      log.warn("Failed to write entity tracking report '{}': {}", reportPath,
+        exception.getMessage());
+    }
+  }
+
+  private static Map<String, Map<String, Object>> serializeRuleMap(
+    Map<String, TrackingRuleInfo> rules) {
+    LinkedHashMap<String, Map<String, Object>> serialized = new LinkedHashMap<>();
+    for (Map.Entry<String, TrackingRuleInfo> entry : rules.entrySet()) {
+      TrackingRuleInfo rule = entry.getValue();
+      LinkedHashMap<String, Object> values = new LinkedHashMap<>();
+      values.put("mode", rule.mode().getSerializedName());
+      values.put("category", rule.category().getSerializedName());
+      values.put("reason", rule.reason());
+      serialized.put(entry.getKey(), values);
+    }
+
+    return serialized;
+  }
+
+  private static List<String> getMixedNamespaces(Map<String, NamespaceProfile> profiles) {
+    List<String> namespaces = new ArrayList<>();
+    for (Map.Entry<String, NamespaceProfile> entry : profiles.entrySet()) {
+      if (entry.getValue().mixedTypes()) {
+        namespaces.add(entry.getKey());
+      }
+    }
+
+    return namespaces;
+  }
+
+  private static List<String> getUnknownNamespaces(
+    Map<String, NamespaceProfile> profiles, Set<String> manualNamespaces,
+    Set<String> autoNamespaces, Set<String> autoEntityIds) {
+    List<String> namespaces = new ArrayList<>();
+    for (Map.Entry<String, NamespaceProfile> entry : profiles.entrySet()) {
+      String namespace = entry.getKey();
+      if (manualNamespaces.contains(namespace) || autoNamespaces.contains(namespace)) {
+        continue;
+      }
+
+      boolean hasAutoEntityId = false;
+      String namespacePrefix = namespace + ':';
+      for (String entityId : autoEntityIds) {
+        if (entityId.startsWith(namespacePrefix)) {
+          hasAutoEntityId = true;
+          break;
+        }
+      }
+
+      if (!hasAutoEntityId) {
+        namespaces.add(namespace);
+      }
+    }
+
+    return namespaces;
+  }
+
+  private static Map<String, Map<String, Object>> serializeNamespaceProfiles(
+    Map<String, NamespaceProfile> profiles) {
+    LinkedHashMap<String, Map<String, Object>> serialized = new LinkedHashMap<>();
+    for (Map.Entry<String, NamespaceProfile> entry : profiles.entrySet()) {
+      NamespaceProfile profile = entry.getValue();
+      LinkedHashMap<String, Object> values = new LinkedHashMap<>();
+      values.put("total_entity_types", profile.totalEntityTypes());
+      values.put("non_misc_entity_types", profile.nonMiscEntityTypes());
+      values.put("misc_entity_ids", new ArrayList<>(profile.miscEntityIds()));
+      values.put("all_types_misc", profile.allTypesMisc());
+      values.put("mixed_types", profile.mixedTypes());
+      serialized.put(entry.getKey(), values);
+    }
+
+    return serialized;
+  }
+
+  private static String getNamespace(String entityId) {
+    int colonIdx = entityId.indexOf(':');
+    return colonIdx > 0 ? entityId.substring(0, colonIdx) : null;
+  }
+
+  private static void triggerVerificationIfNotRunning(String triggerType) {
+    synchronized (verificationLock) {
+      if (isVerifying) {
+        return;
+      }
+
+      if ("operation-based".equals(triggerType) && !shouldRunOperationVerification()) {
+        return;
+      }
+
+      isVerifying = true;
+      try {
+        if ("operation-based".equals(triggerType)) {
+          verifyEntitiesBounded();
+        } else {
+          verifyEntities();
+        }
+      } finally {
+        isVerifying = false;
+      }
+    }
+  }
+
+  private static boolean shouldRunOperationVerification() {
+    long now = System.currentTimeMillis();
+    if (now - lastOperationVerificationTime < OPERATION_VERIFICATION_MIN_INTERVAL_MS) {
+      return false;
+    }
+
+    lastOperationVerificationTime = now;
+    return true;
   }
 
   private static void verifyEntities() {
@@ -419,17 +891,47 @@ public final class CoreEntityManager {
     int removedChunkMarkers = removeEmptyChunkMarkers();
 
     if (removedEntries > 0
-        || removedChunkEntries > 0
-        || removedGlobalEntries > 0
-        || removedChunkKeys > 0
-        || removedChunkMarkers > 0) {
+      || removedChunkEntries > 0
+      || removedGlobalEntries > 0
+      || removedChunkKeys > 0
+      || removedChunkMarkers > 0) {
       log.debug(
-          "[Entity Manager] Cleanup removed {} overview entries, {} chunk entries, {} global entries, {} stale chunk keys and {} chunk markers.",
-          removedEntries,
-          removedChunkEntries,
-          removedGlobalEntries,
-          removedChunkKeys,
-          removedChunkMarkers);
+        "[Entity Manager] Cleanup removed {} overview entries, {} chunk entries, {} global entries, {} stale chunk keys and {} chunk markers.",
+        removedEntries,
+        removedChunkEntries,
+        removedGlobalEntries,
+        removedChunkKeys,
+        removedChunkMarkers);
+    }
+  }
+
+  private static void verifyEntitiesBounded() {
+    int removedEntries = 0;
+    int removedChunkEntries = 0;
+    int removedGlobalEntries = 0;
+    int removedChunkKeys = 0;
+    int removedChunkMarkers = 0;
+
+    switch (operationVerificationStage) {
+      case 0 -> removedEntries = removeDiscardedEntities(entityMap);
+      case 1 -> removedChunkEntries = removeDiscardedEntities(entityMapPerChunk);
+      case 2 -> removedGlobalEntries = removeDiscardedEntities(entityMapGlobal);
+      case 3 -> removedChunkKeys = removeDiscardedChunkKeys();
+      case 4 -> removedChunkMarkers = removeEmptyChunkMarkers();
+      default -> {
+      }
+    }
+
+    operationVerificationStage = (operationVerificationStage + 1) % 5;
+    if (removedEntries > 0 || removedChunkEntries > 0 || removedGlobalEntries > 0
+      || removedChunkKeys > 0 || removedChunkMarkers > 0) {
+      log.debug(
+        "[Entity Manager] Bounded cleanup removed {} overview entries, {} chunk entries, {} global entries, {} stale chunk keys and {} chunk markers.",
+        removedEntries,
+        removedChunkEntries,
+        removedGlobalEntries,
+        removedChunkKeys,
+        removedChunkMarkers);
     }
   }
 
@@ -518,5 +1020,66 @@ public final class CoreEntityManager {
   private static boolean hasEntityName(Entity entity, String entityName) {
     ResourceLocation entityKey = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
     return entityKey != null && entityName.equals(entityKey.toString());
+  }
+
+  private enum TrackingSource {
+    NONE,
+    LIVING_GUARD,
+    MANUAL_NAMESPACE,
+    MANUAL_ENTITY,
+    AUTO_NAMESPACE,
+    AUTO_ENTITY
+  }
+
+  private record TrackingRuleInfo(
+    TrackingMode mode,
+    TrackingCategory category,
+    String reason) {
+
+  }
+
+  private record NamespaceProfile(
+    int totalEntityTypes,
+    int nonMiscEntityTypes,
+    Set<String> miscEntityIds,
+    boolean allTypesMisc,
+    boolean mixedTypes) {
+
+  }
+
+  private record NamespaceAnalysis(
+    Set<String> autoExcludedNamespaces,
+    Set<String> autoExcludedEntityIds,
+    Map<String, TrackingCategory> autoNamespaceCategories,
+    Map<String, TrackingCategory> autoEntityCategories,
+    Map<String, NamespaceProfile> namespaceProfiles) {
+
+  }
+
+  private static final class NamespaceProfileBuilder {
+
+    private final LinkedHashSet<String> miscEntityIds = new LinkedHashSet<>();
+    private int totalEntityTypes = 0;
+    private int nonMiscEntityTypes = 0;
+  }
+
+  private record CachedTrackingDecision(
+    boolean track,
+    TrackingSource source,
+    TrackingCategory category,
+    String reason) {
+
+    private static CachedTrackingDecision exclude(
+      TrackingSource source, TrackingCategory category, String reason) {
+      return new CachedTrackingDecision(false, source, category, reason);
+    }
+
+    private static CachedTrackingDecision livingGuard(TrackingCategory category, String reason) {
+      return new CachedTrackingDecision(true, TrackingSource.LIVING_GUARD, category, reason);
+    }
+
+    private static CachedTrackingDecision allow() {
+      return new CachedTrackingDecision(true, TrackingSource.NONE, TrackingCategory.UNKNOWN, "");
+    }
   }
 }

@@ -52,11 +52,11 @@ public class ViewArea {
 
   public ViewArea(ServerPlayer player, int viewAreaDistance) {
     this(
-        player.blockPosition().getX(),
-        player.blockPosition().getY(),
-        player.blockPosition().getZ(),
-        viewAreaDistance,
-        player.level().dimension().location().toString());
+      player.blockPosition().getX(),
+      player.blockPosition().getY(),
+      player.blockPosition().getZ(),
+      viewAreaDistance,
+      player.level().dimension().location().toString());
   }
 
   public ViewArea(int posX, int posY, int posZ, int viewAreaDistance, String levelName) {
@@ -78,28 +78,29 @@ public class ViewArea {
 
   public boolean isInside(int posX, int posY, int posZ) {
     return (posX >= this.startX
-        && posX <= this.stopX
-        && posY >= this.startY
-        && posY <= this.stopY
-        && posZ >= this.startZ
-        && posZ <= this.stopZ);
+      && posX <= this.stopX
+      && posY >= this.startY
+      && posY <= this.stopY
+      && posZ >= this.startZ
+      && posZ <= this.stopZ);
   }
 
   public boolean update(ServerPlayer serverPlayer, int viewAreaDistance, String levelName) {
+    BlockPos blockPos = serverPlayer.blockPosition();
     return this.update(
-        serverPlayer.blockPosition().getX(),
-        serverPlayer.blockPosition().getY(),
-        serverPlayer.blockPosition().getZ(),
-        viewAreaDistance,
-        levelName);
+      blockPos.getX(),
+      blockPos.getY(),
+      blockPos.getZ(),
+      viewAreaDistance,
+      levelName);
   }
 
   public boolean update(int posX, int posY, int posZ, int viewAreaDistance, String levelName) {
     if (this.posX == posX
-        && this.posY == posY
-        && this.posZ == posZ
-        && this.viewAreaDistance == viewAreaDistance
-        && levelName.equals(this.levelName)) {
+      && this.posY == posY
+      && this.posZ == posZ
+      && this.viewAreaDistance == viewAreaDistance
+      && levelName.equals(this.levelName)) {
       return false;
     }
 
@@ -131,7 +132,7 @@ public class ViewArea {
   }
 
   private int calculateMaxHeight(
-      int posY, int viewAreaDistance, boolean isNether, boolean isTheEnd) {
+    int posY, int viewAreaDistance, boolean isNether, boolean isTheEnd) {
     int maxHeight;
     if (isNether) {
       maxHeight = MAX_BUILD_HEIGHT_NETHER;
@@ -146,27 +147,27 @@ public class ViewArea {
 
   public String toString() {
     return "ViewArea[level='"
-        + this.levelName
-        + "', pos=("
-        + this.posX
-        + ","
-        + this.posY
-        + ","
-        + this.posZ
-        + "), start=("
-        + this.startX
-        + ","
-        + this.startY
-        + ","
-        + this.startZ
-        + "), stop=("
-        + this.stopX
-        + ","
-        + this.stopY
-        + ","
-        + this.stopZ
-        + "), blockViewDistance="
-        + this.blocksViewDistance
-        + "]";
+      + this.levelName
+      + "', pos=("
+      + this.posX
+      + ","
+      + this.posY
+      + ","
+      + this.posZ
+      + "), start=("
+      + this.startX
+      + ","
+      + this.startY
+      + ","
+      + this.startZ
+      + "), stop=("
+      + this.stopX
+      + ","
+      + this.stopY
+      + ","
+      + this.stopZ
+      + "), blockViewDistance="
+      + this.blocksViewDistance
+      + "]";
   }
 }

@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "ae2",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "technical",
+  "reason": "Applied Energistics 2 entities are system-managed helpers and should not be tracked."
+}
