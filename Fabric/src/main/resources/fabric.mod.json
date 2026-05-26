@@ -3,7 +3,7 @@
   "id": "adaptive_performance_tweaks",
   "version": "${version}",
   "name": "Adaptive Performance Tweaks",
-  "description": "Single-bundle server-performance mod: dynamic spawn limits, sim-distance, AI throttling, chunk-gen throttle, AFK optimizations. Server-required, client-optional.",
+  "description": "Single-bundle server performance mod with dynamic spawn limits, simulation distance, AI throttling, chunk generation throttling, and monitoring tools. Server-focused, client-optional.",
   "authors": [
     "Markus Bordihn"
   ],

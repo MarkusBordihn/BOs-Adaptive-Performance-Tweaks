@@ -12,6 +12,7 @@
     "MobMixin",
     "NaturalSpawnerEntityMixin",
     "NaturalSpawnerMixin",
+    "ServerPlayerTeleportMixin",
     "VillagerConvertToMixin"
   ],
   "client": [],

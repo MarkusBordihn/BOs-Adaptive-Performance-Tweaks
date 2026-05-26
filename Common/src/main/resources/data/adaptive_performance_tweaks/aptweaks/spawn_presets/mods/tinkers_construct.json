@@ -3,10 +3,11 @@
   "mod_id": "tconstruct",
   "priority": 100,
   "entities": {
-    "per_player_max": 8,
-    "per_world_max": 32,
-    "per_server_max": 128,
-    "per_chunk_max": 4
+    "allow_list": ["tconstruct:earth_slime", "tconstruct:sky_slime", "tconstruct:ender_slime"],
+    "per_player_max": 6,
+    "per_world_max": 24,
+    "per_server_max": 320,
+    "per_chunk_max": 3
   },
   "load_factors": {
     "very_low": 1.0,
@@ -15,6 +16,5 @@
     "medium": 0.7,
     "high": 0.4,
     "very_high": 0.1
-  },
-  "notes": "Tinkers' Construct — limits all tconstruct:* entities."
+  }
 }

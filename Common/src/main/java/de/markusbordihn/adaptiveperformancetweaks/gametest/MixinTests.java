@@ -33,13 +33,13 @@ public final class MixinTests {
     ExperienceOrb orb = new ExperienceOrb(EntityType.EXPERIENCE_ORB, helper.getLevel());
     GameTestHelpers.assertTrue(
       helper,
-      "ExperienceOrbAccessor mixin was not applied — check mixin config and refmap!",
+      "ExperienceOrbAccessor mixin was not applied - check mixin config and refmap!",
       orb instanceof ExperienceOrbAccessor);
     ExperienceOrbAccessor accessor = (ExperienceOrbAccessor) orb;
     accessor.setValue(42);
     GameTestHelpers.assertEquals(
       helper,
-      "ExperienceOrbAccessor.getValue() returned wrong value — field remapping broken?",
+      "ExperienceOrbAccessor.getValue() returned wrong value - field remapping broken?",
       42,
       accessor.getValue());
     helper.succeed();

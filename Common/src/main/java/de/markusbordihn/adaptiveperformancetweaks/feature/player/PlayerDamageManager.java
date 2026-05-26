@@ -67,7 +67,7 @@ public final class PlayerDamageManager {
       && PlayerEasyChildModeConfig.childPlayerNames.contains(
       serverPlayer.getName().getString())) {
       if (PlayerEasyChildModeConfig.childPlayerHurtDamageReduction == 100) {
-        log.debug("{} {}: hurt {} → 0 (100% reduction)",
+        log.debug("{} {}: hurt {} -> 0 (100% reduction)",
           CHILD_MODE_PREFIX, serverPlayer.getName().getString(), amount);
         return 0f;
       }
@@ -76,7 +76,7 @@ public final class PlayerDamageManager {
         modified
           - (modified
           / (100f / PlayerEasyChildModeConfig.childPlayerHurtDamageReduction));
-      log.debug("{} {}: hurt {} → {}",
+      log.debug("{} {}: hurt {} -> {}",
         CHILD_MODE_PREFIX, serverPlayer.getName().getString(), amount, modified);
     }
 
@@ -85,7 +85,7 @@ public final class PlayerDamageManager {
       && serverPlayer.experienceLevel
       < PlayerStarterProtectionConfig.starterMaxExperienceLevel) {
       if (PlayerStarterProtectionConfig.starterHurtDamageReduction == 100) {
-        log.debug("{} {}: hurt {} → 0 (100% reduction)",
+        log.debug("{} {}: hurt {} -> 0 (100% reduction)",
           STARTER_PREFIX, serverPlayer.getName().getString(), amount);
         return 0f;
       }
@@ -94,7 +94,7 @@ public final class PlayerDamageManager {
         modified
           - (modified
           / (100f / PlayerStarterProtectionConfig.starterHurtDamageReduction));
-      log.debug("{} {}: hurt {} → {}",
+      log.debug("{} {}: hurt {} -> {}",
         STARTER_PREFIX, serverPlayer.getName().getString(), amount, modified);
     }
 
@@ -118,7 +118,7 @@ public final class PlayerDamageManager {
         modified
           + (modified
           / (100f / PlayerEasyChildModeConfig.childPlayerAttackDamageIncrease));
-      log.debug("{} {}: attack {} → {}",
+      log.debug("{} {}: attack {} -> {}",
         CHILD_MODE_PREFIX, attacker.getName().getString(), amount, modified);
     }
 
@@ -130,7 +130,7 @@ public final class PlayerDamageManager {
         modified
           + (modified
           / (100f / PlayerStarterProtectionConfig.starterAttackDamageIncrease));
-      log.debug("{} {}: attack {} → {}",
+      log.debug("{} {}: attack {} -> {}",
         STARTER_PREFIX, attacker.getName().getString(), amount, modified);
     }
 

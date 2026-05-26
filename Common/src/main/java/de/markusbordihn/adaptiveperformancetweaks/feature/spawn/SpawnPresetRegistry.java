@@ -34,7 +34,7 @@ import org.apache.logging.log4j.Logger;
 public final class SpawnPresetRegistry {
 
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME_SPAWN);
-  private static final Map<String, Optional<SpawnPreset>> entityPresetCache = new HashMap<>();
+  private static final Map<PresetCacheKey, Optional<SpawnPreset>> entityPresetCache = new HashMap<>();
   private static List<SpawnPreset> loadedPresets = Collections.emptyList();
 
   private SpawnPresetRegistry() {
@@ -140,7 +140,7 @@ public final class SpawnPresetRegistry {
   }
 
   private static SpawnPreset getEffectivePreset(String entityId, String dimensionId) {
-    return entityPresetCache.computeIfAbsent(entityId + "@" + dimensionId,
+    return entityPresetCache.computeIfAbsent(new PresetCacheKey(entityId, dimensionId),
       key -> findPreset(entityId, dimensionId)).orElse(null);
   }
 
@@ -192,5 +192,11 @@ public final class SpawnPresetRegistry {
     }
 
     return true;
+  }
+
+  private record PresetCacheKey(
+    String entityId,
+    String dimensionId) {
+
   }
 }

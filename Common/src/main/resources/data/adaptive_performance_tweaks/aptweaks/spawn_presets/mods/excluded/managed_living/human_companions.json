@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "humancompanions",
+  "priority": 100,
+  "mode": "protect_namespace",
+  "category": "managed_living",
+  "reason": "Human companions are managed living entities and should be protected from tracking."
+}

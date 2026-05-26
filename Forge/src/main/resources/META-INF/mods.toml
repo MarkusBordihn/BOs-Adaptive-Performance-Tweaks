@@ -6,12 +6,13 @@ issueTrackerURL = "https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Twe
 [[mods]]
 modId = "adaptive_performance_tweaks"
 version = "${file.jarVersion}"
+displayTest = "IGNORE_SERVER_VERSION"
 displayName = "Adaptive Performance Tweaks"
 displayURL = "https://curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks"
 logoFile = "logo.png"
 authors = "Markus Bordihn"
-description = '''Single-bundle server-performance mod: dynamic spawn limits, sim-distance, AI throttling,
-chunk-gen throttle, and optional client-side AFK optimizations. Server-required, client-optional.'''
+description = '''Single-bundle server performance mod with dynamic spawn limits, simulation distance,
+AI throttling, chunk generation throttling, and monitoring tools. Server-focused, client-optional.'''
 
 [[mixins]]
 config = "adaptiveperformancetweaks.common.mixins.json"

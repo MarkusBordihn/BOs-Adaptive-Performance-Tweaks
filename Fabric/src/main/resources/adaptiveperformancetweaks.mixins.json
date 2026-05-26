@@ -12,6 +12,7 @@
     "NaturalSpawnerEntityMixin",
     "NaturalSpawnerMixin",
     "PlayerDamageMixin",
+    "ServerPlayerTeleportMixin",
     "VillagerConvertToMixin"
   ],
   "client": [],

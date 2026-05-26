@@ -19,6 +19,7 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.gametest;
 
+import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLevelLoad;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
@@ -36,75 +37,90 @@ public final class AiThrottleTests {
   }
 
   public static void testNoThrottleUnderNormalLoad(GameTestHelper helper) {
-    ServerLevelLoad.reset();
-    AiThrottleManager.handleServerLoadEvent(
-      new ServerLoadEvent(ServerLoadLevel.NORMAL, ServerLoadLevel.NORMAL, 50.0, 50.0));
+    FeatureToggle.AI_THROTTLING.setEnabled(true);
+    try {
+      ServerLevelLoad.reset();
+      AiThrottleManager.handleServerLoadEvent(
+        new ServerLoadEvent(ServerLoadLevel.NORMAL, ServerLoadLevel.NORMAL, 50.0, 50.0));
 
-    Mob mob = EntityType.ZOMBIE.create(helper.getLevel());
-    GameTestHelpers.assertNotNull(helper, "Zombie entity could not be created", mob);
+      Mob mob = EntityType.ZOMBIE.create(helper.getLevel());
+      GameTestHelpers.assertNotNull(helper, "Zombie entity could not be created", mob);
 
-    mob.tickCount = 7;
-    GameTestHelpers.assertTrue(
-      helper,
-      "AI should NOT be throttled under NORMAL load",
-      !AiThrottleManager.shouldSkipAiThisTick(mob));
-    helper.succeed();
+      mob.tickCount = 7;
+      GameTestHelpers.assertTrue(
+        helper,
+        "AI should NOT be throttled under NORMAL load",
+        !AiThrottleManager.shouldSkipAiThisTick(mob));
+      helper.succeed();
+    } finally {
+      FeatureToggle.AI_THROTTLING.setEnabled(false);
+    }
   }
 
   public static void testThrottleUnderVeryHighLoad(GameTestHelper helper) {
-    ServerLevelLoad.reset();
-    AiThrottleManager.handleServerLoadEvent(
-      new ServerLoadEvent(ServerLoadLevel.VERY_HIGH, ServerLoadLevel.NORMAL, 200.0, 50.0));
+    FeatureToggle.AI_THROTTLING.setEnabled(true);
+    try {
+      ServerLevelLoad.reset();
+      AiThrottleManager.handleServerLoadEvent(
+        new ServerLoadEvent(ServerLoadLevel.VERY_HIGH, ServerLoadLevel.NORMAL, 200.0, 50.0));
 
-    Mob mob = EntityType.ZOMBIE.create(helper.getLevel());
-    GameTestHelpers.assertNotNull(helper, "Zombie entity could not be created", mob);
+      Mob mob = EntityType.ZOMBIE.create(helper.getLevel());
+      GameTestHelpers.assertNotNull(helper, "Zombie entity could not be created", mob);
 
-    mob.tickCount = AiThrottleConfig.aiThrottleVeryHighDivisor - 1;
-    GameTestHelpers.assertTrue(
-      helper,
-      "AI should be throttled under VERY_HIGH load when tickCount % divisor != 0",
-      AiThrottleManager.shouldSkipAiThisTick(mob));
+      mob.tickCount = AiThrottleConfig.aiThrottleVeryHighDivisor - 1;
+      GameTestHelpers.assertTrue(
+        helper,
+        "AI should be throttled under VERY_HIGH load when tickCount % divisor != 0",
+        AiThrottleManager.shouldSkipAiThisTick(mob));
 
-    mob.tickCount = AiThrottleConfig.aiThrottleVeryHighDivisor;
-    GameTestHelpers.assertTrue(
-      helper,
-      "AI should NOT be throttled when tickCount % divisor == 0",
-      !AiThrottleManager.shouldSkipAiThisTick(mob));
+      mob.tickCount = AiThrottleConfig.aiThrottleVeryHighDivisor;
+      GameTestHelpers.assertTrue(
+        helper,
+        "AI should NOT be throttled when tickCount % divisor == 0",
+        !AiThrottleManager.shouldSkipAiThisTick(mob));
 
-    AiThrottleManager.handleServerLoadEvent(
-      new ServerLoadEvent(ServerLoadLevel.NORMAL, ServerLoadLevel.VERY_HIGH, 50.0, 200.0));
-    helper.succeed();
+      AiThrottleManager.handleServerLoadEvent(
+        new ServerLoadEvent(ServerLoadLevel.NORMAL, ServerLoadLevel.VERY_HIGH, 50.0, 200.0));
+      helper.succeed();
+    } finally {
+      FeatureToggle.AI_THROTTLING.setEnabled(false);
+    }
   }
 
   public static void testThrottleOnlyInHighLoadLevel(GameTestHelper helper) {
-    ServerLevelLoad.reset();
-    AiThrottleManager.handleServerLoadEvent(
-      new ServerLoadEvent(ServerLoadLevel.NORMAL, ServerLoadLevel.NORMAL, 50.0, 50.0));
+    FeatureToggle.AI_THROTTLING.setEnabled(true);
+    try {
+      ServerLevelLoad.reset();
+      AiThrottleManager.handleServerLoadEvent(
+        new ServerLoadEvent(ServerLoadLevel.NORMAL, ServerLoadLevel.NORMAL, 50.0, 50.0));
 
-    ServerLevel overworld = helper.getLevel();
-    ServerLevel nether = GameTestHelpers.getRequiredLevel(helper, Level.NETHER);
-    GameTestHelpers.setMeasuredLevelLoad(overworld, ServerLoadLevel.VERY_HIGH, 200.0);
-    GameTestHelpers.setMeasuredLevelLoad(nether, ServerLoadLevel.NORMAL, 50.0);
+      ServerLevel overworld = helper.getLevel();
+      ServerLevel nether = GameTestHelpers.getRequiredLevel(helper, Level.NETHER);
+      GameTestHelpers.setMeasuredLevelLoad(overworld, ServerLoadLevel.VERY_HIGH, 200.0);
+      GameTestHelpers.setMeasuredLevelLoad(nether, ServerLoadLevel.NORMAL, 50.0);
 
-    Mob overworldMob = EntityType.ZOMBIE.create(overworld);
-    Mob netherMob = EntityType.ZOMBIE.create(nether);
-    GameTestHelpers.assertNotNull(helper, "Overworld zombie entity could not be created",
-      overworldMob);
-    GameTestHelpers.assertNotNull(helper, "Nether zombie entity could not be created", netherMob);
+      Mob overworldMob = EntityType.ZOMBIE.create(overworld);
+      Mob netherMob = EntityType.ZOMBIE.create(nether);
+      GameTestHelpers.assertNotNull(helper, "Overworld zombie entity could not be created",
+        overworldMob);
+      GameTestHelpers.assertNotNull(helper, "Nether zombie entity could not be created", netherMob);
 
-    overworldMob.tickCount = AiThrottleConfig.aiThrottleVeryHighDivisor - 1;
-    netherMob.tickCount = AiThrottleConfig.aiThrottleVeryHighDivisor - 1;
+      overworldMob.tickCount = AiThrottleConfig.aiThrottleVeryHighDivisor - 1;
+      netherMob.tickCount = AiThrottleConfig.aiThrottleVeryHighDivisor - 1;
 
-    GameTestHelpers.assertTrue(
-      helper,
-      "AI should be throttled in the measured high-load level",
-      AiThrottleManager.shouldSkipAiThisTick(overworldMob));
-    GameTestHelpers.assertFalse(
-      helper,
-      "AI should not be throttled in the measured normal-load level",
-      AiThrottleManager.shouldSkipAiThisTick(netherMob));
+      GameTestHelpers.assertTrue(
+        helper,
+        "AI should be throttled in the measured high-load level",
+        AiThrottleManager.shouldSkipAiThisTick(overworldMob));
+      GameTestHelpers.assertFalse(
+        helper,
+        "AI should not be throttled in the measured normal-load level",
+        AiThrottleManager.shouldSkipAiThisTick(netherMob));
 
-    ServerLevelLoad.reset();
-    helper.succeed();
+      helper.succeed();
+    } finally {
+      ServerLevelLoad.reset();
+      FeatureToggle.AI_THROTTLING.setEnabled(false);
+    }
   }
 }

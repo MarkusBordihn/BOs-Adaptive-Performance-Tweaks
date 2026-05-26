@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "smallships",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "vehicle_structure",
+  "reason": "Small Ships sailable vessel entities should not be tracked."
+}

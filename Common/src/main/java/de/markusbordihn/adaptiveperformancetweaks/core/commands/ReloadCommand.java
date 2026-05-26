@@ -56,7 +56,7 @@ public class ReloadCommand extends CustomCommand {
         sendFeedback(
           context,
           String.format(
-            "  [!] %s: %s → %s (restart required to take effect)",
+            "  [!] %s: %s -> %s (restart required to take effect)",
             toggle.getId(),
             wasEnabled ? "ON" : "off",
             isNowEnabled ? "ON" : "off"));

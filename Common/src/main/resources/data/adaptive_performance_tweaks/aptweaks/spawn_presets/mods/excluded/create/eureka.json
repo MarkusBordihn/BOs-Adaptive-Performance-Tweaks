@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "eureka",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "vehicle_structure",
+  "reason": "Eureka ship entities built from blocks should not be tracked."
+}

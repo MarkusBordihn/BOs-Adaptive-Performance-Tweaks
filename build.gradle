@@ -3,16 +3,6 @@ apply plugin: 'java'
 def ghostRefScript = file(findProperty('ghostRefIndex') ?: '')
 if (ghostRefScript.exists()) apply from: ghostRefScript
 
-tasks.register('runAllGameTests') {
-  group = 'verification'
-  description = 'Runs both Fabric and Forge game tests.'
-  dependsOn ':Fabric:runGameTest', ':Forge:runGameTestServer'
-}
-
-tasks.named('check') {
-  dependsOn(tasks.named('runAllGameTests'))
-}
-
 subprojects {
 
   apply plugin: 'java'
@@ -49,4 +39,16 @@ subprojects {
   }
 
   tasks.register("prepareKotlinBuildScriptModel") {}
+}
+
+tasks.register('allGameTests') {
+  group = 'verification'
+  description = 'Runs both Fabric and Forge game tests.'
+  dependsOn ':Fabric:runGameTest', ':Forge:runGameTestServer'
+}
+
+tasks.register('fullCheck') {
+  group = 'verification'
+  description = 'Runs the standard checks and both Fabric and Forge game tests.'
+  dependsOn 'check', 'allGameTests'
 }

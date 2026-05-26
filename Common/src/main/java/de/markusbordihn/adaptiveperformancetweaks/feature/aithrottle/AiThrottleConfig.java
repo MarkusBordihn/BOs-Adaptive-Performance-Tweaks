@@ -34,7 +34,7 @@ public final class AiThrottleConfig extends Config {
        AI Throttling Feature Configuration
       
        Reduces AI goal evaluation frequency for mobs that are far from all players.
-       Throttling only activates at MEDIUM+ server load — zero effect at normal load.
+       Throttling only activates at MEDIUM+ server load - zero effect at normal load.
       
        aiThrottleNearbyRadius: mobs within this radius (in blocks) are NEVER throttled.
        Divisors control how many ticks are skipped: 2 = every 2nd tick, 4 = every 4th tick.

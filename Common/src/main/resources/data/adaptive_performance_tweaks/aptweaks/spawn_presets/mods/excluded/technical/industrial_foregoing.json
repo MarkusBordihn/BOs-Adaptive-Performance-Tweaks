@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "industrialforegoing",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "technical",
+  "reason": "Industrial Foregoing machine entities are technical helpers and should not be tracked."
+}

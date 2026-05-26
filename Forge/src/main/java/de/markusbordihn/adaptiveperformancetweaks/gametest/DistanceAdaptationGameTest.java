@@ -36,7 +36,7 @@ public class DistanceAdaptationGameTest {
   }
 
   @GameTest(template = "gametest.1x1x1")
-  public void testSimDistanceDecreasesUnderVeryHighLoad(GameTestHelper helper) {
-    DistanceAdaptationTests.testSimDistanceDecreasesUnderVeryHighLoad(helper);
+  public void testSimulationDistanceDecreasesUnderVeryHighLoad(GameTestHelper helper) {
+    DistanceAdaptationTests.testSimulationDistanceDecreasesUnderVeryHighLoad(helper);
   }
 }

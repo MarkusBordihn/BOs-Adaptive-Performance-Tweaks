@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "car",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "vehicle_structure",
+  "reason": "Vehicle entities should not be tracked."
+}

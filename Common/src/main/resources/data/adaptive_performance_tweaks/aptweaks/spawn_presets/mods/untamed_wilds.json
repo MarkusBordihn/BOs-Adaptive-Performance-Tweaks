@@ -6,10 +6,40 @@
     "allow": ["minecraft:overworld"]
   },
   "entities": {
-    "per_player_max": 8,
-    "per_world_max": 32,
-    "per_server_max": 128,
-    "per_chunk_max": 4
+    "allow_list": [
+      "untamedwilds:arowana",
+      "untamedwilds:giant_clam",
+      "untamedwilds:giant_salamander",
+      "untamedwilds:rhino",
+      "untamedwilds:sunfish",
+      "untamedwilds:trevally",
+      "untamedwilds:aardvark",
+      "untamedwilds:softshell_turtle",
+      "untamedwilds:tortoise",
+      "untamedwilds:bear_black",
+      "untamedwilds:bear_blind",
+      "untamedwilds:bear_brown",
+      "untamedwilds:bear_cave",
+      "untamedwilds:bear_panda",
+      "untamedwilds:bear_polar",
+      "untamedwilds:bear_spectacled",
+      "untamedwilds:bear_sun",
+      "untamedwilds:bigcat_jaguar",
+      "untamedwilds:bigcat_leopard",
+      "untamedwilds:bigcat_lion",
+      "untamedwilds:bigcat_puma",
+      "untamedwilds:bigcat_snow_leopard",
+      "untamedwilds:bigcat_tiger",
+      "untamedwilds:football_fish",
+      "untamedwilds:hippo",
+      "untamedwilds:shark",
+      "untamedwilds:snake",
+      "untamedwilds:tarantula"
+    ],
+    "per_player_max": 4,
+    "per_world_max": 16,
+    "per_server_max": 320,
+    "per_chunk_max": 2
   },
   "load_factors": {
     "very_low": 1.0,
@@ -18,6 +48,5 @@
     "medium": 0.7,
     "high": 0.4,
     "very_high": 0.1
-  },
-  "notes": "Untamed Wilds — limits all untamedwilds:* entities in the overworld."
+  }
 }

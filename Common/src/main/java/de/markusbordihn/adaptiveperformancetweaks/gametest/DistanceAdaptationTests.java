@@ -19,10 +19,11 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.gametest;
 
+import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
-import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimDistanceConfig;
-import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimDistanceManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimulationDistanceConfig;
+import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimulationDistanceManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.distance.ViewDistanceConfig;
 import de.markusbordihn.adaptiveperformancetweaks.feature.distance.ViewDistanceManager;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -34,31 +35,37 @@ public final class DistanceAdaptationTests {
   }
 
   public static void testViewDistanceDecreasesUnderVeryHighLoad(GameTestHelper helper) {
-    MinecraftServer server = helper.getLevel().getServer();
-    ViewDistanceManager.handleServerStarting(server);
+    FeatureToggle.ADAPTIVE_VIEW_DISTANCE.setEnabled(true);
+    try {
+      MinecraftServer server = helper.getLevel().getServer();
+      ViewDistanceManager.handleServerStarting(server);
 
-    ViewDistanceManager.handleServerLoadEvent(
-      new ServerLoadEvent(ServerLoadLevel.VERY_HIGH, ServerLoadLevel.NORMAL, 200.0, 50.0));
+      ViewDistanceManager.handleServerLoadEvent(
+        new ServerLoadEvent(ServerLoadLevel.VERY_HIGH, ServerLoadLevel.NORMAL, 200.0, 50.0));
 
-    int expected = Math.max(ViewDistanceConfig.viewDistanceMin,
-      Math.min(ViewDistanceConfig.viewDistanceMax, ViewDistanceConfig.viewDistanceVeryHigh));
-    GameTestHelpers.assertEquals(
-      helper,
-      "View distance should be reduced under VERY_HIGH load",
-      expected,
-      server.getPlayerList().getViewDistance());
-    helper.succeed();
+      int expected = Math.max(ViewDistanceConfig.viewDistanceMin,
+        Math.min(ViewDistanceConfig.viewDistanceMax, ViewDistanceConfig.viewDistanceVeryHigh));
+      GameTestHelpers.assertEquals(
+        helper,
+        "View distance should be reduced under VERY_HIGH load",
+        expected,
+        server.getPlayerList().getViewDistance());
+      helper.succeed();
+    } finally {
+      FeatureToggle.ADAPTIVE_VIEW_DISTANCE.setEnabled(false);
+    }
   }
 
-  public static void testSimDistanceDecreasesUnderVeryHighLoad(GameTestHelper helper) {
+  public static void testSimulationDistanceDecreasesUnderVeryHighLoad(GameTestHelper helper) {
     MinecraftServer server = helper.getLevel().getServer();
-    SimDistanceManager.handleServerStarting(server);
+    SimulationDistanceManager.handleServerStarting(server);
 
-    SimDistanceManager.handleServerLoadEvent(
+    SimulationDistanceManager.handleServerLoadEvent(
       new ServerLoadEvent(ServerLoadLevel.VERY_HIGH, ServerLoadLevel.NORMAL, 200.0, 50.0));
 
-    int expected = Math.max(SimDistanceConfig.simDistanceMin,
-      Math.min(SimDistanceConfig.simDistanceMax, SimDistanceConfig.simDistanceVeryHigh));
+    int expected = Math.max(SimulationDistanceConfig.simDistanceMin,
+      Math.min(SimulationDistanceConfig.simDistanceMax,
+        SimulationDistanceConfig.simDistanceVeryHigh));
     GameTestHelpers.assertEquals(
       helper,
       "Simulation distance should be reduced under VERY_HIGH load",

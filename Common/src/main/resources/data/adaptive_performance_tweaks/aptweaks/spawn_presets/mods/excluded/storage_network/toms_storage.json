@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "toms_storage",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "storage_network",
+  "reason": "Tom's Simple Storage entities are system-managed helpers and should not be tracked."
+}

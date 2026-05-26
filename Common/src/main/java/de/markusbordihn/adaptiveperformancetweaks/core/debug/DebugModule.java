@@ -20,30 +20,29 @@
 package de.markusbordihn.adaptiveperformancetweaks.core.debug;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
+import java.util.Locale;
 
 public enum DebugModule {
-  AI("ai", Constants.LOG_NAME_AI, "AI goal throttling for mobs"),
-  CHUNKS("chunks", Constants.LOG_NAME_CHUNKS, "Chunk generation throttling"),
-  CORE("core", Constants.LOG_NAME, "Core tracking and configuration"),
-  DISTANCE("distance", Constants.LOG_NAME_DISTANCE, "Adaptive view/sim distance"),
-  ENTITIES("entities", Constants.LOG_NAME_ENTITIES, "Entity join/leave tracking"),
-  GAMERULES("gamerules", Constants.LOG_NAME_GAMERULES, "Dynamic gamerule adjustments"),
-  ITEMS("items", Constants.LOG_NAME_ITEMS, "Item entity and XP orb clustering"),
-  PLAYERS("players", Constants.LOG_NAME_PLAYERS, "Player login protection and damage"),
-  SPAWN("spawn", Constants.LOG_NAME_SPAWN, "Mob spawn throttling and presets");
+  AI(Constants.LOG_NAME_AI, "AI goal throttling for mobs"),
+  CHUNKS(Constants.LOG_NAME_CHUNKS, "Chunk generation throttling"),
+  CORE(Constants.LOG_NAME, "Core tracking and configuration"),
+  DISTANCE(Constants.LOG_NAME_DISTANCE, "Adaptive view/sim distance"),
+  ENTITIES(Constants.LOG_NAME_ENTITIES, "Entity join/leave tracking"),
+  GAMERULES(Constants.LOG_NAME_GAMERULES, "Dynamic gamerule adjustments"),
+  ITEMS(Constants.LOG_NAME_ITEMS, "Item entity and XP orb clustering"),
+  PLAYERS(Constants.LOG_NAME_PLAYERS, "Player login protection and damage"),
+  SPAWN(Constants.LOG_NAME_SPAWN, "Mob spawn throttling and presets");
 
-  private final String id;
   private final String loggerName;
   private final String description;
 
-  DebugModule(String id, String loggerName, String description) {
-    this.id = id;
+  DebugModule(String loggerName, String description) {
     this.loggerName = loggerName;
     this.description = description;
   }
 
   public String getId() {
-    return this.id;
+    return this.name().toLowerCase(Locale.ROOT);
   }
 
   public String getLoggerName() {

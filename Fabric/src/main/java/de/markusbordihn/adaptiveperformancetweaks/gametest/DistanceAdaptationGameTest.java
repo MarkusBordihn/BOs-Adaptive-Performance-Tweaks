@@ -32,7 +32,7 @@ public class DistanceAdaptationGameTest {
   }
 
   @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
-  public void testSimDistanceDecreasesUnderVeryHighLoad(GameTestHelper helper) {
-    DistanceAdaptationTests.testSimDistanceDecreasesUnderVeryHighLoad(helper);
+  public void testSimulationDistanceDecreasesUnderVeryHighLoad(GameTestHelper helper) {
+    DistanceAdaptationTests.testSimulationDistanceDecreasesUnderVeryHighLoad(helper);
   }
 }

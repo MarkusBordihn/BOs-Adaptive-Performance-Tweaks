@@ -21,6 +21,7 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.monitoring;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreEntityManager;
+import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ExperienceOrbManager;
@@ -43,6 +44,10 @@ public final class MonitoringManager {
   }
 
   public static void handleServerLoadEvent(ServerLoadEvent event) {
+    if (!FeatureToggle.MONITORING.isEnabled()) {
+      return;
+    }
+
     boolean intervalElapsed = intervalElapsed();
     if (!intervalElapsed && !event.hasChanged()) {
       return;

@@ -1,6 +1,0 @@
-﻿{
-  "mod_id": "mekanism",
-  "priority": 100,
-  "exclude_from_tracking": true,
-  "notes": "Mekanism core entities (robots, drones) are technical and should not be spawn-limited. Use mekanism_additions.json for Mekanism Additions mobs."
-}

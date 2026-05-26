@@ -23,9 +23,10 @@ import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPositionManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.BenchmarkManager;
-import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimDistanceManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimulationDistanceManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.distance.ViewDistanceManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.gamerules.GameRuleManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.items.ArrowEntityManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ExperienceOrbManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ItemEntityManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.MonitoringManager;
@@ -54,6 +55,9 @@ public final class CommonServerEventHandler {
     if (FeatureToggle.EXPERIENCE_ORBS.isEnabled()) {
       ExperienceOrbManager.handleServerAboutToStart();
     }
+    if (FeatureToggle.ARROWS.isEnabled()) {
+      ArrowEntityManager.handleServerAboutToStart();
+    }
     if (FeatureToggle.PLAYER_LOGIN_PROTECTION.isEnabled()) {
       PlayerLoginManager.handleServerAboutToStart();
     }
@@ -70,8 +74,8 @@ public final class CommonServerEventHandler {
     if (FeatureToggle.PLAYER_EASY_CHILD_MODE.isEnabled()) {
       PlayerDamageManager.handleServerStarting();
     }
-    if (FeatureToggle.ADAPTIVE_SIM_DISTANCE.isEnabled()) {
-      SimDistanceManager.handleServerStarting(server);
+    if (FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled()) {
+      SimulationDistanceManager.handleServerStarting(server);
     }
     if (FeatureToggle.ADAPTIVE_VIEW_DISTANCE.isEnabled()) {
       ViewDistanceManager.handleServerStarting(server);
@@ -101,6 +105,9 @@ public final class CommonServerEventHandler {
     if (FeatureToggle.EXPERIENCE_ORBS.isEnabled()) {
       ExperienceOrbManager.handleServerStopping();
     }
+    if (FeatureToggle.ARROWS.isEnabled()) {
+      ArrowEntityManager.handleServerStopping();
+    }
     if (FeatureToggle.PLAYER_LOGIN_PROTECTION.isEnabled()) {
       PlayerLoginManager.handleServerStopping();
     }
@@ -118,8 +125,14 @@ public final class CommonServerEventHandler {
     if (FeatureToggle.EXPERIENCE_ORBS.isEnabled()) {
       ExperienceOrbManager.handleServerTick();
     }
+    if (FeatureToggle.ARROWS.isEnabled()) {
+      ArrowEntityManager.handleServerTick();
+    }
     if (FeatureToggle.PLAYER_LOGIN_PROTECTION.isEnabled()) {
       PlayerLoginManager.handleServerTick();
+    }
+    if (FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled()) {
+      SimulationDistanceManager.handleServerTick();
     }
   }
 
@@ -133,6 +146,15 @@ public final class CommonServerEventHandler {
 
   public static void handlePlayerLoggedIn(ServerPlayer serverPlayer) {
     ServerManager.handlePlayerCountChange();
+    if (FeatureToggle.ADAPTIVE_VIEW_DISTANCE.isEnabled()) {
+      ViewDistanceManager.handlePlayerLoggedIn(serverPlayer);
+    }
+    if (FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled()) {
+      SimulationDistanceManager.handlePlayerLoggedIn(serverPlayer);
+    }
+    if (FeatureToggle.GAMERULES.isEnabled()) {
+      GameRuleManager.handlePlayerLoggedIn(serverPlayer);
+    }
     if (FeatureToggle.PLAYER_LOGIN_PROTECTION.isEnabled()) {
       PlayerLoginManager.handlePlayerLoggedIn(serverPlayer);
     }
@@ -140,9 +162,24 @@ public final class CommonServerEventHandler {
 
   public static void handlePlayerLoggedOut(ServerPlayer serverPlayer) {
     PlayerPositionManager.handlePlayerLoggedOut(serverPlayer.getStringUUID());
+    if (FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled()) {
+      SimulationDistanceManager.handlePlayerLoggedOut();
+    }
     ServerManager.handlePlayerCountChange();
     if (FeatureToggle.PLAYER_LOGIN_PROTECTION.isEnabled()) {
       PlayerLoginManager.handlePlayerLoggedOut(serverPlayer.getName().getString());
+    }
+  }
+
+  public static void handlePlayerTeleported(ServerPlayer serverPlayer) {
+    if (FeatureToggle.ADAPTIVE_VIEW_DISTANCE.isEnabled()) {
+      ViewDistanceManager.handlePlayerTeleported(serverPlayer);
+    }
+    if (FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled()) {
+      SimulationDistanceManager.handlePlayerTeleported(serverPlayer);
+    }
+    if (FeatureToggle.GAMERULES.isEnabled()) {
+      GameRuleManager.handlePlayerTeleported(serverPlayer);
     }
   }
 }

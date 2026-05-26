@@ -1,0 +1,25 @@
+{
+  "replace": false,
+  "mod_id": "panthalassa",
+  "priority": 100,
+  "entities": {
+    "allow_list": [
+      "panthalassa:anglerfish",
+      "panthalassa:dunkleosteus",
+      "panthalassa:giant_orthocone",
+      "panthalassa:helicoprion"
+    ],
+    "per_player_max": 8,
+    "per_world_max": 32,
+    "per_server_max": 320,
+    "per_chunk_max": 2
+  },
+  "load_factors": {
+    "very_low": 1.0,
+    "low": 1.0,
+    "normal": 0.9,
+    "medium": 0.7,
+    "high": 0.4,
+    "very_high": 0.1
+  }
+}

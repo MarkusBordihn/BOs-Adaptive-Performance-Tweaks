@@ -1,6 +1,7 @@
 {
   "mod_id": "simulated",
   "priority": 100,
-  "exclude_from_tracking": true,
-  "notes": "Create Simulated entities are player-constructed mechanical structures and must not be spawn-limited."
+  "mode": "exclude_namespace",
+  "category": "vehicle_structure",
+  "reason": "Simulated contraption entities should not be tracked."
 }

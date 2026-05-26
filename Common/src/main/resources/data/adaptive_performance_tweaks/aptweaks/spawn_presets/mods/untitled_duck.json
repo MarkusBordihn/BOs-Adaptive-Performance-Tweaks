@@ -6,9 +6,10 @@
     "allow": ["minecraft:overworld"]
   },
   "entities": {
-    "per_player_max": 8,
+    "allow_list": ["untitledduckmod:duck"],
+    "per_player_max": 16,
     "per_world_max": 32,
-    "per_server_max": 128,
+    "per_server_max": 320,
     "per_chunk_max": 4
   },
   "load_factors": {
@@ -18,6 +19,5 @@
     "medium": 0.7,
     "high": 0.4,
     "very_high": 0.1
-  },
-  "notes": "Untitled Duck Mod — limits all untitledduckmod:* duck entities."
+  }
 }

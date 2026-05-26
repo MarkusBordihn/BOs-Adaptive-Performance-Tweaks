@@ -73,6 +73,10 @@ class CoreConfigTest {
   void otherConfigDefaults() {
     assertEquals(5, CoreConfig.timeBetweenUpdates);
     assertTrue(CoreConfig.logServerLoad);
+    assertFalse(CoreConfig.logServerLevelLoadChanges);
+    assertEquals(60, CoreConfig.serverLoadLogIntervalSeconds);
+    assertEquals(2, CoreConfig.serverLoadLogSignificantChangeSteps);
+    assertEquals(5, CoreConfig.serverLoadLogTopWorldCount);
   }
 
   @Test

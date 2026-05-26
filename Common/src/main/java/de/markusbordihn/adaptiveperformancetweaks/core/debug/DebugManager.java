@@ -91,7 +91,7 @@ public final class DebugManager {
       logger.warn(
         () ->
           String.format(
-            "⚠ The log level for %s is set to %s. This logs all debug information and may cause "
+            "Warning: The log level for %s is set to %s. This logs all debug information and may cause "
               + "performance issues. This is expected in a developer environment or during "
               + "large-scale troubleshooting. To mitigate this, debug mode has been automatically "
               + "adjusted to info level. Use /aptweaks debug <module> to re-enable debug mode.",

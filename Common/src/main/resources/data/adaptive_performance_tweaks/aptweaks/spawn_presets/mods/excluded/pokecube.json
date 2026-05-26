@@ -1,6 +1,0 @@
-﻿{
-  "mod_id": "pokecube",
-  "priority": 100,
-  "exclude_from_tracking": true,
-  "notes": "Pokecube entities are managed entirely by the mod and should not be spawn-limited by APTweaks."
-}

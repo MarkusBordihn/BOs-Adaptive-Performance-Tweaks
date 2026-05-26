@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "mca",
+  "priority": 100,
+  "mode": "protect_namespace",
+  "category": "managed_living",
+  "reason": "MCA Reborn villager and NPC entities should be protected from spawn tracking."
+}

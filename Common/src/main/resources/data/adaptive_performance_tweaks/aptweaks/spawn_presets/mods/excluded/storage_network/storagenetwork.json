@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "storagenetwork",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "storage_network",
+  "reason": "Simple Storage Network entities are system-managed helpers and should not be tracked."
+}

@@ -44,30 +44,25 @@ public abstract class CustomCommand implements Command<CommandSourceStack> {
     String commandName = module.toLowerCase();
     if (enabled) {
       source.sendSuccess(
-        () ->
-          Component.literal(
-              "► Enable debug for the "
-                + module
-                + " module, please check debug.log for the full output.")
-            .withStyle(ChatFormatting.GREEN),
+        () -> Component.literal(
+            "-> Enable debug for the " + module
+              + " module, please check debug.log for the full output.")
+          .withStyle(ChatFormatting.GREEN),
         false);
       source.sendSuccess(
-        () ->
-          Component.literal(
-              "> Use '/aptweaks debug " + commandName + " false' to disable the debug!")
-            .withStyle(ChatFormatting.WHITE),
+        () -> Component.literal(
+            "> Use '/aptweaks debug " + commandName + " false' to disable the debug!")
+          .withStyle(ChatFormatting.WHITE),
         false);
     } else {
       source.sendSuccess(
-        () ->
-          Component.literal("■ Disable debug for the " + commandName + " module!")
-            .withStyle(ChatFormatting.RED),
+        () -> Component.literal("[x] Disable debug for the " + commandName + " module!")
+          .withStyle(ChatFormatting.RED),
         false);
       source.sendSuccess(
-        () ->
-          Component.literal(
-              "> Please check the latest.log and/or debug.log for the full output.")
-            .withStyle(ChatFormatting.WHITE),
+        () -> Component.literal(
+            "> Please check the latest.log and/or debug.log for the full output.")
+          .withStyle(ChatFormatting.WHITE),
         false);
     }
   }

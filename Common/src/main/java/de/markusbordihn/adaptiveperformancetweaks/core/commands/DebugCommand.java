@@ -38,7 +38,7 @@ public class DebugCommand extends CustomCommand {
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
     var debugNode = Commands.literal("debug")
       .requires(source -> source.hasPermission(2))
-      .executes(ctx -> showAllStatus(ctx));
+      .executes(DebugCommand::showAllStatus);
 
     for (DebugModule module : DebugModule.values()) {
       debugNode.then(
@@ -58,9 +58,9 @@ public class DebugCommand extends CustomCommand {
     for (DebugModule module : DebugModule.values()) {
       boolean active = DebugManager.isDebugLevel(module.getLoggerName());
       ChatFormatting color = active ? ChatFormatting.GREEN : ChatFormatting.GRAY;
-      String state = active ? "[ON] " : "[OFF]";
+      String state = active ? "[ON]" : "[OFF]";
       source.sendSuccess(() -> Component.literal(
-          state + " " + module.getId() + " — " + module.getDescription())
+          state + " " + module.getId() + " - " + module.getDescription())
         .withStyle(color), false);
     }
 
@@ -76,9 +76,9 @@ public class DebugCommand extends CustomCommand {
     CommandSourceStack source = context.getSource();
     boolean active = DebugManager.isDebugLevel(module.getLoggerName());
     ChatFormatting color = active ? ChatFormatting.GREEN : ChatFormatting.GRAY;
-    String state = active ? "[ON] " : "[OFF]";
+    String state = active ? "[ON]" : "[OFF]";
     source.sendSuccess(() -> Component.literal(
-        state + " " + module.getId() + " — " + module.getDescription())
+        state + " " + module.getId() + " - " + module.getDescription())
       .withStyle(color), false);
     source.sendSuccess(() -> Component.literal(
         "> Use '/aptweaks debug " + module.getId() + " " + !active + "' to toggle.")

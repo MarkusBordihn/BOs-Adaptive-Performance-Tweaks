@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "integrateddynamics",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "technical",
+  "reason": "Integrated Dynamics automation entities are system-managed and should not be tracked."
+}

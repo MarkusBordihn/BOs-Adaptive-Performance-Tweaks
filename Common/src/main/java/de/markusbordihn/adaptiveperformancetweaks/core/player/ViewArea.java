@@ -86,10 +86,11 @@ public class ViewArea {
   }
 
   public boolean update(ServerPlayer serverPlayer, int viewAreaDistance, String levelName) {
+    BlockPos blockPos = serverPlayer.blockPosition();
     return this.update(
-      serverPlayer.blockPosition().getX(),
-      serverPlayer.blockPosition().getY(),
-      serverPlayer.blockPosition().getZ(),
+      blockPos.getX(),
+      blockPos.getY(),
+      blockPos.getZ(),
       viewAreaDistance,
       levelName);
   }

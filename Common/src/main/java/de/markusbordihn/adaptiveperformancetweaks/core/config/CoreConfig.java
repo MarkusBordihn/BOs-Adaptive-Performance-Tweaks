@@ -43,6 +43,12 @@ public class CoreConfig extends Config {
       
        timeBetweenUpdates  -- seconds between server load measurements (default: 5)
        logServerLoad       -- write server load changes to the log (default: true)
+       logServerLevelLoadChanges -- write per-world load changes to debug log (default: false)
+       serverLoadLogIntervalSeconds -- minimum interval for non-significant server load logs (default: 60)
+       serverLoadLogSignificantChangeSteps -- ordinal jump treated as significant (default: 2)
+       serverLoadLogTopWorldCount -- how many top worlds to include in server load summaries (default: 5)
+      
+       writeEntityTrackingReport -- write entity_tracking_report.json to the config folder on load/reload (default: true)
       """;
 
   private static final Map<FeatureToggle, Boolean> featureFlags = new EnumMap<>(
@@ -56,6 +62,11 @@ public class CoreConfig extends Config {
 
   public static int timeBetweenUpdates = 5;
   public static boolean logServerLoad = true;
+  public static boolean logServerLevelLoadChanges = false;
+  public static int serverLoadLogIntervalSeconds = 60;
+  public static int serverLoadLogSignificantChangeSteps = 2;
+  public static int serverLoadLogTopWorldCount = 5;
+  public static boolean writeEntityTrackingReport = true;
 
   private static File configFile;
   private static String configFileHeader = CONFIG_FILE_HEADER;
@@ -86,6 +97,16 @@ public class CoreConfig extends Config {
 
     timeBetweenUpdates = parseConfigValue(properties, "timeBetweenUpdates", timeBetweenUpdates);
     logServerLoad = parseConfigValue(properties, "logServerLoad", logServerLoad);
+    logServerLevelLoadChanges = parseConfigValue(properties, "logServerLevelLoadChanges",
+      logServerLevelLoadChanges);
+    serverLoadLogIntervalSeconds = parseConfigValue(properties, "serverLoadLogIntervalSeconds",
+      serverLoadLogIntervalSeconds);
+    serverLoadLogSignificantChangeSteps = parseConfigValue(properties,
+      "serverLoadLogSignificantChangeSteps", serverLoadLogSignificantChangeSteps);
+    serverLoadLogTopWorldCount = parseConfigValue(properties, "serverLoadLogTopWorldCount",
+      serverLoadLogTopWorldCount);
+    writeEntityTrackingReport = parseConfigValue(properties, "writeEntityTrackingReport",
+      writeEntityTrackingReport);
 
     updateConfigFileIfChanged(configFile, configFileHeader, properties, unmodifiedProperties);
   }

@@ -1,6 +1,0 @@
-﻿{
-  "mod_id": "weather2",
-  "priority": 100,
-  "exclude_from_tracking": true,
-  "notes": "Weather2 entities are weather effect entities managed by the mod and should not be spawn-limited."
-}

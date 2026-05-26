@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "guardvillagers",
+  "priority": 100,
+  "mode": "protect_namespace",
+  "category": "managed_living",
+  "reason": "Guard Villagers are managed living NPCs and should be protected from tracking."
+}

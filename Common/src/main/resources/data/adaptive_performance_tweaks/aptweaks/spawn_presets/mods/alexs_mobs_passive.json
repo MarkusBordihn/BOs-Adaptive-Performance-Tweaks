@@ -1,0 +1,50 @@
+{
+  "replace": false,
+  "mod_id": "alexsmobs",
+  "priority": 100,
+  "entities": {
+    "allow_list": [
+      "alexsmobs:blobfish",
+      "alexsmobs:capuchin_monkey",
+      "alexsmobs:cockroach",
+      "alexsmobs:crow",
+      "alexsmobs:elephant",
+      "alexsmobs:emu",
+      "alexsmobs:endergrade",
+      "alexsmobs:fly",
+      "alexsmobs:gazelle",
+      "alexsmobs:gorilla",
+      "alexsmobs:hummingbird",
+      "alexsmobs:kangaroo",
+      "alexsmobs:lobster",
+      "alexsmobs:mantis_shrimp",
+      "alexsmobs:moose",
+      "alexsmobs:mungus",
+      "alexsmobs:cachalot_whale",
+      "alexsmobs:orca",
+      "alexsmobs:platypus",
+      "alexsmobs:raccoon",
+      "alexsmobs:roadrunner",
+      "alexsmobs:seal",
+      "alexsmobs:shoebill",
+      "alexsmobs:snow_leopard",
+      "alexsmobs:spectre",
+      "alexsmobs:stradpole",
+      "alexsmobs:sunbird",
+      "alexsmobs:tasmanian_devil",
+      "alexsmobs:warped_toad"
+    ],
+    "per_player_max": 4,
+    "per_world_max": 16,
+    "per_server_max": 320,
+    "per_chunk_max": 2
+  },
+  "load_factors": {
+    "very_low": 1.0,
+    "low": 1.0,
+    "normal": 0.9,
+    "medium": 0.7,
+    "high": 0.4,
+    "very_high": 0.1
+  }
+}

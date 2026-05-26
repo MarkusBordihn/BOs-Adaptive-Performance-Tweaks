@@ -27,7 +27,9 @@ import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnPresetLoade
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -87,6 +89,13 @@ public final class ServerEventHandler {
 
     ServerPlayConnectionEvents.DISCONNECT.register((handler, server) ->
       CommonServerEventHandler.handlePlayerLoggedOut(handler.player));
+
+    ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) ->
+      CommonServerEventHandler.handlePlayerTeleported(newPlayer));
+
+    ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register(
+      (player, origin, destination) ->
+        CommonServerEventHandler.handlePlayerTeleported(player));
 
     ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
       if (CommonEntityEventHandler.handleEntityJoinLevel(entity, level)) {

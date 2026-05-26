@@ -21,6 +21,7 @@ package de.markusbordihn.adaptiveperformancetweaks.core.server;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreEntityManager;
+import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPositionManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.BenchmarkManager;
 import java.util.List;
@@ -83,7 +84,9 @@ public final class ServerManager {
       numberOfPlayers = minecraftServer.getPlayerList().getPlayerCount();
     }
     CoreEntityManager.handleServerTick();
-    PlayerPositionManager.handleServerTick();
+    if (FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled()) {
+      PlayerPositionManager.handleServerTick();
+    }
     if (BenchmarkManager.isRunning()) {
       BenchmarkManager.onServerTick();
     }

@@ -1,6 +1,0 @@
-﻿{
-  "mod_id": "botania",
-  "priority": 100,
-  "exclude_from_tracking": true,
-  "notes": "Botania entities (e.g., mana bursts, sparks) are managed by the mod and should not be spawn-limited."
-}

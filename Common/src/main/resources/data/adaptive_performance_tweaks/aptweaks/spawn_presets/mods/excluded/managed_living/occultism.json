@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "occultism",
+  "priority": 100,
+  "mode": "protect_namespace",
+  "category": "managed_living",
+  "reason": "Occultism summoned and ritual entities should be protected from spawn tracking."
+}

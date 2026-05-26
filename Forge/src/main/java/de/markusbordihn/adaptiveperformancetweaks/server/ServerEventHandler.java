@@ -126,6 +126,20 @@ public final class ServerEventHandler {
   }
 
   @SubscribeEvent
+  public static void handlePlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+    if (event.getEntity() instanceof ServerPlayer serverPlayer) {
+      CommonServerEventHandler.handlePlayerTeleported(serverPlayer);
+    }
+  }
+
+  @SubscribeEvent
+  public static void handlePlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+    if (event.getEntity() instanceof ServerPlayer serverPlayer) {
+      CommonServerEventHandler.handlePlayerTeleported(serverPlayer);
+    }
+  }
+
+  @SubscribeEvent
   public static void handleLivingHurt(LivingHurtEvent event) {
     if (!FeatureToggle.PLAYER_EASY_CHILD_MODE.isEnabled()
       && !FeatureToggle.PLAYER_STARTER_PROTECTION.isEnabled()) {

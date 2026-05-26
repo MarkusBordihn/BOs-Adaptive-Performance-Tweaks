@@ -3,6 +3,14 @@
   "mod_id": "friendsandfoes",
   "priority": 100,
   "entities": {
+    "allow_list": [
+      "friendsandfoes:allay",
+      "friendsandfoes:copper_golem",
+      "friendsandfoes:glare",
+      "friendsandfoes:iceologer",
+      "friendsandfoes:illusioner",
+      "friendsandfoes:tuff_golem"
+    ],
     "per_player_max": 8,
     "per_world_max": 32,
     "per_server_max": 128,
@@ -15,6 +23,5 @@
     "medium": 0.7,
     "high": 0.4,
     "very_high": 0.1
-  },
-  "notes": "Friends and Foes — limits all friendsandfoes:* entities."
+  }
 }

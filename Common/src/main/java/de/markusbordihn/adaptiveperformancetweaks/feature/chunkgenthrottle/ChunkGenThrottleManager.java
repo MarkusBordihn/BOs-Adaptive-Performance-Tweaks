@@ -19,6 +19,7 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.chunkgenthrottle;
 
+import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLevelLoad;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
@@ -32,6 +33,10 @@ public final class ChunkGenThrottleManager {
   }
 
   public static void handleServerLoadEvent(ServerLoadEvent event) {
+    if (!FeatureToggle.CHUNK_GEN_THROTTLE.isEnabled()) {
+      return;
+    }
+
     currentLoadLevel = event.getServerLoadLevel();
   }
 

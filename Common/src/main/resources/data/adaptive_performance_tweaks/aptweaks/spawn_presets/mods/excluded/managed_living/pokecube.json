@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "pokecube",
+  "priority": 100,
+  "mode": "protect_namespace",
+  "category": "managed_living",
+  "reason": "Pokecube living entities are mod-managed and should be protected from tracking."
+}

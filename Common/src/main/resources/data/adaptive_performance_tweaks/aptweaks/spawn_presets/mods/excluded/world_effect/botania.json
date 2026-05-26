@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "botania",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "world_effect",
+  "reason": "Botania effect entities should not be tracked."
+}

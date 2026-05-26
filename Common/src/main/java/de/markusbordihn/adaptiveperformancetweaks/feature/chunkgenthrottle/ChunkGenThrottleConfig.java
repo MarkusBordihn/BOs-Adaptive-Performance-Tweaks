@@ -34,7 +34,7 @@ public final class ChunkGenThrottleConfig extends Config {
        Chunk Generation Throttle Feature Configuration
       
        Reduces the frequency of chunk generation processing ticks under server load.
-       Only activates at MEDIUM+ server load — no effect at normal load.
+       Only activates at MEDIUM+ server load - no effect at normal load.
       
        Divisors control how many ticks are skipped between processing runs:
          2 = process every 2nd tick (50% reduction)

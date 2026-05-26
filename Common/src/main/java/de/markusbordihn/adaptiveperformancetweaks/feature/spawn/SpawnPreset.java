@@ -19,6 +19,8 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.spawn;
 
+import de.markusbordihn.adaptiveperformancetweaks.core.entity.TrackingCategory;
+import de.markusbordihn.adaptiveperformancetweaks.core.entity.TrackingMode;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import java.util.List;
 import java.util.Set;
@@ -31,8 +33,10 @@ public record SpawnPreset(
   DimensionFilter dimensions,
   EntityLimits entities,
   LoadFactors loadFactors,
-  boolean excludeFromTracking,
-  String notes) {
+  TrackingMode mode,
+  TrackingCategory category,
+  String reason,
+  Set<String> entityIds) {
 
   public record DimensionFilter(List<String> allow, List<String> deny, List<String> ignore) {
 

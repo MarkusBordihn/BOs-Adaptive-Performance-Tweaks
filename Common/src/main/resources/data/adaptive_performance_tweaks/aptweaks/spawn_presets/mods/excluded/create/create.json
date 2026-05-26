@@ -1,6 +1,7 @@
-﻿{
+{
   "mod_id": "create",
   "priority": 100,
-  "exclude_from_tracking": true,
-  "notes": "Create mod entities (e.g., contraptions, seats) are mechanical/structural and should not be spawn-limited."
+  "mode": "exclude_namespace",
+  "category": "vehicle_structure",
+  "reason": "Create contraptions and structure helpers should not be tracked."
 }

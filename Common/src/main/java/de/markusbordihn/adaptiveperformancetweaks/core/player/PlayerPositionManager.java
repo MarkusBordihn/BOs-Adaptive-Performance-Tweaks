@@ -34,26 +34,73 @@ import org.apache.logging.log4j.Logger;
 public final class PlayerPositionManager {
 
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  private static final int DEFAULT_PLAYER_MOVEMENT_UPDATE_TICK = 20;
   private static final int PLAYER_POSITION_UPDATE_TICK = 60;
 
   private static Map<String, PlayerPosition> playerPositionMap = new ConcurrentHashMap<>();
-  private static int updateTicks = 0;
+  private static int playerMovementUpdateTick = DEFAULT_PLAYER_MOVEMENT_UPDATE_TICK;
+  private static int playerMovementWindowSamples = 5;
+  private static int ticks = 0;
 
   private PlayerPositionManager() {
   }
 
+  public static void configureMovementTracking(int updateTick, int movementWindowSamples) {
+    playerMovementUpdateTick = Math.max(1, updateTick);
+    playerMovementWindowSamples = Math.max(1, movementWindowSamples);
+  }
+
   public static void reset() {
     playerPositionMap = new ConcurrentHashMap<>();
-    updateTicks = 0;
+    playerMovementUpdateTick = DEFAULT_PLAYER_MOVEMENT_UPDATE_TICK;
+    playerMovementWindowSamples = 5;
+    ticks = 0;
   }
 
   public static void handleServerTick() {
-    if (++updateTicks < PLAYER_POSITION_UPDATE_TICK) {
+    ticks++;
+    boolean movementUpdate = ticks % playerMovementUpdateTick == 0;
+    boolean fullUpdate = ticks % PLAYER_POSITION_UPDATE_TICK == 0;
+    if (!movementUpdate && !fullUpdate) {
       return;
     }
 
-    updatePlayerPositions();
-    updateTicks = 0;
+    updatePlayerPositions(ticks, movementUpdate, fullUpdate);
+  }
+
+  public static int getCurrentServerTick() {
+    return ticks;
+  }
+
+  public static int getMovementUpdateTick() {
+    return playerMovementUpdateTick;
+  }
+
+  public static void handlePlayerLoggedIn(ServerPlayer player) {
+    trackPlayer(player);
+  }
+
+  public static void handlePlayerTeleported(ServerPlayer player) {
+    trackPlayer(player);
+  }
+
+  private static void trackPlayer(ServerPlayer player) {
+    if (player == null) {
+      return;
+    }
+
+    MinecraftServer minecraftServer = ServerManager.getMinecraftServer();
+    if (minecraftServer == null) {
+      return;
+    }
+
+    PlayerList playerList = minecraftServer.getPlayerList();
+    if (playerList == null) {
+      return;
+    }
+
+    updatePlayerPosition(player, playerList.getViewDistance(), playerList.getSimulationDistance(),
+      ticks, true, true);
   }
 
   public static void handlePlayerLoggedOut(String playerUUID) {
@@ -79,7 +126,8 @@ public final class PlayerPositionManager {
     return playerPositionMap;
   }
 
-  private static void updatePlayerPositions() {
+  private static void updatePlayerPositions(int currentTick, boolean movementUpdate,
+    boolean fullUpdate) {
     MinecraftServer minecraftServer = ServerManager.getMinecraftServer();
     if (minecraftServer == null) {
       return;
@@ -95,19 +143,27 @@ public final class PlayerPositionManager {
     int simulationDistance = playerList.getSimulationDistance();
     for (ServerPlayer player : playerList.getPlayers()) {
       if (player.isAlive() && !player.hasDisconnected()) {
-        updatePlayerPosition(player, viewDistance, simulationDistance);
+        updatePlayerPosition(player, viewDistance, simulationDistance, currentTick,
+          movementUpdate, fullUpdate);
       }
     }
   }
 
   private static void updatePlayerPosition(
-    ServerPlayer player, int viewDistance, int simulationDistance) {
+    ServerPlayer player, int viewDistance, int simulationDistance, int currentTick,
+    boolean movementUpdate, boolean fullUpdate) {
     PlayerPosition playerPosition =
       playerPositionMap.computeIfAbsent(
         player.getStringUUID(),
         key -> new PlayerPosition(player, viewDistance, simulationDistance));
     String levelName = player.level().dimension().location().toString();
-    if (playerPosition.update(player, levelName, viewDistance, simulationDistance)) {
+    if (movementUpdate) {
+      playerPosition.updateMovement(player, levelName, currentTick, playerMovementWindowSamples,
+        playerMovementUpdateTick);
+    }
+
+    if (fullUpdate && playerPosition.updateViewArea(
+      player, levelName, viewDistance, simulationDistance)) {
       log.debug("[Player Position] Updated position for {} to {}", player.getName().getString(),
         playerPosition);
     }

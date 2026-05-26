@@ -24,8 +24,9 @@ import de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreItemEntityMana
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import java.util.Comparator;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -79,6 +80,24 @@ public final class ItemEntityManager {
     }
 
     return total;
+  }
+
+  public static Map<String, Map<String, Integer>> getItemEntityCountsByDimension() {
+    Map<String, Map<String, Integer>> result = new LinkedHashMap<>();
+    for (Map.Entry<String, Set<ItemEntity>> entry : itemTypeEntityMap.entrySet()) {
+      String key = entry.getKey();
+      int bracketEnd = key.indexOf(']');
+      if (bracketEnd < 0) {
+        continue;
+      }
+      String dimension = key.substring(1, bracketEnd);
+      String itemName = key.substring(bracketEnd + 1);
+      int count = entry.getValue().size();
+      if (count > 0) {
+        result.computeIfAbsent(dimension, d -> new HashMap<>()).put(itemName, count);
+      }
+    }
+    return result;
   }
 
   private static void resetState() {
@@ -194,8 +213,7 @@ public final class ItemEntityManager {
     int range = ItemsConfig.itemsClusterRange;
     boolean canSeeSky = level.canSeeSky(itemEntity.blockPosition());
 
-    Set<ItemEntity> snapshot = new HashSet<>(itemTypeEntities);
-    for (ItemEntity existing : snapshot) {
+    for (ItemEntity existing : itemTypeEntities) {
       ItemStack existingStack = existing.getItem();
       if (existingStack == null || existingStack.isEmpty()) {
         continue;
@@ -210,16 +228,21 @@ public final class ItemEntityManager {
         && existingY < itemY + range))
         && (itemZ - range < existingZ && existingZ < itemZ + range);
 
+      int effectiveMaxStack = Math.min(existingStack.getMaxStackSize(), ItemsConfig.maxStackSize);
       if (itemEntity.getId() != existing.getId()
         && existing.isAlive()
         && canMergeItemStacks(itemStack, existingStack)
-        && existingStack.getCount() < existingStack.getMaxStackSize()
+        && existingStack.getCount() < effectiveMaxStack
         && inRange) {
-        log.debug("[Item Merge] {} x{} → stack at {},{},{}",
+        log.debug("[Item Merge] {} x{} -> stack at {},{},{}",
           BuiltInRegistries.ITEM.getKey(itemStack.getItem()), itemStack.getCount(),
           itemX, itemY, itemZ);
-        mergeItemStacks(existingStack, itemStack);
+        mergeItemStacks(existingStack, itemStack, effectiveMaxStack);
         existing.setItem(existingStack);
+        if (ItemsConfig.movePositionToLastDrop) {
+          double newY = Math.max(existing.getY(), itemEntity.getY());
+          existing.setPos(itemEntity.getX(), newY, itemEntity.getZ());
+        }
         return true;
       }
     }
@@ -236,8 +259,8 @@ public final class ItemEntityManager {
       && ItemStack.isSameItemSameTags(incomingStack, existingStack);
   }
 
-  private static void mergeItemStacks(ItemStack target, ItemStack source) {
-    int transferAmount = Math.min(source.getCount(), target.getMaxStackSize() - target.getCount());
+  private static void mergeItemStacks(ItemStack target, ItemStack source, int maxStack) {
+    int transferAmount = Math.min(source.getCount(), maxStack - target.getCount());
     if (transferAmount > 0) {
       target.grow(transferAmount);
       source.shrink(transferAmount);

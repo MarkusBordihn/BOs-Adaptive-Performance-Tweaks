@@ -44,6 +44,7 @@ public final class ExperienceOrbsConfig extends Config {
 
   public static boolean optimizeExperienceOrbs = true;
   public static int experienceOrbsClusterRange = 2;
+  public static boolean movePositionToLastDrop = false;
 
   private ExperienceOrbsConfig() {
   }
@@ -66,13 +67,16 @@ public final class ExperienceOrbsConfig extends Config {
       optimizeExperienceOrbs);
     experienceOrbsClusterRange = parseInt(properties, "experienceOrbsClusterRange",
       experienceOrbsClusterRange);
+    movePositionToLastDrop = parseBoolean(properties, "movePositionToLastDrop",
+      movePositionToLastDrop);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
 
     log.debug(
-      "ExperienceOrbs config: optimize={}, clusterRange={}",
+      "ExperienceOrbs config: optimize={}, clusterRange={}, moveToLastDrop={}",
       optimizeExperienceOrbs,
-      experienceOrbsClusterRange);
+      experienceOrbsClusterRange,
+      movePositionToLastDrop);
   }
 
   private static boolean parseBoolean(Properties props, String key, boolean defaultValue) {

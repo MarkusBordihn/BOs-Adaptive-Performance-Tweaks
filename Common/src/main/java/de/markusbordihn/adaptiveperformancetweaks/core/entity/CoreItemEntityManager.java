@@ -27,14 +27,6 @@ public final class CoreItemEntityManager {
   }
 
   public static boolean isRelevantItemEntity(ItemEntity itemEntity) {
-    if (itemEntity == null || itemEntity.isRemoved()) {
-      return false;
-    }
-
-    if (itemEntity.getItem().isEmpty()) {
-      return false;
-    }
-
-    return !itemEntity.isRemoved();
+    return itemEntity != null && !itemEntity.isRemoved() && !itemEntity.getItem().isEmpty();
   }
 }

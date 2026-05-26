@@ -22,8 +22,8 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.items;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.accessor.ExperienceOrbAccessor;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -67,6 +67,17 @@ public final class ExperienceOrbManager {
     return total;
   }
 
+  public static Map<String, Integer> getTrackedExperienceOrbCountsByDimension() {
+    Map<String, Integer> result = new LinkedHashMap<>();
+    for (Map.Entry<String, Set<ExperienceOrb>> entry : experienceOrbEntityMap.entrySet()) {
+      int count = entry.getValue().size();
+      if (count > 0) {
+        result.put(entry.getKey(), count);
+      }
+    }
+    return result;
+  }
+
   private static void resetState() {
     experienceOrbEntityMap = new ConcurrentHashMap<>();
     ticks = 0;
@@ -106,8 +117,7 @@ public final class ExperienceOrbManager {
       int orbZ = (int) orbEntity.getZ();
       int range = ExperienceOrbsConfig.experienceOrbsClusterRange;
 
-      Set<ExperienceOrb> snapshot = new HashSet<>(worldOrbs);
-      for (ExperienceOrb existing : snapshot) {
+      for (ExperienceOrb existing : worldOrbs) {
         int existingX = (int) existing.getX();
         int existingY = (int) existing.getY();
         int existingZ = (int) existing.getZ();
@@ -125,6 +135,10 @@ public final class ExperienceOrbManager {
             orbEntity.blockPosition(), levelName);
           existingAccessor.setValue(mergedValue);
           orbAccessor.setValue(0);
+          if (ExperienceOrbsConfig.movePositionToLastDrop) {
+            double newY = Math.max(existing.getY(), orbEntity.getY());
+            existing.setPos(orbEntity.getX(), newY, orbEntity.getZ());
+          }
           orbEntity.moveTo(existing.getX(), existing.getY(), existing.getZ());
           orbEntity.remove(RemovalReason.DISCARDED);
           PerformanceStats.xpOrbsMerged++;

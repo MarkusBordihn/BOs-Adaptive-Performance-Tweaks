@@ -3,10 +3,17 @@
   "mod_id": "mekanismadditions",
   "priority": 100,
   "entities": {
-    "per_player_max": 8,
-    "per_world_max": 24,
-    "per_server_max": 96,
-    "per_chunk_max": 3
+    "allow_list": [
+      "mekanismadditions:baby_creeper",
+      "mekanismadditions:baby_enderman",
+      "mekanismadditions:baby_skeleton",
+      "mekanismadditions:baby_stray",
+      "mekanismadditions:baby_wither_skeleton"
+    ],
+    "per_player_max": 4,
+    "per_world_max": 16,
+    "per_server_max": 320,
+    "per_chunk_max": 2
   },
   "load_factors": {
     "very_low": 1.0,
@@ -15,6 +22,5 @@
     "medium": 0.7,
     "high": 0.4,
     "very_high": 0.1
-  },
-  "notes": "Mekanism Additions — limits mekanismadditions:* baby mobs."
+  }
 }

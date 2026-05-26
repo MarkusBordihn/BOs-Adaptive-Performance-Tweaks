@@ -1,6 +1,0 @@
-﻿{
-  "mod_id": "minecolonies",
-  "priority": 100,
-  "exclude_from_tracking": true,
-  "notes": "MineColonies entities are colony citizens managed by the mod — never spawn-limited."
-}

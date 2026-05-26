@@ -79,7 +79,6 @@ public final class CommandManager {
       return;
     }
     String command = String.format("gamerule %s %s", gameRule.getId(), value);
-    log.debug("Execute GameRule: /{}", command);
     Commands commands = minecraftServer.getCommands();
     commands.performCommand(
       commands.getDispatcher()

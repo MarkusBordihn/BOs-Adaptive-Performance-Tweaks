@@ -14,83 +14,117 @@
 
 ![Adaptive Performance Tweaks][header]
 
-> ⚠ **Alpha Version** — 12.x is currently in alpha. Please report issues on GitHub.
+> ⚠️ **12.x is the current unified release line.**
+> Older docs or setup guides may still describe the legacy 11.x multi-module layout.
 >
-> 💾 **Back up your world and config files before installing 12.x.** As an alpha release,
-> breaking changes between versions can occur. Restoring a backup may be necessary after updates.
+> 💾 **Back up your world and config files before updating.**
+> 12.x is still marked alpha and some configuration details may change between releases.
 >
-> 🔄 **Upgrading from 11.x?** — **Remove all 11.x modules before installing 12.x.**
-> This includes: `adaptive-performance-tweaks-core`, `-spawn`, `-gamerules`, `-items`, `-player`,
-> and the bundle.
-> Installing both versions simultaneously will cause conflicts.
+> 🔄 **Upgrading from 11.x?**
+> Remove all old APTweaks module jars before installing 12.x. Do not mix 11.x and 12.x files in
+> the same `mods/` folder.
 
-Adaptive Performance Tweaks is a **single mod** for **Forge and Fabric** that automatically adjusts
-server-side settings to maintain smooth TPS under load.
-It replaces the entire 11.x module system with one unified mod.
+Adaptive Performance Tweaks is a **single server-focused optimization mod** for **Forge, Fabric,
+and NeoForge** on **Minecraft 1.20.1**.
+It watches server load and adjusts selected systems automatically to reduce lag pressure.
 
-## ✨ What's new in 12.x
+Instead of asking you to assemble separate modules, 12.x bundles the major feature groups in one
+mod:
 
-### 🔌 Multi-loader support
+- Spawn control and spawn presets
+- Game rule adaptation
+- Item, XP orb, and arrow cleanup
+- Player login and beginner protection
+- Adaptive simulation distance with movement-aware throttling
+- Optional advanced throttles for AI, chunk generation, and view distance
+- Monitoring and benchmarking tools
 
-Supports Fabric, Forge und NeoForge.
+## What APTweaks is good at ✨
 
-### 📦 All modules included
+APTweaks helps most when performance problems are caused by:
 
-Spawn control, game rule tuning, item/XP orb optimization, player login protection, view/sim
-distance adaptation, and server load monitoring are all bundled.
+- too many mobs or repeated spawn attempts
+- large amounts of dropped items, XP orbs, or stuck arrows
+- overloaded exploration and chunk generation
+- servers that need softer automatic reactions instead of permanent hard limits
 
-### ⚡ Pre-creation spawn check
+It is less helpful for issues that come mainly from:
 
-The most significant performance improvement over 11.x: preset `DENY` rules can block mobs
-**before** a Minecraft entity ID is allocated and before the entity enters the world. In 11.x, the
-mod cancelled the spawn event after the entity had already joined the level — wasting entity ID
-space and triggering unnecessary game logic. Count-based per-chunk, per-player, per-world, and
-per-server limits are still evaluated during spawn handling with tracked entity state.
+- heavy redstone or machine logic
+- one specific broken mod or entity
+- world corruption or storage bottlenecks
 
-### 🧪 Automated game tests
+## Quick start 🚀
 
-The default verification path `./gradlew check` runs the shared unit test suite and both headless
-Fabric and Forge game test suites. This keeps spawn limits, load scaling, friendly chunk bypass,
-and the major performance features covered before release.
+1. Remove any old 11.x APTweaks jars from `mods/`.
+2. Install APTweaks 12.x via
+   the [CurseForge](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks)
+   or [Modrinth](https://modrinth.com/mod/adaptive-performance-tweaks) launcher.
+   Manual install: download the jar for your loader from one of those pages and place it in `mods/`.
+3. Start the game or server once.
+4. Review the generated files in `config/adaptive_performance_tweaks/`.
+5. Leave defaults on for a first test run before tuning anything.
 
-## 📥 Installation
+Spawn presets are loaded from:
 
-1. Remove any installed 11.x APTweaks modules (see warning above)
-2. Place the `adaptive-performance-tweaks-12.x.x-forge.jar` **or** `...-fabric.jar` in your `mods/`
-   folder
-3. Start the server — default config files are generated automatically
+- `config/adaptive_performance_tweaks/spawn_presets/`
+- `data/<namespace>/aptweaks/spawn_presets/`
 
-Default limits are tuned for **~4 players**. For larger servers, increase `per_player_max` and
-`per_world_max` in the spawn preset JSON files
-(`config/adaptive_performance_tweaks/spawn_presets/`).
+## Feature overview 🧩
 
-## 🧩 Modules
+| Feature             | What it does                                                                                                 |
+|---------------------|--------------------------------------------------------------------------------------------------------------|
+| Spawn               | Limits mob pressure with load-aware checks, view-area logic, and configurable presets                        |
+| Game Rules          | Adjusts selected gamerules when the server gets stressed                                                     |
+| Items               | Merges or removes excess dropped items                                                                       |
+| Experience Orbs     | Clusters XP orbs to lower entity counts                                                                      |
+| Arrows              | Cleans up stuck arrows without touching active projectiles                                                   |
+| Player Protection   | Protects players during login and helps newer or listed players                                              |
+| Simulation Distance | Lowers simulation cost automatically under load and can temporarily throttle harder during heavy exploration |
+| View Distance       | Optional advanced safety valve for heavy servers                                                             |
+| AI Throttling       | Optional advanced slowdown for far-away mob AI                                                               |
+| Chunk Gen Throttle  | Optional advanced slowdown for chunk generation work                                                         |
+| Monitoring          | Optional log-based visibility into load and entity pressure                                                  |
+| Benchmark           | Built-in before/after measurement tool for real servers and modpacks                                         |
 
-| Module              | Description                                                                           |
-|---------------------|---------------------------------------------------------------------------------------|
-| Spawn               | Per-entity-type limits with load-adaptive scaling and friendly chunk bypass           |
-| Game Rules          | Automatic adjustment of randomTickSpeed, entityCramming, and related rules under load |
-| Items               | Item entity merge and lifetime reduction under load                                   |
-| Experience Orbs     | XP orb clustering to reduce entity count                                              |
-| View Distance       | Adaptive view distance scaling based on server load                                   |
-| Simulation Distance | Adaptive simulation distance scaling                                                  |
-| Player Protection   | Configurable login invulnerability and invisibility period                            |
-| Monitoring          | Periodic server load and spawn stats logging                                          |
+Simulation Distance stays load-aware as before, but can now also clamp down harder during
+heavy exploration at `MEDIUM+` load and then recover gradually after players stop moving or finish
+logging in.
 
-## ⚙️ Configuration
+## Commands 🔧
 
-All config files are generated in `config/adaptive_performance_tweaks/` on first start.
-Spawn presets live in `config/adaptive_performance_tweaks/spawn_presets/` and can be added or
-overridden per server. Datapacks can also provide presets via
-`data/<namespace>/aptweaks/spawn_presets/`.
+The main command root is `/aptweaks`.
 
-See the [wiki](https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki) for
-configuration details, module descriptions, and troubleshooting.
+Useful commands include:
 
-## 📜 Version overview
+- `/aptweaks status`
+- `/aptweaks load`
+- `/aptweaks stats`
+- `/aptweaks stats items`
+- `/aptweaks stats xp_orbs`
+- `/aptweaks stats arrows`
+- `/aptweaks stats reset`
+- `/aptweaks entities overview`
+- `/aptweaks feature <id> <true|false>`
+- `/aptweaks playerPositions`
+- `/aptweaks kill all_dropped_items`
+- `/aptweaks reload`
+- `/aptweaks debug`
+- `/aptweaks benchmark`
+- `/aptweaks benchmark start`
+- `/aptweaks benchmark report`
 
-See [wiki/Versions.md](wiki/Versions.md) for a comparison of 12.x vs 11.x and the reasons behind
-the architecture change.
+## Learn more 📚
+
+The wiki is the main 12.x documentation:
+
+- [Home](wiki/Home.md)
+- [How To Use](wiki/HowToUse.md)
+- [Modules and Features](wiki/Modules.md)
+- [FAQ](wiki/FAQ.md)
+- [Troubleshooting](wiki/Troubleshooting.md)
+- [Benchmark](wiki/Benchmark.md)
+- [Versions and Legacy Notes](wiki/Versions.md)
 
 [header]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki/images/aptweaks-header-only.png
 

@@ -35,7 +35,7 @@ public final class ViewDistanceConfig extends Config {
       
        Dynamically adjusts chunk view distance for all players based on server load.
        Values are chunk counts. Min: 4, Max: 32.
-       This is a safety valve — only enable if view distance causes measurable lag.
+       This is a safety valve - only enable if view distance causes measurable lag.
       """;
 
   public static int viewDistanceVeryLow = 12;

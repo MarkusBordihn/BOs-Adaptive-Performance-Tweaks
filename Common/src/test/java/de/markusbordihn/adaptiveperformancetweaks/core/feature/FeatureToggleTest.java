@@ -85,7 +85,7 @@ class FeatureToggleTest {
     assertEquals(FeatureState.AUTO, FeatureToggle.PLAYER_EASY_CHILD_MODE.getDefaultState());
     assertEquals(FeatureState.AUTO, FeatureToggle.PLAYER_STARTER_PROTECTION.getDefaultState());
     assertEquals(FeatureState.AUTO, FeatureToggle.SPAWN.getDefaultState());
-    assertEquals(FeatureState.AUTO, FeatureToggle.ADAPTIVE_SIM_DISTANCE.getDefaultState());
+    assertEquals(FeatureState.AUTO, FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.getDefaultState());
   }
 
   @Test
@@ -104,6 +104,20 @@ class FeatureToggleTest {
     assertFalse(FeatureToggle.PLAYER_LOGIN_PROTECTION.getConflictingMods().isEmpty());
     assertFalse(FeatureToggle.SPAWN.getConflictingMods().isEmpty());
     assertNotNull(FeatureToggle.GAMERULES.getConflictingMods());
+    assertTrue(FeatureToggle.ITEMS.getConflictingMods().contains("eco_stack_manager"));
+    assertTrue(FeatureToggle.EXPERIENCE_ORBS.getConflictingMods().contains("eco_stack_manager"));
+    assertTrue(
+      FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.getConflictingMods().contains("dynview"));
+  }
+
+  @Test
+  void warningOnlyModsDefinedForOverlappingFeatures() {
+    assertTrue(FeatureToggle.ITEMS.getWarningOnlyMods().contains("servercore"));
+    assertTrue(FeatureToggle.EXPERIENCE_ORBS.getWarningOnlyMods().contains("servercore"));
+    assertTrue(FeatureToggle.SPAWN.getWarningOnlyMods().contains("servercore"));
+    assertTrue(FeatureToggle.AI_THROTTLING.getWarningOnlyMods().contains("aiimprovements"));
+    assertTrue(
+      FeatureToggle.PLAYER_LOGIN_PROTECTION.getWarningOnlyMods().contains("joinprotection"));
   }
 
   @Test
@@ -116,6 +130,6 @@ class FeatureToggleTest {
     assertEquals(FeatureToggle.Scope.SERVER, FeatureToggle.SPAWN.scope());
     assertEquals(FeatureToggle.Scope.SERVER, FeatureToggle.PLAYER_STARTER_PROTECTION.scope());
     assertEquals(FeatureToggle.Scope.SERVER, FeatureToggle.ADAPTIVE_VIEW_DISTANCE.scope());
-    assertEquals(FeatureToggle.Scope.SERVER, FeatureToggle.ADAPTIVE_SIM_DISTANCE.scope());
+    assertEquals(FeatureToggle.Scope.SERVER, FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.scope());
   }
 }

@@ -24,16 +24,21 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnPreset;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.Bootstrap;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.monster.Zombie;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -121,6 +126,7 @@ class CoreEntityManagerTest {
     "appliedenergistics2:meteor",
     "mekanism:robit",
     "minecolonies:citizen",
+    "immersive_aircraft:biplane",
     "immersiveengineering:tesla_coil",
     "industrialforegoing:pink_slime",
     "fluxnetworks:flux_point",
@@ -161,7 +167,7 @@ class CoreEntityManagerTest {
     CoreEntityManager.setExcludedModNamespaces(
       Set.of("create", "botania", "mana-and-artifice", "minecolonies",
         "appliedenergistics2", "mekanism", "industrialforegoing",
-        "immersiveengineering", "fluxnetworks", "guardvillagers",
+        "immersive_aircraft", "immersiveengineering", "fluxnetworks", "guardvillagers",
         "human_companions", "lootr", "biggerreactors", "modularrouters",
         "pipez", "pokecube_aio", "refinedstorage", "storagedrawers",
         "ultimate_car", "viescraft_machines", "weather2", "xnet",
@@ -173,6 +179,7 @@ class CoreEntityManagerTest {
     assertTrue(CoreEntityManager.isExcludedModNamespace("minecolonies:citizen"));
     assertTrue(CoreEntityManager.isExcludedModNamespace("appliedenergistics2:tiny_tnt"));
     assertTrue(CoreEntityManager.isExcludedModNamespace("mekanism:robit"));
+    assertTrue(CoreEntityManager.isExcludedModNamespace("immersive_aircraft:biplane"));
     assertTrue(CoreEntityManager.isExcludedModNamespace("industrialforegoing:pink_slime"));
     assertTrue(CoreEntityManager.isExcludedModNamespace("fluxnetworks:flux_point"));
     assertTrue(CoreEntityManager.isExcludedModNamespace("guardvillagers:archer"));
@@ -186,6 +193,28 @@ class CoreEntityManagerTest {
   @Test
   void nullEntityReturnsFalse() {
     assertFalse(CoreEntityManager.isRelevantEntity(null));
+  }
+
+  @Test
+  void protectNamespaceRuleKeepsManagedLivingEntitiesOutOfTracking() {
+    SpawnPreset preset = new SpawnPreset(
+      false,
+      "testnpc",
+      List.of(),
+      100,
+      new SpawnPreset.DimensionFilter(List.of(), List.of(), List.of()),
+      new SpawnPreset.EntityLimits(Set.of(), Set.of(), 1, 1, 1, 1),
+      SpawnPreset.LoadFactors.defaults(),
+      TrackingMode.PROTECT_NAMESPACE,
+      TrackingCategory.MANAGED_LIVING,
+      "Managed living test namespace",
+      Set.of());
+    CoreEntityManager.reloadTrackingRules(List.of(preset));
+
+    Zombie zombie = new Zombie(EntityType.ZOMBIE, mock(ServerLevel.class));
+    assertFalse(CoreEntityManager.isRelevantEntity(zombie, "testnpc:guard"));
+    assertFalse(CoreEntityManager.isRelevantEntity(zombie, "testnpc:guard"),
+      "Second call should use the cached namespace decision");
   }
 
   @Test

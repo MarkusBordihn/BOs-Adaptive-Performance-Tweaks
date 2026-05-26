@@ -84,7 +84,7 @@ public class BenchmarkCommand extends CustomCommand {
     sendFeedback(context, BenchmarkManager.getStatusMessage());
     BenchmarkManager.BenchmarkCompareResult lastResult = BenchmarkManager.getLastResult();
     if (lastResult != null && !BenchmarkManager.isRunning()) {
-      sendFeedback(context, "Last result available — use /aptweaks benchmark report to view.");
+      sendFeedback(context, "Last result available - use /aptweaks benchmark report to view.");
     }
     return 0;
   }

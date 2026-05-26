@@ -1,0 +1,7 @@
+﻿{
+  "mod_id": "pipez",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "storage_network",
+  "reason": "Pipez entities are transport helpers and should not be tracked."
+}

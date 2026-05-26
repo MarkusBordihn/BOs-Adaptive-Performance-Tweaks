@@ -21,20 +21,6 @@ package de.markusbordihn.adaptiveperformancetweaks.core.feature;
 
 import java.util.Locale;
 
-/**
- * Three-way feature state for mod-conflict-aware feature toggling.
- *
- * <ul>
- *   <li>{@link #AUTO} (default) — enable the feature unless a conflicting mod is detected at
- *       startup. When a conflict is found the feature is automatically disabled with a warning.
- *   <li>{@link #ENABLED} — force the feature on; a warning is logged if a conflicting mod is
- *       present so the admin can decide whether to keep both active.
- *   <li>{@link #DISABLED} — force the feature off regardless of installed mods.
- * </ul>
- *
- * <p>Config values accepted (case-insensitive): {@code auto}, {@code true}/{@code enabled}/{@code
- * on}, {@code false}/{@code disabled}/{@code off}.
- */
 public enum FeatureState {
   AUTO,
   ENABLED,
