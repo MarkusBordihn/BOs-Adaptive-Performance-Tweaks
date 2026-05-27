@@ -70,7 +70,7 @@ public final class CommandManager {
   }
 
   public static void executeGameRuleCommand(GameRules.Key<?> gameRule, boolean value) {
-    executeGameRuleCommand(gameRule, value ? "true" : "false");
+    executeGameRuleCommand(gameRule, Boolean.toString(value));
   }
 
   public static void executeGameRuleCommand(GameRules.Key<?> gameRule, String value) {

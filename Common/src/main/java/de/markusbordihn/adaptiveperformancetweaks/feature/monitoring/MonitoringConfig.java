@@ -19,7 +19,6 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.monitoring;
 
-import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.Config;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
@@ -53,41 +52,23 @@ public final class MonitoringConfig extends Config {
     Properties unmodified = new Properties();
     unmodified.putAll(properties);
 
-    CoreConfig.setFeatureEnabled(
+    CoreConfig.applyFeatureState(
       FeatureToggle.MONITORING,
-      ModConflictDetector.resolveFeatureState(
-        FeatureToggle.MONITORING,
-        parseConfigValue(
-          properties, "enabled", FeatureToggle.MONITORING.getDefaultState())));
+      parseConfigValue(properties, "enabled", FeatureToggle.MONITORING.getDefaultState()));
 
-    monitoringIntervalSeconds = parseInt(properties, "monitoringIntervalSeconds",
+    monitoringIntervalSeconds = parseConfigValue(properties, "monitoringIntervalSeconds",
       monitoringIntervalSeconds);
-    monitoringLogTps = parseBoolean(properties, "monitoringLogTps", monitoringLogTps);
-    monitoringLogLoadLevel = parseBoolean(properties, "monitoringLogLoadLevel",
+    monitoringLogTps = parseConfigValue(properties, "monitoringLogTps", monitoringLogTps);
+    monitoringLogLoadLevel = parseConfigValue(properties, "monitoringLogLoadLevel",
       monitoringLogLoadLevel);
-    monitoringLogPlayers = parseBoolean(properties, "monitoringLogPlayers", monitoringLogPlayers);
-    monitoringLogEntities = parseBoolean(properties, "monitoringLogEntities",
+    monitoringLogPlayers = parseConfigValue(properties, "monitoringLogPlayers",
+      monitoringLogPlayers);
+    monitoringLogEntities = parseConfigValue(properties, "monitoringLogEntities",
       monitoringLogEntities);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
     log.debug("Monitoring enabled: interval={}s tps={} loadLevel={} players={} entities={}",
       monitoringIntervalSeconds, monitoringLogTps, monitoringLogLoadLevel,
       monitoringLogPlayers, monitoringLogEntities);
-  }
-
-  private static int parseInt(Properties props, String key, int defaultValue) {
-    props.putIfAbsent(key, String.valueOf(defaultValue));
-    try {
-      return Integer.parseInt(props.getProperty(key));
-    } catch (NumberFormatException exception) {
-      log.warn("Invalid integer for '{}', using default {}", key,
-        defaultValue);
-      return defaultValue;
-    }
-  }
-
-  private static boolean parseBoolean(Properties props, String key, boolean defaultValue) {
-    props.putIfAbsent(key, String.valueOf(defaultValue));
-    return Boolean.parseBoolean(props.getProperty(key));
   }
 }

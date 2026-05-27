@@ -24,9 +24,14 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.BenchmarkManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenarioId;
+import java.nio.file.Path;
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 
 public class BenchmarkCommand extends CustomCommand {
@@ -44,7 +49,13 @@ public class BenchmarkCommand extends CustomCommand {
             IntegerArgumentType.getInteger(ctx, "seconds"), false))
           .then(Commands.literal("move")
             .executes(ctx -> startBenchmark(ctx,
-              IntegerArgumentType.getInteger(ctx, "seconds"), true)))))
+              IntegerArgumentType.getInteger(ctx, "seconds"), true))))
+        .then(Commands.literal("scenario")
+          .then(registerScenarioStart(BenchmarkScenarioId.GENERAL, true))
+          .then(registerScenarioStart(BenchmarkScenarioId.ITEMS, false))
+          .then(registerScenarioStart(BenchmarkScenarioId.XP, false))
+          .then(registerScenarioStart(BenchmarkScenarioId.ENTITIES, false))
+          .then(registerScenarioStart(BenchmarkScenarioId.RECOVERY, false))))
       .then(Commands.literal("confirm")
         .executes(ctx -> {
           ServerPlayer player = ctx.getSource().getPlayerOrException();
@@ -56,19 +67,6 @@ public class BenchmarkCommand extends CustomCommand {
           ServerPlayer player = ctx.getSource().getPlayerOrException();
           BenchmarkManager.cancel(player);
           return 0;
-        }))
-      .then(Commands.literal("report")
-        .executes(ctx -> {
-          BenchmarkManager.BenchmarkCompareResult result = BenchmarkManager.getLastResult();
-          if (result == null) {
-            sendFeedback(ctx,
-              "No benchmark result available. Run /aptweaks benchmark start first.");
-          } else {
-            for (Component line : result.format()) {
-              sendFeedback(ctx, line);
-            }
-          }
-          return 0;
         }));
   }
 
@@ -79,12 +77,54 @@ public class BenchmarkCommand extends CustomCommand {
     return 0;
   }
 
+  private static ArgumentBuilder<CommandSourceStack, ?> registerScenarioStart(
+    BenchmarkScenarioId scenarioId, boolean defaultAutoMove) {
+    return Commands.literal(scenarioId.getId())
+      .executes(
+        ctx -> startScenarioBenchmark(ctx, scenarioId, DEFAULT_PHASE_SECONDS, defaultAutoMove))
+      .then(Commands.argument("seconds", IntegerArgumentType.integer(30, 3600))
+        .executes(ctx -> startScenarioBenchmark(ctx, scenarioId,
+          IntegerArgumentType.getInteger(ctx, "seconds"), defaultAutoMove))
+        .then(Commands.literal("move")
+          .executes(ctx -> startScenarioBenchmark(ctx, scenarioId,
+            IntegerArgumentType.getInteger(ctx, "seconds"), true))));
+  }
+
+  private static int startScenarioBenchmark(CommandContext<CommandSourceStack> context,
+    BenchmarkScenarioId scenarioId, long seconds, boolean autoMove)
+    throws CommandSyntaxException {
+    ServerPlayer player = context.getSource().getPlayerOrException();
+    BenchmarkManager.requestScenarioStart(player, scenarioId, seconds, autoMove);
+    return 0;
+  }
+
+  private static String abbreviatePath(Path path) {
+    String full = path.toString();
+    if (full.length() <= 60) {
+      return full;
+    }
+    int nameCount = path.getNameCount();
+    String sep = java.io.File.separator;
+    String parent = nameCount >= 2 ? path.getName(nameCount - 2) + sep : "";
+    return "..." + sep + parent + path.getFileName();
+  }
+
+  private static MutableComponent buildLastResultLink(Path resultPath) {
+    return Component.literal("Last result: ")
+      .append(Component.literal(abbreviatePath(resultPath))
+        .withStyle(ChatFormatting.AQUA)
+        .withStyle(style -> style.withClickEvent(
+          new ClickEvent(ClickEvent.Action.OPEN_FILE, resultPath.toString()))));
+  }
+
   @Override
-  public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+  public int run(CommandContext<CommandSourceStack> context) {
     sendFeedback(context, BenchmarkManager.getStatusMessage());
-    BenchmarkManager.BenchmarkCompareResult lastResult = BenchmarkManager.getLastResult();
-    if (lastResult != null && !BenchmarkManager.isRunning()) {
-      sendFeedback(context, "Last result available - use /aptweaks benchmark report to view.");
+    if (BenchmarkManager.getLastResult() != null && !BenchmarkManager.isRunning()) {
+      Path resultPath = BenchmarkManager.getLastResultPath();
+      if (resultPath != null) {
+        sendFeedback(context, buildLastResultLink(resultPath));
+      }
     }
     return 0;
   }

@@ -20,6 +20,7 @@
 package de.markusbordihn.adaptiveperformancetweaks.core.config;
 
 import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
+import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureState;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import java.io.File;
 import java.util.EnumMap;
@@ -53,6 +54,8 @@ public class CoreConfig extends Config {
 
   private static final Map<FeatureToggle, Boolean> featureFlags = new EnumMap<>(
     FeatureToggle.class);
+  private static final Map<FeatureToggle, ModConflictDetector.FeatureDecision> featureDecisions =
+    new EnumMap<>(FeatureToggle.class);
 
   public static int serverLoadVeryLowThreshold = 20;
   public static int serverLoadLowThreshold = 40;
@@ -69,7 +72,6 @@ public class CoreConfig extends Config {
   public static boolean writeEntityTrackingReport = true;
 
   private static File configFile;
-  private static String configFileHeader = CONFIG_FILE_HEADER;
 
   private CoreConfig() {
   }
@@ -108,19 +110,33 @@ public class CoreConfig extends Config {
     writeEntityTrackingReport = parseConfigValue(properties, "writeEntityTrackingReport",
       writeEntityTrackingReport);
 
-    updateConfigFileIfChanged(configFile, configFileHeader, properties, unmodifiedProperties);
+    updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodifiedProperties);
   }
 
   public static boolean isFeatureEnabled(FeatureToggle toggle) {
     if (!featureFlags.containsKey(toggle)) {
-      boolean resolved = ModConflictDetector.resolveFeatureState(toggle, toggle.getDefaultState());
-      featureFlags.put(toggle, resolved);
-      return resolved;
+      applyFeatureState(toggle, toggle.getDefaultState());
     }
+
     return featureFlags.get(toggle);
+  }
+
+  public static void applyFeatureState(FeatureToggle toggle, FeatureState configuredState) {
+    ModConflictDetector.FeatureDecision decision =
+      ModConflictDetector.resolveFeatureDecision(toggle, configuredState);
+    featureFlags.put(toggle, decision.enabled());
+    featureDecisions.put(toggle, decision);
   }
 
   public static void setFeatureEnabled(FeatureToggle toggle, boolean enabled) {
     featureFlags.put(toggle, enabled);
+  }
+
+  public static ModConflictDetector.FeatureDecision getFeatureDecision(FeatureToggle toggle) {
+    if (!featureDecisions.containsKey(toggle)) {
+      applyFeatureState(toggle, toggle.getDefaultState());
+    }
+
+    return featureDecisions.get(toggle);
   }
 }

@@ -44,9 +44,10 @@ public final class ModConflictDetector {
   private ModConflictDetector() {
   }
 
-  public static boolean resolveFeatureState(FeatureToggle toggle, FeatureState configuredState) {
+  public static FeatureDecision resolveFeatureDecision(
+    FeatureToggle toggle, FeatureState configuredState) {
     if (configuredState == FeatureState.DISABLED) {
-      return false;
+      return new FeatureDecision(false, FeatureActivation.MANUAL_DISABLED, null);
     }
 
     String conflictingMod = findFirstLoadedMod(toggle.getConflictingMods());
@@ -67,7 +68,7 @@ public final class ModConflictDetector {
           toggle.getId(),
           warningMod);
       }
-      return true;
+      return new FeatureDecision(true, FeatureActivation.MANUAL_ENABLED, conflictingMod);
     }
 
     if (conflictingMod != null) {
@@ -75,7 +76,7 @@ public final class ModConflictDetector {
         "Feature '{}' auto-disabled: mod '{}' already handles this functionality.",
         toggle.getId(),
         conflictingMod);
-      return false;
+      return new FeatureDecision(false, FeatureActivation.CONFLICT_DISABLED, conflictingMod);
     }
 
     if (warningMod != null) {
@@ -85,7 +86,11 @@ public final class ModConflictDetector {
         warningMod);
     }
 
-    return true;
+    return new FeatureDecision(true, FeatureActivation.AUTO_ENABLED, warningMod);
+  }
+
+  public static boolean resolveFeatureState(FeatureToggle toggle, FeatureState configuredState) {
+    return resolveFeatureDecision(toggle, configuredState).enabled();
   }
 
   public static void logCompatibilityWarnings() {
@@ -114,5 +119,19 @@ public final class ModConflictDetector {
     }
 
     return null;
+  }
+
+  public enum FeatureActivation {
+    MANUAL_ENABLED,
+    AUTO_ENABLED,
+    MANUAL_DISABLED,
+    CONFLICT_DISABLED
+  }
+
+  public record FeatureDecision(
+    boolean enabled,
+    FeatureActivation activation,
+    String relatedModId) {
+
   }
 }

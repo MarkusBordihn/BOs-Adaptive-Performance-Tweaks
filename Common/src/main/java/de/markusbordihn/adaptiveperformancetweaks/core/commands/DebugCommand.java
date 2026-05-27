@@ -22,7 +22,6 @@ package de.markusbordihn.adaptiveperformancetweaks.core.commands;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import de.markusbordihn.adaptiveperformancetweaks.core.debug.DebugManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.debug.DebugModule;
 import net.minecraft.ChatFormatting;
@@ -88,7 +87,7 @@ public class DebugCommand extends CustomCommand {
   }
 
   private static int setModuleDebug(CommandContext<CommandSourceStack> context,
-    DebugModule module) throws CommandSyntaxException {
+    DebugModule module) {
     boolean enable = BoolArgumentType.getBool(context, "enable");
     sendDebugFeedback(context, module.getId(), enable);
     DebugManager.enableDebugLevel(module.getLoggerName(), enable);
@@ -97,7 +96,7 @@ public class DebugCommand extends CustomCommand {
   }
 
   @Override
-  public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+  public int run(CommandContext<CommandSourceStack> context) {
     return 0;
   }
 }

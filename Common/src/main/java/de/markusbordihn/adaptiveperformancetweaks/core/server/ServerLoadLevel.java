@@ -19,8 +19,6 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.core.server;
 
-import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
-
 public enum ServerLoadLevel {
   VERY_LOW,
   LOW,
@@ -30,18 +28,7 @@ public enum ServerLoadLevel {
   VERY_HIGH;
 
   public static ServerLoadLevel fromAverageTickTime(double averageTickTimeMs) {
-    if (averageTickTimeMs <= CoreConfig.serverLoadVeryLowThreshold) {
-      return VERY_LOW;
-    } else if (averageTickTimeMs <= CoreConfig.serverLoadLowThreshold) {
-      return LOW;
-    } else if (averageTickTimeMs <= CoreConfig.serverLoadNormalThreshold) {
-      return NORMAL;
-    } else if (averageTickTimeMs <= CoreConfig.serverLoadMediumThreshold) {
-      return MEDIUM;
-    } else if (averageTickTimeMs <= CoreConfig.serverLoadHighThreshold) {
-      return HIGH;
-    }
-    return VERY_HIGH;
+    return MsptBucket.fromTickTime(averageTickTimeMs).getMappedLoadLevel();
   }
 
   public boolean isHigherThan(ServerLoadLevel other) {

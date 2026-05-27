@@ -21,8 +21,6 @@ package de.markusbordihn.adaptiveperformancetweaks.core.player;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.server.MinecraftServer;
@@ -41,6 +39,8 @@ public final class PlayerPositionManager {
   private static int playerMovementUpdateTick = DEFAULT_PLAYER_MOVEMENT_UPDATE_TICK;
   private static int playerMovementWindowSamples = 5;
   private static int ticks = 0;
+  private static int nextMovementUpdateTick = DEFAULT_PLAYER_MOVEMENT_UPDATE_TICK;
+  private static int nextFullUpdateTick = PLAYER_POSITION_UPDATE_TICK;
 
   private PlayerPositionManager() {
   }
@@ -48,6 +48,7 @@ public final class PlayerPositionManager {
   public static void configureMovementTracking(int updateTick, int movementWindowSamples) {
     playerMovementUpdateTick = Math.max(1, updateTick);
     playerMovementWindowSamples = Math.max(1, movementWindowSamples);
+    nextMovementUpdateTick = ticks + playerMovementUpdateTick;
   }
 
   public static void reset() {
@@ -55,17 +56,26 @@ public final class PlayerPositionManager {
     playerMovementUpdateTick = DEFAULT_PLAYER_MOVEMENT_UPDATE_TICK;
     playerMovementWindowSamples = 5;
     ticks = 0;
+    nextMovementUpdateTick = DEFAULT_PLAYER_MOVEMENT_UPDATE_TICK;
+    nextFullUpdateTick = PLAYER_POSITION_UPDATE_TICK;
   }
 
   public static void handleServerTick() {
-    ticks++;
-    boolean movementUpdate = ticks % playerMovementUpdateTick == 0;
-    boolean fullUpdate = ticks % PLAYER_POSITION_UPDATE_TICK == 0;
+    int currentTick = ++ticks;
+    boolean movementUpdate = currentTick >= nextMovementUpdateTick;
+    boolean fullUpdate = currentTick >= nextFullUpdateTick;
     if (!movementUpdate && !fullUpdate) {
       return;
     }
 
-    updatePlayerPositions(ticks, movementUpdate, fullUpdate);
+    if (movementUpdate) {
+      nextMovementUpdateTick = currentTick + playerMovementUpdateTick;
+    }
+    if (fullUpdate) {
+      nextFullUpdateTick = currentTick + PLAYER_POSITION_UPDATE_TICK;
+    }
+
+    updatePlayerPositions(currentTick, movementUpdate, fullUpdate);
   }
 
   public static int getCurrentServerTick() {
@@ -108,18 +118,6 @@ public final class PlayerPositionManager {
       log.debug("[Player Position] Removing player {} from position tracking.", playerUUID);
       playerPositionMap.remove(playerUUID);
     }
-  }
-
-  public static List<PlayerPosition> getPlayerPositionsInsideViewArea(
-    String world, int x, int y, int z) {
-    List<PlayerPosition> result = new ArrayList<>();
-    for (PlayerPosition playerPosition : playerPositionMap.values()) {
-      if (playerPosition.isInsidePlayerViewArea(world, x, y, z)) {
-        result.add(playerPosition);
-      }
-    }
-
-    return result;
   }
 
   public static Map<String, PlayerPosition> getPlayerPositionMap() {

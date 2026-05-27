@@ -49,8 +49,15 @@ public final class ViewDistanceManager {
     warmupUntilTime = 0L;
     lastRecoveryTime = System.currentTimeMillis();
     currentLoadLevel = ServerLoadLevel.NORMAL;
-    log.info("Adaptive view distance enabled (range {}-{})",
-      ViewDistanceConfig.viewDistanceMin, ViewDistanceConfig.viewDistanceMax);
+    if (FeatureToggle.ADAPTIVE_VIEW_DISTANCE.isEnabled()) {
+      log.info("Adaptive view distance enabled (range {}-{})",
+        ViewDistanceConfig.viewDistanceMin, ViewDistanceConfig.viewDistanceMax);
+    }
+  }
+
+  public static void handleFeatureEnabled(MinecraftServer server) {
+    handleServerStarting(server);
+    applyDistance(server, resolveTargetDistance());
   }
 
   public static void handleFeatureDisabled() {

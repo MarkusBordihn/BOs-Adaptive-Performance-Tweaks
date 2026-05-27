@@ -19,7 +19,6 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.distance;
 
-import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.Config;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
@@ -73,47 +72,47 @@ public final class SimulationDistanceConfig extends Config {
     Properties unmodified = new Properties();
     unmodified.putAll(properties);
 
-    CoreConfig.setFeatureEnabled(
+    CoreConfig.applyFeatureState(
       FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE,
-      ModConflictDetector.resolveFeatureState(
-        FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE,
-        parseConfigValue(
-          properties,
-          "enabled",
-          FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.getDefaultState())));
+      parseConfigValue(properties, "enabled",
+        FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.getDefaultState()));
 
-    simDistanceVeryLow = parseInt(properties, "simDistanceVeryLow", simDistanceVeryLow);
-    simDistanceLow = parseInt(properties, "simDistanceLow", simDistanceLow);
-    simDistanceNormal = parseInt(properties, "simDistanceNormal", simDistanceNormal);
-    simDistanceMedium = parseInt(properties, "simDistanceMedium", simDistanceMedium);
-    simDistanceHigh = parseInt(properties, "simDistanceHigh", simDistanceHigh);
-    simDistanceVeryHigh = parseInt(properties, "simDistanceVeryHigh", simDistanceVeryHigh);
-    simDistanceMin = parseInt(properties, "simDistanceMin", simDistanceMin);
-    simDistanceMax = parseInt(properties, "simDistanceMax", simDistanceMax);
-    movementThrottleEnabled = parseBoolean(properties, "movementThrottleEnabled",
+    simDistanceVeryLow = parseConfigValue(properties, "simDistanceVeryLow", simDistanceVeryLow);
+    simDistanceLow = parseConfigValue(properties, "simDistanceLow", simDistanceLow);
+    simDistanceNormal = parseConfigValue(properties, "simDistanceNormal", simDistanceNormal);
+    simDistanceMedium = parseConfigValue(properties, "simDistanceMedium", simDistanceMedium);
+    simDistanceHigh = parseConfigValue(properties, "simDistanceHigh", simDistanceHigh);
+    simDistanceVeryHigh = parseConfigValue(properties, "simDistanceVeryHigh", simDistanceVeryHigh);
+    simDistanceMin = parseConfigValue(properties, "simDistanceMin", simDistanceMin);
+    simDistanceMax = parseConfigValue(properties, "simDistanceMax", simDistanceMax);
+    movementThrottleEnabled = parseConfigValue(properties, "movementThrottleEnabled",
       movementThrottleEnabled);
-    movementThrottleMinimumLoadLevel = parseServerLoadLevel(properties,
+    movementThrottleMinimumLoadLevel = parseConfigValue(properties,
       "movementThrottleMinimumLoadLevel", movementThrottleMinimumLoadLevel);
     movementThrottleWindowSamplesMax = Math.max(1,
-      parseInt(properties, "movementThrottleWindowSamplesMax", movementThrottleWindowSamplesMax));
+      parseConfigValue(properties, "movementThrottleWindowSamplesMax",
+        movementThrottleWindowSamplesMax));
     movementThrottleWindowSamples = Math.max(1, Math.min(movementThrottleWindowSamplesMax,
-      parseInt(properties, "movementThrottleWindowSamples", movementThrottleWindowSamples)));
+      parseConfigValue(properties, "movementThrottleWindowSamples",
+        movementThrottleWindowSamples)));
     movementThrottleSampleTicks = Math.max(1,
-      parseInt(properties, "movementThrottleSampleTicks", movementThrottleSampleTicks));
-    movementThrottleDistanceThresholdBlocks = Math.max(1, parseInt(properties,
+      parseConfigValue(properties, "movementThrottleSampleTicks", movementThrottleSampleTicks));
+    movementThrottleDistanceThresholdBlocks = Math.max(1, parseConfigValue(properties,
       "movementThrottleDistanceThresholdBlocks", movementThrottleDistanceThresholdBlocks));
-    movementThrottleRecoveryDelayTicks = Math.max(1, parseInt(properties,
+    movementThrottleRecoveryDelayTicks = Math.max(1, parseConfigValue(properties,
       "movementThrottleRecoveryDelayTicks", movementThrottleRecoveryDelayTicks));
-    movementThrottleRecoveryStepTicks = Math.max(1, parseInt(properties,
+    movementThrottleRecoveryStepTicks = Math.max(1, parseConfigValue(properties,
       "movementThrottleRecoveryStepTicks", movementThrottleRecoveryStepTicks));
-    movementThrottleLoginTicks = Math.max(0, parseInt(properties, "movementThrottleLoginTicks",
-      movementThrottleLoginTicks));
-    movementThrottleRecoverOnlyWhenStable = parseBoolean(properties,
+    movementThrottleLoginTicks = Math.max(0,
+      parseConfigValue(properties, "movementThrottleLoginTicks",
+        movementThrottleLoginTicks));
+    movementThrottleRecoverOnlyWhenStable = parseConfigValue(properties,
       "movementThrottleRecoverOnlyWhenStable", movementThrottleRecoverOnlyWhenStable);
-    movementThrottleMinReduction = Math.max(0, parseInt(properties,
+    movementThrottleMinReduction = Math.max(0, parseConfigValue(properties,
       "movementThrottleMinReduction", movementThrottleMinReduction));
-    movementThrottleMaxReduction = Math.max(movementThrottleMinReduction, parseInt(properties,
-      "movementThrottleMaxReduction", movementThrottleMaxReduction));
+    movementThrottleMaxReduction = Math.max(movementThrottleMinReduction,
+      parseConfigValue(properties,
+        "movementThrottleMaxReduction", movementThrottleMaxReduction));
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
     PlayerPositionManager.configureMovementTracking(movementThrottleSampleTicks,
@@ -130,30 +129,4 @@ public final class SimulationDistanceConfig extends Config {
       movementThrottleMinReduction, movementThrottleMaxReduction);
   }
 
-  private static int parseInt(Properties props, String key, int defaultValue) {
-    props.putIfAbsent(key, String.valueOf(defaultValue));
-    try {
-      return Integer.parseInt(props.getProperty(key));
-    } catch (NumberFormatException exception) {
-      log.warn("Invalid integer for '{}', using default {}", key,
-        defaultValue);
-      return defaultValue;
-    }
-  }
-
-  private static boolean parseBoolean(Properties props, String key, boolean defaultValue) {
-    props.putIfAbsent(key, String.valueOf(defaultValue));
-    return Boolean.parseBoolean(props.getProperty(key));
-  }
-
-  private static ServerLoadLevel parseServerLoadLevel(
-    Properties props, String key, ServerLoadLevel defaultValue) {
-    props.putIfAbsent(key, defaultValue.name());
-    try {
-      return ServerLoadLevel.valueOf(props.getProperty(key).trim().toUpperCase());
-    } catch (IllegalArgumentException exception) {
-      log.warn("Invalid load level for '{}', using default {}", key, defaultValue);
-      return defaultValue;
-    }
-  }
 }

@@ -19,15 +19,11 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.gamerules;
 
-import de.markusbordihn.adaptiveperformancetweaks.Constants;
-import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.Config;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import java.io.File;
 import java.util.Properties;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public final class GameRulesConfig extends Config {
 
@@ -39,8 +35,6 @@ public final class GameRulesConfig extends Config {
        Controls which game rules are automatically adjusted under high server load.
        Integer values define the min/max boundaries used during optimization.
       """;
-
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   public static boolean randomTickSpeedEnabled = true;
   public static int randomTickSpeed = 3;
@@ -71,36 +65,35 @@ public final class GameRulesConfig extends Config {
     Properties unmodified = new Properties();
     unmodified.putAll(properties);
 
-    CoreConfig.setFeatureEnabled(
+    CoreConfig.applyFeatureState(
       FeatureToggle.GAMERULES,
-      ModConflictDetector.resolveFeatureState(
-        FeatureToggle.GAMERULES,
-        parseConfigValue(properties, "enabled", FeatureToggle.GAMERULES.getDefaultState())));
+      parseConfigValue(properties, "enabled", FeatureToggle.GAMERULES.getDefaultState()));
 
-    randomTickSpeedEnabled = parseBoolean(properties, "randomTickSpeedEnabled",
+    randomTickSpeedEnabled = parseConfigValue(properties, "randomTickSpeedEnabled",
       randomTickSpeedEnabled);
-    randomTickSpeed = parseInt(properties, "randomTickSpeed", randomTickSpeed);
+    randomTickSpeed = parseConfigValue(properties, "randomTickSpeed", randomTickSpeed);
 
-    entityCrammingEnabled = parseBoolean(properties, "entityCrammingEnabled",
+    entityCrammingEnabled = parseConfigValue(properties, "entityCrammingEnabled",
       entityCrammingEnabled);
-    maxEntityCramming = parseInt(properties, "maxEntityCramming", maxEntityCramming);
-    minEntityCramming = parseInt(properties, "minEntityCramming", minEntityCramming);
-    minEntityCrammingMineColonies = parseInt(properties, "minEntityCrammingMineColonies",
+    maxEntityCramming = parseConfigValue(properties, "maxEntityCramming", maxEntityCramming);
+    minEntityCramming = parseConfigValue(properties, "minEntityCramming", minEntityCramming);
+    minEntityCrammingMineColonies = parseConfigValue(properties, "minEntityCrammingMineColonies",
       minEntityCrammingMineColonies);
 
-    blockExplodesEnabled = parseBoolean(properties, "blockExplodesEnabled", blockExplodesEnabled);
-    elytraMovementCheckEnabled = parseBoolean(properties, "elytraMovementCheckEnabled",
+    blockExplodesEnabled = parseConfigValue(properties, "blockExplodesEnabled",
+      blockExplodesEnabled);
+    elytraMovementCheckEnabled = parseConfigValue(properties, "elytraMovementCheckEnabled",
       elytraMovementCheckEnabled);
-    insomniaEnabled = parseBoolean(properties, "insomniaEnabled", insomniaEnabled);
-    mobExplodesEnabled = parseBoolean(properties, "mobExplodesEnabled", mobExplodesEnabled);
-    patrolSpawningEnabled = parseBoolean(properties, "patrolSpawningEnabled",
+    insomniaEnabled = parseConfigValue(properties, "insomniaEnabled", insomniaEnabled);
+    mobExplodesEnabled = parseConfigValue(properties, "mobExplodesEnabled", mobExplodesEnabled);
+    patrolSpawningEnabled = parseConfigValue(properties, "patrolSpawningEnabled",
       patrolSpawningEnabled);
-    raidsEnabled = parseBoolean(properties, "raidsEnabled", raidsEnabled);
-    traderSpawningEnabled = parseBoolean(properties, "traderSpawningEnabled",
+    raidsEnabled = parseConfigValue(properties, "raidsEnabled", raidsEnabled);
+    traderSpawningEnabled = parseConfigValue(properties, "traderSpawningEnabled",
       traderSpawningEnabled);
-    tntExplodesEnabled = parseBoolean(properties, "tntExplodesEnabled", tntExplodesEnabled);
-    vinesSpreadEnabled = parseBoolean(properties, "vinesSpreadEnabled", vinesSpreadEnabled);
-    wardenSpawningEnabled = parseBoolean(properties, "wardenSpawningEnabled",
+    tntExplodesEnabled = parseConfigValue(properties, "tntExplodesEnabled", tntExplodesEnabled);
+    vinesSpreadEnabled = parseConfigValue(properties, "vinesSpreadEnabled", vinesSpreadEnabled);
+    wardenSpawningEnabled = parseConfigValue(properties, "wardenSpawningEnabled",
       wardenSpawningEnabled);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
@@ -112,21 +105,5 @@ public final class GameRulesConfig extends Config {
       entityCrammingEnabled,
       minEntityCramming,
       maxEntityCramming);
-  }
-
-  private static boolean parseBoolean(Properties props, String key, boolean defaultValue) {
-    props.putIfAbsent(key, String.valueOf(defaultValue));
-    return Boolean.parseBoolean(props.getProperty(key));
-  }
-
-  private static int parseInt(Properties props, String key, int defaultValue) {
-    props.putIfAbsent(key, String.valueOf(defaultValue));
-    try {
-      return Integer.parseInt(props.getProperty(key));
-    } catch (NumberFormatException exception) {
-      log.warn("Invalid integer for '{}', using default {}", key,
-        defaultValue);
-      return defaultValue;
-    }
   }
 }

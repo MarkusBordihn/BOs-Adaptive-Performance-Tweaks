@@ -36,7 +36,7 @@ public abstract class ChunkGenThrottleMixin {
 
   @Shadow
   @Final
-  private ServerLevel level;
+  public ServerLevel level;
 
   @Unique
   private int aptweaks_genThrottleCounter = 0;

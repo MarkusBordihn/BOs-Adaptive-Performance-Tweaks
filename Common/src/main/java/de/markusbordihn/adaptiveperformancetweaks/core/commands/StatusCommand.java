@@ -21,7 +21,6 @@ package de.markusbordihn.adaptiveperformancetweaks.core.commands;
 
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoad;
@@ -39,7 +38,7 @@ public class StatusCommand extends CustomCommand {
   }
 
   @Override
-  public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+  public int run(CommandContext<CommandSourceStack> context) {
     sendFeedback(context, String.format("=== %s Status ===", Constants.MOD_NAME));
     MinecraftServer server = ServerManager.getMinecraftServer();
     int playerCount = server != null ? server.getPlayerList().getPlayerCount() : 0;

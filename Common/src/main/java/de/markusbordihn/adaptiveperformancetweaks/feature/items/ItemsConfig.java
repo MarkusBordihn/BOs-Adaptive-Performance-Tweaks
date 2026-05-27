@@ -19,8 +19,6 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.items;
 
-import de.markusbordihn.adaptiveperformancetweaks.Constants;
-import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.Config;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
@@ -28,9 +26,6 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeSet;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public final class ItemsConfig extends Config {
 
@@ -43,8 +38,6 @@ public final class ItemsConfig extends Config {
        Use the allow/deny lists to include or exclude specific item types.
        Leave a list empty to disable it.
       """;
-
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   public static boolean optimizeItems = true;
   public static int maxNumberOfItemsPerType = 64;
@@ -75,22 +68,20 @@ public final class ItemsConfig extends Config {
     Properties unmodified = new Properties();
     unmodified.putAll(properties);
 
-    CoreConfig.setFeatureEnabled(
+    CoreConfig.applyFeatureState(
       FeatureToggle.ITEMS,
-      ModConflictDetector.resolveFeatureState(
-        FeatureToggle.ITEMS,
-        parseConfigValue(properties, "enabled", FeatureToggle.ITEMS.getDefaultState())));
+      parseConfigValue(properties, "enabled", FeatureToggle.ITEMS.getDefaultState()));
 
-    optimizeItems = parseBoolean(properties, "optimizeItems", optimizeItems);
-    maxNumberOfItemsPerType = parseInt(properties, "maxNumberOfItemsPerType",
+    optimizeItems = parseConfigValue(properties, "optimizeItems", optimizeItems);
+    maxNumberOfItemsPerType = parseConfigValue(properties, "maxNumberOfItemsPerType",
       maxNumberOfItemsPerType);
-    maxNumberOfItems = parseInt(properties, "maxNumberOfItems", maxNumberOfItems);
-    itemsClusterRange = parseInt(properties, "itemsClusterRange", itemsClusterRange);
-    maxStackSize = parseInt(properties, "maxStackSize", maxStackSize);
-    movePositionToLastDrop = parseBoolean(properties, "movePositionToLastDrop",
+    maxNumberOfItems = parseConfigValue(properties, "maxNumberOfItems", maxNumberOfItems);
+    itemsClusterRange = parseConfigValue(properties, "itemsClusterRange", itemsClusterRange);
+    maxStackSize = parseConfigValue(properties, "maxStackSize", maxStackSize);
+    movePositionToLastDrop = parseConfigValue(properties, "movePositionToLastDrop",
       movePositionToLastDrop);
-    itemsAllowList = parseStringSet(properties, "itemsAllowList", itemsAllowList);
-    itemsDenyList = parseStringSet(properties, "itemsDenyList", itemsDenyList);
+    itemsAllowList = parseConfigValue(properties, "itemsAllowList", itemsAllowList);
+    itemsDenyList = parseConfigValue(properties, "itemsDenyList", itemsDenyList);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
 
@@ -102,39 +93,5 @@ public final class ItemsConfig extends Config {
       itemsClusterRange,
       maxStackSize,
       movePositionToLastDrop);
-  }
-
-  private static boolean parseBoolean(Properties props, String key, boolean defaultValue) {
-    props.putIfAbsent(key, String.valueOf(defaultValue));
-    return Boolean.parseBoolean(props.getProperty(key));
-  }
-
-  private static int parseInt(Properties props, String key, int defaultValue) {
-    props.putIfAbsent(key, String.valueOf(defaultValue));
-    try {
-      return Integer.parseInt(props.getProperty(key));
-    } catch (NumberFormatException exception) {
-      log.warn("Invalid integer for '{}', using default {}", key,
-        defaultValue);
-      return defaultValue;
-    }
-  }
-
-  private static Set<String> parseStringSet(Properties props, String key,
-    Set<String> defaultValue) {
-    String defaultStr = defaultValue.isEmpty() ? "" : String.join(",", new TreeSet<>(defaultValue));
-    props.putIfAbsent(key, defaultStr);
-    String value = props.getProperty(key, "").trim();
-    if (value.isEmpty()) {
-      return new HashSet<>();
-    }
-    Set<String> result = new HashSet<>();
-    for (String entry : value.split(",")) {
-      String trimmed = entry.trim();
-      if (!trimmed.isEmpty()) {
-        result.add(trimmed);
-      }
-    }
-    return result;
   }
 }

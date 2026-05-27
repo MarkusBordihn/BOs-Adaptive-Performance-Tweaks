@@ -60,8 +60,15 @@ public final class SimulationDistanceManager {
     recoveryStartTick = -1;
     nextRecoveryTick = -1;
     currentLoadLevel = ServerLoadLevel.NORMAL;
-    log.info("Adaptive simulation distance enabled (range {}-{})",
-      SimulationDistanceConfig.simDistanceMin, SimulationDistanceConfig.simDistanceMax);
+    if (FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled()) {
+      log.info("Adaptive simulation distance enabled (range {}-{})",
+        SimulationDistanceConfig.simDistanceMin, SimulationDistanceConfig.simDistanceMax);
+    }
+  }
+
+  public static void handleFeatureEnabled(MinecraftServer server) {
+    handleServerStarting(server);
+    evaluateAndApply(false);
   }
 
   public static void handleServerLoadEvent(ServerLoadEvent event) {
@@ -84,18 +91,30 @@ public final class SimulationDistanceManager {
   }
 
   public static void handlePlayerLoggedIn(ServerPlayer player) {
+    if (!FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled()) {
+      return;
+    }
+
     PlayerPositionManager.handlePlayerLoggedIn(player);
     markPlayerWarmup(player);
     evaluateAndApply(false);
   }
 
   public static void handlePlayerTeleported(ServerPlayer player) {
+    if (!FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled()) {
+      return;
+    }
+
     PlayerPositionManager.handlePlayerTeleported(player);
     markPlayerWarmup(player);
     evaluateAndApply(false);
   }
 
   public static void handlePlayerLoggedOut() {
+    if (!FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled()) {
+      return;
+    }
+
     evaluateAndApply(false);
   }
 

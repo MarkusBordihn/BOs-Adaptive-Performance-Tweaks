@@ -117,16 +117,8 @@ public final class ServerManager {
     return minecraftServer != null ? minecraftServer.getAverageTickTime() : 50f;
   }
 
-  public static double getAverageTickTime(ServerLevel serverLevel) {
-    return ServerLevelLoad.getAverageTickTime(serverLevel);
-  }
-
   public static Iterable<ServerLevel> getAllLevels() {
     return minecraftServer != null ? minecraftServer.getAllLevels() : List.of();
-  }
-
-  public static int getNumberOfPlayers() {
-    return numberOfPlayers;
   }
 
   public static long getUptimeMillis() {

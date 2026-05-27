@@ -19,15 +19,11 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.player;
 
-import de.markusbordihn.adaptiveperformancetweaks.Constants;
-import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.Config;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import java.io.File;
 import java.util.Properties;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public final class PlayerStarterProtectionConfig extends Config {
 
@@ -49,8 +45,6 @@ public final class PlayerStarterProtectionConfig extends Config {
        Percentages: 0 = disabled, 100 = full reduction/increase.
       """;
 
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-
   public static int starterMaxExperienceLevel = 20;
   public static int starterHurtDamageReduction = 25;
   public static int starterAttackDamageIncrease = 25;
@@ -65,21 +59,17 @@ public final class PlayerStarterProtectionConfig extends Config {
     Properties unmodified = new Properties();
     unmodified.putAll(properties);
 
-    CoreConfig.setFeatureEnabled(
+    CoreConfig.applyFeatureState(
       FeatureToggle.PLAYER_STARTER_PROTECTION,
-      ModConflictDetector.resolveFeatureState(
-        FeatureToggle.PLAYER_STARTER_PROTECTION,
-        parseConfigValue(
-          properties,
-          "enabled",
-          FeatureToggle.PLAYER_STARTER_PROTECTION.getDefaultState())));
+      parseConfigValue(properties, "enabled",
+        FeatureToggle.PLAYER_STARTER_PROTECTION.getDefaultState()));
 
     starterMaxExperienceLevel =
-      parseInt(properties, "starterMaxExperienceLevel", starterMaxExperienceLevel);
+      parseConfigValue(properties, "starterMaxExperienceLevel", starterMaxExperienceLevel);
     starterHurtDamageReduction =
-      parseInt(properties, "starterHurtDamageReduction", starterHurtDamageReduction);
+      parseConfigValue(properties, "starterHurtDamageReduction", starterHurtDamageReduction);
     starterAttackDamageIncrease =
-      parseInt(properties, "starterAttackDamageIncrease", starterAttackDamageIncrease);
+      parseConfigValue(properties, "starterAttackDamageIncrease", starterAttackDamageIncrease);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
 
@@ -88,18 +78,5 @@ public final class PlayerStarterProtectionConfig extends Config {
       starterMaxExperienceLevel,
       starterHurtDamageReduction,
       starterAttackDamageIncrease);
-  }
-
-  private static int parseInt(Properties props, String key, int defaultValue) {
-    props.putIfAbsent(key, String.valueOf(defaultValue));
-    try {
-      return Integer.parseInt(props.getProperty(key));
-    } catch (NumberFormatException e) {
-      log.warn(
-        "Invalid integer for '{}', using default {}",
-        key,
-        defaultValue);
-      return defaultValue;
-    }
   }
 }

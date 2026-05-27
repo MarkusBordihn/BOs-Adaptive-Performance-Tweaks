@@ -20,11 +20,13 @@
 package de.markusbordihn.adaptiveperformancetweaks.core.feature;
 
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimulationDistanceManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.distance.ViewDistanceManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.gamerules.GameRuleManager;
 import java.util.List;
 import java.util.Locale;
+import net.minecraft.server.MinecraftServer;
 
 public enum FeatureToggle {
   CORE(FeatureState.ENABLED, List.of(), List.of(), Scope.BOTH),
@@ -93,6 +95,10 @@ public enum FeatureToggle {
   }
 
   public static FeatureToggle fromId(String id) {
+    if (id == null || id.isBlank()) {
+      return null;
+    }
+
     String normalized = id.trim().toLowerCase(Locale.ROOT);
     for (FeatureToggle toggle : values()) {
       if (toggle.getId().equals(normalized)) {
@@ -141,8 +147,25 @@ public enum FeatureToggle {
     }
 
     CoreConfig.setFeatureEnabled(this, enabled);
-    if (!enabled) {
+    if (enabled) {
+      initializeFeatureState();
+    } else {
       restoreFeatureState();
+    }
+  }
+
+  private void initializeFeatureState() {
+    MinecraftServer server = ServerManager.getMinecraftServer();
+    if (server == null) {
+      return;
+    }
+
+    switch (this) {
+      case GAMERULES -> GameRuleManager.handleFeatureEnabled(server);
+      case ADAPTIVE_VIEW_DISTANCE -> ViewDistanceManager.handleFeatureEnabled(server);
+      case ADAPTIVE_SIMULATION_DISTANCE -> SimulationDistanceManager.handleFeatureEnabled(server);
+      default -> {
+      }
     }
   }
 

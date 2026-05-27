@@ -18,7 +18,7 @@
 > Older docs or setup guides may still describe the legacy 11.x multi-module layout.
 >
 > 💾 **Back up your world and config files before updating.**
-> 12.x is still marked alpha and some configuration details may change between releases.
+> 12.x is still marked beta and some configuration details may change between releases.
 >
 > 🔄 **Upgrading from 11.x?**
 > Remove all old APTweaks module jars before installing 12.x. Do not mix 11.x and 12.x files in
@@ -85,7 +85,7 @@ Spawn presets are loaded from:
 | AI Throttling       | Optional advanced slowdown for far-away mob AI                                                               |
 | Chunk Gen Throttle  | Optional advanced slowdown for chunk generation work                                                         |
 | Monitoring          | Optional log-based visibility into load and entity pressure                                                  |
-| Benchmark           | Built-in before/after measurement tool for real servers and modpacks                                         |
+| Benchmark           | Built-in scenario-based baseline/active measurement suite for real servers and modpacks                      |
 
 Simulation Distance stays load-aware as before, but can now also clamp down harder during
 heavy exploration at `MEDIUM+` load and then recover gradually after players stop moving or finish
@@ -112,7 +112,7 @@ Useful commands include:
 - `/aptweaks debug`
 - `/aptweaks benchmark`
 - `/aptweaks benchmark start`
-- `/aptweaks benchmark report`
+- `/aptweaks benchmark start scenario <general|items|xp|entities|recovery>`
 
 ## Learn more 📚
 

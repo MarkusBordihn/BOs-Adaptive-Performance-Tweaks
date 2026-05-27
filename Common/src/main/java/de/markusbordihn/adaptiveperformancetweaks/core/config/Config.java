@@ -46,7 +46,7 @@ public class Config {
   protected Config() {
   }
 
-  public static void register(boolean isServer) {
+  public static void register() {
     prepareConfiguration();
     CoreConfig.registerConfig();
     FeatureRegistry.registerConfigs();
@@ -230,6 +230,21 @@ public class Config {
         return FeatureState.parse(properties.getProperty(key));
       } catch (Exception exception) {
         log.error("{} Failed to parse FeatureState value for key {}:", LOG_PREFIX, key, exception);
+      }
+    }
+    properties.setProperty(key, defaultValue.name().toLowerCase(Locale.ROOT));
+
+    return defaultValue;
+  }
+
+  protected static <E extends Enum<E>> E parseConfigValue(
+    final Properties properties, final String key, final E defaultValue) {
+    if (properties.containsKey(key)) {
+      try {
+        return Enum.valueOf(defaultValue.getDeclaringClass(),
+          properties.getProperty(key).trim().toUpperCase(Locale.ROOT));
+      } catch (Exception exception) {
+        log.error("{} Failed to parse Enum value for key {}:", LOG_PREFIX, key, exception);
       }
     }
     properties.setProperty(key, defaultValue.name().toLowerCase(Locale.ROOT));

@@ -19,15 +19,11 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.items;
 
-import de.markusbordihn.adaptiveperformancetweaks.Constants;
-import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.Config;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import java.io.File;
 import java.util.Properties;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public final class ExperienceOrbsConfig extends Config {
 
@@ -39,8 +35,6 @@ public final class ExperienceOrbsConfig extends Config {
        Controls XP orb merging to reduce entity count.
        Orbs within clusterRange blocks will be merged into a single orb.
       """;
-
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   public static boolean optimizeExperienceOrbs = true;
   public static int experienceOrbsClusterRange = 2;
@@ -56,18 +50,15 @@ public final class ExperienceOrbsConfig extends Config {
     Properties unmodified = new Properties();
     unmodified.putAll(properties);
 
-    CoreConfig.setFeatureEnabled(
+    CoreConfig.applyFeatureState(
       FeatureToggle.EXPERIENCE_ORBS,
-      ModConflictDetector.resolveFeatureState(
-        FeatureToggle.EXPERIENCE_ORBS,
-        parseConfigValue(
-          properties, "enabled", FeatureToggle.EXPERIENCE_ORBS.getDefaultState())));
+      parseConfigValue(properties, "enabled", FeatureToggle.EXPERIENCE_ORBS.getDefaultState()));
 
-    optimizeExperienceOrbs = parseBoolean(properties, "optimizeExperienceOrbs",
+    optimizeExperienceOrbs = parseConfigValue(properties, "optimizeExperienceOrbs",
       optimizeExperienceOrbs);
-    experienceOrbsClusterRange = parseInt(properties, "experienceOrbsClusterRange",
+    experienceOrbsClusterRange = parseConfigValue(properties, "experienceOrbsClusterRange",
       experienceOrbsClusterRange);
-    movePositionToLastDrop = parseBoolean(properties, "movePositionToLastDrop",
+    movePositionToLastDrop = parseConfigValue(properties, "movePositionToLastDrop",
       movePositionToLastDrop);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
@@ -77,22 +68,5 @@ public final class ExperienceOrbsConfig extends Config {
       optimizeExperienceOrbs,
       experienceOrbsClusterRange,
       movePositionToLastDrop);
-  }
-
-  private static boolean parseBoolean(Properties props, String key, boolean defaultValue) {
-    props.putIfAbsent(key, String.valueOf(defaultValue));
-
-    return Boolean.parseBoolean(props.getProperty(key));
-  }
-
-  private static int parseInt(Properties props, String key, int defaultValue) {
-    props.putIfAbsent(key, String.valueOf(defaultValue));
-    try {
-      return Integer.parseInt(props.getProperty(key));
-    } catch (NumberFormatException exception) {
-      log.warn("Invalid integer for '{}', using default {}", key,
-        defaultValue);
-      return defaultValue;
-    }
   }
 }

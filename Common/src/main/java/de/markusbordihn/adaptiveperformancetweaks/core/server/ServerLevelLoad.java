@@ -80,15 +80,19 @@ public final class ServerLevelLoad {
 
   static void measureLoadAndPost(Iterable<ServerLevel> serverLevels) {
     long currentTime = System.currentTimeMillis();
+    long updateIntervalMs = (long) CoreConfig.timeBetweenUpdates * 1000L;
     Set<ServerLevel> activeLevels = new HashSet<>();
     for (ServerLevel serverLevel : serverLevels) {
       activeLevels.add(serverLevel);
     }
 
-    levelTickStartTimes.keySet().retainAll(activeLevels);
-    levelTickTimes.keySet().retainAll(activeLevels);
-    levelReportedTickTimes.keySet().retainAll(activeLevels);
-    levelLoadLevels.keySet().retainAll(activeLevels);
+    if (!levelTickStartTimes.isEmpty() || !levelTickTimes.isEmpty()
+      || !levelReportedTickTimes.isEmpty() || !levelLoadLevels.isEmpty()) {
+      levelTickStartTimes.keySet().retainAll(activeLevels);
+      levelTickTimes.keySet().retainAll(activeLevels);
+      levelReportedTickTimes.keySet().retainAll(activeLevels);
+      levelLoadLevels.keySet().retainAll(activeLevels);
+    }
 
     for (ServerLevel serverLevel : activeLevels) {
       double currentAvgTickTime = levelTickTimes.getOrDefault(serverLevel, 0.0d);
@@ -97,8 +101,7 @@ public final class ServerLevelLoad {
       }
 
       double lastTickTime = levelReportedTickTimes.getOrDefault(serverLevel, 45.0d);
-      if (lastTickTime >= currentAvgTickTime
-        && currentTime - lastUpdateTime < (long) CoreConfig.timeBetweenUpdates * 1000L) {
+      if (lastTickTime >= currentAvgTickTime && currentTime - lastUpdateTime < updateIntervalMs) {
         continue;
       }
 

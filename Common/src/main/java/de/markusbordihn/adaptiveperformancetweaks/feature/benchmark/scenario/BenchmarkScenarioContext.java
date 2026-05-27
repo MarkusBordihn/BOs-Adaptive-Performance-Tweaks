@@ -17,48 +17,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.adaptiveperformancetweaks.core.server;
+package de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario;
 
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
-public class ServerLevelLoadEvent {
+public record BenchmarkScenarioContext(
+  ServerPlayer player,
+  ServerLevel level,
+  Vec3 center,
+  BenchmarkScenarioId scenarioId,
+  boolean activeBlock,
+  boolean autoMoveEnabled,
+  long measurementDurationMs,
+  String benchmarkTag,
+  String scenarioTag) {
 
-  private final ServerLevel serverLevel;
-  private final ServerLoadLevel loadLevel;
-  private final ServerLoadLevel lastLoadLevel;
-  private final double avgTickTime;
-  private final double lastAvgTickTime;
-
-  public ServerLevelLoadEvent(ServerLevel serverLevel, ServerLoadLevel loadLevel,
-    ServerLoadLevel lastLoadLevel, double avgTickTime, double lastAvgTickTime) {
-    this.serverLevel = serverLevel;
-    this.loadLevel = loadLevel;
-    this.lastLoadLevel = lastLoadLevel;
-    this.avgTickTime = avgTickTime;
-    this.lastAvgTickTime = lastAvgTickTime;
-  }
-
-  public ServerLevel getServerLevel() {
-    return this.serverLevel;
-  }
-
-  public ServerLoadLevel getLoadLevel() {
-    return this.loadLevel;
-  }
-
-  public ServerLoadLevel getLastLoadLevel() {
-    return this.lastLoadLevel;
-  }
-
-  public double getAvgTickTime() {
-    return this.avgTickTime;
-  }
-
-  public double getLastAvgTickTime() {
-    return this.lastAvgTickTime;
-  }
-
-  public boolean hasChanged() {
-    return this.loadLevel != this.lastLoadLevel;
+  public void tagEntity(Entity entity) {
+    entity.addTag(this.benchmarkTag);
+    entity.addTag(this.scenarioTag);
   }
 }

@@ -19,8 +19,6 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.items;
 
-import de.markusbordihn.adaptiveperformancetweaks.Constants;
-import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.Config;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
@@ -28,8 +26,6 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public final class ArrowsConfig extends Config {
 
@@ -43,8 +39,6 @@ public final class ArrowsConfig extends Config {
        Use the allow/deny lists to include or exclude specific arrow entity types.
        Leave a list empty to disable it.
       """;
-
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   public static int maxNumberOfArrowsPerWorld = 512;
   public static int maxNumberOfArrowsPerChunk = 32;
@@ -61,18 +55,16 @@ public final class ArrowsConfig extends Config {
     Properties unmodified = new Properties();
     unmodified.putAll(properties);
 
-    CoreConfig.setFeatureEnabled(
+    CoreConfig.applyFeatureState(
       FeatureToggle.ARROWS,
-      ModConflictDetector.resolveFeatureState(
-        FeatureToggle.ARROWS,
-        parseConfigValue(properties, "enabled", FeatureToggle.ARROWS.getDefaultState())));
+      parseConfigValue(properties, "enabled", FeatureToggle.ARROWS.getDefaultState()));
 
-    maxNumberOfArrowsPerWorld = parseInt(properties, "maxNumberOfArrowsPerWorld",
+    maxNumberOfArrowsPerWorld = parseConfigValue(properties, "maxNumberOfArrowsPerWorld",
       maxNumberOfArrowsPerWorld);
-    maxNumberOfArrowsPerChunk = parseInt(properties, "maxNumberOfArrowsPerChunk",
+    maxNumberOfArrowsPerChunk = parseConfigValue(properties, "maxNumberOfArrowsPerChunk",
       maxNumberOfArrowsPerChunk);
-    arrowsAllowList = parseStringSet(properties, "arrowsAllowList");
-    arrowsDenyList = parseStringSet(properties, "arrowsDenyList");
+    arrowsAllowList = parseConfigValue(properties, "arrowsAllowList", new HashSet<>());
+    arrowsDenyList = parseConfigValue(properties, "arrowsDenyList", new HashSet<>());
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
 
@@ -80,31 +72,5 @@ public final class ArrowsConfig extends Config {
       "Arrows config: maxPerWorld={}, maxPerChunk={}",
       maxNumberOfArrowsPerWorld,
       maxNumberOfArrowsPerChunk);
-  }
-
-  private static int parseInt(Properties props, String key, int defaultValue) {
-    props.putIfAbsent(key, String.valueOf(defaultValue));
-    try {
-      return Integer.parseInt(props.getProperty(key));
-    } catch (NumberFormatException exception) {
-      log.warn("Invalid integer for '{}', using default {}", key, defaultValue);
-      return defaultValue;
-    }
-  }
-
-  private static Set<String> parseStringSet(Properties props, String key) {
-    props.putIfAbsent(key, "");
-    String value = props.getProperty(key, "").trim();
-    if (value.isEmpty()) {
-      return new HashSet<>();
-    }
-    Set<String> result = new HashSet<>();
-    for (String entry : value.split(",")) {
-      String trimmed = entry.trim();
-      if (!trimmed.isEmpty()) {
-        result.add(trimmed);
-      }
-    }
-    return result;
   }
 }
