@@ -21,6 +21,7 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.items;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.accessor.ExperienceOrbAccessor;
+import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -47,6 +48,10 @@ public final class ExperienceOrbManager {
 
   public static void handleServerAboutToStart() {
     resetState();
+    if (!FeatureToggle.EXPERIENCE_ORBS.isEnabled()) {
+      return;
+    }
+
     if (ExperienceOrbsConfig.optimizeExperienceOrbs) {
       log.info(
         "XP orb clustering enabled with radius of {} blocks.",

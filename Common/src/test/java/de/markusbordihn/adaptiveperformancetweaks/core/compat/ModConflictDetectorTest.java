@@ -19,6 +19,7 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.core.compat;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -30,29 +31,42 @@ import org.junit.jupiter.api.Test;
 class ModConflictDetectorTest {
 
   @AfterEach
-  void cleanup() {
+  void resetModChecker() {
     ModCompat.setModLoadedChecker(id -> false);
   }
 
   @Test
-  void hardConflictAutoDisablesFeature() {
-    ModCompat.setModLoadedChecker(id -> "getittogetherdrops".equals(id));
+  void autoFeatureBecomesConflictDisabledWhenConflictingModIsLoaded() {
+    ModCompat.setModLoadedChecker("eco_stack_manager"::equals);
 
-    assertFalse(ModConflictDetector.resolveFeatureState(FeatureToggle.ITEMS, FeatureState.AUTO));
+    ModConflictDetector.FeatureDecision decision =
+      ModConflictDetector.resolveFeatureDecision(FeatureToggle.ITEMS, FeatureState.AUTO);
+
+    assertFalse(decision.enabled());
+    assertEquals(ModConflictDetector.FeatureActivation.CONFLICT_DISABLED, decision.activation());
+    assertEquals("eco_stack_manager", decision.relatedModId());
   }
 
   @Test
-  void warningOnlyConflictKeepsFeatureEnabled() {
-    ModCompat.setModLoadedChecker(id -> "servercore".equals(id));
+  void explicitDisableStaysManualDisabled() {
+    ModConflictDetector.FeatureDecision decision =
+      ModConflictDetector.resolveFeatureDecision(
+        FeatureToggle.ADAPTIVE_VIEW_DISTANCE, FeatureState.DISABLED);
 
-    assertTrue(ModConflictDetector.resolveFeatureState(FeatureToggle.SPAWN, FeatureState.AUTO));
+    assertFalse(decision.enabled());
+    assertEquals(ModConflictDetector.FeatureActivation.MANUAL_DISABLED, decision.activation());
   }
 
   @Test
-  void explicitEnableWinsEvenWithHardConflict() {
-    ModCompat.setModLoadedChecker(id -> "eco_stack_manager".equals(id));
+  void explicitEnableStaysManualEnabledEvenWithConflict() {
+    ModCompat.setModLoadedChecker("dynview"::equals);
 
-    assertTrue(
-      ModConflictDetector.resolveFeatureState(FeatureToggle.EXPERIENCE_ORBS, FeatureState.ENABLED));
+    ModConflictDetector.FeatureDecision decision =
+      ModConflictDetector.resolveFeatureDecision(
+        FeatureToggle.ADAPTIVE_VIEW_DISTANCE, FeatureState.ENABLED);
+
+    assertTrue(decision.enabled());
+    assertEquals(ModConflictDetector.FeatureActivation.MANUAL_ENABLED, decision.activation());
+    assertEquals("dynview", decision.relatedModId());
   }
 }

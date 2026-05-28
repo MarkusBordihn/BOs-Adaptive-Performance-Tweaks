@@ -68,12 +68,8 @@ public final class GameTestHelpers {
     return serverLevel;
   }
 
-  public static void resetMeasuredLevelLoad() {
-    ServerLevelLoad.reset();
-  }
-
-  public static void setMeasuredLevelLoad(
-    ServerLevel serverLevel, ServerLoadLevel loadLevel, double averageTickTime) {
+  public static void setMeasuredLevelLoad(ServerLevel serverLevel, ServerLoadLevel loadLevel,
+    double averageTickTime) {
     try {
       getLevelTickTimes().put(serverLevel, averageTickTime);
       getReportedLevelTickTimes().put(serverLevel, averageTickTime);

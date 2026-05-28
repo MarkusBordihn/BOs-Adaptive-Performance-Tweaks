@@ -41,16 +41,8 @@ public class ServerLoadEvent {
     return this.serverLoadLevel;
   }
 
-  public ServerLoadLevel getLastServerLoadLevel() {
-    return this.lastServerLoadLevel;
-  }
-
   public double getAvgTickTime() {
     return this.avgTickTime;
-  }
-
-  public double getLastAvgTickTime() {
-    return this.lastAvgTickTime;
   }
 
   public boolean hasChanged() {
@@ -65,12 +57,4 @@ public class ServerLoadEvent {
     return this.serverLoadLevel.isHigh();
   }
 
-  public boolean hasNormalServerLoad() {
-    return this.serverLoadLevel == ServerLoadLevel.NORMAL;
-  }
-
-  public boolean hasLowServerLoad() {
-    return this.serverLoadLevel == ServerLoadLevel.VERY_LOW
-      || this.serverLoadLevel == ServerLoadLevel.LOW;
-  }
 }

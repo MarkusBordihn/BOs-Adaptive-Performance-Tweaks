@@ -19,7 +19,6 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.chunkgenthrottle;
 
-import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.Config;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
@@ -56,19 +55,17 @@ public final class ChunkGenThrottleConfig extends Config {
     Properties unmodified = new Properties();
     unmodified.putAll(properties);
 
-    CoreConfig.setFeatureEnabled(
+    CoreConfig.applyFeatureState(
       FeatureToggle.CHUNK_GEN_THROTTLE,
-      ModConflictDetector.resolveFeatureState(
-        FeatureToggle.CHUNK_GEN_THROTTLE,
-        parseConfigValue(
-          properties, "enabled", FeatureToggle.CHUNK_GEN_THROTTLE.getDefaultState())));
+      parseConfigValue(properties, "enabled", FeatureToggle.CHUNK_GEN_THROTTLE.getDefaultState()));
 
     chunkGenThrottleMediumDivisor =
-      parseInt(properties, "chunkGenThrottleMediumDivisor", chunkGenThrottleMediumDivisor);
+      parseConfigValue(properties, "chunkGenThrottleMediumDivisor", chunkGenThrottleMediumDivisor);
     chunkGenThrottleHighDivisor =
-      parseInt(properties, "chunkGenThrottleHighDivisor", chunkGenThrottleHighDivisor);
+      parseConfigValue(properties, "chunkGenThrottleHighDivisor", chunkGenThrottleHighDivisor);
     chunkGenThrottleVeryHighDivisor =
-      parseInt(properties, "chunkGenThrottleVeryHighDivisor", chunkGenThrottleVeryHighDivisor);
+      parseConfigValue(properties, "chunkGenThrottleVeryHighDivisor",
+        chunkGenThrottleVeryHighDivisor);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
     log.debug(
@@ -76,15 +73,5 @@ public final class ChunkGenThrottleConfig extends Config {
       chunkGenThrottleMediumDivisor,
       chunkGenThrottleHighDivisor,
       chunkGenThrottleVeryHighDivisor);
-  }
-
-  private static int parseInt(Properties props, String key, int defaultValue) {
-    props.putIfAbsent(key, String.valueOf(defaultValue));
-    try {
-      return Integer.parseInt(props.getProperty(key));
-    } catch (NumberFormatException exception) {
-      log.warn("Invalid integer for '{}', using default {}", key, defaultValue);
-      return defaultValue;
-    }
   }
 }

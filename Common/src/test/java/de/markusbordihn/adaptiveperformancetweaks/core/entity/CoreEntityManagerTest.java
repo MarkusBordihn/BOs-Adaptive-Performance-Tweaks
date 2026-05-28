@@ -23,8 +23,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnPreset;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -34,10 +35,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.SharedConstants;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.monster.Skeleton;
 import net.minecraft.world.entity.monster.Zombie;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -45,6 +50,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.MockMakers;
 
 class CoreEntityManagerTest {
 
@@ -74,9 +80,43 @@ class CoreEntityManagerTest {
     field.set(null, value);
   }
 
+  private static Object newEntityTrackingKey(String levelName, String entityName) throws Exception {
+    Class<?> keyClass = Class.forName(
+      "de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreEntityManager$EntityTrackingKey");
+    Constructor<?> constructor = keyClass.getDeclaredConstructor(String.class, String.class);
+    constructor.setAccessible(true);
+    return constructor.newInstance(levelName, entityName);
+  }
+
+  private static Object newChunkTrackingKey(String levelName, int chunkX, int chunkZ)
+    throws Exception {
+    Class<?> keyClass = Class.forName(
+      "de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreEntityManager$ChunkTrackingKey");
+    Constructor<?> constructor =
+      keyClass.getDeclaredConstructor(String.class, int.class, int.class);
+    constructor.setAccessible(true);
+    return constructor.newInstance(levelName, chunkX, chunkZ);
+  }
+
   private static Entity mockEntity(boolean removed) {
-    Entity entity = mock(Entity.class);
-    when(entity.isRemoved()).thenReturn(removed);
+    return mockEntity(EntityType.ZOMBIE, removed);
+  }
+
+  private static Entity mockEntity(EntityType<?> entityType, boolean removed) {
+    ServerLevel level = mock(ServerLevel.class, withSettings().mockMaker(MockMakers.SUBCLASS));
+    Entity entity;
+    if (entityType == EntityType.ZOMBIE) {
+      entity = new Zombie(EntityType.ZOMBIE, level);
+    } else if (entityType == EntityType.SKELETON) {
+      entity = new Skeleton(EntityType.SKELETON, level);
+    } else {
+      throw new IllegalArgumentException("Unsupported test entity type: " + entityType);
+    }
+
+    if (removed) {
+      entity.remove(RemovalReason.DISCARDED);
+    }
+
     return entity;
   }
 
@@ -220,6 +260,26 @@ class CoreEntityManagerTest {
   }
 
   @Test
+  void excludeNamespaceRuleTreatsAeronauticsEntitiesAsTechnical() {
+    SpawnPreset preset = new SpawnPreset(
+      false,
+      "aeronautics",
+      List.of(),
+      100,
+      new SpawnPreset.DimensionFilter(List.of(), List.of(), List.of()),
+      new SpawnPreset.EntityLimits(Set.of(), Set.of(), 1, 1, 1, 1),
+      SpawnPreset.LoadFactors.defaults(),
+      TrackingMode.EXCLUDE_NAMESPACE,
+      TrackingCategory.VEHICLE_STRUCTURE,
+      "Aeronautics vehicle entities should not be tracked.",
+      Set.of());
+    CoreEntityManager.reloadTrackingRules(List.of(preset));
+
+    Zombie zombie = new Zombie(EntityType.ZOMBIE, mock(ServerLevel.class));
+    assertFalse(CoreEntityManager.isRelevantEntity(zombie, "aeronautics:airship_assembler"));
+  }
+
+  @Test
   void replacingExclusionSetTakesPrecedence() {
     CoreEntityManager.setExcludedModNamespaces(Set.of("create"));
     assertTrue(CoreEntityManager.isExcludedModNamespace("create:contraption"));
@@ -245,20 +305,20 @@ class CoreEntityManagerTest {
     Entity removedEntity = mockEntity(true);
     String levelName = "minecraft:overworld";
     String entityName = "minecraft:zombie";
-    String entityMapKey = CoreEntityManager.getEntityMapKey(levelName, entityName);
-    String activeChunkKey = "[minecraft:overworld:0x0]";
-    String staleChunkKey = "[minecraft:overworld:1x1]";
+    Object entityMapKey = newEntityTrackingKey(levelName, entityName);
+    Object activeChunkKey = newChunkTrackingKey(levelName, 0, 0);
+    Object staleChunkKey = newChunkTrackingKey(levelName, 1, 1);
 
-    ConcurrentHashMap<String, Set<Entity>> entityMap = new ConcurrentHashMap<>();
+    ConcurrentHashMap<Object, Set<Entity>> entityMap = new ConcurrentHashMap<>();
     entityMap.put(entityMapKey, newEntitySet(activeEntity, removedEntity));
 
-    ConcurrentHashMap<String, Set<Entity>> entityMapPerChunk = new ConcurrentHashMap<>();
+    ConcurrentHashMap<Object, Set<Entity>> entityMapPerChunk = new ConcurrentHashMap<>();
     entityMapPerChunk.put(activeChunkKey, newEntitySet(activeEntity, removedEntity));
 
-    ConcurrentHashMap<String, Set<Entity>> entityMapGlobal = new ConcurrentHashMap<>();
-    entityMapGlobal.put(entityName, newEntitySet(activeEntity, removedEntity));
+    ConcurrentHashMap<EntityType<?>, Set<Entity>> entityMapGlobal = new ConcurrentHashMap<>();
+    entityMapGlobal.put(EntityType.ZOMBIE, newEntitySet(activeEntity, removedEntity));
 
-    ConcurrentHashMap<Entity, String> entityChunkKeyMap = new ConcurrentHashMap<>();
+    ConcurrentHashMap<Entity, Object> entityChunkKeyMap = new ConcurrentHashMap<>();
     entityChunkKeyMap.put(activeEntity, activeChunkKey);
     entityChunkKeyMap.put(removedEntity, activeChunkKey);
 
@@ -266,26 +326,83 @@ class CoreEntityManagerTest {
     writeStaticField("entityMapPerChunk", entityMapPerChunk);
     writeStaticField("entityMapGlobal", entityMapGlobal);
     writeStaticField("entityChunkKeyMap", entityChunkKeyMap);
-    Map<String, Boolean> entityChunkMap = readStaticField("entityChunkMap");
+    Set<Object> entityChunkMap = readStaticField("entityChunkMap");
     entityChunkMap.clear();
-    entityChunkMap.put(activeChunkKey, true);
-    entityChunkMap.put(staleChunkKey, true);
+    entityChunkMap.add(activeChunkKey);
+    entityChunkMap.add(staleChunkKey);
 
     Method method = CoreEntityManager.class.getDeclaredMethod("verifyEntities");
     method.setAccessible(true);
     method.invoke(null);
 
-    Map<String, Set<Entity>> cleanedEntityMap = readStaticField("entityMap");
-    Map<String, Set<Entity>> cleanedEntityMapPerChunk = readStaticField("entityMapPerChunk");
-    Map<String, Set<Entity>> cleanedEntityMapGlobal = readStaticField("entityMapGlobal");
-    Map<Entity, String> cleanedChunkKeyMap = readStaticField("entityChunkKeyMap");
-    Map<String, Boolean> cleanedChunkMap = readStaticField("entityChunkMap");
+    Map<Object, Set<Entity>> cleanedEntityMap = readStaticField("entityMap");
+    Map<Object, Set<Entity>> cleanedEntityMapPerChunk = readStaticField("entityMapPerChunk");
+    Map<EntityType<?>, Set<Entity>> cleanedEntityMapGlobal = readStaticField("entityMapGlobal");
+    Map<Entity, Object> cleanedChunkKeyMap = readStaticField("entityChunkKeyMap");
+    Set<Object> cleanedChunkMap = readStaticField("entityChunkMap");
 
     assertEquals(Set.of(activeEntity), cleanedEntityMap.get(entityMapKey));
     assertEquals(Set.of(activeEntity), cleanedEntityMapPerChunk.get(activeChunkKey));
-    assertEquals(Set.of(activeEntity), cleanedEntityMapGlobal.get(entityName));
+    assertEquals(Set.of(activeEntity), cleanedEntityMapGlobal.get(EntityType.ZOMBIE));
     assertEquals(Map.of(activeEntity, activeChunkKey), cleanedChunkKeyMap);
-    assertTrue(cleanedChunkMap.containsKey(activeChunkKey));
-    assertFalse(cleanedChunkMap.containsKey(staleChunkKey));
+    assertTrue(cleanedChunkMap.contains(activeChunkKey));
+    assertFalse(cleanedChunkMap.contains(staleChunkKey));
+  }
+
+  @Test
+  void chunkEntityCountingMatchesTypedAndStringLookup() throws Exception {
+    String levelName = "minecraft:overworld";
+    ResourceLocation levelKey = ResourceLocation.tryParse(levelName);
+    BlockPos blockPos = BlockPos.ZERO;
+    Object chunkKey = newChunkTrackingKey(levelName, 0, 0);
+
+    Entity activeZombie = mockEntity(EntityType.ZOMBIE, false);
+    Entity removedZombie = mockEntity(EntityType.ZOMBIE, true);
+    Entity activeSkeleton = mockEntity(EntityType.SKELETON, false);
+
+    ConcurrentHashMap<Object, Set<Entity>> entityMapPerChunk = new ConcurrentHashMap<>();
+    entityMapPerChunk.put(chunkKey, newEntitySet(activeZombie, removedZombie, activeSkeleton));
+    writeStaticField("entityMapPerChunk", entityMapPerChunk);
+
+    assertEquals(1,
+      CoreEntityManager.getNumberOfEntitiesInChunk(levelName, EntityType.ZOMBIE, blockPos));
+    assertEquals(1,
+      CoreEntityManager.getNumberOfEntitiesInChunk(levelKey, EntityType.ZOMBIE, blockPos));
+    assertEquals(1,
+      CoreEntityManager.getNumberOfEntitiesInChunk(levelName, "minecraft:zombie", blockPos));
+    assertEquals(1,
+      CoreEntityManager.getNumberOfEntitiesInChunk(levelName, EntityType.SKELETON, blockPos));
+    assertEquals(2,
+      CoreEntityManager.getTrackedEntityCountInChunk(levelKey, blockPos));
+  }
+
+  @Test
+  void globalAndLevelEntityCountingMatchesTypedAndStringLookup() throws Exception {
+    String levelName = "minecraft:overworld";
+    ResourceLocation levelKey = ResourceLocation.tryParse(levelName);
+    String entityName = "minecraft:zombie";
+    Object entityMapKey = newEntityTrackingKey(levelName, entityName);
+
+    Entity activeZombie = mockEntity(EntityType.ZOMBIE, false);
+    Entity removedZombie = mockEntity(EntityType.ZOMBIE, true);
+    Entity activeSkeleton = mockEntity(EntityType.SKELETON, false);
+
+    ConcurrentHashMap<Object, Set<Entity>> entityMap = new ConcurrentHashMap<>();
+    entityMap.put(entityMapKey, newEntitySet(activeZombie, removedZombie));
+    writeStaticField("entityMap", entityMap);
+
+    ConcurrentHashMap<EntityType<?>, Set<Entity>> entityMapGlobal = new ConcurrentHashMap<>();
+    entityMapGlobal.put(EntityType.ZOMBIE, newEntitySet(activeZombie, removedZombie));
+    entityMapGlobal.put(EntityType.SKELETON, newEntitySet(activeSkeleton));
+    writeStaticField("entityMapGlobal", entityMapGlobal);
+
+    assertEquals(2, CoreEntityManager.getNumberOfEntities(levelName, EntityType.ZOMBIE));
+    assertEquals(2, CoreEntityManager.getNumberOfEntities(levelKey, EntityType.ZOMBIE));
+    assertEquals(2, CoreEntityManager.getNumberOfEntities(levelName, entityName));
+    assertEquals(2, CoreEntityManager.getNumberOfEntities(levelKey, entityName));
+    assertEquals(2, CoreEntityManager.getNumberOfEntities(EntityType.ZOMBIE));
+    assertEquals(2, CoreEntityManager.getNumberOfEntities(entityName));
+    assertEquals(1, CoreEntityManager.getNumberOfEntities(EntityType.SKELETON));
+    assertTrue(CoreEntityManager.getEntitiesGlobal().containsKey(entityName));
   }
 }

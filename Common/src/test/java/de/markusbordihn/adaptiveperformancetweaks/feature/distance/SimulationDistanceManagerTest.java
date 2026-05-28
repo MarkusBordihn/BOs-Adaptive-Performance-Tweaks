@@ -24,9 +24,23 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import org.junit.jupiter.api.Test;
 
 class SimulationDistanceManagerTest {
+
+  private static void writeStaticField(String fieldName, Object value) throws Exception {
+    Field field = SimulationDistanceManager.class.getDeclaredField(fieldName);
+    field.setAccessible(true);
+    field.set(null, value);
+  }
+
+  private static int invokeIntMethod(String methodName) throws Exception {
+    Method method = SimulationDistanceManager.class.getDeclaredMethod(methodName);
+    method.setAccessible(true);
+    return (int) method.invoke(null);
+  }
 
   @Test
   void lowAndNormalLoadDoNotThrottleMovement() {
@@ -51,5 +65,25 @@ class SimulationDistanceManagerTest {
     assertEquals(2, SimulationDistanceManager.calculateMovementReduction(
       ServerLoadLevel.VERY_HIGH, 4, 1));
     assertTrue(SimulationDistanceManager.supportsMovementThrottle(ServerLoadLevel.HIGH));
+  }
+
+  @Test
+  void configuredDistanceMaxRespectsServerStartupLimit() throws Exception {
+    writeStaticField("configuredDistanceMax", SimulationDistanceConfig.simDistanceMax + 4);
+    assertEquals(SimulationDistanceConfig.simDistanceMax,
+      invokeIntMethod("getConfiguredDistanceMax"));
+
+    writeStaticField("configuredDistanceMax", SimulationDistanceConfig.simDistanceMin + 3);
+    assertEquals(SimulationDistanceConfig.simDistanceMin + 3,
+      invokeIntMethod("getConfiguredDistanceMax"));
+  }
+
+  @Test
+  void warmupReductionDropsToConfiguredMinimumDistance() throws Exception {
+    writeStaticField("configuredDistanceMax", SimulationDistanceConfig.simDistanceMin + 4);
+    assertEquals(4, invokeIntMethod("getWarmupReduction"));
+
+    writeStaticField("configuredDistanceMax", SimulationDistanceConfig.simDistanceMin);
+    assertEquals(0, invokeIntMethod("getWarmupReduction"));
   }
 }

@@ -5,6 +5,15 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [GitHub History][history] instead.
 
+### 12.3.0
+
+- Added more detailed MSPT buckets and improved reporting.
+- Added smaller performance optimizations and removed some redundant code.
+- Added additional benchmark scenarios for better performance analysis and optimization.
+- Improved benchmark reporting and save result to file.
+- Improved entity report and store results outside of config folder.
+- Improved memory usage and reduced string concatenation in maps.
+
 ### 12.2.0
 
 - Fixed #89 compatibility for many popular mods with special entities.

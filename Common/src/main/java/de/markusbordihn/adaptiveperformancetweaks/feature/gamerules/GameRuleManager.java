@@ -79,6 +79,10 @@ public final class GameRuleManager {
     lastUpdateTime = System.currentTimeMillis();
     randomTickWarmupUntilTime = 0L;
 
+    if (!FeatureToggle.GAMERULES.isEnabled()) {
+      return;
+    }
+
     if (GameRulesConfig.randomTickSpeedEnabled) {
       log.debug(
         "{} Random Tick Speed will be optimized between 1 and {}",
@@ -99,6 +103,10 @@ public final class GameRuleManager {
       }
     }
     logOptimizationInfo();
+  }
+
+  public static void handleFeatureEnabled(MinecraftServer minecraftServer) {
+    handleServerStarting(minecraftServer);
   }
 
   public static void handleServerStopping() {
@@ -261,46 +269,46 @@ public final class GameRuleManager {
     StringBuilder active = new StringBuilder();
     if (GameRulesConfig.blockExplodesEnabled) {
       log.debug("{} Block explosions will be disabled during very high server load.", LOG_PREFIX);
-      active.append(active.length() > 0 ? ", " : "").append("blockExplosions");
+      active.append(!active.isEmpty() ? ", " : "").append("blockExplosions");
     }
     if (GameRulesConfig.elytraMovementCheckEnabled) {
-      log.debug(
-        "{} Elytra movement check will be disabled during very high server load.", LOG_PREFIX);
-      active.append(active.length() > 0 ? ", " : "").append("elytraMovementCheck");
+      log.debug("{} Elytra movement check will be disabled during very high server load.",
+        LOG_PREFIX);
+      active.append(!active.isEmpty() ? ", " : "").append("elytraMovementCheck");
     }
     if (GameRulesConfig.insomniaEnabled) {
       log.debug("{} Insomnia will be disabled during very high server load.", LOG_PREFIX);
-      active.append(active.length() > 0 ? ", " : "").append("insomnia");
+      active.append(!active.isEmpty() ? ", " : "").append("insomnia");
     }
     if (GameRulesConfig.mobExplodesEnabled) {
       log.debug("{} Mob explosions will be disabled during very high server load.", LOG_PREFIX);
-      active.append(active.length() > 0 ? ", " : "").append("mobExplosions");
+      active.append(!active.isEmpty() ? ", " : "").append("mobExplosions");
     }
     if (GameRulesConfig.patrolSpawningEnabled) {
       log.debug("{} Patrol spawning will be disabled during very high server load.", LOG_PREFIX);
-      active.append(active.length() > 0 ? ", " : "").append("patrolSpawning");
+      active.append(!active.isEmpty() ? ", " : "").append("patrolSpawning");
     }
     if (GameRulesConfig.raidsEnabled) {
       log.debug("{} Raids will be disabled during very high server load.", LOG_PREFIX);
-      active.append(active.length() > 0 ? ", " : "").append("raids");
+      active.append(!active.isEmpty() ? ", " : "").append("raids");
     }
     if (GameRulesConfig.traderSpawningEnabled) {
       log.debug("{} Trader spawning will be disabled during very high server load.", LOG_PREFIX);
-      active.append(active.length() > 0 ? ", " : "").append("traderSpawning");
+      active.append(!active.isEmpty() ? ", " : "").append("traderSpawning");
     }
     if (GameRulesConfig.tntExplodesEnabled) {
       log.debug("{} TNT explosions will be disabled during very high server load.", LOG_PREFIX);
-      active.append(active.length() > 0 ? ", " : "").append("tntExplosions");
+      active.append(!active.isEmpty() ? ", " : "").append("tntExplosions");
     }
     if (GameRulesConfig.vinesSpreadEnabled) {
       log.debug("{} Vines spread will be disabled during very high server load.", LOG_PREFIX);
-      active.append(active.length() > 0 ? ", " : "").append("vinesSpread");
+      active.append(!active.isEmpty() ? ", " : "").append("vinesSpread");
     }
     if (GameRulesConfig.wardenSpawningEnabled) {
       log.debug("{} Warden spawning will be disabled during very high server load.", LOG_PREFIX);
-      active.append(active.length() > 0 ? ", " : "").append("wardenSpawning");
+      active.append(!active.isEmpty() ? ", " : "").append("wardenSpawning");
     }
-    if (active.length() > 0) {
+    if (!active.isEmpty()) {
       log.info("{} Very-high-load rules active: {}", LOG_PREFIX, active);
     }
   }

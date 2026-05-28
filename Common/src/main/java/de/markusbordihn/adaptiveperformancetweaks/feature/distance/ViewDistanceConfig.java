@@ -19,7 +19,6 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.distance;
 
-import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.Config;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
@@ -58,21 +57,20 @@ public final class ViewDistanceConfig extends Config {
     Properties unmodified = new Properties();
     unmodified.putAll(properties);
 
-    CoreConfig.setFeatureEnabled(
+    CoreConfig.applyFeatureState(
       FeatureToggle.ADAPTIVE_VIEW_DISTANCE,
-      ModConflictDetector.resolveFeatureState(
-        FeatureToggle.ADAPTIVE_VIEW_DISTANCE,
-        parseConfigValue(
-          properties, "enabled", FeatureToggle.ADAPTIVE_VIEW_DISTANCE.getDefaultState())));
+      parseConfigValue(properties, "enabled",
+        FeatureToggle.ADAPTIVE_VIEW_DISTANCE.getDefaultState()));
 
-    viewDistanceVeryLow = parseInt(properties, "viewDistanceVeryLow", viewDistanceVeryLow);
-    viewDistanceLow = parseInt(properties, "viewDistanceLow", viewDistanceLow);
-    viewDistanceNormal = parseInt(properties, "viewDistanceNormal", viewDistanceNormal);
-    viewDistanceMedium = parseInt(properties, "viewDistanceMedium", viewDistanceMedium);
-    viewDistanceHigh = parseInt(properties, "viewDistanceHigh", viewDistanceHigh);
-    viewDistanceVeryHigh = parseInt(properties, "viewDistanceVeryHigh", viewDistanceVeryHigh);
-    viewDistanceMin = parseInt(properties, "viewDistanceMin", viewDistanceMin);
-    viewDistanceMax = parseInt(properties, "viewDistanceMax", viewDistanceMax);
+    viewDistanceVeryLow = parseConfigValue(properties, "viewDistanceVeryLow", viewDistanceVeryLow);
+    viewDistanceLow = parseConfigValue(properties, "viewDistanceLow", viewDistanceLow);
+    viewDistanceNormal = parseConfigValue(properties, "viewDistanceNormal", viewDistanceNormal);
+    viewDistanceMedium = parseConfigValue(properties, "viewDistanceMedium", viewDistanceMedium);
+    viewDistanceHigh = parseConfigValue(properties, "viewDistanceHigh", viewDistanceHigh);
+    viewDistanceVeryHigh = parseConfigValue(properties, "viewDistanceVeryHigh",
+      viewDistanceVeryHigh);
+    viewDistanceMin = parseConfigValue(properties, "viewDistanceMin", viewDistanceMin);
+    viewDistanceMax = parseConfigValue(properties, "viewDistanceMax", viewDistanceMax);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
     log.debug(
@@ -83,15 +81,5 @@ public final class ViewDistanceConfig extends Config {
       viewDistanceMedium,
       viewDistanceHigh,
       viewDistanceVeryHigh);
-  }
-
-  private static int parseInt(Properties props, String key, int defaultValue) {
-    props.putIfAbsent(key, String.valueOf(defaultValue));
-    try {
-      return Integer.parseInt(props.getProperty(key));
-    } catch (NumberFormatException exception) {
-      log.warn("Invalid integer for '{}', using default {}", key, defaultValue);
-      return defaultValue;
-    }
   }
 }

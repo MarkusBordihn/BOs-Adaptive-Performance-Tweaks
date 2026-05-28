@@ -50,15 +50,6 @@ public class ViewArea {
   private int viewAreaDistance;
   private int blocksViewDistance;
 
-  public ViewArea(ServerPlayer player, int viewAreaDistance) {
-    this(
-      player.blockPosition().getX(),
-      player.blockPosition().getY(),
-      player.blockPosition().getZ(),
-      viewAreaDistance,
-      player.level().dimension().location().toString());
-  }
-
   public ViewArea(int posX, int posY, int posZ, int viewAreaDistance, String levelName) {
     this.update(posX, posY, posZ, viewAreaDistance, levelName);
   }

@@ -23,17 +23,14 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
-import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPosition;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnPreset;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -85,8 +82,7 @@ public final class CoreEntityManager {
   private static final int VERIFICATION_TICK = 5 * 60 * 20;
   private static final int VERIFICATION_ADD_OPERATIONS_THRESHOLD = 500;
   private static final long OPERATION_VERIFICATION_MIN_INTERVAL_MS = 1_000L;
-  private static final ConcurrentHashMap<String, Boolean> entityChunkMap =
-    new ConcurrentHashMap<>();
+  private static final Set<ChunkTrackingKey> entityChunkMap = ConcurrentHashMap.newKeySet();
   private static final Object trackingRuleLock = new Object();
   private static final Object verificationLock = new Object();
   private static final ConcurrentHashMap<String, CachedTrackingDecision> entityDecisionCache =
@@ -107,11 +103,14 @@ public final class CoreEntityManager {
   private static int operationVerificationStage = 0;
   private static long lastOperationVerificationTime = 0L;
   private static volatile boolean isVerifying = false;
-  private static ConcurrentHashMap<String, Set<Entity>> entityMap = new ConcurrentHashMap<>();
-  private static ConcurrentHashMap<String, Set<Entity>> entityMapPerChunk =
+  private static ConcurrentHashMap<EntityTrackingKey, Set<Entity>> entityMap =
     new ConcurrentHashMap<>();
-  private static ConcurrentHashMap<String, Set<Entity>> entityMapGlobal = new ConcurrentHashMap<>();
-  private static ConcurrentHashMap<Entity, String> entityChunkKeyMap = new ConcurrentHashMap<>();
+  private static ConcurrentHashMap<ChunkTrackingKey, Set<Entity>> entityMapPerChunk =
+    new ConcurrentHashMap<>();
+  private static ConcurrentHashMap<EntityType<?>, Set<Entity>> entityMapGlobal =
+    new ConcurrentHashMap<>();
+  private static ConcurrentHashMap<Entity, ChunkTrackingKey> entityChunkKeyMap =
+    new ConcurrentHashMap<>();
 
   private CoreEntityManager() {
   }
@@ -219,7 +218,7 @@ public final class CoreEntityManager {
 
   public static void handleServerTick() {
     if (++ticks >= VERIFICATION_TICK) {
-      triggerVerificationIfNotRunning("time-based");
+      triggerVerificationIfNotRunning(false);
       ticks = 0;
     }
   }
@@ -246,7 +245,7 @@ public final class CoreEntityManager {
       return;
     }
 
-    String levelName = entity.level().dimension().location().toString();
+    ResourceLocation levelName = entity.level().dimension().location();
     addEntity(entity, entityName, levelName);
     PerformanceStats.trackingTracked++;
   }
@@ -261,7 +260,7 @@ public final class CoreEntityManager {
       return;
     }
 
-    removeEntity(entity, entityKey.toString(), entity.level().dimension().location().toString());
+    removeEntity(entity, entityKey.toString(), entity.level().dimension().location());
   }
 
   public static void handleLivingDeath(Entity entity, boolean isClientSide) {
@@ -274,35 +273,44 @@ public final class CoreEntityManager {
       return;
     }
 
-    removeEntity(entity, entityKey.toString(), entity.level().dimension().location().toString());
+    removeEntity(entity, entityKey.toString(), entity.level().dimension().location());
   }
 
-  public static void addEntity(Entity entity, String entityName, String levelName) {
+  public static void addEntity(Entity entity, String entityName, ResourceLocation levelName) {
+    EntityTrackingKey entityMapKey = new EntityTrackingKey(levelName, entityName);
     Set<Entity> entities =
-      entityMap.computeIfAbsent(
-        getEntityMapKey(levelName, entityName), key -> ConcurrentHashMap.newKeySet());
+      entityMap.computeIfAbsent(entityMapKey, key -> ConcurrentHashMap.newKeySet());
     entities.add(entity);
 
-    String entityChunkKey = getEntityChunkKey(levelName, entity.blockPosition());
+    ChunkTrackingKey entityChunkKey = new ChunkTrackingKey(levelName, entity.blockPosition());
     Set<Entity> entitiesPerChunk =
       entityMapPerChunk.computeIfAbsent(entityChunkKey, key -> ConcurrentHashMap.newKeySet());
     entitiesPerChunk.add(entity);
     entityChunkKeyMap.put(entity, entityChunkKey);
 
     Set<Entity> entitiesGlobal =
-      entityMapGlobal.computeIfAbsent(entityName, key -> ConcurrentHashMap.newKeySet());
+      entityMapGlobal.computeIfAbsent(entity.getType(), key -> ConcurrentHashMap.newKeySet());
     entitiesGlobal.add(entity);
 
-    entityChunkMap.put(entityChunkKey, true);
+    entityChunkMap.add(entityChunkKey);
 
     if (++addOperationCounter >= VERIFICATION_ADD_OPERATIONS_THRESHOLD) {
       addOperationCounter = 0;
-      triggerVerificationIfNotRunning("operation-based");
+      triggerVerificationIfNotRunning(true);
     }
   }
 
   public static void removeEntity(Entity entity, String entityName, String levelName) {
-    String mapKey = getEntityMapKey(levelName, entityName);
+    ResourceLocation levelKey = resolveLevelKey(levelName);
+    if (levelKey == null) {
+      return;
+    }
+
+    removeEntity(entity, entityName, levelKey);
+  }
+
+  public static void removeEntity(Entity entity, String entityName, ResourceLocation levelName) {
+    EntityTrackingKey mapKey = new EntityTrackingKey(levelName, entityName);
     Set<Entity> entities = entityMap.get(mapKey);
     boolean wasTracked = entities != null && entities.remove(entity);
     if (!wasTracked) {
@@ -312,7 +320,7 @@ public final class CoreEntityManager {
       entityMap.remove(mapKey);
     }
 
-    String originalChunkKey = entityChunkKeyMap.remove(entity);
+    ChunkTrackingKey originalChunkKey = entityChunkKeyMap.remove(entity);
     if (originalChunkKey != null) {
       Set<Entity> entitiesPerChunk = entityMapPerChunk.get(originalChunkKey);
       if (entitiesPerChunk != null) {
@@ -324,55 +332,150 @@ public final class CoreEntityManager {
       }
     }
 
-    Set<Entity> entitiesGlobal = entityMapGlobal.get(entityName);
+    EntityType<?> entityType = getEntityType(entityName);
+    if (entityType == null) {
+      return;
+    }
+
+    Set<Entity> entitiesGlobal = entityMapGlobal.get(entityType);
     if (entitiesGlobal != null) {
       entitiesGlobal.remove(entity);
       if (entitiesGlobal.isEmpty()) {
-        entityMapGlobal.remove(entityName);
+        entityMapGlobal.remove(entityType);
       }
     }
   }
 
-  public static String getEntityMapKey(String levelName, String entityName) {
-    return '[' + levelName + ']' + entityName;
-  }
-
-  public static String getEntityChunkKey(String levelName, BlockPos blockPos) {
-    return '[' + levelName + ':' + (blockPos.getX() >> 4) + 'x' + (blockPos.getZ() >> 4) + ']';
-  }
-
   public static Map<String, Set<Entity>> getEntities() {
-    return entityMap;
+    Map<String, Set<Entity>> entities = new LinkedHashMap<>(entityMap.size());
+    for (Map.Entry<EntityTrackingKey, Set<Entity>> entry : entityMap.entrySet()) {
+      entities.put(entry.getKey().asString(), entry.getValue());
+    }
+    return entities;
   }
 
   public static Map<String, Set<Entity>> getEntitiesPerChunk() {
-    return entityMapPerChunk;
+    Map<String, Set<Entity>> entities = new LinkedHashMap<>(entityMapPerChunk.size());
+    for (Map.Entry<ChunkTrackingKey, Set<Entity>> entry : entityMapPerChunk.entrySet()) {
+      entities.put(entry.getKey().asString(), entry.getValue());
+    }
+    return entities;
   }
 
   public static Map<String, Set<Entity>> getEntitiesGlobal() {
-    return entityMapGlobal;
+    Map<String, Set<Entity>> entities = new LinkedHashMap<>(entityMapGlobal.size());
+    for (Map.Entry<EntityType<?>, Set<Entity>> entry : entityMapGlobal.entrySet()) {
+      String entityName = getEntityName(entry.getKey());
+      if (entityName != null) {
+        entities.put(entityName, entry.getValue());
+      }
+    }
+    return entities;
   }
 
   public static int getNumberOfEntities(String levelName, String entityName) {
-    Set<Entity> entities = entityMap.get(getEntityMapKey(levelName, entityName));
+    ResourceLocation levelKey = resolveLevelKey(levelName);
+    if (levelKey == null) {
+      return 0;
+    }
+
+    return getNumberOfEntities(levelKey, entityName);
+  }
+
+  public static int getNumberOfEntities(ResourceLocation levelName, String entityName) {
+    EntityType<?> entityType = getEntityType(entityName);
+    if (entityType == null) {
+      return 0;
+    }
+
+    return getNumberOfEntities(levelName, entityType);
+  }
+
+  public static int getNumberOfEntities(String levelName, EntityType<?> entityType) {
+    ResourceLocation levelKey = resolveLevelKey(levelName);
+    if (levelKey == null) {
+      return 0;
+    }
+
+    return getNumberOfEntities(levelKey, entityType);
+  }
+
+  public static int getNumberOfEntities(ResourceLocation levelName, EntityType<?> entityType) {
+    if (entityType == null) {
+      return 0;
+    }
+
+    String entityName = getEntityName(entityType);
+    if (entityName == null) {
+      return 0;
+    }
+
+    Set<Entity> entities = entityMap.get(new EntityTrackingKey(levelName, entityName));
     return entities != null ? entities.size() : 0;
   }
 
   public static int getNumberOfEntities(String entityName) {
-    Set<Entity> entities = entityMapGlobal.get(entityName);
+    EntityType<?> entityType = getEntityType(entityName);
+    if (entityType == null) {
+      return 0;
+    }
+
+    return getNumberOfEntities(entityType);
+  }
+
+  public static int getNumberOfEntities(EntityType<?> entityType) {
+    if (entityType == null) {
+      return 0;
+    }
+
+    Set<Entity> entities = entityMapGlobal.get(entityType);
     return entities != null ? entities.size() : 0;
   }
 
-  public static int getNumberOfEntitiesInChunk(
-    String levelName, String entityName, BlockPos blockPos) {
-    Set<Entity> entities = entityMapPerChunk.get(getEntityChunkKey(levelName, blockPos));
+  public static int getNumberOfEntitiesInChunk(String levelName, String entityName,
+    BlockPos blockPos) {
+    ResourceLocation levelKey = resolveLevelKey(levelName);
+    if (levelKey == null) {
+      return 0;
+    }
+
+    return getNumberOfEntitiesInChunk(levelKey, entityName, blockPos);
+  }
+
+  public static int getNumberOfEntitiesInChunk(ResourceLocation levelName, String entityName,
+    BlockPos blockPos) {
+    EntityType<?> entityType = getEntityType(entityName);
+    if (entityType == null) {
+      return 0;
+    }
+
+    return getNumberOfEntitiesInChunk(levelName, entityType, blockPos);
+  }
+
+  public static int getNumberOfEntitiesInChunk(String levelName, EntityType<?> entityType,
+    BlockPos blockPos) {
+    ResourceLocation levelKey = resolveLevelKey(levelName);
+    if (levelKey == null) {
+      return 0;
+    }
+
+    return getNumberOfEntitiesInChunk(levelKey, entityType, blockPos);
+  }
+
+  public static int getNumberOfEntitiesInChunk(ResourceLocation levelName, EntityType<?> entityType,
+    BlockPos blockPos) {
+    if (entityType == null) {
+      return 0;
+    }
+
+    Set<Entity> entities = entityMapPerChunk.get(new ChunkTrackingKey(levelName, blockPos));
     if (entities == null || entities.isEmpty()) {
       return 0;
     }
 
     int counter = 0;
     for (Entity entity : entities) {
-      if (entity != null && !entity.isRemoved() && hasEntityName(entity, entityName)) {
+      if (entity != null && !entity.isRemoved() && entity.getType() == entityType) {
         counter++;
       }
     }
@@ -380,33 +483,20 @@ public final class CoreEntityManager {
     return counter;
   }
 
-  public static int getNumberOfEntitiesInPlayerPositions(
-    String levelName, String entityName, List<PlayerPosition> playerPositions) {
-    Set<Entity> rawSet = entityMap.get(getEntityMapKey(levelName, entityName));
-    if (rawSet == null) {
-      return 0;
-    }
-
-    int counter = 0;
-    Set<Entity> snapshot = new HashSet<>(rawSet);
-    for (Entity entity : snapshot) {
-      if (entity == null) {
-        continue;
-      }
-
-      for (PlayerPosition playerPosition : playerPositions) {
-        if (playerPosition.isInsidePlayerViewArea(entity, levelName)) {
-          counter++;
-          break;
-        }
-      }
-    }
-    return counter;
-  }
 
   public static int getNumberOfEntitiesNearPosition(
     String levelName, String entityName, Vec3 center, double horizontalRange) {
-    Set<Entity> rawSet = entityMap.get(getEntityMapKey(levelName, entityName));
+    ResourceLocation levelKey = resolveLevelKey(levelName);
+    if (levelKey == null) {
+      return 0;
+    }
+
+    return getNumberOfEntitiesNearPosition(levelKey, entityName, center, horizontalRange);
+  }
+
+  public static int getNumberOfEntitiesNearPosition(
+    ResourceLocation levelName, String entityName, Vec3 center, double horizontalRange) {
+    Set<Entity> rawSet = entityMap.get(new EntityTrackingKey(levelName, entityName));
     if (rawSet == null || rawSet.isEmpty()) {
       return 0;
     }
@@ -426,8 +516,59 @@ public final class CoreEntityManager {
     return counter;
   }
 
+  public static int getNumberOfEntitiesNearPosition(
+    String levelName, EntityType<?> entityType, Vec3 center, double horizontalRange) {
+    ResourceLocation levelKey = resolveLevelKey(levelName);
+    if (levelKey == null) {
+      return 0;
+    }
+
+    return getNumberOfEntitiesNearPosition(levelKey, entityType, center, horizontalRange);
+  }
+
+  public static int getNumberOfEntitiesNearPosition(
+    ResourceLocation levelName, EntityType<?> entityType, Vec3 center, double horizontalRange) {
+    if (entityType == null) {
+      return 0;
+    }
+
+    String entityName = getEntityName(entityType);
+    if (entityName == null) {
+      return 0;
+    }
+
+    Set<Entity> rawSet = entityMap.get(new EntityTrackingKey(levelName, entityName));
+    if (rawSet == null || rawSet.isEmpty()) {
+      return 0;
+    }
+
+    int counter = 0;
+    for (Entity entity : rawSet) {
+      if (entity == null || entity.isRemoved()) {
+        continue;
+      }
+
+      if (entity.getType() == entityType
+        && Math.abs(entity.getX() - center.x) <= horizontalRange
+        && Math.abs(entity.getZ() - center.z) <= horizontalRange) {
+        counter++;
+      }
+    }
+
+    return counter;
+  }
+
   public static int getTrackedEntityCountInChunk(String levelName, BlockPos blockPos) {
-    return getActiveEntityCount(entityMapPerChunk.get(getEntityChunkKey(levelName, blockPos)));
+    ResourceLocation levelKey = resolveLevelKey(levelName);
+    if (levelKey == null) {
+      return 0;
+    }
+
+    return getTrackedEntityCountInChunk(levelKey, blockPos);
+  }
+
+  public static int getTrackedEntityCountInChunk(ResourceLocation levelName, BlockPos blockPos) {
+    return getActiveEntityCount(entityMapPerChunk.get(new ChunkTrackingKey(levelName, blockPos)));
   }
 
   public static int getTotalTrackedEntityCount() {
@@ -440,7 +581,16 @@ public final class CoreEntityManager {
   }
 
   public static boolean hasEntitySpawnedInChunk(String levelName, BlockPos blockPos) {
-    return entityChunkMap.getOrDefault(getEntityChunkKey(levelName, blockPos), false);
+    ResourceLocation levelKey = resolveLevelKey(levelName);
+    if (levelKey == null) {
+      return false;
+    }
+
+    return hasEntitySpawnedInChunk(levelKey, blockPos);
+  }
+
+  public static boolean hasEntitySpawnedInChunk(ResourceLocation levelName, BlockPos blockPos) {
+    return entityChunkMap.contains(new ChunkTrackingKey(levelName, blockPos));
   }
 
   public static boolean isRelevantEntity(Entity entity) {
@@ -750,10 +900,7 @@ public final class CoreEntityManager {
     if (!CoreConfig.writeEntityTrackingReport) {
       return;
     }
-    Path reportPath = Paths.get("config")
-      .resolve(Constants.MOD_ID)
-      .resolve("entity_tracking_report.json")
-      .toAbsolutePath();
+    Path reportPath = Constants.REPORTS_DIR.resolve("entity_tracking_report.json");
 
     LinkedHashMap<String, Object> report = new LinkedHashMap<>();
     report.put("manual_namespaces", serializeRuleMap(manualNamespaces));
@@ -850,19 +997,19 @@ public final class CoreEntityManager {
     return colonIdx > 0 ? entityId.substring(0, colonIdx) : null;
   }
 
-  private static void triggerVerificationIfNotRunning(String triggerType) {
+  private static void triggerVerificationIfNotRunning(boolean boundedVerification) {
     synchronized (verificationLock) {
       if (isVerifying) {
         return;
       }
 
-      if ("operation-based".equals(triggerType) && !shouldRunOperationVerification()) {
+      if (boundedVerification && !shouldRunOperationVerification()) {
         return;
       }
 
       isVerifying = true;
       try {
-        if ("operation-based".equals(triggerType)) {
+        if (boundedVerification) {
           verifyEntitiesBounded();
         } else {
           verifyEntities();
@@ -935,16 +1082,17 @@ public final class CoreEntityManager {
     }
   }
 
-  private static int removeDiscardedEntities(ConcurrentMap<String, Set<Entity>> entityMapToCheck) {
+  private static <K> int removeDiscardedEntities(ConcurrentMap<K, Set<Entity>> entityMapToCheck) {
     if (entityMapToCheck == null || entityMapToCheck.isEmpty()) {
       return 0;
     }
 
     int removedEntries = 0;
-    Iterator<Map.Entry<String, Set<Entity>>> mapIterator = entityMapToCheck.entrySet().iterator();
+    Iterator<Map.Entry<K, Set<Entity>>> mapIterator =
+      entityMapToCheck.entrySet().iterator();
 
     while (mapIterator.hasNext()) {
-      Map.Entry<String, Set<Entity>> entry = mapIterator.next();
+      Map.Entry<K, Set<Entity>> entry = mapIterator.next();
       Set<Entity> entities = entry.getValue();
 
       Iterator<Entity> entityIterator = entities.iterator();
@@ -970,9 +1118,10 @@ public final class CoreEntityManager {
     }
 
     int removedEntries = 0;
-    Iterator<Map.Entry<Entity, String>> iterator = entityChunkKeyMap.entrySet().iterator();
+    Iterator<Map.Entry<Entity, ChunkTrackingKey>> iterator = entityChunkKeyMap.entrySet()
+      .iterator();
     while (iterator.hasNext()) {
-      Map.Entry<Entity, String> entry = iterator.next();
+      Map.Entry<Entity, ChunkTrackingKey> entry = iterator.next();
       Entity entity = entry.getKey();
       if (entity == null || entity.isRemoved()) {
         iterator.remove();
@@ -989,10 +1138,10 @@ public final class CoreEntityManager {
     }
 
     int removedEntries = 0;
-    Iterator<Map.Entry<String, Boolean>> iterator = entityChunkMap.entrySet().iterator();
+    Iterator<ChunkTrackingKey> iterator = entityChunkMap.iterator();
     while (iterator.hasNext()) {
-      Map.Entry<String, Boolean> entry = iterator.next();
-      Set<Entity> entities = entityMapPerChunk.get(entry.getKey());
+      ChunkTrackingKey chunkKey = iterator.next();
+      Set<Entity> entities = entityMapPerChunk.get(chunkKey);
       if (entities == null || entities.isEmpty()) {
         iterator.remove();
         removedEntries++;
@@ -1017,9 +1166,22 @@ public final class CoreEntityManager {
     return count;
   }
 
-  private static boolean hasEntityName(Entity entity, String entityName) {
-    ResourceLocation entityKey = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
-    return entityKey != null && entityName.equals(entityKey.toString());
+  private static String getEntityName(EntityType<?> entityType) {
+    ResourceLocation entityKey = BuiltInRegistries.ENTITY_TYPE.getKey(entityType);
+    return entityKey != null ? entityKey.toString() : null;
+  }
+
+  private static EntityType<?> getEntityType(String entityName) {
+    if (entityName == null || entityName.isEmpty()) {
+      return null;
+    }
+
+    ResourceLocation entityKey = ResourceLocation.tryParse(entityName);
+    return entityKey != null ? BuiltInRegistries.ENTITY_TYPE.get(entityKey) : null;
+  }
+
+  private static ResourceLocation resolveLevelKey(String levelName) {
+    return levelName != null && !levelName.isEmpty() ? ResourceLocation.tryParse(levelName) : null;
   }
 
   private enum TrackingSource {
@@ -1080,6 +1242,41 @@ public final class CoreEntityManager {
 
     private static CachedTrackingDecision allow() {
       return new CachedTrackingDecision(true, TrackingSource.NONE, TrackingCategory.UNKNOWN, "");
+    }
+  }
+
+  private record EntityTrackingKey(
+    ResourceLocation levelName,
+    String entityName) {
+
+    private EntityTrackingKey(String levelName, String entityName) {
+      this(resolveLevelKey(levelName), entityName);
+    }
+
+    private String asString() {
+      return "[" + levelName + ']' + entityName;
+    }
+  }
+
+  private record ChunkTrackingKey(
+    ResourceLocation levelName,
+    int chunkX,
+    int chunkZ) {
+
+    private ChunkTrackingKey(String levelName, int chunkX, int chunkZ) {
+      this(resolveLevelKey(levelName), chunkX, chunkZ);
+    }
+
+    private ChunkTrackingKey(String levelName, BlockPos blockPos) {
+      this(levelName, blockPos.getX() >> 4, blockPos.getZ() >> 4);
+    }
+
+    private ChunkTrackingKey(ResourceLocation levelName, BlockPos blockPos) {
+      this(levelName, blockPos.getX() >> 4, blockPos.getZ() >> 4);
+    }
+
+    private String asString() {
+      return "[" + levelName + ':' + chunkX + 'x' + chunkZ + ']';
     }
   }
 }

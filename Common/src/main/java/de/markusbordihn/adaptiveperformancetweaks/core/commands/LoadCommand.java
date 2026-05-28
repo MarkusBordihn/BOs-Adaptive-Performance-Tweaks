@@ -21,7 +21,6 @@ package de.markusbordihn.adaptiveperformancetweaks.core.commands;
 
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLevelLoad;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoad;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
@@ -39,7 +38,7 @@ public class LoadCommand extends CustomCommand {
   }
 
   @Override
-  public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+  public int run(CommandContext<CommandSourceStack> context) {
     ServerLoadLevel currentLoad = ServerLoad.getCurrentServerLoad();
     double avgTickTime = ServerLoad.getAvgTickTime();
     StringBuilder message =

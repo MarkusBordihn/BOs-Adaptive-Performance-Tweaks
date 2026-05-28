@@ -66,7 +66,7 @@ public class AdaptivePerformanceTweaks {
       "{} Configuration ({}) ...",
       Constants.LOG_REGISTER_PREFIX,
       isDedicatedServer ? "server" : "client");
-    Config.register(isDedicatedServer);
+    Config.register();
 
     log.debug("{} Feature Registry ...", Constants.LOG_REGISTER_PREFIX);
     FeatureRegistry.registerCommon();

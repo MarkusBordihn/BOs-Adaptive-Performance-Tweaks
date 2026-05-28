@@ -74,7 +74,7 @@ public final class PlayerDamageTests {
 
     float result = PlayerDamageManager.handleLivingHurt(child, 10f);
     GameTestHelpers.assertEquals(
-      helper, "Damage should be reduced by 50% for child player (10 \u2192 5)", 5f, result);
+      helper, "Damage should be reduced by 50% for child player (10 → 5)", 5f, result);
 
     FeatureToggle.PLAYER_STARTER_PROTECTION.setEnabled(wasStarterEnabled);
     PlayerEasyChildModeConfig.childPlayerNames = Set.of();
@@ -118,9 +118,7 @@ public final class PlayerDamageTests {
       PlayerDamageManager.handleLivingDamage(
         helper.getLevel().damageSources().playerAttack(child), 10f);
     GameTestHelpers.assertEquals(
-      helper,
-      "Attack damage should be increased by 50% for child player (10 \u2192 15)",
-      15f,
+      helper, "Attack damage should be increased by 50% for child player (10 → 15)", 15f,
       result);
 
     FeatureToggle.PLAYER_STARTER_PROTECTION.setEnabled(wasStarterEnabled);

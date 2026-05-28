@@ -88,10 +88,12 @@ public final class FeatureRegistry {
   public static void registerCommon() {
     log.info("{} Feature Registry (common) ...", Constants.LOG_REGISTER_PREFIX);
     for (FeatureToggle toggle : FeatureToggle.values()) {
-      if (!toggle.isEnabled()) {
+      if (toggle == FeatureToggle.CORE) {
         continue;
       }
-      log.debug("Feature {} ({}) enabled", toggle.getId(), toggle.scope());
+
+      log.debug("Feature {} ({}) {}", toggle.getId(), toggle.scope(),
+        toggle.isEnabled() ? "enabled" : "disabled");
       if (toggle == FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE) {
         ServerLoadDispatcher.register(SimulationDistanceManager::handleServerLoadEvent);
       }

@@ -19,7 +19,6 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.aithrottle;
 
-import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.Config;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
@@ -55,19 +54,18 @@ public final class AiThrottleConfig extends Config {
     Properties unmodified = new Properties();
     unmodified.putAll(properties);
 
-    CoreConfig.setFeatureEnabled(
+    CoreConfig.applyFeatureState(
       FeatureToggle.AI_THROTTLING,
-      ModConflictDetector.resolveFeatureState(
-        FeatureToggle.AI_THROTTLING,
-        parseConfigValue(
-          properties, "enabled", FeatureToggle.AI_THROTTLING.getDefaultState())));
+      parseConfigValue(properties, "enabled", FeatureToggle.AI_THROTTLING.getDefaultState()));
 
-    aiThrottleNearbyRadius = parseInt(properties, "aiThrottleNearbyRadius", aiThrottleNearbyRadius);
-    aiThrottleMediumDivisor =
-      parseInt(properties, "aiThrottleMediumDivisor", aiThrottleMediumDivisor);
-    aiThrottleHighDivisor = parseInt(properties, "aiThrottleHighDivisor", aiThrottleHighDivisor);
-    aiThrottleVeryHighDivisor =
-      parseInt(properties, "aiThrottleVeryHighDivisor", aiThrottleVeryHighDivisor);
+    aiThrottleNearbyRadius = parseConfigValue(properties, "aiThrottleNearbyRadius",
+      aiThrottleNearbyRadius);
+    aiThrottleMediumDivisor = parseConfigValue(properties, "aiThrottleMediumDivisor",
+      aiThrottleMediumDivisor);
+    aiThrottleHighDivisor = parseConfigValue(properties, "aiThrottleHighDivisor",
+      aiThrottleHighDivisor);
+    aiThrottleVeryHighDivisor = parseConfigValue(properties, "aiThrottleVeryHighDivisor",
+      aiThrottleVeryHighDivisor);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
     log.debug(
@@ -76,15 +74,5 @@ public final class AiThrottleConfig extends Config {
       aiThrottleMediumDivisor,
       aiThrottleHighDivisor,
       aiThrottleVeryHighDivisor);
-  }
-
-  private static int parseInt(Properties props, String key, int defaultValue) {
-    props.putIfAbsent(key, String.valueOf(defaultValue));
-    try {
-      return Integer.parseInt(props.getProperty(key));
-    } catch (NumberFormatException exception) {
-      log.warn("Invalid integer for '{}', using default {}", key, defaultValue);
-      return defaultValue;
-    }
   }
 }

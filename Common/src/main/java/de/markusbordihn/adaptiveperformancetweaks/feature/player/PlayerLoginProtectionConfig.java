@@ -19,15 +19,11 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.player;
 
-import de.markusbordihn.adaptiveperformancetweaks.Constants;
-import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.Config;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import java.io.File;
 import java.util.Properties;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public final class PlayerLoginProtectionConfig extends Config {
 
@@ -40,10 +36,8 @@ public final class PlayerLoginProtectionConfig extends Config {
        until they move (or until the timeout expires).
       """;
 
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-
   public static boolean protectPlayerDuringLogin = true;
-  public static int playerLoginValidationTimeout = 30;
+  public static int playerLoginValidationTimeout = 60;
   public static boolean protectPlayerDuringLoginLogging = true;
 
   private PlayerLoginProtectionConfig() {
@@ -56,40 +50,23 @@ public final class PlayerLoginProtectionConfig extends Config {
     Properties unmodified = new Properties();
     unmodified.putAll(properties);
 
-    CoreConfig.setFeatureEnabled(
+    CoreConfig.applyFeatureState(
       FeatureToggle.PLAYER_LOGIN_PROTECTION,
-      ModConflictDetector.resolveFeatureState(
-        FeatureToggle.PLAYER_LOGIN_PROTECTION,
-        parseConfigValue(
-          properties, "enabled", FeatureToggle.PLAYER_LOGIN_PROTECTION.getDefaultState())));
+      parseConfigValue(properties, "enabled",
+        FeatureToggle.PLAYER_LOGIN_PROTECTION.getDefaultState()));
 
-    protectPlayerDuringLogin =
-      parseBoolean(properties, "protectPlayerDuringLogin", protectPlayerDuringLogin);
-    playerLoginValidationTimeout =
-      parseInt(properties, "playerLoginValidationTimeout", playerLoginValidationTimeout);
-    protectPlayerDuringLoginLogging =
-      parseBoolean(
-        properties, "protectPlayerDuringLoginLogging", protectPlayerDuringLoginLogging);
+    protectPlayerDuringLogin = parseConfigValue(properties, "protectPlayerDuringLogin",
+      protectPlayerDuringLogin);
+    playerLoginValidationTimeout = parseConfigValue(properties, "playerLoginValidationTimeout",
+      playerLoginValidationTimeout);
+    protectPlayerDuringLoginLogging = parseConfigValue(properties,
+      "protectPlayerDuringLoginLogging",
+      protectPlayerDuringLoginLogging);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
 
     if (protectPlayerDuringLogin) {
       log.info("Player login protection enabled (max {} secs).", playerLoginValidationTimeout);
-    }
-  }
-
-  private static boolean parseBoolean(Properties props, String key, boolean defaultValue) {
-    props.putIfAbsent(key, String.valueOf(defaultValue));
-    return Boolean.parseBoolean(props.getProperty(key));
-  }
-
-  private static int parseInt(Properties props, String key, int defaultValue) {
-    props.putIfAbsent(key, String.valueOf(defaultValue));
-    try {
-      return Integer.parseInt(props.getProperty(key));
-    } catch (NumberFormatException e) {
-      log.warn("Invalid integer for '{}', using default {}", key, defaultValue);
-      return defaultValue;
     }
   }
 }

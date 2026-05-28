@@ -21,15 +21,26 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.benchmark;
 
 import com.sun.management.OperatingSystemMXBean;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
+import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
+import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.debug.DebugManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.debug.DebugModule;
-import de.markusbordihn.adaptiveperformancetweaks.core.entity.TrackingCategory;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
-import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoad;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.MsptBucket;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenario;
+import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenarioContext;
+import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenarioId;
+import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenarioResult;
+import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.EntityScenario;
+import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.GeneralScenario;
+import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.ItemScenario;
+import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.RecoveryScenario;
+import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.XpScenario;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import java.lang.management.ManagementFactory;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,13 +50,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,91 +74,75 @@ import org.apache.logging.log4j.Logger;
 public final class BenchmarkManager {
 
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-  private static final long DEFAULT_PHASE_DURATION_MS = 240_000L;
-  private static final long WARMUP_DURATION_MS = 30_000L;
+  private static final long DEFAULT_BLOCK_DURATION_MS = 240_000L;
+  private static final long BLOCK_WARMUP_DURATION_MS = 30_000L;
+  private static final long SCENARIO_SETTLE_DURATION_MS = 5_000L;
+  private static final long SCENARIO_POST_SETTLE_DURATION_MS = 3_000L;
   private static final long SAMPLE_INTERVAL_MS = 5_000L;
   private static final long MOVE_INTERVAL_MS = 10_000L;
   private static final long POST_MOVE_SETTLE_DELAY_MS = 7_500L;
   private static final long CONFIRM_TIMEOUT_MS = 120_000L;
   private static final int MOVE_AREA_HALF_SIZE = 10_000;
   private static final int MOVE_WAYPOINT_COUNT = 60;
-  private static final int PROGRESS_BAR_WIDTH = 12;
-  private static final double TELEPORT_Y = 100.0;
-  private static final List<Double> baselineSamples = new ArrayList<>();
-  private static final List<Double> activeSamples = new ArrayList<>();
-  private static final List<Double> baselineCpuSamples = new ArrayList<>();
-  private static final List<Double> activeCpuSamples = new ArrayList<>();
-  private static final EnumMap<ServerLoadLevel, Integer> baselineLoadDist =
-    new EnumMap<>(ServerLoadLevel.class);
-  private static final EnumMap<ServerLoadLevel, Integer> activeLoadDist =
-    new EnumMap<>(ServerLoadLevel.class);
+  private static final int PROGRESS_BAR_WIDTH = 10;
+  private static final long MIN_SUITE_GENERAL_SECONDS = 60L;
+  private static final long MIN_SUITE_SPECIAL_SECONDS = 15L;
+  private static final double TELEPORT_Y = 100.0d;
+  private static final String BENCHMARK_TAG = "aptweaks_benchmark";
+  private static final List<BenchmarkScenario> DEFAULT_SCENARIOS = createScenarioSuite();
   private static final EnumMap<FeatureToggle, Boolean> savedFeatureState =
     new EnumMap<>(FeatureToggle.class);
+  private static final EnumMap<FeatureToggle, ModConflictDetector.FeatureDecision>
+    savedFeatureDecision = new EnumMap<>(FeatureToggle.class);
   private static final EnumMap<DebugModule, Boolean> savedDebugStates =
     new EnumMap<>(DebugModule.class);
+  private static final EnumMap<BenchmarkScenarioId, Long> scenarioDurationMs =
+    new EnumMap<>(BenchmarkScenarioId.class);
+  private static final EnumMap<BenchmarkScenarioId, BenchmarkScenarioResult.PhaseResult>
+    baselineScenarioResults = new EnumMap<>(BenchmarkScenarioId.class);
+  private static final EnumMap<BenchmarkScenarioId, BenchmarkScenarioResult.PhaseResult>
+    activeScenarioResults = new EnumMap<>(BenchmarkScenarioId.class);
+  private static final List<Double> currentSamples = new ArrayList<>();
+  private static final List<Double> currentCpuSamples = new ArrayList<>();
+  private static final EnumMap<ServerLoadLevel, Integer> currentLoadDist =
+    new EnumMap<>(ServerLoadLevel.class);
+  private static final EnumMap<MsptBucket, Integer> currentMsptDist =
+    new EnumMap<>(MsptBucket.class);
   private static BenchmarkState state = BenchmarkState.IDLE;
-  private static long phaseDurationMs = DEFAULT_PHASE_DURATION_MS;
-  private static boolean autoMove = false;
+  private static BenchmarkBlock currentBlock = BenchmarkBlock.BASELINE;
+  private static boolean suiteMode = true;
+  private static boolean autoMoveRequested = false;
+  private static String requestedScenarioLabel = "Full Suite";
   private static ServerPlayer pendingConfirmPlayer;
   private static ServerPlayer benchmarkPlayer;
   private static Vec3 playerStartPos;
+  private static List<BenchmarkScenario> configuredScenarios = List.of();
   private static List<Vec3> baselineMoveWaypoints = new ArrayList<>();
   private static List<Vec3> activeMoveWaypoints = new ArrayList<>();
+  private static int currentScenarioIndex;
   private static int currentWaypointIndex;
-  private static long phaseStartMs;
+  private static long configuredBlockDurationMs = DEFAULT_BLOCK_DURATION_MS;
+  private static long currentScenarioDurationMs;
+  private static long stageStartMs;
   private static long lastSampleMs;
   private static long lastMoveMs;
   private static long sampleBlockedUntilMs;
-  private static long baselineHeapUsed;
-  private static long activeHeapUsed;
-  private static int baselineEntityCount;
-  private static int activeEntityCount;
   private static GameType savedGameMode;
-  private static double lastCpuPercent = -1.0;
+  private static double lastCpuPercent = -1.0d;
+  private static PerformanceStats.Snapshot currentMeasurementStartStats;
   private static BenchmarkCompareResult lastResult;
+  private static Path lastResultPath;
 
   private BenchmarkManager() {
   }
 
-  public static void requestStart(ServerPlayer player, long phaseSecs, boolean withAutoMove) {
-    if (state != BenchmarkState.IDLE) {
-      sendMessage(
-        player, "Benchmark is already running. Use /aptweaks benchmark cancel to stop it.");
-      return;
-    }
+  public static void requestStart(ServerPlayer player, long blockSecs, boolean withAutoMove) {
+    requestStart(player, null, blockSecs, withAutoMove);
+  }
 
-    phaseDurationMs = Math.max(30_000L, phaseSecs * 1000L);
-    autoMove = withAutoMove;
-    pendingConfirmPlayer = player;
-    phaseStartMs = System.currentTimeMillis();
-    state = BenchmarkState.PENDING_CONFIRM;
-
-    long mins = phaseSecs / 60;
-    long secs = phaseSecs % 60;
-    String durationStr =
-      mins > 0 ? String.format("%dm %ds", mins, secs) : String.format("%ds", secs);
-    long totalRuntimeMs = phaseDurationMs * 2 + WARMUP_DURATION_MS * 2;
-
-    sendMessage(player, "=== APTweaks Benchmark - WARNING ===");
-    sendMessage(player, String.format(
-      "Measurement: ~%s per phase | total runtime: ~%s",
-      durationStr, formatDuration(totalRuntimeMs)));
-    sendMessage(player, String.format(
-      "Each phase adds a %s warm-up before measurement starts.",
-      formatDuration(WARMUP_DURATION_MS)));
-    sendMessage(player, "Phase 1: Warm-up + measure with all mod features DISABLED (baseline)");
-    sendMessage(player, "Phase 2: Warm-up + measure with all mod features ENABLED (active)");
-    if (autoMove) {
-      sendMessage(
-        player,
-        "[Move] Character will be teleported to random positions (+/-"
-          + MOVE_AREA_HALF_SIZE
-          + " blocks) to trigger chunk loading.");
-    }
-    sendMessage(player, "WARNING: Only run this in a test world!");
-    sendMessage(player, "Confirm: /aptweaks benchmark confirm");
-    sendMessage(player, "Cancel:  /aptweaks benchmark cancel");
-    sendMessage(player, "(Expires in 120 seconds)");
+  public static void requestScenarioStart(
+    ServerPlayer player, BenchmarkScenarioId scenarioId, long seconds, boolean withAutoMove) {
+    requestStart(player, scenarioId, seconds, withAutoMove);
   }
 
   public static void confirm(ServerPlayer player) {
@@ -148,20 +153,26 @@ public final class BenchmarkManager {
 
     benchmarkPlayer = player;
     playerStartPos = player.position();
-    if (autoMove) {
+    currentBlock = BenchmarkBlock.BASELINE;
+    currentScenarioIndex = 0;
+    currentWaypointIndex = 0;
+    baselineScenarioResults.clear();
+    activeScenarioResults.clear();
+    currentMeasurementStartStats = null;
+    currentSamples.clear();
+    currentCpuSamples.clear();
+    currentLoadDist.clear();
+    currentMsptDist.clear();
+
+    if (autoMoveRequested && configuredScenarios.stream()
+      .anyMatch(scenario -> scenario.id().supportsAutoMove())) {
       Set<Long> reservedChunkKeys = new HashSet<>(MOVE_WAYPOINT_COUNT * 2);
       baselineMoveWaypoints = computeWaypoints(playerStartPos, reservedChunkKeys);
       activeMoveWaypoints = computeWaypoints(playerStartPos, reservedChunkKeys);
-      currentWaypointIndex = 0;
+    } else {
+      baselineMoveWaypoints = new ArrayList<>();
+      activeMoveWaypoints = new ArrayList<>();
     }
-
-    baselineSamples.clear();
-    activeSamples.clear();
-    baselineCpuSamples.clear();
-    activeCpuSamples.clear();
-    baselineLoadDist.clear();
-    activeLoadDist.clear();
-    savedFeatureState.clear();
 
     saveFeatureState();
     disableAllFeatures();
@@ -169,54 +180,36 @@ public final class BenchmarkManager {
     boolean anyDebugActive = savedDebugStates.containsValue(true);
     disableAllDebug();
     if (anyDebugActive) {
-      sendMessage(
-        player, "[Benchmark] Debug logging disabled for all modules for accurate results.");
+      sendNoteMessage(player, "Debug logging disabled for all modules for accurate results.");
     }
+
     savedGameMode = player.gameMode.getGameModeForPlayer();
     if (savedGameMode != GameType.CREATIVE) {
       player.setGameMode(GameType.CREATIVE);
-      sendMessage(player, "[Benchmark] Switched to Creative mode for teleportation safety.");
+      sendNoteMessage(player, "Switched to Creative mode for benchmark safety.");
     }
+
     PerformanceStats.reset();
     PerformanceStats.setDetailedTrackingStatsEnabled(true);
-
-    long now = System.currentTimeMillis();
-    phaseStartMs = now;
-    lastSampleMs = now;
-    lastMoveMs = now;
-    sampleBlockedUntilMs = now;
-    state = BenchmarkState.PHASE_BASELINE_WARMUP;
-
-    log.info("Benchmark Phase 1 (Baseline) warm-up started by {}", player.getName().getString());
-    sendMessage(player, "Benchmark Phase 1/2 (Baseline) warm-up started - mod features disabled.");
-    sendMessage(player, String.format(
-      "Warm-up: %s | Measurement: %s | Do not move!",
-      formatDuration(WARMUP_DURATION_MS), formatDuration(phaseDurationMs)));
-    if (autoMove && !baselineMoveWaypoints.isEmpty()) {
-      sendMessage(player, String.format(
-        "[Benchmark] Auto-move uses %,d unique random chunks in Phase 1 and %,d new chunks in Phase 2.",
-        baselineMoveWaypoints.size(), activeMoveWaypoints.size()));
-    }
+    startBlockWarmup(System.currentTimeMillis(), BenchmarkBlock.BASELINE);
   }
 
   public static void cancel(ServerPlayer player) {
-    if (state == BenchmarkState.IDLE) {
+    if (state == BenchmarkState.IDLE || state == BenchmarkState.COMPLETE) {
       sendMessage(player, "No benchmark is running.");
       return;
     }
 
-    BenchmarkState prevState = state;
-    state = BenchmarkState.IDLE;
     restoreFeatures();
     restoreDebugState();
+    cleanupAllBenchmarkArtifacts();
+    PerformanceStats.setDetailedTrackingStatsEnabled(false);
     restoreGameMode(benchmarkPlayer);
-    if ((prevState == BenchmarkState.PHASE_BASELINE_WARMUP
-      || prevState == BenchmarkState.PHASE_BASELINE_MEASURE
-      || prevState == BenchmarkState.PHASE_ACTIVE_WARMUP
-      || prevState == BenchmarkState.PHASE_ACTIVE_MEASURE)
-      && benchmarkPlayer != null && playerStartPos != null) {
+    if (benchmarkPlayer != null && playerStartPos != null) {
       teleportToPos(benchmarkPlayer, playerStartPos);
     }
+
+    state = BenchmarkState.IDLE;
     clearSessionState();
     sendMessage(player, "Benchmark cancelled. Features restored.");
     log.info("Benchmark cancelled by {}", player.getName().getString());
@@ -226,78 +219,37 @@ public final class BenchmarkManager {
     long now = System.currentTimeMillis();
 
     if (state == BenchmarkState.PENDING_CONFIRM) {
-      if (now - phaseStartMs > CONFIRM_TIMEOUT_MS) {
+      if (now - stageStartMs > CONFIRM_TIMEOUT_MS) {
         state = BenchmarkState.IDLE;
         if (pendingConfirmPlayer != null) {
-          sendMessage(pendingConfirmPlayer, "Benchmark confirmation timed out.");
+          sendWarningMessage(pendingConfirmPlayer, "Benchmark confirmation timed out.");
         }
         pendingConfirmPlayer = null;
       }
       return;
     }
 
-    if (state != BenchmarkState.PHASE_BASELINE_WARMUP
-      && state != BenchmarkState.PHASE_BASELINE_MEASURE
-      && state != BenchmarkState.PHASE_ACTIVE_WARMUP
-      && state != BenchmarkState.PHASE_ACTIVE_MEASURE) {
-      return;
-    }
-
-    boolean isWarmup =
-      state == BenchmarkState.PHASE_BASELINE_WARMUP || state == BenchmarkState.PHASE_ACTIVE_WARMUP;
-    boolean isBaseline =
-      state == BenchmarkState.PHASE_BASELINE_WARMUP
-        || state == BenchmarkState.PHASE_BASELINE_MEASURE;
-
-    List<Vec3> moveWaypoints = isBaseline ? baselineMoveWaypoints : activeMoveWaypoints;
-    List<Double> samples = isBaseline ? baselineSamples : activeSamples;
-    List<Double> cpuSamples = isBaseline ? baselineCpuSamples : activeCpuSamples;
-    EnumMap<ServerLoadLevel, Integer> loadDist = isBaseline ? baselineLoadDist : activeLoadDist;
-    boolean moveDue = !isWarmup && autoMove && benchmarkPlayer != null && !moveWaypoints.isEmpty()
-      && now - lastMoveMs >= MOVE_INTERVAL_MS;
-
-    if (isWarmup) {
-      if (now - lastSampleMs >= SAMPLE_INTERVAL_MS) {
-        lastCpuPercent = getProcessCpuPercent();
-        sendStatusUpdate(now, true);
-        lastSampleMs = now;
+    switch (state) {
+      case IDLE, COMPLETE -> {
+        return;
       }
-    } else if (now - lastSampleMs >= SAMPLE_INTERVAL_MS && now >= sampleBlockedUntilMs) {
-      samples.add((double) ServerManager.getAverageTickTime());
-      lastCpuPercent = getProcessCpuPercent();
-      if (lastCpuPercent >= 0) {
-        cpuSamples.add(lastCpuPercent);
-      }
-      loadDist.merge(ServerLoad.getCurrentServerLoad(), 1, Integer::sum);
-      lastSampleMs = now;
-      sendStatusUpdate(now, false);
-    }
-
-    if (moveDue) {
-      teleportToNextWaypoint(benchmarkPlayer, moveWaypoints);
-      lastMoveMs = now;
-      sampleBlockedUntilMs = now + POST_MOVE_SETTLE_DELAY_MS;
-    }
-
-    if (isWarmup) {
-      if (now - phaseStartMs >= WARMUP_DURATION_MS) {
-        if (state == BenchmarkState.PHASE_BASELINE_WARMUP) {
-          startBaselineMeasurement(now);
-        } else {
-          startPhaseActive(now);
-        }
-      }
-    } else if (now - phaseStartMs >= phaseDurationMs) {
-      if (state == BenchmarkState.PHASE_BASELINE_MEASURE) {
-        finalizeBaseline(now);
-      } else {
-        finalizeActive();
+      case BLOCK_WARMUP -> handlePassiveStage(now, BLOCK_WARMUP_DURATION_MS, "warm-up",
+        thisStageComplete -> startScenarioSetup(now));
+      case SCENARIO_SETUP -> runScenarioSetup(now);
+      case SCENARIO_SETTLE -> handlePassiveStage(now, SCENARIO_SETTLE_DURATION_MS, "settle",
+        thisStageComplete -> startScenarioMeasurement(now));
+      case SCENARIO_MEASURE -> handleScenarioMeasurement(now);
+      case SCENARIO_CLEANUP -> runScenarioCleanup(now);
+      case SCENARIO_POST_SETTLE -> handlePassiveStage(now, SCENARIO_POST_SETTLE_DURATION_MS,
+        "cleanup settle", thisStageComplete -> advanceScenarioOrBlock(now));
+      case BLOCK_TRANSITION -> completeBlockTransition(now);
+      case PENDING_CONFIRM -> {
       }
     }
   }
 
   public static boolean isRunning() {
-    return state != BenchmarkState.IDLE;
+    return state != BenchmarkState.IDLE && state != BenchmarkState.COMPLETE;
   }
 
   public static String getStatusMessage() {
@@ -305,11 +257,14 @@ public final class BenchmarkManager {
       case IDLE -> "No benchmark running. Use /aptweaks benchmark start";
       case PENDING_CONFIRM ->
         "Waiting for confirmation. Use /aptweaks benchmark confirm or cancel.";
-      case PHASE_BASELINE_WARMUP -> "Phase 1/2 (Baseline) warm-up in progress.";
-      case PHASE_BASELINE_MEASURE -> "Phase 1/2 (Baseline) measurement in progress.";
-      case PHASE_ACTIVE_WARMUP -> "Phase 2/2 (Active) warm-up in progress.";
-      case PHASE_ACTIVE_MEASURE -> "Phase 2/2 (Active) measurement in progress.";
-      case COMPLETE -> "Last benchmark complete. Use /aptweaks benchmark report.";
+      case BLOCK_WARMUP -> currentBlock.getDisplayName() + " block warm-up in progress.";
+      case SCENARIO_SETUP -> currentScenarioLabel() + " setup in progress.";
+      case SCENARIO_SETTLE -> currentScenarioLabel() + " settle phase in progress.";
+      case SCENARIO_MEASURE -> currentScenarioLabel() + " measurement in progress.";
+      case SCENARIO_CLEANUP -> currentScenarioLabel() + " cleanup in progress.";
+      case SCENARIO_POST_SETTLE -> currentScenarioLabel() + " cleanup settle in progress.";
+      case BLOCK_TRANSITION -> "Switching from baseline to active block.";
+      case COMPLETE -> "Last benchmark complete. Start a new one with /aptweaks benchmark start.";
     };
   }
 
@@ -317,131 +272,352 @@ public final class BenchmarkManager {
     return lastResult;
   }
 
+  public static Path getLastResultPath() {
+    return lastResultPath;
+  }
+
   public static void reset() {
     if (state != BenchmarkState.IDLE && state != BenchmarkState.COMPLETE) {
       restoreFeatures();
       restoreDebugState();
+      cleanupAllBenchmarkArtifacts();
       restoreGameMode(benchmarkPlayer);
     }
+
     PerformanceStats.setDetailedTrackingStatsEnabled(false);
     clearSessionState();
     state = BenchmarkState.IDLE;
   }
 
-  private static void finalizeBaseline(long now) {
-    baselineHeapUsed = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed();
-    baselineEntityCount = countEntities();
-
-    enableAllFeatures();
-    disableAllDebug();
-    startActiveWarmup(now);
-
-    log.info("Benchmark Phase 1 (Baseline) complete. Phase 2 warm-up starts now.");
-    if (benchmarkPlayer != null) {
-      sendMessage(benchmarkPlayer,
-        "Phase 1 complete - mod features re-enabled. Phase 2 warm-up starts now.");
-    }
+  private static List<BenchmarkScenario> createScenarioSuite() {
+    return List.of(
+      new GeneralScenario(),
+      new ItemScenario(),
+      new XpScenario(),
+      new EntityScenario(),
+      new RecoveryScenario());
   }
 
-  private static void startBaselineMeasurement(long now) {
-    phaseStartMs = now;
-    lastSampleMs = now;
-    state = BenchmarkState.PHASE_BASELINE_MEASURE;
-    sampleBlockedUntilMs = now;
+  private static void requestStart(
+    ServerPlayer player, BenchmarkScenarioId scenarioId, long seconds, boolean withAutoMove) {
+    if (state == BenchmarkState.COMPLETE) {
+      state = BenchmarkState.IDLE;
+    } else if (state != BenchmarkState.IDLE) {
+      sendMessage(player,
+        "Benchmark is already running. Use /aptweaks benchmark cancel to stop it.");
+      return;
+    }
 
-    log.info("Benchmark Phase 1 (Baseline) measurement started");
-    if (benchmarkPlayer != null) {
-      sendMessage(benchmarkPlayer, "Benchmark Phase 1/2 (Baseline) measurement started.");
-      sendMessage(benchmarkPlayer, "Measurement duration: " + formatDuration(phaseDurationMs));
-      sendMessage(benchmarkPlayer, "Do not move during measurement.");
-      if (autoMove && !baselineMoveWaypoints.isEmpty()) {
-        teleportToNextWaypoint(benchmarkPlayer, baselineMoveWaypoints);
+    List<BenchmarkScenario> scenarioSelection = scenarioId == null
+      ? DEFAULT_SCENARIOS
+      : DEFAULT_SCENARIOS.stream().filter(scenario -> scenario.id() == scenarioId).toList();
+    if (scenarioSelection.isEmpty()) {
+      sendMessage(player, "Unable to resolve benchmark scenario.");
+      return;
+    }
+
+    suiteMode = scenarioId == null;
+    configuredScenarios = List.copyOf(scenarioSelection);
+    autoMoveRequested = withAutoMove;
+    requestedScenarioLabel = suiteMode ? "Full Suite" : scenarioId.getDisplayName();
+    configuredBlockDurationMs = Math.max(30_000L, seconds * 1000L);
+    pendingConfirmPlayer = player;
+    stageStartMs = System.currentTimeMillis();
+    state = BenchmarkState.PENDING_CONFIRM;
+    currentBlock = BenchmarkBlock.BASELINE;
+    scenarioDurationMs.clear();
+
+    if (suiteMode) {
+      String validationError = validateSuiteDurationSeconds(seconds);
+      if (validationError != null) {
+        state = BenchmarkState.IDLE;
+        pendingConfirmPlayer = null;
+        sendMessage(player, validationError);
+        return;
       }
+      scenarioDurationMs.putAll(buildSuiteScenarioDurationsMillis(seconds));
+    } else {
+      scenarioDurationMs.put(scenarioId, configuredBlockDurationMs);
+    }
+
+    sendBenchmarkWarning(player);
+  }
+
+  private static void sendBenchmarkWarning(ServerPlayer player) {
+    long totalRuntimeMs = suiteMode
+      ? totalSuiteRuntimeMs()
+      : totalSingleScenarioRuntimeMs(configuredScenarios.get(0).id());
+    sendWarningMessage(player, "=== APTweaks Benchmark - WARNING ===");
+    sendMessage(player, String.format(
+      "Target: %s | total runtime: ~%s",
+      requestedScenarioLabel, formatDuration(totalRuntimeMs)));
+    sendMessage(player, String.format(
+      "Block warm-up: %s | settle: %s | cleanup settle: %s",
+      formatDuration(BLOCK_WARMUP_DURATION_MS),
+      formatDuration(SCENARIO_SETTLE_DURATION_MS),
+      formatDuration(SCENARIO_POST_SETTLE_DURATION_MS)));
+    if (suiteMode) {
+      sendMessage(player, "Scenario order:");
+      sendMessage(player, "Baseline General -> Items -> XP -> Entities -> Recovery");
+      sendMessage(player, "Active   General -> Items -> XP -> Entities -> Recovery");
+      sendMessage(player, "Scenario durations per block: " + formatScenarioDurationsForMessage());
+    } else {
+      BenchmarkScenarioId scenarioId = configuredScenarios.get(0).id();
+      sendMessage(player, String.format(
+        "Single scenario: %s | measurement per block: %s",
+        scenarioId.getDisplayName(),
+        formatDuration(scenarioDurationMs.get(scenarioId))));
+    }
+    if (autoMoveRequested) {
+      sendPrefixedMessage(player, "[Move] ",
+        "Auto-move is only applied to the General scenario to create chunk activity.",
+        ChatFormatting.LIGHT_PURPLE, ChatFormatting.GRAY);
+    }
+    sendWarningMessage(player, "Only run this in a test world!");
+    sendCommandMessage(player, "Confirm", "/aptweaks benchmark confirm");
+    sendCommandMessage(player, "Cancel", "/aptweaks benchmark cancel");
+    sendNoteMessage(player, "Expires in 120 seconds.");
+  }
+
+  private static void startBlockWarmup(long now, BenchmarkBlock block) {
+    currentBlock = block;
+    currentScenarioIndex = 0;
+    currentWaypointIndex = 0;
+    currentScenarioDurationMs = 0L;
+    stageStartMs = now;
+    lastSampleMs = now;
+    lastMoveMs = now;
+    sampleBlockedUntilMs = now;
+    state = BenchmarkState.BLOCK_WARMUP;
+
+    String message = block == BenchmarkBlock.BASELINE
+      ? "Base block warm-up started - all mod features disabled."
+      : "Active block warm-up started - configured feature state restored.";
+    log.info("{} benchmark block warm-up started.", block.getDisplayName());
+    if (benchmarkPlayer != null) {
+      sendNoteMessage(benchmarkPlayer, message);
     }
   }
 
-  private static void startActiveWarmup(long now) {
+  private static void handlePassiveStage(
+    long now, long durationMs, String stageLabel, PassiveStageCallback callback) {
+    if (now - lastSampleMs >= SAMPLE_INTERVAL_MS) {
+      lastCpuPercent = getProcessCpuPercent();
+      sendStatusUpdate(now, stageLabel, durationMs, false);
+      lastSampleMs = now;
+    }
+
+    if (now - stageStartMs >= durationMs) {
+      callback.run(true);
+    }
+  }
+
+  private static void startScenarioSetup(long now) {
+    state = BenchmarkState.SCENARIO_SETUP;
+    stageStartMs = now;
+  }
+
+  private static void runScenarioSetup(long now) {
+    BenchmarkScenario scenario = currentScenario();
+    if (benchmarkPlayer != null && playerStartPos != null) {
+      teleportToPos(benchmarkPlayer, playerStartPos);
+    }
+
+    BenchmarkScenarioContext context = currentScenarioContext(scenario);
+    scenario.setup(context);
+
+    currentScenarioDurationMs = scenarioDurationMs.getOrDefault(scenario.id(),
+      configuredBlockDurationMs);
+    stageStartMs = now;
+    lastSampleMs = now;
+    lastMoveMs = now;
+    sampleBlockedUntilMs = now;
+    state = BenchmarkState.SCENARIO_SETTLE;
+
+    if (benchmarkPlayer != null) {
+      sendStageMessage(benchmarkPlayer, currentBlock, scenario.displayName(), String.format(
+        "setup complete. Settle: %s",
+        formatDuration(SCENARIO_SETTLE_DURATION_MS)));
+    }
+  }
+
+  private static void startScenarioMeasurement(long now) {
+    BenchmarkScenario scenario = currentScenario();
+    currentSamples.clear();
+    currentCpuSamples.clear();
+    currentLoadDist.clear();
+    currentMsptDist.clear();
+    currentMeasurementStartStats = PerformanceStats.snapshot();
+
+    stageStartMs = now;
+    lastSampleMs = now;
+    lastMoveMs = now;
+    sampleBlockedUntilMs = now;
+    state = BenchmarkState.SCENARIO_MEASURE;
+
+    if (scenario.usesAutoMove(autoMoveRequested) && !getCurrentMoveWaypoints().isEmpty()
+      && benchmarkPlayer != null) {
+      teleportToNextWaypoint(benchmarkPlayer, getCurrentMoveWaypoints());
+      sampleBlockedUntilMs = now + POST_MOVE_SETTLE_DELAY_MS;
+    }
+
+    log.info("{} {} measurement started for {}.", currentBlock.getDisplayName(),
+      scenario.displayName(), formatDuration(currentScenarioDurationMs));
+    if (benchmarkPlayer != null) {
+      sendStageMessage(benchmarkPlayer, currentBlock, scenario.displayName(), String.format(
+        "measurement started (%s).",
+        formatDuration(currentScenarioDurationMs)));
+    }
+  }
+
+  private static void handleScenarioMeasurement(long now) {
+    BenchmarkScenario scenario = currentScenario();
+    boolean sampleDue = now - lastSampleMs >= SAMPLE_INTERVAL_MS;
+    boolean sampleAllowed = sampleDue && now >= sampleBlockedUntilMs;
+    boolean moveDue = scenario.usesAutoMove(autoMoveRequested)
+      && benchmarkPlayer != null
+      && !getCurrentMoveWaypoints().isEmpty()
+      && now - lastMoveMs >= MOVE_INTERVAL_MS;
+
+    if (sampleAllowed) {
+      double sampleMspt = ServerManager.getAverageTickTime();
+      MsptBucket sampleBucket = MsptBucket.fromTickTime(sampleMspt);
+      currentSamples.add(sampleMspt);
+      lastCpuPercent = getProcessCpuPercent();
+      if (lastCpuPercent >= 0.0d) {
+        currentCpuSamples.add(lastCpuPercent);
+      }
+      currentLoadDist.merge(sampleBucket.getMappedLoadLevel(), 1, Integer::sum);
+      currentMsptDist.merge(sampleBucket, 1, Integer::sum);
+      sendStatusUpdate(now, "measure", currentScenarioDurationMs, true);
+      lastSampleMs = now;
+    }
+
+    if (moveDue) {
+      teleportToNextWaypoint(benchmarkPlayer, getCurrentMoveWaypoints());
+      lastMoveMs = now;
+      sampleBlockedUntilMs = now + POST_MOVE_SETTLE_DELAY_MS;
+    }
+
+    if (now - stageStartMs >= currentScenarioDurationMs) {
+      finalizeCurrentScenarioMeasurement(now);
+    }
+  }
+
+  private static void finalizeCurrentScenarioMeasurement(long now) {
+    BenchmarkScenario scenario = currentScenario();
+    PerformanceStats.Snapshot endStats = PerformanceStats.snapshot();
+    PerformanceStats.Snapshot statsDelta = PerformanceStats.delta(currentMeasurementStartStats,
+      endStats);
+
+    BenchmarkScenarioResult.PhaseResult phaseResult = new BenchmarkScenarioResult.PhaseResult(
+      currentScenarioDurationMs,
+      average(currentSamples),
+      min(currentSamples),
+      percentile(currentSamples, 95),
+      max(currentSamples),
+      Map.copyOf(currentLoadDist),
+      Map.copyOf(currentMsptDist),
+      ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed(),
+      countEntities(),
+      average(currentCpuSamples, -1.0d),
+      max(currentCpuSamples, -1.0d),
+      statsDelta);
+
+    if (currentBlock == BenchmarkBlock.BASELINE) {
+      baselineScenarioResults.put(scenario.id(), phaseResult);
+    } else {
+      activeScenarioResults.put(scenario.id(), phaseResult);
+    }
+
+    stageStartMs = now;
+    state = BenchmarkState.SCENARIO_CLEANUP;
+  }
+
+  private static void runScenarioCleanup(long now) {
+    BenchmarkScenario scenario = currentScenario();
+    BenchmarkScenarioContext context = currentScenarioContext(scenario);
+    scenario.cleanup(context);
+    cleanupBenchmarkArtifacts(context.level(), context.center(), scenario.cleanupRadius(),
+      context.scenarioTag());
+    if (benchmarkPlayer != null && playerStartPos != null) {
+      teleportToPos(benchmarkPlayer, playerStartPos);
+    }
+
+    stageStartMs = now;
+    lastSampleMs = now;
+    lastMoveMs = now;
+    sampleBlockedUntilMs = now;
+    state = BenchmarkState.SCENARIO_POST_SETTLE;
+
+    if (benchmarkPlayer != null) {
+      sendStageMessage(benchmarkPlayer, currentBlock, scenario.displayName(), String.format(
+        "cleanup complete. Post-settle: %s",
+        formatDuration(SCENARIO_POST_SETTLE_DURATION_MS)));
+    }
+  }
+
+  private static void advanceScenarioOrBlock(long now) {
+    currentScenarioIndex++;
+    if (currentScenarioIndex < configuredScenarios.size()) {
+      startScenarioSetup(now);
+      return;
+    }
+
+    if (currentBlock == BenchmarkBlock.BASELINE) {
+      state = BenchmarkState.BLOCK_TRANSITION;
+      stageStartMs = now;
+      return;
+    }
+
+    finalizeBenchmark();
+  }
+
+  private static void completeBlockTransition(long now) {
+    restoreFeatures();
+    disableAllDebug();
     PerformanceStats.reset();
     PerformanceStats.setDetailedTrackingStatsEnabled(true);
-    phaseStartMs = now;
-    lastSampleMs = now;
-    lastMoveMs = now;
-    sampleBlockedUntilMs = now;
-    state = BenchmarkState.PHASE_ACTIVE_WARMUP;
-
-    log.info("Benchmark Phase 2 (Active) warm-up started");
-    currentWaypointIndex = 0;
-
-    if (benchmarkPlayer != null) {
-      sendMessage(benchmarkPlayer,
-        "Benchmark Phase 2/2 (Active) warm-up started - server recovery window.");
-      sendMessage(benchmarkPlayer, String.format(
-        "Warm-up: %s | Measurement starts automatically afterwards.",
-        formatDuration(WARMUP_DURATION_MS)));
-    }
+    startBlockWarmup(now, BenchmarkBlock.ACTIVE);
   }
 
-  private static void startPhaseActive(long now) {
-    phaseStartMs = now;
-    lastSampleMs = now;
-    lastMoveMs = now;
-    sampleBlockedUntilMs = now;
-    state = BenchmarkState.PHASE_ACTIVE_MEASURE;
-
-    log.info("Benchmark Phase 2 (Active) started");
-    if (benchmarkPlayer != null) {
-      sendMessage(benchmarkPlayer,
-        "Benchmark Phase 2/2 (Active) measurement started - mod features enabled.");
-      sendMessage(benchmarkPlayer, "Measurement duration: " + formatDuration(phaseDurationMs));
-      sendMessage(benchmarkPlayer, "Do not move during measurement.");
-      if (autoMove && !activeMoveWaypoints.isEmpty()) {
-        sendMessage(benchmarkPlayer, String.format(
-          "[Benchmark] Auto-move switched to %,d fresh random chunks for Phase 2.",
-          activeMoveWaypoints.size()));
-        teleportToNextWaypoint(benchmarkPlayer, activeMoveWaypoints);
-        sampleBlockedUntilMs = now + POST_MOVE_SETTLE_DELAY_MS;
+  private static void finalizeBenchmark() {
+    List<BenchmarkScenarioResult> scenarioResults = new ArrayList<>(configuredScenarios.size());
+    for (BenchmarkScenario scenario : configuredScenarios) {
+      BenchmarkScenarioResult.PhaseResult baseline = baselineScenarioResults.get(scenario.id());
+      BenchmarkScenarioResult.PhaseResult active = activeScenarioResults.get(scenario.id());
+      if (baseline != null && active != null) {
+        scenarioResults.add(new BenchmarkScenarioResult(scenario.id(), baseline, active));
       }
     }
-  }
-
-  private static void finalizeActive() {
-    activeHeapUsed = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed();
-    activeEntityCount = countEntities();
-
-    PerformanceStats.Snapshot activeDelta = PerformanceStats.snapshot();
-
-    double baselineAvg = average(baselineSamples);
-    double activeAvg = average(activeSamples);
-    double improvement = baselineAvg == 0 ? 0.0 : (baselineAvg - activeAvg) / baselineAvg * 100.0;
-
-    double baselineAvgCpu = average(baselineCpuSamples, -1.0);
-    double baselineMaxCpu = max(baselineCpuSamples, -1.0);
-    double activeAvgCpu = average(activeCpuSamples, -1.0);
-    double activeMaxCpu = max(activeCpuSamples, -1.0);
 
     lastResult = new BenchmarkCompareResult(
-      phaseDurationMs,
-      WARMUP_DURATION_MS,
-      baselineAvg, min(baselineSamples), percentile(baselineSamples, 95), max(baselineSamples),
-      Map.copyOf(baselineLoadDist),
-      baselineHeapUsed, baselineEntityCount,
-      baselineAvgCpu, baselineMaxCpu,
-      activeAvg, min(activeSamples), percentile(activeSamples, 95), max(activeSamples),
-      Map.copyOf(activeLoadDist),
-      activeHeapUsed, activeEntityCount,
-      activeAvgCpu, activeMaxCpu,
-      autoMove, baselineMoveWaypoints.size(), activeMoveWaypoints.size(),
+      requestedScenarioLabel,
+      suiteMode,
+      configuredBlockDurationMs,
+      BLOCK_WARMUP_DURATION_MS,
+      SCENARIO_SETTLE_DURATION_MS,
+      SCENARIO_POST_SETTLE_DURATION_MS,
+      Map.copyOf(scenarioDurationMs),
+      List.copyOf(scenarioResults),
+      countFeaturesByActivation(ModConflictDetector.FeatureActivation.MANUAL_ENABLED),
+      countFeaturesByActivation(ModConflictDetector.FeatureActivation.AUTO_ENABLED),
+      countFeaturesByActivation(ModConflictDetector.FeatureActivation.MANUAL_DISABLED),
+      countFeaturesByActivation(ModConflictDetector.FeatureActivation.CONFLICT_DISABLED),
+      autoMoveRequested,
+      baselineMoveWaypoints.size(),
+      activeMoveWaypoints.size(),
       countSharedChunkTargets(baselineMoveWaypoints, activeMoveWaypoints),
-      activeDelta, improvement, Instant.now());
+      Instant.now());
 
     restoreFeatures();
     restoreDebugState();
+    cleanupAllBenchmarkArtifacts();
     PerformanceStats.setDetailedTrackingStatsEnabled(false);
 
     ServerPlayer player = benchmarkPlayer;
     Vec3 startPos = playerStartPos;
     restoreGameMode(player);
-
     state = BenchmarkState.COMPLETE;
     clearSessionState();
 
@@ -449,57 +625,71 @@ public final class BenchmarkManager {
       teleportToPos(player, startPos);
     }
 
-    log.info("Benchmark complete. Tick time improvement: {}%", String.format("%.1f", improvement));
+    lastResultPath = BenchmarkResultWriter.save(lastResult, log);
+
+    log.info("Benchmark complete for {}.", requestedScenarioLabel);
     for (Component line : lastResult.format()) {
       log.info(line.getString());
     }
 
     if (player != null) {
-      sendMessage(player, "Benchmark complete! Use /aptweaks benchmark report to view results.");
-      for (Component line : lastResult.format()) {
+      if (lastResultPath == null) {
+        sendMessage(player, "Benchmark complete!");
+      }
+      for (Component line : lastResult.formatChat()) {
         sendMessage(player, line);
+      }
+      if (lastResultPath != null) {
+        String displayPath = abbreviatePath(lastResultPath);
+        MutableComponent fileLink = Component.literal("See Details: ")
+          .withStyle(ChatFormatting.GOLD)
+          .append(Component.literal(displayPath)
+            .withStyle(ChatFormatting.AQUA)
+            .withStyle(style -> style
+              .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
+                "/aptweaks benchmark openresult"))
+              .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                Component.literal(lastResultPath.toString())))));
+        sendMessage(player, fileLink);
       }
     }
   }
 
-  private static void sendStatusUpdate(long now, boolean warmup) {
+  private static void sendStatusUpdate(
+    long now, String stageLabel, long stageDurationMs, boolean measurement) {
     if (benchmarkPlayer == null) {
       return;
     }
 
-    int phase = (state == BenchmarkState.PHASE_BASELINE_WARMUP
-      || state == BenchmarkState.PHASE_BASELINE_MEASURE) ? 1 : 2;
-    String phaseLabel = phase == 1 ? "P1" : "P2";
-    String phaseName = warmup ? "warm-up" : "measure";
-    long stageDurationMs = warmup ? WARMUP_DURATION_MS : phaseDurationMs;
-    long elapsedMs = Math.max(0L, now - phaseStartMs);
+    long elapsedMs = Math.max(0L, now - stageStartMs);
     long remainingMs = Math.max(0L, stageDurationMs - elapsedMs);
     double mspt = ServerManager.getAverageTickTime();
-    double headroom = (50.0 - mspt) / 50.0 * 100.0;
-    String remaining = formatDuration(remainingMs);
+    double headroom = (50.0d - mspt) / 50.0d * 100.0d;
     String memory = formatBytes(ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed());
-
+    String blockLabel = currentBlock.getStatusLabel();
+    String scenarioLabel = currentScenarioShortLabel();
+    String phaseLabel = formatStageLabel(stageLabel);
     MutableComponent message = Component.literal("[APT Benchmark] ").withStyle(ChatFormatting.GOLD)
       .append(Component.literal(formatProgressBar(elapsedMs, stageDurationMs))
-        .withStyle(getPhaseColor(warmup, phase)))
-      .append(Component.literal(" " + phaseLabel + " " + phaseName)
-        .withStyle(getPhaseColor(warmup, phase)))
-      .append(Component.literal(" "));
+        .withStyle(getStageColor(stageLabel, currentBlock)))
+      .append(Component.literal(
+          String.format(" %s: %s %s ", blockLabel, scenarioLabel, phaseLabel))
+        .withStyle(getStageColor(stageLabel, currentBlock)));
 
-    if (!warmup) {
-      int sampleCount = phase == 1 ? baselineSamples.size() : activeSamples.size();
-      int totalSamples = getExpectedSampleCount(phaseDurationMs);
+    if (measurement) {
+      int sampleCount = currentSamples.size();
+      int totalSamples = Math.max(1, (int) (stageDurationMs / SAMPLE_INTERVAL_MS));
       message = message.append(Component.literal(sampleCount + "/" + totalSamples + " | "));
     }
 
     message = message
-      .append(Component.literal(remaining + " | "))
+      .append(Component.literal(formatDuration(remainingMs) + " | "))
       .append(Component.literal(String.format("%.1fms", mspt)).withStyle(getMsptColor(mspt)))
       .append(Component.literal(String.format(" | %.0f%% hr", headroom))
         .withStyle(getHeadroomColor(headroom)))
       .append(Component.literal(" | RAM " + memory).withStyle(ChatFormatting.AQUA));
 
-    if (lastCpuPercent >= 0) {
+    if (lastCpuPercent >= 0.0d) {
       message = message.append(
         Component.literal(String.format(" | CPU %.0f%%", lastCpuPercent))
           .withStyle(ChatFormatting.GRAY));
@@ -508,13 +698,208 @@ public final class BenchmarkManager {
     sendMessage(benchmarkPlayer, message);
   }
 
-  private static int getExpectedSampleCount(long durationMs) {
-    return Math.max(1, (int) (durationMs / SAMPLE_INTERVAL_MS));
+  private static ChatFormatting getStageColor(String stageLabel, BenchmarkBlock block) {
+    if (stageLabel.contains("measure")) {
+      return block == BenchmarkBlock.BASELINE ? ChatFormatting.AQUA : ChatFormatting.GREEN;
+    }
+
+    if ("cleanup settle".equals(stageLabel)) {
+      return ChatFormatting.GOLD;
+    }
+
+    return ChatFormatting.YELLOW;
+  }
+
+  private static BenchmarkScenarioContext currentScenarioContext(BenchmarkScenario scenario) {
+    ServerLevel level = benchmarkPlayer.serverLevel();
+    Vec3 baseCenter = playerStartPos != null ? playerStartPos : benchmarkPlayer.position();
+    Vec3 offset = scenario.centerOffset();
+    Vec3 center = baseCenter.add(offset.x, offset.y, offset.z);
+
+    return new BenchmarkScenarioContext(
+      benchmarkPlayer,
+      level,
+      center,
+      scenario.id(),
+      currentBlock == BenchmarkBlock.ACTIVE,
+      scenario.usesAutoMove(autoMoveRequested),
+      currentScenarioDurationMs,
+      BENCHMARK_TAG,
+      BENCHMARK_TAG + '_' + scenario.id().getId());
+  }
+
+  private static List<Vec3> getCurrentMoveWaypoints() {
+    return currentBlock == BenchmarkBlock.BASELINE ? baselineMoveWaypoints : activeMoveWaypoints;
+  }
+
+  private static void cleanupAllBenchmarkArtifacts() {
+    for (ServerLevel level : ServerManager.getAllLevels()) {
+      List<Entity> taggedEntities = new ArrayList<>();
+      for (Entity entity : level.getAllEntities()) {
+        if (entity.getTags().contains(BENCHMARK_TAG)) {
+          taggedEntities.add(entity);
+        }
+      }
+
+      for (Entity entity : taggedEntities) {
+        removeBenchmarkEntity(entity, entity instanceof LivingEntity);
+      }
+    }
+  }
+
+  private static void cleanupBenchmarkArtifacts(
+    ServerLevel level, Vec3 center, double radius, String scenarioTag) {
+    double safeRadius = Math.max(1.0d, radius);
+    AABB cleanupArea = new AABB(center, center).inflate(safeRadius);
+
+    List<Entity> taggedEntities = level.getEntities((Entity) null, cleanupArea, entity ->
+      entity.getTags().contains(BENCHMARK_TAG) || entity.getTags().contains(scenarioTag));
+    for (Entity entity : taggedEntities) {
+      removeBenchmarkEntity(entity, entity instanceof LivingEntity
+        && entity.getTags().contains(scenarioTag));
+    }
+
+    List<Entity> sweepEntities = level.getEntities((Entity) null, cleanupArea, entity ->
+      entity instanceof ExperienceOrb
+        || entity instanceof AbstractArrow
+        || entity instanceof ItemEntity);
+    for (Entity entity : sweepEntities) {
+      removeBenchmarkEntity(entity, false);
+    }
+  }
+
+  private static void removeBenchmarkEntity(Entity entity, boolean allowKill) {
+    if (entity == null || entity.isRemoved()) {
+      return;
+    }
+
+    try {
+      if (allowKill && entity instanceof LivingEntity livingEntity) {
+        livingEntity.kill();
+      } else if (entity instanceof Projectile projectile) {
+        projectile.discard();
+      } else {
+        entity.discard();
+      }
+    } catch (Exception exception) {
+      log.warn("Benchmark cleanup failed for {}: {}", entity.getType(), exception.getMessage());
+    }
+  }
+
+  private static String validateSuiteDurationSeconds(long seconds) {
+    Map<BenchmarkScenarioId, Long> secondsByScenario = buildSuiteScenarioDurationsSeconds(seconds);
+    long generalSeconds = secondsByScenario.getOrDefault(BenchmarkScenarioId.GENERAL, 0L);
+    if (generalSeconds < MIN_SUITE_GENERAL_SECONDS) {
+      return String.format(
+        "Benchmark suite too short. General needs at least %ds but would get %ds.",
+        MIN_SUITE_GENERAL_SECONDS,
+        generalSeconds);
+    }
+
+    for (BenchmarkScenarioId scenarioId : BenchmarkScenarioId.values()) {
+      if (scenarioId == BenchmarkScenarioId.GENERAL) {
+        continue;
+      }
+
+      long scenarioSeconds = secondsByScenario.getOrDefault(scenarioId, 0L);
+      if (scenarioSeconds < MIN_SUITE_SPECIAL_SECONDS) {
+        return String.format(
+          "Benchmark suite too short. %s needs at least %ds but would get %ds.",
+          scenarioId.getDisplayName(),
+          MIN_SUITE_SPECIAL_SECONDS,
+          scenarioSeconds);
+      }
+    }
+
+    return null;
+  }
+
+  private static Map<BenchmarkScenarioId, Long> buildSuiteScenarioDurationsMillis(long seconds) {
+    EnumMap<BenchmarkScenarioId, Long> durationMap = new EnumMap<>(BenchmarkScenarioId.class);
+    buildSuiteScenarioDurationsSeconds(seconds).forEach(
+      (scenarioId, scenarioSeconds) -> durationMap.put(scenarioId, scenarioSeconds * 1000L));
+
+    return durationMap;
+  }
+
+  private static Map<BenchmarkScenarioId, Long> buildSuiteScenarioDurationsSeconds(long seconds) {
+    EnumMap<BenchmarkScenarioId, Long> durationMap = new EnumMap<>(BenchmarkScenarioId.class);
+    int totalWeight = 0;
+    for (BenchmarkScenarioId scenarioId : BenchmarkScenarioId.values()) {
+      totalWeight += scenarioId.getSuiteWeight();
+    }
+    long unitSeconds = Math.max(1L, seconds / totalWeight);
+    long generalSeconds = unitSeconds * BenchmarkScenarioId.GENERAL.getSuiteWeight();
+    long usedSeconds = 0L;
+
+    for (BenchmarkScenarioId scenarioId : BenchmarkScenarioId.values()) {
+      if (scenarioId == BenchmarkScenarioId.GENERAL) {
+        continue;
+      }
+
+      durationMap.put(scenarioId, unitSeconds);
+      usedSeconds += unitSeconds;
+    }
+
+    long remainingSeconds = Math.max(0L, seconds - usedSeconds - generalSeconds);
+    durationMap.put(BenchmarkScenarioId.GENERAL, generalSeconds + remainingSeconds);
+
+    return durationMap;
+  }
+
+  private static long totalSuiteRuntimeMs() {
+    long measurementDurationMs = scenarioDurationMs.values().stream()
+      .mapToLong(Long::longValue).sum();
+    long perBlockOverheadMs = configuredScenarios.size()
+      * (SCENARIO_SETTLE_DURATION_MS + SCENARIO_POST_SETTLE_DURATION_MS);
+
+    return BLOCK_WARMUP_DURATION_MS * 2L + (measurementDurationMs + perBlockOverheadMs) * 2L;
+  }
+
+  private static long totalSingleScenarioRuntimeMs(BenchmarkScenarioId scenarioId) {
+    long measurementDuration = scenarioDurationMs.getOrDefault(scenarioId,
+      configuredBlockDurationMs);
+
+    return BLOCK_WARMUP_DURATION_MS * 2L
+      + (measurementDuration + SCENARIO_SETTLE_DURATION_MS + SCENARIO_POST_SETTLE_DURATION_MS) * 2L;
+  }
+
+  private static String formatScenarioDurationsForMessage() {
+    return configuredScenarios.stream()
+      .map(scenario -> scenario.displayName() + '='
+        + formatDuration(scenarioDurationMs.getOrDefault(scenario.id(), configuredBlockDurationMs)))
+      .collect(Collectors.joining(" | "));
+  }
+
+  private static String currentScenarioLabel() {
+    BenchmarkScenario scenario = currentScenario();
+    if (scenario == null) {
+      return currentBlock.getDisplayName();
+    }
+
+    return currentBlock.getStatusLabel() + ": " + scenario.displayName();
+  }
+
+  private static String currentScenarioShortLabel() {
+    BenchmarkScenario scenario = currentScenario();
+    if (scenario == null) {
+      return "block";
+    }
+
+    return scenario.displayName();
+  }
+
+  private static BenchmarkScenario currentScenario() {
+    if (configuredScenarios.isEmpty() || currentScenarioIndex >= configuredScenarios.size()) {
+      return null;
+    }
+
+    return configuredScenarios.get(currentScenarioIndex);
   }
 
   private static String formatProgressBar(long elapsedMs, long totalMs) {
-    if (totalMs <= 0) {
-      return "[____________]";
+    if (totalMs <= 0L) {
+      return "[..........]";
     }
 
     double progress = Math.min(1.0d, Math.max(0.0d, (double) elapsedMs / totalMs));
@@ -522,26 +907,29 @@ public final class BenchmarkManager {
     StringBuilder builder = new StringBuilder(PROGRESS_BAR_WIDTH + 2);
     builder.append('[');
     for (int index = 0; index < PROGRESS_BAR_WIDTH; index++) {
-      builder.append(index < filled ? '|' : '_');
+      builder.append(index < filled ? '|' : '.');
     }
     builder.append(']');
+
     return builder.toString();
   }
 
-  private static ChatFormatting getPhaseColor(boolean warmup, int phase) {
-    if (warmup) {
-      return ChatFormatting.YELLOW;
-    }
-
-    return phase == 1 ? ChatFormatting.AQUA : ChatFormatting.GREEN;
+  private static String formatStageLabel(String stageLabel) {
+    return switch (stageLabel) {
+      case "warm-up" -> "warm-up";
+      case "settle" -> "settle";
+      case "measure" -> "measurement";
+      case "cleanup settle" -> "cleanup settle";
+      default -> stageLabel;
+    };
   }
 
   private static ChatFormatting getMsptColor(double mspt) {
-    if (mspt <= 20.0) {
+    if (mspt <= 20.0d) {
       return ChatFormatting.GREEN;
     }
 
-    if (mspt <= 35.0) {
+    if (mspt <= 35.0d) {
       return ChatFormatting.YELLOW;
     }
 
@@ -549,11 +937,11 @@ public final class BenchmarkManager {
   }
 
   private static ChatFormatting getHeadroomColor(double headroom) {
-    if (headroom >= 50.0) {
+    if (headroom >= 50.0d) {
       return ChatFormatting.GREEN;
     }
 
-    if (headroom >= 20.0) {
+    if (headroom >= 20.0d) {
       return ChatFormatting.YELLOW;
     }
 
@@ -561,8 +949,13 @@ public final class BenchmarkManager {
   }
 
   private static void saveFeatureState() {
+    savedFeatureState.clear();
+    savedFeatureDecision.clear();
     for (FeatureToggle featureToggle : FeatureToggle.values()) {
       savedFeatureState.put(featureToggle, featureToggle.isEnabled());
+      if (featureToggle != FeatureToggle.CORE) {
+        savedFeatureDecision.put(featureToggle, CoreConfig.getFeatureDecision(featureToggle));
+      }
     }
   }
 
@@ -574,16 +967,25 @@ public final class BenchmarkManager {
     }
   }
 
-  private static void enableAllFeatures() {
-    for (FeatureToggle featureToggle : FeatureToggle.values()) {
-      if (featureToggle != FeatureToggle.CORE) {
-        featureToggle.setEnabled(true);
-      }
-    }
-  }
-
   private static void restoreFeatures() {
     savedFeatureState.forEach(FeatureToggle::setEnabled);
+  }
+
+  private static int countFeaturesByActivation(
+    ModConflictDetector.FeatureActivation activation) {
+    int count = 0;
+    for (Map.Entry<FeatureToggle, ModConflictDetector.FeatureDecision> entry
+      : savedFeatureDecision.entrySet()) {
+      if (entry.getKey().scope() == FeatureToggle.Scope.CLIENT) {
+        continue;
+      }
+
+      if (entry.getValue().activation() == activation) {
+        count++;
+      }
+    }
+
+    return count;
   }
 
   private static void saveAllDebugStates() {
@@ -609,23 +1011,82 @@ public final class BenchmarkManager {
     savedDebugStates.clear();
   }
 
+  static String resolveModVersion() {
+    return normalizeModVersion(BenchmarkManager.class.getPackage().getImplementationVersion());
+  }
+
+  private static String normalizeModVersion(String modVersion) {
+    if (modVersion == null) {
+      return null;
+    }
+
+    String normalized = modVersion.trim();
+    if (normalized.isEmpty()
+      || "unknown".equalsIgnoreCase(normalized)
+      || "MOD_DEV".equalsIgnoreCase(normalized)) {
+      return null;
+    }
+
+    return normalized;
+  }
+
+  static String detectLoader() {
+    try {
+      Class.forName("net.neoforged.neoforge.common.NeoForge");
+      return "neoforge";
+    } catch (ClassNotFoundException ignored) {
+    }
+    try {
+      Class.forName("net.minecraftforge.common.MinecraftForge");
+      return "forge";
+    } catch (ClassNotFoundException ignored) {
+    }
+    try {
+      Class.forName("net.fabricmc.loader.api.FabricLoader");
+      return "fabric";
+    } catch (ClassNotFoundException ignored) {
+    }
+
+    return "unknown";
+  }
+
+  private static String abbreviatePath(Path path) {
+    String full = path.toString();
+    if (full.length() <= 60) {
+      return full;
+    }
+    int nameCount = path.getNameCount();
+    String sep = java.io.File.separator;
+    String parent = nameCount >= 2 ? path.getName(nameCount - 2) + sep : "";
+    return "..." + sep + parent + path.getFileName();
+  }
+
   private static void clearSessionState() {
     benchmarkPlayer = null;
     pendingConfirmPlayer = null;
     playerStartPos = null;
     savedGameMode = null;
-    lastCpuPercent = -1.0;
-    baselineMoveWaypoints.clear();
-    activeMoveWaypoints.clear();
+    lastCpuPercent = -1.0d;
+    configuredScenarios = List.of();
+    baselineMoveWaypoints = new ArrayList<>();
+    activeMoveWaypoints = new ArrayList<>();
+    currentScenarioIndex = 0;
     currentWaypointIndex = 0;
-    baselineSamples.clear();
-    activeSamples.clear();
-    baselineCpuSamples.clear();
-    activeCpuSamples.clear();
-    baselineLoadDist.clear();
-    activeLoadDist.clear();
+    currentScenarioDurationMs = 0L;
+    currentMeasurementStartStats = null;
+    currentSamples.clear();
+    currentCpuSamples.clear();
+    currentLoadDist.clear();
+    currentMsptDist.clear();
+    scenarioDurationMs.clear();
+    baselineScenarioResults.clear();
+    activeScenarioResults.clear();
     savedFeatureState.clear();
+    savedFeatureDecision.clear();
     savedDebugStates.clear();
+    requestedScenarioLabel = "Full Suite";
+    suiteMode = true;
+    autoMoveRequested = false;
   }
 
   private static List<Vec3> computeWaypoints(Vec3 origin, Set<Long> reservedChunkKeys) {
@@ -643,7 +1104,7 @@ public final class BenchmarkManager {
       if (!reservedChunkKeys.add(chunkKey)) {
         continue;
       }
-      points.add(new Vec3(chunkX * 16.0 + 8.0, origin.y, chunkZ * 16.0 + 8.0));
+      points.add(new Vec3(chunkX * 16.0d + 8.0d, origin.y, chunkZ * 16.0d + 8.0d));
     }
     return points;
   }
@@ -679,18 +1140,18 @@ public final class BenchmarkManager {
   private static void teleportToSurface(ServerPlayer player, Vec3 target) {
     try {
       player.teleportTo(target.x, TELEPORT_Y, target.z);
-    } catch (Exception e) {
-      log.warn("[Benchmark] Auto-move teleport to {},{},{} failed, skipping waypoint: {}",
-        (int) target.x, (int) TELEPORT_Y, (int) target.z, e.getMessage());
+    } catch (Exception exception) {
+      log.warn("[Benchmark] Auto-move teleport to {},{},{} failed: {}",
+        (int) target.x, (int) TELEPORT_Y, (int) target.z, exception.getMessage());
     }
   }
 
   private static void teleportToPos(ServerPlayer player, Vec3 pos) {
     try {
       player.teleportTo(pos.x, pos.y, pos.z);
-    } catch (Exception e) {
+    } catch (Exception exception) {
       log.warn("[Benchmark] Return teleport to {},{},{} failed: {}",
-        (int) pos.x, (int) pos.y, (int) pos.z, e.getMessage());
+        (int) pos.x, (int) pos.y, (int) pos.z, exception.getMessage());
     }
   }
 
@@ -704,10 +1165,11 @@ public final class BenchmarkManager {
   private static int countEntities() {
     int count = 0;
     for (ServerLevel level : ServerManager.getAllLevels()) {
-      for (var ignored : level.getAllEntities()) {
+      for (Entity ignored : level.getAllEntities()) {
         count++;
       }
     }
+
     return count;
   }
 
@@ -716,27 +1178,16 @@ public final class BenchmarkManager {
       var osBean = ManagementFactory.getOperatingSystemMXBean();
       if (osBean instanceof OperatingSystemMXBean sunBean) {
         double load = sunBean.getProcessCpuLoad();
-        return load < 0 ? -1.0 : load * 100.0;
+        return load < 0.0d ? -1.0d : load * 100.0d;
       }
     } catch (Exception ignored) {
     }
-    return -1.0;
-  }
 
-  private static ChatFormatting getEfficiencyColor(double resourceDelta, double tickDeltaPercent) {
-    if (resourceDelta < 0 && tickDeltaPercent > 0) {
-      return ChatFormatting.GREEN;
-    }
-
-    if (resourceDelta > 0 && tickDeltaPercent < 0) {
-      return ChatFormatting.RED;
-    }
-
-    return ChatFormatting.WHITE;
+    return -1.0d;
   }
 
   private static double average(List<Double> samples) {
-    return average(samples, 50.0);
+    return average(samples, 50.0d);
   }
 
   private static double average(List<Double> samples, double fallback) {
@@ -744,30 +1195,32 @@ public final class BenchmarkManager {
       return fallback;
     }
 
-    double sum = 0;
+    double sum = 0.0d;
     for (double sample : samples) {
       sum += sample;
     }
+
     return sum / samples.size();
   }
 
   private static double min(List<Double> samples) {
-    return samples.stream().mapToDouble(Double::doubleValue).min().orElse(50.0);
+    return samples.stream().mapToDouble(Double::doubleValue).min().orElse(50.0d);
   }
 
-  private static double percentile(List<Double> samples, double p) {
+  private static double percentile(List<Double> samples, double percentile) {
     if (samples.isEmpty()) {
-      return 50.0;
+      return 50.0d;
     }
 
     List<Double> sorted = new ArrayList<>(samples);
     Collections.sort(sorted);
-    int index = (int) Math.ceil(p / 100.0 * sorted.size()) - 1;
+    int index = (int) Math.ceil(percentile / 100.0d * sorted.size()) - 1;
+
     return sorted.get(Math.max(0, Math.min(index, sorted.size() - 1)));
   }
 
   private static double max(List<Double> samples) {
-    return max(samples, 50.0);
+    return max(samples, 50.0d);
   }
 
   private static double max(List<Double> samples, double fallback) {
@@ -776,23 +1229,24 @@ public final class BenchmarkManager {
 
   private static String formatBytes(long bytes) {
     if (bytes >= 1_073_741_824L) {
-      return String.format("%.2fGB", bytes / 1_073_741_824.0);
+      return String.format("%.2fGB", bytes / 1_073_741_824.0d);
     }
 
     if (bytes >= 1_048_576L) {
-      return String.format("%.0fMB", bytes / 1_048_576.0);
+      return String.format("%.0fMB", bytes / 1_048_576.0d);
     }
 
-    return String.format("%.0fKB", bytes / 1024.0);
+    return String.format("%.0fKB", bytes / 1024.0d);
   }
 
   private static String formatDuration(long ms) {
-    long secs = Math.max(0, ms / 1000);
-    long mins = secs / 60;
-    secs = secs % 60;
-    if (mins > 0) {
+    long secs = Math.max(0L, ms / 1000L);
+    long mins = secs / 60L;
+    secs %= 60L;
+    if (mins > 0L) {
       return String.format("%dm %ds", mins, secs);
     }
+
     return String.format("%ds", secs);
   }
 
@@ -804,264 +1258,81 @@ public final class BenchmarkManager {
     player.sendSystemMessage(message);
   }
 
+  private static void sendNoteMessage(ServerPlayer player, String message) {
+    sendPrefixedMessage(player, "[Note] ", message, ChatFormatting.YELLOW, ChatFormatting.GRAY);
+  }
+
+  private static void sendWarningMessage(ServerPlayer player, String message) {
+    sendPrefixedMessage(player, "[Warning] ", message, ChatFormatting.RED, ChatFormatting.YELLOW);
+  }
+
+  private static void sendCommandMessage(ServerPlayer player, String label, String command) {
+    sendMessage(player, Component.literal("[Command] ").withStyle(ChatFormatting.AQUA)
+      .append(Component.literal(label + ": ").withStyle(ChatFormatting.YELLOW))
+      .append(Component.literal(command)
+        .withStyle(ChatFormatting.GOLD)
+        .withStyle(style -> style.withClickEvent(
+          new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command)))));
+  }
+
+  private static void sendStageMessage(
+    ServerPlayer player, BenchmarkBlock block, String scenarioName, String message) {
+    sendPrefixedMessage(player,
+      '[' + block.getStatusLabel() + "] ",
+      scenarioName + ' ' + message,
+      block.getStageColor(),
+      ChatFormatting.GRAY);
+  }
+
+  private static void sendPrefixedMessage(ServerPlayer player, String prefix, String message,
+    ChatFormatting prefixColor, ChatFormatting messageColor) {
+    sendMessage(player, Component.literal(prefix).withStyle(prefixColor)
+      .append(Component.literal(message).withStyle(messageColor)));
+  }
+
   private enum BenchmarkState {
     IDLE,
     PENDING_CONFIRM,
-    PHASE_BASELINE_WARMUP,
-    PHASE_BASELINE_MEASURE,
-    PHASE_ACTIVE_WARMUP,
-    PHASE_ACTIVE_MEASURE,
+    BLOCK_WARMUP,
+    SCENARIO_SETUP,
+    SCENARIO_SETTLE,
+    SCENARIO_MEASURE,
+    SCENARIO_CLEANUP,
+    SCENARIO_POST_SETTLE,
+    BLOCK_TRANSITION,
     COMPLETE
   }
 
-  public record BenchmarkCompareResult(
-    long phaseDurationMs,
-    long warmupDurationMs,
-    double baselineAvgTick, double baselineMinTick, double baselineP95Tick, double baselineMaxTick,
-    Map<ServerLoadLevel, Integer> baselineLoadDist,
-    long baselineHeapUsed, int baselineEntityCount,
-    double baselineAvgCpu, double baselineMaxCpu,
-    double activeAvgTick, double activeMinTick, double activeP95Tick, double activeMaxTick,
-    Map<ServerLoadLevel, Integer> activeLoadDist,
-    long activeHeapUsed, int activeEntityCount,
-    double activeAvgCpu, double activeMaxCpu,
-    boolean autoMoveEnabled,
-    int baselineMoveTargetCount, int activeMoveTargetCount,
-    int sharedMoveTargetCount,
-    PerformanceStats.Snapshot activeDelta,
-    double tickTimeImprovementPercent,
-    Instant timestamp) {
+  private enum BenchmarkBlock {
+    BASELINE("Baseline", "Base", ChatFormatting.AQUA),
+    ACTIVE("Active", "Active", ChatFormatting.GREEN);
 
-    private static String formatBytes(long bytes) {
-      if (bytes >= 1_073_741_824L) {
-        return String.format("%.2f GB", bytes / 1_073_741_824.0);
-      } else if (bytes >= 1_048_576L) {
-        return String.format("%.0f MB", bytes / 1_048_576.0);
-      }
-      return String.format("%.0f KB", bytes / 1024.0);
+    private final String displayName;
+    private final String statusLabel;
+    private final ChatFormatting stageColor;
+
+    BenchmarkBlock(String displayName, String statusLabel, ChatFormatting stageColor) {
+      this.displayName = displayName;
+      this.statusLabel = statusLabel;
+      this.stageColor = stageColor;
     }
 
-    public List<Component> format() {
-      List<Component> lines = new ArrayList<>();
-      long durSecs = phaseDurationMs / 1000;
-      double baselineHeadroom = (50.0 - baselineAvgTick) / 50.0 * 100.0;
-      double activeHeadroom = (50.0 - activeAvgTick) / 50.0 * 100.0;
-      double headroomDelta = activeHeadroom - baselineHeadroom;
-      long heapDeltaBytes = activeHeapUsed - baselineHeapUsed;
-      double cpuDelta = activeAvgCpu - baselineAvgCpu;
-
-      lines.add(Component.literal(String.format("=== %s Benchmark Report ===", Constants.MOD_NAME))
-        .withStyle(ChatFormatting.GOLD));
-      long warmupSecs = warmupDurationMs / 1000;
-      lines.add(Component.literal(
-        String.format("Phase duration: %dm %ds  |  Warm-up: %ds  |  %s",
-          durSecs / 60, durSecs % 60, warmupSecs, timestamp)));
-      lines.add(Component.literal(""));
-      lines.add(
-        Component.literal(
-            String.format("%-14s %-12s %-12s %s", "", "Baseline", "Active", "Delta"))
-          .withStyle(ChatFormatting.GRAY));
-
-      ChatFormatting msptColor =
-        tickTimeImprovementPercent > 0
-          ? ChatFormatting.GREEN
-          : tickTimeImprovementPercent < 0 ? ChatFormatting.RED : ChatFormatting.WHITE;
-      lines.add(
-        Component.literal(
-            String.format(
-              "%-14s %-12s %-12s ",
-              "Avg MSPT",
-              String.format("%.1fms", baselineAvgTick),
-              String.format("%.1fms", activeAvgTick)))
-          .append(
-            Component.literal(String.format("%+.1f%%", tickTimeImprovementPercent))
-              .withStyle(msptColor)));
-
-      ChatFormatting minMsptColor =
-        activeMinTick <= baselineMinTick ? ChatFormatting.GREEN : ChatFormatting.RED;
-      lines.add(
-        Component.literal(
-            String.format(
-              "%-14s %-12s ", "Min MSPT", String.format("%.1fms", baselineMinTick)))
-          .append(
-            Component.literal(String.format("%.1fms", activeMinTick))
-              .withStyle(minMsptColor)));
-
-      ChatFormatting p95Color =
-        activeP95Tick <= baselineP95Tick ? ChatFormatting.GREEN : ChatFormatting.RED;
-      lines.add(
-        Component.literal(
-            String.format(
-              "%-14s %-12s ", "P95 MSPT", String.format("%.1fms", baselineP95Tick)))
-          .append(
-            Component.literal(String.format("%.1fms", activeP95Tick)).withStyle(p95Color)));
-
-      ChatFormatting maxMsptColor =
-        activeMaxTick <= baselineMaxTick ? ChatFormatting.GREEN : ChatFormatting.RED;
-      lines.add(
-        Component.literal(
-            String.format(
-              "%-14s %-12s ", "Max MSPT", String.format("%.1fms", baselineMaxTick)))
-          .append(
-            Component.literal(String.format("%.1fms", activeMaxTick))
-              .withStyle(maxMsptColor)));
-
-      ChatFormatting headroomColor =
-        headroomDelta > 0
-          ? ChatFormatting.GREEN
-          : headroomDelta < 0 ? ChatFormatting.RED : ChatFormatting.WHITE;
-      lines.add(
-        Component.literal(
-            String.format(
-              "%-14s %-12s %-12s ",
-              "Headroom",
-              String.format("%.1f%%", baselineHeadroom),
-              String.format("%.1f%%", activeHeadroom)))
-          .append(
-            Component.literal(String.format("%+.1fpp", headroomDelta))
-              .withStyle(headroomColor)));
-
-      if (baselineAvgCpu >= 0 && activeAvgCpu >= 0) {
-        ChatFormatting cpuColor = getEfficiencyColor(cpuDelta, tickTimeImprovementPercent);
-        lines.add(Component.literal(String.format("%-14s %-12s %-12s ", "Avg CPU",
-            String.format("%.1f%%", baselineAvgCpu), String.format("%.1f%%", activeAvgCpu)))
-          .append(Component.literal(String.format("%+.1fpp", cpuDelta)).withStyle(cpuColor)));
-
-        ChatFormatting maxCpuColor =
-          getEfficiencyColor(activeMaxCpu - baselineMaxCpu, tickTimeImprovementPercent);
-        lines.add(Component.literal(
-            String.format("%-14s %-12s ", "Max CPU", String.format("%.1f%%", baselineMaxCpu)))
-          .append(Component.literal(String.format("%.1f%%", activeMaxCpu)).withStyle(maxCpuColor)));
-      }
-
-      ChatFormatting heapColor = getEfficiencyColor(heapDeltaBytes, tickTimeImprovementPercent);
-      lines.add(Component.literal(String.format("%-14s %-12s %-12s ", "Heap used",
-          formatBytes(baselineHeapUsed), formatBytes(activeHeapUsed)))
-        .append(Component.literal(
-            (heapDeltaBytes >= 0 ? "+" : "") + formatBytes(Math.abs(heapDeltaBytes)))
-          .withStyle(heapColor)));
-
-      if (autoMoveEnabled) {
-        lines.add(
-          Component.literal(
-            String.format(
-              "%-14s %-12s %-12s overlap=%d",
-              "Auto-move",
-              String.format("%d chunks", baselineMoveTargetCount),
-              String.format("%d chunks", activeMoveTargetCount),
-              sharedMoveTargetCount)));
-      }
-
-      lines.add(Component.literal(""));
-      lines.add(
-        Component.literal("Load distribution:         Baseline   Active")
-          .withStyle(ChatFormatting.GRAY));
-
-      int baselineTotal = baselineLoadDist.values().stream().mapToInt(Integer::intValue).sum();
-      int activeTotal = activeLoadDist.values().stream().mapToInt(Integer::intValue).sum();
-      for (ServerLoadLevel level : ServerLoadLevel.values()) {
-        int baselineCount = baselineLoadDist.getOrDefault(level, 0);
-        int activeCount = activeLoadDist.getOrDefault(level, 0);
-        if (baselineCount > 0 || activeCount > 0) {
-          lines.add(
-            Component.literal(
-              String.format(
-                "  %-12s %6.0f%%     %6.0f%%",
-                level.name(),
-                baselineTotal == 0 ? 0.0 : 100.0 * baselineCount / baselineTotal,
-                activeTotal == 0 ? 0.0 : 100.0 * activeCount / activeTotal)));
-        }
-      }
-
-      lines.add(Component.literal(""));
-      lines.add(Component.literal("--- Mod actions (Phase 2) ---").withStyle(ChatFormatting.GRAY));
-      long spawnTotal = activeDelta.mobSpawnChecks() + activeDelta.mobSpawnsExcluded();
-      lines.add(Component.literal(String.format(
-        "Spawn checks:   %,d total  excluded: %,d  checked: %,d  denied: %,d (%.1f%%)",
-        spawnTotal, activeDelta.mobSpawnsExcluded(), activeDelta.mobSpawnChecks(),
-        activeDelta.mobSpawnsDenied(),
-        spawnTotal == 0 ? 0.0 : 100.0 * activeDelta.mobSpawnsDenied() / spawnTotal)));
-      lines.add(Component.literal(String.format("Natural spawns: %,d  blocked: %,d (%.1f%%)",
-        activeDelta.naturalSpawnChecks(), activeDelta.naturalSpawnsDenied(),
-        activeDelta.naturalSpawnChecks() == 0 ? 0.0
-          : 100.0 * activeDelta.naturalSpawnsDenied() / activeDelta.naturalSpawnChecks())));
-      lines.add(Component.literal(String.format("Special spawns: %,d bonuses applied",
-        activeDelta.specialSpawnBonusesApplied())));
-      lines.add(Component.literal(String.format("Items:          %,d merged, %,d removed",
-        activeDelta.itemsMerged(), activeDelta.itemsRemoved())));
-      lines.add(Component.literal(String.format("XP orbs:        %,d merged, %,d removed",
-        activeDelta.xpOrbsMerged(), activeDelta.xpOrbsRemoved())));
-      lines.add(Component.literal(String.format("Arrows:         %,d removed",
-        activeDelta.arrowsRemoved())));
-      lines.add(Component.literal(String.format(
-        "Adaptation:    gamerules=%d view=%d sim=%d",
-        activeDelta.gameRulesChanged(),
-        activeDelta.viewDistanceChanges(),
-        activeDelta.simulationDistanceChanges())));
-      lines.add(Component.literal(String.format(
-        "Sim movement:  lowered=%d samples=%d maxReduction=%d",
-        activeDelta.simulationDistanceMovementAdjustments(),
-        activeDelta.simulationDistanceMovementThrottleSamples(),
-        activeDelta.simulationDistanceMovementMaxReduction())));
-      long manualExcluded = activeDelta.trackingExcludedManualNamespace()
-        + activeDelta.trackingExcludedManualEntity();
-      long autoExcluded = activeDelta.trackingExcludedAutoNamespace()
-        + activeDelta.trackingExcludedAutoEntity();
-      lines.add(Component.literal(String.format(
-        "Tracking:      %,d evaluated, %,d tracked, %,d protected-living, %,d protected-persistent",
-        activeDelta.trackingEvaluations(), activeDelta.trackingTracked(),
-        activeDelta.trackingProtectedLiving(), activeDelta.trackingProtectedPersistent())));
-      lines.add(Component.literal(String.format(
-        "Tracking ex.:  manual=%,d auto=%,d cache=%,d",
-        manualExcluded, autoExcluded, activeDelta.trackingExcludedEarlyCache())));
-      lines.add(Component.literal(String.format(
-        "Tracking cat.: technical=%d vehicle=%d world=%d managed=%d storage=%d manual=%d unknown=%d",
-        activeDelta.trackingExcludedByCategory().getOrDefault(TrackingCategory.TECHNICAL, 0L),
-        activeDelta.trackingExcludedByCategory()
-          .getOrDefault(TrackingCategory.VEHICLE_STRUCTURE, 0L),
-        activeDelta.trackingExcludedByCategory().getOrDefault(TrackingCategory.WORLD_EFFECT, 0L),
-        activeDelta.trackingExcludedByCategory().getOrDefault(TrackingCategory.MANAGED_LIVING, 0L),
-        activeDelta.trackingExcludedByCategory().getOrDefault(TrackingCategory.STORAGE_NETWORK, 0L),
-        activeDelta.trackingExcludedByCategory().getOrDefault(TrackingCategory.MANUAL_OVERRIDE, 0L),
-        activeDelta.trackingExcludedByCategory().getOrDefault(TrackingCategory.UNKNOWN, 0L))));
-
-      int entityDelta = activeEntityCount - baselineEntityCount;
-      lines.add(
-        Component.literal(
-          String.format(
-            "Entities:       %,d (baseline) -> %,d (active)  [%+d]",
-            baselineEntityCount, activeEntityCount, entityDelta)));
-
-      lines.add(Component.literal(""));
-      String assessmentLabel;
-      ChatFormatting assessmentColor;
-      if (tickTimeImprovementPercent >= 10.0) {
-        assessmentLabel = "Clear improvement";
-        assessmentColor = ChatFormatting.GREEN;
-      } else if (tickTimeImprovementPercent >= 3.0) {
-        assessmentLabel = "Noticeable improvement";
-        assessmentColor = ChatFormatting.GREEN;
-      } else if (tickTimeImprovementPercent > -3.0) {
-        assessmentLabel = "No significant MSPT impact";
-        assessmentColor = ChatFormatting.YELLOW;
-      } else {
-        assessmentLabel = "Performance regression detected";
-        assessmentColor = ChatFormatting.RED;
-      }
-      String cpuNote =
-        (baselineAvgCpu >= 0 && activeAvgCpu >= 0)
-          ? String.format(" | CPU: %+.1fpp", cpuDelta)
-          : "";
-      lines.add(
-        Component.literal("Assessment: ")
-          .append(Component.literal(assessmentLabel).withStyle(assessmentColor))
-          .append(
-            Component.literal(
-              String.format(
-                "  (MSPT: %+.1f%% | Headroom: %+.1fpp%s)",
-                tickTimeImprovementPercent, headroomDelta, cpuNote))));
-
-      return lines;
+    public String getDisplayName() {
+      return this.displayName;
     }
+
+    public String getStatusLabel() {
+      return this.statusLabel;
+    }
+
+    public ChatFormatting getStageColor() {
+      return this.stageColor;
+    }
+  }
+
+  @FunctionalInterface
+  private interface PassiveStageCallback {
+
+    void run(boolean stageComplete);
   }
 }

@@ -49,43 +49,23 @@ public final class CommonServerEventHandler {
     BenchmarkManager.reset();
 
     ServerManager.handleServerAboutToStart(server);
-    if (FeatureToggle.ITEMS.isEnabled()) {
-      ItemEntityManager.handleServerAboutToStart();
-    }
-    if (FeatureToggle.EXPERIENCE_ORBS.isEnabled()) {
-      ExperienceOrbManager.handleServerAboutToStart();
-    }
-    if (FeatureToggle.ARROWS.isEnabled()) {
-      ArrowEntityManager.handleServerAboutToStart();
-    }
-    if (FeatureToggle.PLAYER_LOGIN_PROTECTION.isEnabled()) {
-      PlayerLoginManager.handleServerAboutToStart();
-    }
-    if (FeatureToggle.SPAWN.isEnabled()) {
-      SpawnManager.handleServerAboutToStart();
-    }
+    ItemEntityManager.handleServerAboutToStart();
+    ExperienceOrbManager.handleServerAboutToStart();
+    ArrowEntityManager.handleServerAboutToStart();
+    PlayerLoginManager.handleServerAboutToStart();
+    SpawnManager.handleServerAboutToStart();
   }
 
   public static void handleServerStarting(MinecraftServer server) {
     ServerManager.handleServerStarting(server);
-    if (FeatureToggle.GAMERULES.isEnabled()) {
-      GameRuleManager.handleServerStarting(server);
-    }
-    if (FeatureToggle.PLAYER_EASY_CHILD_MODE.isEnabled()) {
-      PlayerDamageManager.handleServerStarting();
-    }
-    if (FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled()) {
-      SimulationDistanceManager.handleServerStarting(server);
-    }
-    if (FeatureToggle.ADAPTIVE_VIEW_DISTANCE.isEnabled()) {
-      ViewDistanceManager.handleServerStarting(server);
-    }
+    GameRuleManager.handleServerStarting(server);
+    PlayerDamageManager.handleServerStarting();
+    SimulationDistanceManager.handleServerStarting(server);
+    ViewDistanceManager.handleServerStarting(server);
   }
 
   public static void handleServerStarted() {
-    if (FeatureToggle.SPAWN.isEnabled()) {
-      SpawnManager.handleServerStarted();
-    }
+    SpawnManager.handleServerStarted();
   }
 
   public static void handleServerStopping(MinecraftServer server) {
@@ -93,24 +73,12 @@ public final class CommonServerEventHandler {
     MonitoringManager.reset();
     BenchmarkManager.reset();
 
-    if (FeatureToggle.GAMERULES.isEnabled()) {
-      GameRuleManager.handleServerStopping();
-    }
-    if (FeatureToggle.SPAWN.isEnabled()) {
-      SpawnManager.handleServerStopping();
-    }
-    if (FeatureToggle.ITEMS.isEnabled()) {
-      ItemEntityManager.handleServerStopping();
-    }
-    if (FeatureToggle.EXPERIENCE_ORBS.isEnabled()) {
-      ExperienceOrbManager.handleServerStopping();
-    }
-    if (FeatureToggle.ARROWS.isEnabled()) {
-      ArrowEntityManager.handleServerStopping();
-    }
-    if (FeatureToggle.PLAYER_LOGIN_PROTECTION.isEnabled()) {
-      PlayerLoginManager.handleServerStopping();
-    }
+    GameRuleManager.handleServerStopping();
+    SpawnManager.handleServerStopping();
+    ItemEntityManager.handleServerStopping();
+    ExperienceOrbManager.handleServerStopping();
+    ArrowEntityManager.handleServerStopping();
+    PlayerLoginManager.handleServerStopping();
     ServerManager.handleServerStopping(server);
   }
 
@@ -146,40 +114,22 @@ public final class CommonServerEventHandler {
 
   public static void handlePlayerLoggedIn(ServerPlayer serverPlayer) {
     ServerManager.handlePlayerCountChange();
-    if (FeatureToggle.ADAPTIVE_VIEW_DISTANCE.isEnabled()) {
-      ViewDistanceManager.handlePlayerLoggedIn(serverPlayer);
-    }
-    if (FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled()) {
-      SimulationDistanceManager.handlePlayerLoggedIn(serverPlayer);
-    }
-    if (FeatureToggle.GAMERULES.isEnabled()) {
-      GameRuleManager.handlePlayerLoggedIn(serverPlayer);
-    }
-    if (FeatureToggle.PLAYER_LOGIN_PROTECTION.isEnabled()) {
-      PlayerLoginManager.handlePlayerLoggedIn(serverPlayer);
-    }
+    ViewDistanceManager.handlePlayerLoggedIn(serverPlayer);
+    SimulationDistanceManager.handlePlayerLoggedIn(serverPlayer);
+    GameRuleManager.handlePlayerLoggedIn(serverPlayer);
+    PlayerLoginManager.handlePlayerLoggedIn(serverPlayer);
   }
 
   public static void handlePlayerLoggedOut(ServerPlayer serverPlayer) {
     PlayerPositionManager.handlePlayerLoggedOut(serverPlayer.getStringUUID());
-    if (FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled()) {
-      SimulationDistanceManager.handlePlayerLoggedOut();
-    }
+    SimulationDistanceManager.handlePlayerLoggedOut();
     ServerManager.handlePlayerCountChange();
-    if (FeatureToggle.PLAYER_LOGIN_PROTECTION.isEnabled()) {
-      PlayerLoginManager.handlePlayerLoggedOut(serverPlayer.getName().getString());
-    }
+    PlayerLoginManager.handlePlayerLoggedOut(serverPlayer.getName().getString());
   }
 
   public static void handlePlayerTeleported(ServerPlayer serverPlayer) {
-    if (FeatureToggle.ADAPTIVE_VIEW_DISTANCE.isEnabled()) {
-      ViewDistanceManager.handlePlayerTeleported(serverPlayer);
-    }
-    if (FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled()) {
-      SimulationDistanceManager.handlePlayerTeleported(serverPlayer);
-    }
-    if (FeatureToggle.GAMERULES.isEnabled()) {
-      GameRuleManager.handlePlayerTeleported(serverPlayer);
-    }
+    ViewDistanceManager.handlePlayerTeleported(serverPlayer);
+    SimulationDistanceManager.handlePlayerTeleported(serverPlayer);
+    GameRuleManager.handlePlayerTeleported(serverPlayer);
   }
 }

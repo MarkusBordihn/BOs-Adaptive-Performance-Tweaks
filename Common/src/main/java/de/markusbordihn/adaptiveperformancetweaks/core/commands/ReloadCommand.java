@@ -21,7 +21,6 @@ package de.markusbordihn.adaptiveperformancetweaks.core.commands;
 
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureRegistry;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import java.util.EnumMap;
@@ -38,7 +37,7 @@ public class ReloadCommand extends CustomCommand {
   }
 
   @Override
-  public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+  public int run(CommandContext<CommandSourceStack> context) {
     Map<FeatureToggle, Boolean> previousStates = new EnumMap<>(FeatureToggle.class);
     for (FeatureToggle toggle : FeatureToggle.values()) {
       previousStates.put(toggle, toggle.isEnabled());

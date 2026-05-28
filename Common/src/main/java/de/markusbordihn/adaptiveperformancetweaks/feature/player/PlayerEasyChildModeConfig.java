@@ -19,18 +19,13 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.player;
 
-import de.markusbordihn.adaptiveperformancetweaks.Constants;
-import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.Config;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import java.io.File;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public final class PlayerEasyChildModeConfig extends Config {
 
@@ -42,8 +37,6 @@ public final class PlayerEasyChildModeConfig extends Config {
        List player names that should receive reduced hurt damage and increased attack damage.
        Percentages: 0 = disabled, 100 = full reduction/increase.
       """;
-
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   public static Set<String> childPlayerNames = new HashSet<>();
   public static int childPlayerHurtDamageReduction = 50;
@@ -59,44 +52,22 @@ public final class PlayerEasyChildModeConfig extends Config {
     Properties unmodified = new Properties();
     unmodified.putAll(properties);
 
-    CoreConfig.setFeatureEnabled(
+    CoreConfig.applyFeatureState(
       FeatureToggle.PLAYER_EASY_CHILD_MODE,
-      ModConflictDetector.resolveFeatureState(
-        FeatureToggle.PLAYER_EASY_CHILD_MODE,
-        parseConfigValue(
-          properties, "enabled", FeatureToggle.PLAYER_EASY_CHILD_MODE.getDefaultState())));
+      parseConfigValue(properties, "enabled",
+        FeatureToggle.PLAYER_EASY_CHILD_MODE.getDefaultState()));
 
-    childPlayerNames = parseStringSet(properties, "childPlayerNames", childPlayerNames);
-    childPlayerHurtDamageReduction =
-      parseInt(properties, "childPlayerHurtDamageReduction", childPlayerHurtDamageReduction);
-    childPlayerAttackDamageIncrease =
-      parseInt(properties, "childPlayerAttackDamageIncrease", childPlayerAttackDamageIncrease);
+    childPlayerNames = parseConfigValue(properties, "childPlayerNames", childPlayerNames);
+    childPlayerHurtDamageReduction = parseConfigValue(properties, "childPlayerHurtDamageReduction",
+      childPlayerHurtDamageReduction);
+    childPlayerAttackDamageIncrease = parseConfigValue(properties,
+      "childPlayerAttackDamageIncrease",
+      childPlayerAttackDamageIncrease);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
 
     log.debug(
       "Child mode config: players={}, hurtReduction={}%, attackIncrease={}%",
       childPlayerNames, childPlayerHurtDamageReduction, childPlayerAttackDamageIncrease);
-  }
-
-  private static int parseInt(Properties props, String key, int defaultValue) {
-    props.putIfAbsent(key, String.valueOf(defaultValue));
-    try {
-      return Integer.parseInt(props.getProperty(key));
-    } catch (NumberFormatException exception) {
-      log.warn("Invalid integer for '{}', using default {}", key, defaultValue);
-      return defaultValue;
-    }
-  }
-
-  private static Set<String> parseStringSet(
-    Properties props, String key, Set<String> defaultValue) {
-    props.putIfAbsent(key, "");
-    String value = props.getProperty(key, "").trim();
-    if (value.isEmpty()) {
-      return defaultValue;
-    }
-
-    return new HashSet<>(Arrays.asList(value.split(",")));
   }
 }

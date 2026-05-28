@@ -21,6 +21,7 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.items;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreItemEntityManager;
+import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import java.util.Comparator;
@@ -57,6 +58,10 @@ public final class ItemEntityManager {
 
   public static void handleServerAboutToStart() {
     resetState();
+    if (!FeatureToggle.ITEMS.isEnabled()) {
+      return;
+    }
+
     hasItemsAllowList = !ItemsConfig.itemsAllowList.isEmpty();
     hasItemsDenyList = !ItemsConfig.itemsDenyList.isEmpty();
 

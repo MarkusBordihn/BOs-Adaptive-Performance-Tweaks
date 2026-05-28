@@ -43,3 +43,4 @@ logs
 *.log
 *.patch.txt
 *.stackdump
+/Common/adaptive_performance_tweaks/

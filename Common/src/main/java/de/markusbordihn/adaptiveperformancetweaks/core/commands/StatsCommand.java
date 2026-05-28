@@ -21,11 +21,11 @@ package de.markusbordihn.adaptiveperformancetweaks.core.commands;
 
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreEntityManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.TrackingCategory;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.MsptBucket;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLevelLoad;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoad;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
@@ -153,20 +153,20 @@ public class StatsCommand extends CustomCommand {
   }
 
   @Override
-  public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+  public int run(CommandContext<CommandSourceStack> context) {
     PerformanceStats.Snapshot stats = PerformanceStats.snapshot();
     MinecraftServer server = ServerManager.getMinecraftServer();
 
-    double tps = Math.min(20.0, 1000.0 / Math.max(1.0, ServerLoad.getAvgTickTime()));
+    double avgTickTime = ServerLoad.getAvgTickTime();
+    double tps = Math.min(20.0, 1000.0 / Math.max(1.0, avgTickTime));
+    MsptBucket msptBucket = MsptBucket.fromTickTime(avgTickTime);
     sendFeedback(context, String.format("=== %s Performance Stats ===", Constants.MOD_NAME));
-    sendFeedback(
-      context,
-      String.format(
-        "Server: TPS=%.1f (%.1fms)  Load=%s  Uptime=%s",
-        tps,
-        ServerLoad.getAvgTickTime(),
-        ServerLoad.getCurrentServerLoad(),
-        formatUptime(ServerManager.getUptimeMillis())));
+    sendFeedback(context, String.format(
+      "Server: TPS=%.1f (%.1fms)  Bucket=%s  Load=%s  Uptime=%s",
+      tps, avgTickTime,
+      msptBucket.getLabel(),
+      ServerLoad.getCurrentServerLoad(),
+      formatUptime(ServerManager.getUptimeMillis())));
 
     Runtime runtime = Runtime.getRuntime();
     long usedMemory = runtime.totalMemory() - runtime.freeMemory();

@@ -41,6 +41,9 @@ public final class Constants {
   public static final String LOG_REGISTER_PREFIX = "Register " + MOD_NAME;
 
   public static Path GAME_DIR = Paths.get("").toAbsolutePath();
+  public static final Path DATA_DIR = GAME_DIR.resolve(MOD_ID);
+  public static final Path BENCHMARK_DIR = DATA_DIR.resolve("benchmark");
+  public static final Path REPORTS_DIR = DATA_DIR.resolve("reports");
   public static Path CONFIG_DIR = GAME_DIR.resolve("config");
 
   private Constants() {

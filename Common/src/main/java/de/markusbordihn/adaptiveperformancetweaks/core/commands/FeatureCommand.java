@@ -23,7 +23,6 @@ import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import net.minecraft.commands.CommandSourceStack;
@@ -49,7 +48,7 @@ public class FeatureCommand extends CustomCommand {
   }
 
   @Override
-  public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+  public int run(CommandContext<CommandSourceStack> context) {
     String featureId = StringArgumentType.getString(context, "id");
     boolean enabled = BoolArgumentType.getBool(context, "enabled");
 

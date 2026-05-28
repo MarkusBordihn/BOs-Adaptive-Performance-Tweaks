@@ -130,6 +130,46 @@ public final class PerformanceStats {
       simulationDistanceMovementMaxReduction);
   }
 
+  public static Snapshot delta(Snapshot start, Snapshot end) {
+    EnumMap<TrackingCategory, Long> trackingDelta = new EnumMap<>(TrackingCategory.class);
+    for (TrackingCategory category : TrackingCategory.values()) {
+      long startValue = start.trackingExcludedByCategory().getOrDefault(category, 0L);
+      long endValue = end.trackingExcludedByCategory().getOrDefault(category, 0L);
+      trackingDelta.put(category, endValue - startValue);
+    }
+
+    return new Snapshot(
+      end.mobSpawnChecks() - start.mobSpawnChecks(),
+      end.mobSpawnsExcluded() - start.mobSpawnsExcluded(),
+      end.mobSpawnsDenied() - start.mobSpawnsDenied(),
+      end.specialSpawnBonusesApplied() - start.specialSpawnBonusesApplied(),
+      end.naturalSpawnChecks() - start.naturalSpawnChecks(),
+      end.naturalSpawnsDenied() - start.naturalSpawnsDenied(),
+      end.itemsMerged() - start.itemsMerged(),
+      end.itemsRemoved() - start.itemsRemoved(),
+      end.trackingEvaluations() - start.trackingEvaluations(),
+      end.trackingExcludedEarlyCache() - start.trackingExcludedEarlyCache(),
+      end.trackingExcludedManualNamespace() - start.trackingExcludedManualNamespace(),
+      end.trackingExcludedManualEntity() - start.trackingExcludedManualEntity(),
+      end.trackingExcludedAutoNamespace() - start.trackingExcludedAutoNamespace(),
+      end.trackingExcludedAutoEntity() - start.trackingExcludedAutoEntity(),
+      end.trackingProtectedLiving() - start.trackingProtectedLiving(),
+      end.trackingProtectedPersistent() - start.trackingProtectedPersistent(),
+      end.trackingTracked() - start.trackingTracked(),
+      Collections.unmodifiableMap(trackingDelta),
+      end.xpOrbsMerged() - start.xpOrbsMerged(),
+      end.xpOrbsRemoved() - start.xpOrbsRemoved(),
+      end.arrowsRemoved() - start.arrowsRemoved(),
+      end.gameRulesChanged() - start.gameRulesChanged(),
+      end.viewDistanceChanges() - start.viewDistanceChanges(),
+      end.simulationDistanceChanges() - start.simulationDistanceChanges(),
+      end.simulationDistanceMovementAdjustments() - start.simulationDistanceMovementAdjustments(),
+      end.simulationDistanceMovementThrottleSamples()
+        - start.simulationDistanceMovementThrottleSamples(),
+      end.simulationDistanceMovementMaxReduction()
+        - start.simulationDistanceMovementMaxReduction());
+  }
+
   private static void resetTrackingCategoryCounters() {
     Arrays.fill(trackingExcludedByCategory, 0L);
   }

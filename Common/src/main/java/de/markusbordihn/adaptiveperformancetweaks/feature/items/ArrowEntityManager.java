@@ -20,6 +20,7 @@
 package de.markusbordihn.adaptiveperformancetweaks.feature.items;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
+import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -55,6 +56,10 @@ public final class ArrowEntityManager {
 
   public static void handleServerAboutToStart() {
     resetState();
+    if (!FeatureToggle.ARROWS.isEnabled()) {
+      return;
+    }
+
     hasArrowsAllowList = !ArrowsConfig.arrowsAllowList.isEmpty();
     hasArrowsDenyList = !ArrowsConfig.arrowsDenyList.isEmpty();
 

@@ -22,7 +22,6 @@ package de.markusbordihn.adaptiveperformancetweaks.core.player;
 import java.util.Arrays;
 import java.util.UUID;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
 
 public class PlayerPosition {
 
@@ -193,18 +192,6 @@ public class PlayerPosition {
     int viewAreaDistance =
       getViewAreaDistance(serverPlayer, levelName, viewDistance, simulationDistance);
     return this.viewArea.update(serverPlayer, viewAreaDistance, levelName);
-  }
-
-  public boolean isInsidePlayerViewArea(String levelName) {
-    return this.levelName.equals(levelName);
-  }
-
-  public boolean isInsidePlayerViewArea(String levelName, int x, int y, int z) {
-    return this.levelName.equals(levelName) && this.viewArea.isInside(x, y, z);
-  }
-
-  public boolean isInsidePlayerViewArea(Entity entity, String levelName) {
-    return this.viewArea.isInside(entity, levelName);
   }
 
   private void ensureMovementWindowSize(int movementWindowSamples) {

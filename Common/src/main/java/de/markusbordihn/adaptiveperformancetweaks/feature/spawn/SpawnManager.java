@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -52,15 +53,16 @@ public final class SpawnManager {
   private static final int SERVER_STARTED_DELAY_TICKS = 20 * 20;
   private static final double VIEW_AREA_DISTANCE = 64.0;
   private static final double DEFAULT_NEAR_PLAYER_DISTANCE = 32.0;
-  private static final Map<String, Map<String, Integer>> worldCountDelta = new HashMap<>();
+  private static final Map<ResourceLocation, Map<EntityType<?>, Integer>> worldCountDelta =
+    new HashMap<>();
   private static final Map<ChunkCacheKey, Integer> chunkCountDelta = new HashMap<>();
   private static final Map<NearPlayerCacheKey, Integer> nearPlayerCountDelta = new HashMap<>();
-  private static final Map<String, Integer> serverCountDelta = new HashMap<>();
+  private static final Map<EntityType<?>, Integer> serverCountDelta = new HashMap<>();
   private static final Map<ChunkCacheKey, Integer> tickChunkEntityCountCache = new HashMap<>();
   private static final Map<NearPlayerCacheKey, Integer> tickNearPlayerEntityCountCache =
     new HashMap<>();
   private static final Map<WorldCacheKey, Integer> tickWorldEntityCountCache = new HashMap<>();
-  private static final Map<String, Integer> tickServerEntityCountCache = new HashMap<>();
+  private static final Map<EntityType<?>, Integer> tickServerEntityCountCache = new HashMap<>();
   private static final Map<AnchorCacheKey, Vec3> playerAnchorCache = new HashMap<>();
   private static final Set<AnchorCacheKey> missingPlayerAnchorCache = new HashSet<>();
   private static volatile ServerLoadLevel currentLoadLevel = ServerLoadLevel.NORMAL;
@@ -174,25 +176,19 @@ public final class SpawnManager {
   public static boolean shouldDenyMobSpawnAt(
     EntityType<?> entityType, ServerLevel level, BlockPos pos, MobSpawnType spawnType) {
     String entityId = BuiltInRegistries.ENTITY_TYPE.getKey(entityType).toString();
-    String dimensionId = level.dimension().location().toString();
+    ResourceLocation dimensionId = level.dimension().location();
     boolean deny = evaluateDenyMobSpawn(entityType, level, pos, spawnType, entityId, dimensionId);
     if (deny) {
       PerformanceStats.mobSpawnsDenied++;
     } else {
-      trackAllowedSpawn(level, pos, dimensionId, entityId);
+      trackAllowedSpawn(entityType, level, pos, dimensionId);
     }
     return deny;
   }
 
-  private static boolean evaluateDenyMobSpawn(
-    EntityType<?> entityType,
-    ServerLevel level,
-    BlockPos pos,
-    MobSpawnType spawnType,
-    String entityId,
-    String dimensionId) {
-    if (!FeatureToggle.SPAWN.isEnabled()
-      || !SpawnConfig.spawnLimitationEnabled
+  private static boolean evaluateDenyMobSpawn(EntityType<?> entityType, ServerLevel level,
+    BlockPos pos, MobSpawnType spawnType, String entityId, ResourceLocation dimensionId) {
+    if (!FeatureToggle.SPAWN.isEnabled() || !SpawnConfig.spawnLimitationEnabled
       || !serverStartedDelay) {
       PerformanceStats.mobSpawnsExcluded++;
       return false;
@@ -204,7 +200,7 @@ public final class SpawnManager {
       return false;
     }
 
-    SpawnDecision decision = SpawnPresetRegistry.evaluate(entityId, dimensionId);
+    SpawnDecision decision = SpawnPresetRegistry.evaluate(entityType, dimensionId);
     if (decision == SpawnDecision.IGNORE_DIMENSION) {
       log.debug("[Ignored Dimension] Allow {} in {}", entityId, dimensionId);
       PerformanceStats.mobSpawnsExcluded++;
@@ -220,11 +216,11 @@ public final class SpawnManager {
     ServerLoadLevel loadLevel = getLoadLevel(level);
     SpecialSpawnBonus specialSpawnBonus = getSpecialSpawnBonus(spawnType, loadLevel);
     boolean bonusUsed = false;
-    int perChunkMax = SpawnPresetRegistry.getEffectivePerChunkMax(entityId, dimensionId,
+    int perChunkMax = SpawnPresetRegistry.getEffectivePerChunkMax(entityType, dimensionId,
       loadLevel);
     if (perChunkMax >= 0) {
       int effectivePerChunkMax = applyBonus(perChunkMax, specialSpawnBonus.perChunkBonus());
-      int inChunk = countInChunk(entityId, pos, level, dimensionId);
+      int inChunk = countInChunk(entityType, pos, level, dimensionId);
       if (inChunk >= effectivePerChunkMax) {
         log.debug("[Per-Chunk Limit] Deny {} at {} in {} - {}/{}", entityId, pos,
           dimensionId, inChunk, effectivePerChunkMax);
@@ -236,11 +232,11 @@ public final class SpawnManager {
       }
     }
 
-    int perPlayerMax =
-      SpawnPresetRegistry.getEffectivePerPlayerMax(entityId, dimensionId, loadLevel);
+    int perPlayerMax = SpawnPresetRegistry.getEffectivePerPlayerMax(entityType, dimensionId,
+      loadLevel);
     if (perPlayerMax >= 0) {
       int effectivePerPlayerMax = applyBonus(perPlayerMax, specialSpawnBonus.perPlayerBonus());
-      int nearPlayer = countNearPlayer(entityId, Vec3.atCenterOf(pos), level, dimensionId);
+      int nearPlayer = countNearPlayer(entityType, Vec3.atCenterOf(pos), level, dimensionId);
       if (nearPlayer >= effectivePerPlayerMax) {
         log.debug("[Per-Player Limit] Deny {} at {} in {} - {}/{}", entityId, pos,
           dimensionId, nearPlayer, effectivePerPlayerMax);
@@ -252,10 +248,11 @@ public final class SpawnManager {
       }
     }
 
-    int perWorldMax = SpawnPresetRegistry.getEffectivePerWorldMax(entityId, dimensionId, loadLevel);
+    int perWorldMax = SpawnPresetRegistry.getEffectivePerWorldMax(entityType, dimensionId,
+      loadLevel);
     if (perWorldMax >= 0) {
       int effectivePerWorldMax = applyBonus(perWorldMax, specialSpawnBonus.perWorldBonus());
-      int inWorld = countInWorld(entityId, level, dimensionId);
+      int inWorld = countInWorld(entityType, level, dimensionId);
       if (inWorld >= effectivePerWorldMax) {
         if (isFriendlyChunkSpawn(entityType, pos, level)) {
           log.debug("[Friendly Chunk Spawn] Allow {} in {} - world limit {}/{} but chunk empty",
@@ -272,11 +269,11 @@ public final class SpawnManager {
       }
     }
 
-    int perServerMax =
-      SpawnPresetRegistry.getEffectivePerServerMax(entityId, dimensionId, loadLevel);
+    int perServerMax = SpawnPresetRegistry.getEffectivePerServerMax(entityType, dimensionId,
+      loadLevel);
     if (perServerMax >= 0) {
       int effectivePerServerMax = applyBonus(perServerMax, specialSpawnBonus.perServerBonus());
-      int onServer = countOnServer(entityId);
+      int onServer = countOnServer(entityType);
       if (onServer >= effectivePerServerMax) {
         if (isFriendlyChunkSpawn(entityType, pos, level)) {
           log.debug("[Friendly Chunk Spawn] Allow {} in {} - server limit {}/{} but chunk empty",
@@ -324,19 +321,19 @@ public final class SpawnManager {
       SpawnConfig.specialSpawnBonusPerServer);
   }
 
-  private static void trackAllowedSpawn(ServerLevel level, BlockPos pos, String dimensionId,
-    String entityTypeId) {
+  private static void trackAllowedSpawn(EntityType<?> entityType, ServerLevel level, BlockPos pos,
+    ResourceLocation dimensionId) {
     incrementCount(worldCountDelta.computeIfAbsent(dimensionId, ignored -> new HashMap<>()),
-      entityTypeId);
+      entityType);
     incrementCount(chunkCountDelta, new ChunkCacheKey(dimensionId, pos.getX() >> 4, pos.getZ() >> 4,
-      entityTypeId));
-    incrementCount(serverCountDelta, entityTypeId);
+      entityType));
+    incrementCount(serverCountDelta, entityType);
 
     Vec3 anchorPos = resolvePlayerAnchor(Vec3.atCenterOf(pos), level, dimensionId);
     if (anchorPos != null) {
       incrementCount(nearPlayerCountDelta,
         new NearPlayerCacheKey(dimensionId, ((int) anchorPos.x) >> 4, ((int) anchorPos.z) >> 4,
-          entityTypeId));
+          entityType));
     }
   }
 
@@ -352,7 +349,7 @@ public final class SpawnManager {
       return false;
     }
 
-    String dimensionId = level.dimension().location().toString();
+    ResourceLocation dimensionId = level.dimension().location();
     if (CoreEntityManager.getTrackedEntityCountInChunk(dimensionId, pos) > 0) {
       return false;
     }
@@ -378,17 +375,17 @@ public final class SpawnManager {
     log.debug("[Entity Conversion] {}", entity);
   }
 
-  private static int countInChunk(String entityTypeId, BlockPos pos, ServerLevel level,
-    String dimensionId) {
+  private static int countInChunk(EntityType<?> entityType, BlockPos pos, ServerLevel level,
+    ResourceLocation dimensionId) {
     ChunkCacheKey cacheKey = new ChunkCacheKey(dimensionId, pos.getX() >> 4, pos.getZ() >> 4,
-      entityTypeId);
+      entityType);
     int base = tickChunkEntityCountCache.computeIfAbsent(cacheKey,
-      key -> CoreEntityManager.getNumberOfEntitiesInChunk(dimensionId, entityTypeId, pos));
+      key -> CoreEntityManager.getNumberOfEntitiesInChunk(dimensionId, entityType, pos));
     return base + chunkCountDelta.getOrDefault(cacheKey, 0);
   }
 
-  private static int countNearPlayer(String entityTypeId, Vec3 spawnPos, ServerLevel level,
-    String dimensionId) {
+  private static int countNearPlayer(EntityType<?> entityType, Vec3 spawnPos, ServerLevel level,
+    ResourceLocation dimensionId) {
     double viewDistance =
       SpawnConfig.viewAreaEnabled ? VIEW_AREA_DISTANCE : DEFAULT_NEAR_PLAYER_DISTANCE;
     Vec3 anchorPos = resolvePlayerAnchor(spawnPos, level, dimensionId);
@@ -397,31 +394,32 @@ public final class SpawnManager {
     }
 
     NearPlayerCacheKey cacheKey = new NearPlayerCacheKey(
-      dimensionId, ((int) anchorPos.x) >> 4, ((int) anchorPos.z) >> 4, entityTypeId);
+      dimensionId, ((int) anchorPos.x) >> 4, ((int) anchorPos.z) >> 4, entityType);
     final Vec3 finalAnchorPos = anchorPos;
     int base = tickNearPlayerEntityCountCache.computeIfAbsent(cacheKey,
-      key -> CoreEntityManager.getNumberOfEntitiesNearPosition(dimensionId, entityTypeId,
+      key -> CoreEntityManager.getNumberOfEntitiesNearPosition(dimensionId, entityType,
         finalAnchorPos, viewDistance));
     return base + nearPlayerCountDelta.getOrDefault(cacheKey, 0);
   }
 
-  private static int countInWorld(String entityTypeId, ServerLevel level, String dimensionId) {
-    WorldCacheKey cacheKey = new WorldCacheKey(dimensionId, entityTypeId);
+  private static int countInWorld(EntityType<?> entityType, ServerLevel level,
+    ResourceLocation dimensionId) {
+    WorldCacheKey cacheKey = new WorldCacheKey(dimensionId, entityType);
     int base = tickWorldEntityCountCache.computeIfAbsent(cacheKey,
-      key -> CoreEntityManager.getNumberOfEntities(dimensionId, entityTypeId));
-    Map<String, Integer> dimensionDelta = worldCountDelta.get(dimensionId);
-    int delta = dimensionDelta != null ? dimensionDelta.getOrDefault(entityTypeId, 0) : 0;
+      key -> CoreEntityManager.getNumberOfEntities(dimensionId, entityType));
+    Map<EntityType<?>, Integer> dimensionDelta = worldCountDelta.get(dimensionId);
+    int delta = dimensionDelta != null ? dimensionDelta.getOrDefault(entityType, 0) : 0;
     return base + delta;
   }
 
-  private static int countOnServer(String entityTypeId) {
+  private static int countOnServer(EntityType<?> entityType) {
     if (ServerManager.getMinecraftServer() == null) {
       return 0;
     }
 
-    int base = tickServerEntityCountCache.computeIfAbsent(entityTypeId,
-      key -> CoreEntityManager.getNumberOfEntities(entityTypeId));
-    return base + serverCountDelta.getOrDefault(entityTypeId, 0);
+    int base = tickServerEntityCountCache.computeIfAbsent(entityType,
+      CoreEntityManager::getNumberOfEntities);
+    return base + serverCountDelta.getOrDefault(entityType, 0);
   }
 
   private static double getNaturalSpawnPassRate(ServerLoadLevel level) {
@@ -441,7 +439,8 @@ public final class SpawnManager {
       : currentLoadLevel;
   }
 
-  private static Vec3 resolvePlayerAnchor(Vec3 spawnPos, ServerLevel level, String dimensionId) {
+  private static Vec3 resolvePlayerAnchor(Vec3 spawnPos, ServerLevel level,
+    ResourceLocation dimensionId) {
     AnchorCacheKey cacheKey = new AnchorCacheKey(
       dimensionId, ((int) spawnPos.x) >> 4, ((int) spawnPos.z) >> 4);
     Vec3 cachedAnchorPos = playerAnchorCache.get(cacheKey);
@@ -476,31 +475,31 @@ public final class SpawnManager {
   }
 
   private record AnchorCacheKey(
-    String dimensionId,
+    ResourceLocation dimensionId,
     int chunkX,
     int chunkZ) {
 
   }
 
   private record ChunkCacheKey(
-    String dimensionId,
+    ResourceLocation dimensionId,
     int chunkX,
     int chunkZ,
-    String entityTypeId) {
+    EntityType<?> entityType) {
 
   }
 
   private record NearPlayerCacheKey(
-    String dimensionId,
+    ResourceLocation dimensionId,
     int chunkX,
     int chunkZ,
-    String entityTypeId) {
+    EntityType<?> entityType) {
 
   }
 
   private record WorldCacheKey(
-    String dimensionId,
-    String entityTypeId) {
+    ResourceLocation dimensionId,
+    EntityType<?> entityType) {
 
   }
 

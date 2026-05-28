@@ -48,26 +48,22 @@ public final class MonitoringManager {
       return;
     }
 
-    boolean intervalElapsed = intervalElapsed();
-    if (!intervalElapsed && !event.hasChanged()) {
+    long currentTime = System.currentTimeMillis();
+    if (!intervalElapsed(currentTime)) {
       return;
     }
 
-    if (!intervalElapsed) {
-      return;
-    }
-
-    lastLogTime = System.currentTimeMillis();
+    lastLogTime = currentTime;
     logStatus(event);
   }
 
-  private static boolean intervalElapsed() {
+  private static boolean intervalElapsed(long currentTime) {
     int intervalMs = MonitoringConfig.monitoringIntervalSeconds * 1000;
     if (intervalMs <= 0) {
       return false;
     }
 
-    return System.currentTimeMillis() - lastLogTime >= intervalMs;
+    return currentTime - lastLogTime >= intervalMs;
   }
 
   private static void logStatus(ServerLoadEvent event) {

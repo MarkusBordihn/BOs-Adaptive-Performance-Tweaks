@@ -35,6 +35,10 @@ public final class PlayerDamageManager {
   }
 
   public static void handleServerStarting() {
+    if (!FeatureToggle.PLAYER_EASY_CHILD_MODE.isEnabled()) {
+      return;
+    }
+
     if (!PlayerEasyChildModeConfig.childPlayerNames.isEmpty()) {
       if (PlayerEasyChildModeConfig.childPlayerHurtDamageReduction > 0) {
         log.info(

@@ -19,19 +19,14 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.spawn;
 
-import de.markusbordihn.adaptiveperformancetweaks.Constants;
-import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.Config;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import java.io.File;
-import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public final class SpawnConfig extends Config {
 
@@ -49,8 +44,6 @@ public final class SpawnConfig extends Config {
        Default values are tuned for ~4 players. Scale per-player and per-world limits
        proportionally for larger servers.
       """;
-
-  private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   public static boolean spawnLimitationEnabled = true;
   public static boolean naturalSpawnLimitationEnabled = true;
@@ -91,63 +84,65 @@ public final class SpawnConfig extends Config {
     Properties unmodified = new Properties();
     unmodified.putAll(properties);
 
-    CoreConfig.setFeatureEnabled(
+    CoreConfig.applyFeatureState(
       FeatureToggle.SPAWN,
-      ModConflictDetector.resolveFeatureState(
-        FeatureToggle.SPAWN,
-        parseConfigValue(properties, "enabled", FeatureToggle.SPAWN.getDefaultState())));
+      parseConfigValue(properties, "enabled", FeatureToggle.SPAWN.getDefaultState()));
 
-    spawnLimitationEnabled =
-      parseBoolean(properties, "spawnLimitationEnabled", spawnLimitationEnabled);
-    naturalSpawnLimitationEnabled =
-      parseBoolean(properties, "naturalSpawnLimitationEnabled", naturalSpawnLimitationEnabled);
-    naturalSpawnPrioritizeByTimeOfDay =
-      parseBoolean(
-        properties, "naturalSpawnPrioritizeByTimeOfDay", naturalSpawnPrioritizeByTimeOfDay);
-    naturalSpawnNightMonsterBonus =
-      parseDouble(properties, "naturalSpawnNightMonsterBonus", naturalSpawnNightMonsterBonus);
-    naturalSpawnNightPassivePenalty =
-      parseDouble(properties, "naturalSpawnNightPassivePenalty", naturalSpawnNightPassivePenalty);
-    naturalSpawnPassRateVeryLow =
-      parseDouble(properties, "naturalSpawnPassRateVeryLow", naturalSpawnPassRateVeryLow);
-    naturalSpawnPassRateLow =
-      parseDouble(properties, "naturalSpawnPassRateLow", naturalSpawnPassRateLow);
-    naturalSpawnPassRateNormal =
-      parseDouble(properties, "naturalSpawnPassRateNormal", naturalSpawnPassRateNormal);
-    naturalSpawnPassRateMedium =
-      parseDouble(properties, "naturalSpawnPassRateMedium", naturalSpawnPassRateMedium);
-    naturalSpawnPassRateHigh =
-      parseDouble(properties, "naturalSpawnPassRateHigh", naturalSpawnPassRateHigh);
-    naturalSpawnPassRateVeryHigh =
-      parseDouble(properties, "naturalSpawnPassRateVeryHigh", naturalSpawnPassRateVeryHigh);
-    spawnLimitationMaxMobsPerPlayer =
-      parseInt(properties, "spawnLimitationMaxMobsPerPlayer", spawnLimitationMaxMobsPerPlayer);
-    spawnLimitationMaxMobsPerWorld =
-      parseInt(properties, "spawnLimitationMaxMobsPerWorld", spawnLimitationMaxMobsPerWorld);
-    spawnLimitationMaxMobsPerServer =
-      parseInt(properties, "spawnLimitationMaxMobsPerServer", spawnLimitationMaxMobsPerServer);
-    spawnLimitationMaxMobsPerChunk =
-      parseInt(properties, "spawnLimitationMaxMobsPerChunk", spawnLimitationMaxMobsPerChunk);
-    spawnAggressiveMode = parseBoolean(properties, "spawnAggressiveMode", spawnAggressiveMode);
-    viewAreaEnabled = parseBoolean(properties, "viewAreaEnabled", viewAreaEnabled);
-    friendlyChunkSpawnRate = parseInt(properties, "friendlyChunkSpawnRate", friendlyChunkSpawnRate);
-    spawnEggBypassLimitations = parseBoolean(properties, "spawnEggBypassLimitations",
+    spawnLimitationEnabled = parseConfigValue(properties, "spawnLimitationEnabled",
+      spawnLimitationEnabled);
+    naturalSpawnLimitationEnabled = parseConfigValue(properties, "naturalSpawnLimitationEnabled",
+      naturalSpawnLimitationEnabled);
+    naturalSpawnPrioritizeByTimeOfDay = parseConfigValue(properties,
+      "naturalSpawnPrioritizeByTimeOfDay",
+      naturalSpawnPrioritizeByTimeOfDay);
+    naturalSpawnNightMonsterBonus = parseConfigValue(properties, "naturalSpawnNightMonsterBonus",
+      naturalSpawnNightMonsterBonus);
+    naturalSpawnNightPassivePenalty = parseConfigValue(properties,
+      "naturalSpawnNightPassivePenalty",
+      naturalSpawnNightPassivePenalty);
+    naturalSpawnPassRateVeryLow = parseConfigValue(properties, "naturalSpawnPassRateVeryLow",
+      naturalSpawnPassRateVeryLow);
+    naturalSpawnPassRateLow = parseConfigValue(properties, "naturalSpawnPassRateLow",
+      naturalSpawnPassRateLow);
+    naturalSpawnPassRateNormal = parseConfigValue(properties, "naturalSpawnPassRateNormal",
+      naturalSpawnPassRateNormal);
+    naturalSpawnPassRateMedium = parseConfigValue(properties, "naturalSpawnPassRateMedium",
+      naturalSpawnPassRateMedium);
+    naturalSpawnPassRateHigh = parseConfigValue(properties, "naturalSpawnPassRateHigh",
+      naturalSpawnPassRateHigh);
+    naturalSpawnPassRateVeryHigh = parseConfigValue(properties, "naturalSpawnPassRateVeryHigh",
+      naturalSpawnPassRateVeryHigh);
+    spawnLimitationMaxMobsPerPlayer = parseConfigValue(properties,
+      "spawnLimitationMaxMobsPerPlayer",
+      spawnLimitationMaxMobsPerPlayer);
+    spawnLimitationMaxMobsPerWorld = parseConfigValue(properties, "spawnLimitationMaxMobsPerWorld",
+      spawnLimitationMaxMobsPerWorld);
+    spawnLimitationMaxMobsPerServer = parseConfigValue(properties,
+      "spawnLimitationMaxMobsPerServer",
+      spawnLimitationMaxMobsPerServer);
+    spawnLimitationMaxMobsPerChunk = parseConfigValue(properties, "spawnLimitationMaxMobsPerChunk",
+      spawnLimitationMaxMobsPerChunk);
+    spawnAggressiveMode = parseConfigValue(properties, "spawnAggressiveMode", spawnAggressiveMode);
+    viewAreaEnabled = parseConfigValue(properties, "viewAreaEnabled", viewAreaEnabled);
+    friendlyChunkSpawnRate = parseConfigValue(properties, "friendlyChunkSpawnRate",
+      friendlyChunkSpawnRate);
+    spawnEggBypassLimitations = parseConfigValue(properties, "spawnEggBypassLimitations",
       spawnEggBypassLimitations);
-    specialSpawnTypeBonusEnabled = parseBoolean(properties, "specialSpawnTypeBonusEnabled",
+    specialSpawnTypeBonusEnabled = parseConfigValue(properties, "specialSpawnTypeBonusEnabled",
       specialSpawnTypeBonusEnabled);
     specialSpawnBonusTypes = parseConfigValue(properties, "specialSpawnBonusTypes",
       specialSpawnBonusTypes);
-    specialSpawnBonusPerPlayer = parseInt(properties, "specialSpawnBonusPerPlayer",
+    specialSpawnBonusPerPlayer = parseConfigValue(properties, "specialSpawnBonusPerPlayer",
       specialSpawnBonusPerPlayer);
-    specialSpawnBonusPerChunk = parseInt(properties, "specialSpawnBonusPerChunk",
+    specialSpawnBonusPerChunk = parseConfigValue(properties, "specialSpawnBonusPerChunk",
       specialSpawnBonusPerChunk);
-    specialSpawnBonusPerWorld = parseInt(properties, "specialSpawnBonusPerWorld",
+    specialSpawnBonusPerWorld = parseConfigValue(properties, "specialSpawnBonusPerWorld",
       specialSpawnBonusPerWorld);
-    specialSpawnBonusPerServer = parseInt(properties, "specialSpawnBonusPerServer",
+    specialSpawnBonusPerServer = parseConfigValue(properties, "specialSpawnBonusPerServer",
       specialSpawnBonusPerServer);
-    specialSpawnBonusMaxLoadLevel = parseLoadLevel(properties, "specialSpawnBonusMaxLoadLevel",
+    specialSpawnBonusMaxLoadLevel = parseConfigValue(properties, "specialSpawnBonusMaxLoadLevel",
       specialSpawnBonusMaxLoadLevel);
-    presetReloadOnDatapackReload = parseBoolean(properties, "presetReloadOnDatapackReload",
+    presetReloadOnDatapackReload = parseConfigValue(properties, "presetReloadOnDatapackReload",
       presetReloadOnDatapackReload);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
@@ -167,40 +162,4 @@ public final class SpawnConfig extends Config {
       specialSpawnBonusMaxLoadLevel);
   }
 
-  private static boolean parseBoolean(Properties props, String key, boolean defaultValue) {
-    props.putIfAbsent(key, String.valueOf(defaultValue));
-
-    return Boolean.parseBoolean(props.getProperty(key));
-  }
-
-  private static int parseInt(Properties props, String key, int defaultValue) {
-    props.putIfAbsent(key, String.valueOf(defaultValue));
-    try {
-      return Integer.parseInt(props.getProperty(key));
-    } catch (NumberFormatException exception) {
-      log.warn("Invalid integer for '{}', using default {}", key, defaultValue);
-      return defaultValue;
-    }
-  }
-
-  private static double parseDouble(Properties props, String key, double defaultValue) {
-    props.putIfAbsent(key, String.valueOf(defaultValue));
-    try {
-      return Double.parseDouble(props.getProperty(key));
-    } catch (NumberFormatException exception) {
-      log.warn("Invalid double for '{}', using default {}", key, defaultValue);
-      return defaultValue;
-    }
-  }
-
-  private static ServerLoadLevel parseLoadLevel(
-    Properties props, String key, ServerLoadLevel defaultValue) {
-    props.putIfAbsent(key, defaultValue.name().toLowerCase(Locale.ROOT));
-    try {
-      return ServerLoadLevel.valueOf(props.getProperty(key).trim().toUpperCase(Locale.ROOT));
-    } catch (IllegalArgumentException exception) {
-      log.warn("Invalid ServerLoadLevel for '{}', using default {}", key, defaultValue);
-      return defaultValue;
-    }
-  }
 }

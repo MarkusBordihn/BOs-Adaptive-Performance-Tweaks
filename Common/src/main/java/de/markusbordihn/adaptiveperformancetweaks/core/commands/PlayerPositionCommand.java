@@ -21,7 +21,6 @@ package de.markusbordihn.adaptiveperformancetweaks.core.commands;
 
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPosition;
 import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPositionManager;
 import java.util.Map;
@@ -39,7 +38,7 @@ public class PlayerPositionCommand extends CustomCommand {
   }
 
   @Override
-  public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+  public int run(CommandContext<CommandSourceStack> context) {
     Map<String, PlayerPosition> playerPositionMap = PlayerPositionManager.getPlayerPositionMap();
     if (playerPositionMap.isEmpty()) {
       sendFeedback(context, "No player positions found.");

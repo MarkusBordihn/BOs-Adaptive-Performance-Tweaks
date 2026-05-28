@@ -20,6 +20,7 @@
 package de.markusbordihn.adaptiveperformancetweaks.feature.player;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
+import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
 import java.util.Iterator;
 import java.util.Set;
@@ -53,7 +54,8 @@ public final class PlayerLoginManager {
   }
 
   public static void handlePlayerLoggedIn(ServerPlayer player) {
-    if (!PlayerLoginProtectionConfig.protectPlayerDuringLogin) {
+    if (!FeatureToggle.PLAYER_LOGIN_PROTECTION.isEnabled()
+      || !PlayerLoginProtectionConfig.protectPlayerDuringLogin) {
       return;
     }
 
@@ -77,7 +79,8 @@ public final class PlayerLoginManager {
   }
 
   public static void handlePlayerLoggedOut(String username) {
-    if (!PlayerLoginProtectionConfig.protectPlayerDuringLogin) {
+    if (!FeatureToggle.PLAYER_LOGIN_PROTECTION.isEnabled()
+      || !PlayerLoginProtectionConfig.protectPlayerDuringLogin) {
       return;
     }
 
