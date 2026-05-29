@@ -28,6 +28,7 @@ import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.MsptBucket;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenario;
+import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenarioContext;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenarioId;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenarioResult;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
@@ -37,6 +38,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
 
 class BenchmarkManagerTest {
@@ -64,7 +66,7 @@ class BenchmarkManagerTest {
     return new PerformanceStats.Snapshot(
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       Map.of(TrackingCategory.UNKNOWN, 0L),
-      0, 0, 0, 0, 0, 0, 0, 0, 0);
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
   }
 
   private static BenchmarkScenarioResult.PhaseResult phaseResult(
@@ -165,7 +167,7 @@ class BenchmarkManagerTest {
     PerformanceStats.Snapshot activeSnapshot = new PerformanceStats.Snapshot(
       4, 0, 1, 0, 2, 1, 8, 2, 12, 0, 0, 0, 0, 0, 0, 0, 4,
       Map.of(TrackingCategory.UNKNOWN, 2L),
-      7, 1, 0, 0, 0, 1, 1, 2, 1);
+      7, 1, 3, 0, 0, 1, 1, 2, 1, 0);
     BenchmarkScenarioResult scenarioResult = new BenchmarkScenarioResult(
       BenchmarkScenarioId.GENERAL,
       phaseResult(120_000L, 6.9, 11.7, 21.6, 36.5, emptySnapshot()),
@@ -310,5 +312,82 @@ class BenchmarkManagerTest {
       .toList();
 
     assertTrue(lines.stream().anyMatch(line -> line.contains("score=+")));
+  }
+
+  @Test
+  void captureMeasurementStartStatsRunsBeforeSnapshot() throws Exception {
+    PerformanceStats.reset();
+    RecordingScenario scenario = new RecordingScenario();
+    BenchmarkScenarioContext context = new BenchmarkScenarioContext(
+      null,
+      null,
+      Vec3.ZERO,
+      BenchmarkScenarioId.ITEMS,
+      false,
+      false,
+      30_000L,
+      "benchmark",
+      "benchmark_items");
+
+    PerformanceStats.Snapshot snapshot = (PerformanceStats.Snapshot) invokePrivateMethod(
+      "captureMeasurementStartStats",
+      new Class<?>[]{BenchmarkScenario.class, BenchmarkScenarioContext.class},
+      scenario,
+      context);
+
+    assertEquals(1L, snapshot.itemsRemoved());
+    assertTrue(scenario.beforeMeasurementCalled);
+    assertFalse(scenario.onMeasurementTickCalled);
+  }
+
+  @Test
+  void runScenarioMeasurementTickProducesMeasuredDelta() throws Exception {
+    PerformanceStats.reset();
+    RecordingScenario scenario = new RecordingScenario();
+    BenchmarkScenarioContext context = new BenchmarkScenarioContext(
+      null,
+      null,
+      Vec3.ZERO,
+      BenchmarkScenarioId.ENTITIES,
+      true,
+      false,
+      30_000L,
+      "benchmark",
+      "benchmark_entities");
+    PerformanceStats.Snapshot start = PerformanceStats.snapshot();
+
+    invokePrivateMethod(
+      "runScenarioMeasurementTick",
+      new Class<?>[]{BenchmarkScenario.class, BenchmarkScenarioContext.class},
+      scenario,
+      context);
+
+    PerformanceStats.Snapshot delta = PerformanceStats.delta(start, PerformanceStats.snapshot());
+
+    assertTrue(scenario.onMeasurementTickCalled);
+    assertEquals(1L, delta.entityChunkCleanupRemoved());
+  }
+
+  private static final class RecordingScenario implements BenchmarkScenario {
+
+    private boolean beforeMeasurementCalled = false;
+    private boolean onMeasurementTickCalled = false;
+
+    @Override
+    public BenchmarkScenarioId id() {
+      return BenchmarkScenarioId.ITEMS;
+    }
+
+    @Override
+    public void beforeMeasurement(BenchmarkScenarioContext context) {
+      beforeMeasurementCalled = true;
+      PerformanceStats.itemsRemoved++;
+    }
+
+    @Override
+    public void onMeasurementTick(BenchmarkScenarioContext context) {
+      onMeasurementTickCalled = true;
+      PerformanceStats.entityChunkCleanupRemoved++;
+    }
   }
 }

@@ -76,10 +76,6 @@ tasks.withType(Javadoc).matching(notNeoTask).configureEach {
   source(project(":Common").sourceSets.main.allJava)
 }
 
-tasks.named("sourcesJar", Jar) {
-  from(project(":Common").sourceSets.main.allSource)
-}
-
 tasks.withType(ProcessResources).matching(notNeoTask).configureEach {
   from project(":Common").sourceSets.main.resources
 }

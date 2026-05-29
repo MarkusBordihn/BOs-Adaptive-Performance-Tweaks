@@ -140,6 +140,10 @@ public final class ServerEventHandler {
 
   @SubscribeEvent
   public static void handleLivingHurt(LivingIncomingDamageEvent event) {
+    if (event.getEntity().level().isClientSide()) {
+      return;
+    }
+
     if (!FeatureToggle.PLAYER_EASY_CHILD_MODE.isEnabled()
       && !FeatureToggle.PLAYER_STARTER_PROTECTION.isEnabled()) {
       return;
@@ -154,6 +158,10 @@ public final class ServerEventHandler {
 
   @SubscribeEvent
   public static void handleLivingDamage(LivingDamageEvent.Post event) {
+    if (event.getEntity().level().isClientSide()) {
+      return;
+    }
+
     PlayerDamageManager.handleLivingDamage(event.getSource(), event.getNewDamage());
   }
 }

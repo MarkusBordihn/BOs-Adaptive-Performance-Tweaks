@@ -21,7 +21,9 @@ package de.markusbordihn.adaptiveperformancetweaks.gametest;
 
 import de.markusbordihn.adaptiveperformancetweaks.accessor.ExperienceOrbAccessor;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ExperienceOrbManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.items.ExperienceOrbsConfig;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ItemEntityManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
@@ -55,13 +57,52 @@ public final class ItemOptimizationTests {
     GameTestHelpers.assertTrue(
       helper, "Second XP orb within cluster range should be merged", secondMerged);
     GameTestHelpers.assertEquals(
-      helper,
-      "Merged XP orb value should be sum of both (5 + 3 = 8)",
-      8,
-      ((ExperienceOrbAccessor) orb1).getValue());
-    GameTestHelpers.assertTrue(helper, "Merged orb should be marked as removed", orb2.isRemoved());
+      helper, "Merged XP orb value should be sum of both (5 + 3 = 8)",
+      8, ((ExperienceOrbAccessor) orb1).getValue());
+    GameTestHelpers.assertTrue(
+      helper, "Merged orb should be marked as removed", orb2.isRemoved());
+    GameTestHelpers.assertEquals(
+      helper, "Merged XP orb counter should increase",
+      1L, PerformanceStats.xpOrbsMerged);
+    GameTestHelpers.assertEquals(
+      helper, "Merged XP orb should not count as removed",
+      0L, PerformanceStats.xpOrbsRemoved);
 
     ExperienceOrbManager.handleServerAboutToStart();
+    helper.succeed();
+  }
+
+  public static void testStaleXpOrbCleanup(GameTestHelper helper) {
+    ServerLevel level = helper.getLevel();
+    ExperienceOrbManager.handleServerAboutToStart();
+
+    int previousMaxAge = ExperienceOrbsConfig.staleExperienceOrbAgeTicks;
+    try {
+      ExperienceOrbsConfig.staleExperienceOrbAgeTicks = 20;
+
+      ExperienceOrb orb = new ExperienceOrb(EntityType.EXPERIENCE_ORB, level);
+      ((ExperienceOrbAccessor) orb).setValue(4);
+      orb.tickCount = 21;
+      orb.moveTo(0.5, 1.0, 0.5);
+
+      boolean joined = ExperienceOrbManager.handleExperienceOrbJoinLevel(orb, level);
+      GameTestHelpers.assertTrue(
+        helper, "Stale XP orb should first join tracking", !joined);
+
+      for (int tick = 0; tick < 30 * 20; tick++) {
+        ExperienceOrbManager.handleServerTick();
+      }
+
+      GameTestHelpers.assertTrue(
+        helper, "Stale XP orb should be removed during verification", orb.isRemoved());
+      GameTestHelpers.assertEquals(
+        helper, "Stale XP orb removal should increment removed counter",
+        1L, PerformanceStats.xpOrbsRemoved);
+    } finally {
+      ExperienceOrbsConfig.staleExperienceOrbAgeTicks = previousMaxAge;
+      ExperienceOrbManager.handleServerAboutToStart();
+    }
+
     helper.succeed();
   }
 

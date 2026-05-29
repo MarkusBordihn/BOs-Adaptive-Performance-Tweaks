@@ -1,4 +1,4 @@
 {
   "item.adaptive_performance_tweaks.description": "Adaptive Performance Tweaks",
-  "mod.adaptive_performance_tweaks.description": "Automatically optimizes your Minecraft server performance by adapting game rules, spawn limits, items, and more based on the current server load."
+  "mod.adaptive_performance_tweaks.description": "Automatically optimizes Minecraft's server-side performance by adapting game rules, spawn limits, items, and more for dedicated servers, single-player worlds, and LAN worlds."
 }

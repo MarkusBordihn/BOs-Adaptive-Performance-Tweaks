@@ -141,10 +141,15 @@ public final class ServerEventHandler {
 
   @SubscribeEvent
   public static void handleLivingHurt(LivingHurtEvent event) {
+    if (event.getEntity().level().isClientSide()) {
+      return;
+    }
+
     if (!FeatureToggle.PLAYER_EASY_CHILD_MODE.isEnabled()
       && !FeatureToggle.PLAYER_STARTER_PROTECTION.isEnabled()) {
       return;
     }
+
     float modified = PlayerDamageManager.handleLivingHurt(event.getEntity(), event.getAmount());
     if (modified <= 0f) {
       event.setCanceled(true);
@@ -155,6 +160,10 @@ public final class ServerEventHandler {
 
   @SubscribeEvent
   public static void handleLivingDamage(LivingDamageEvent event) {
+    if (event.getEntity().level().isClientSide()) {
+      return;
+    }
+
     event.setAmount(PlayerDamageManager.handleLivingDamage(event.getSource(), event.getAmount()));
   }
 }

@@ -36,12 +36,21 @@ public final class GameRuleAdaptationTests {
     GameRuleManager.handleServerStarting(server);
     GameRules rules = server.getGameRules();
 
+    GameRuleManager.enableFireTick();
     GameRuleManager.enablePatrolSpawning();
     GameRuleManager.enableRaids();
     GameRuleManager.enableInsomnia();
 
     GameRuleManager.handleServerLoadEvent(
-      new ServerLoadEvent(ServerLoadLevel.VERY_HIGH, ServerLoadLevel.NORMAL, 200.0, 50.0));
+      new ServerLoadEvent(ServerLoadLevel.HIGH, ServerLoadLevel.NORMAL, 75.0, 50.0));
+
+    GameTestHelpers.assertTrue(
+      helper,
+      "fireTick should be disabled under HIGH load",
+      !rules.getBoolean(GameRules.RULE_DOFIRETICK));
+
+    GameRuleManager.handleServerLoadEvent(
+      new ServerLoadEvent(ServerLoadLevel.VERY_HIGH, ServerLoadLevel.HIGH, 200.0, 75.0));
 
     GameTestHelpers.assertTrue(
       helper,
@@ -56,6 +65,7 @@ public final class GameRuleAdaptationTests {
       "insomnia should be disabled under VERY_HIGH load",
       !rules.getBoolean(GameRules.RULE_DOINSOMNIA));
 
+    GameRuleManager.enableFireTick();
     GameRuleManager.enablePatrolSpawning();
     GameRuleManager.enableRaids();
     GameRuleManager.enableInsomnia();

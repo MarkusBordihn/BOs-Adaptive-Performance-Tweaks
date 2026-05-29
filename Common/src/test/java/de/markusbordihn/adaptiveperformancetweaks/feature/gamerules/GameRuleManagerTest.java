@@ -20,11 +20,16 @@
 package de.markusbordihn.adaptiveperformancetweaks.feature.gamerules;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import net.minecraft.SharedConstants;
@@ -54,6 +59,12 @@ class GameRuleManagerTest {
     Field field = GameRuleManager.class.getDeclaredField(fieldName);
     field.setAccessible(true);
     return field.get(null);
+  }
+
+  private static void writeServerManagerField(String fieldName, Object value) throws Exception {
+    Field field = ServerManager.class.getDeclaredField(fieldName);
+    field.setAccessible(true);
+    field.set(null, value);
   }
 
   private static int invokeIntMethod(String methodName) throws Exception {
@@ -107,6 +118,49 @@ class GameRuleManagerTest {
       assertEquals(19, readStaticField("configuredMaxEntityCramming"));
     } finally {
       FeatureToggle.GAMERULES.setEnabled(previousState);
+    }
+  }
+
+  @Test
+  void handleServerStartingCapturesDoFireTickDefault() throws Exception {
+    MinecraftServer server = mock(MinecraftServer.class,
+      withSettings().mockMaker(MockMakers.SUBCLASS));
+    GameRules rules = new GameRules();
+    rules.getRule(GameRules.RULE_DOFIRETICK).set(false, null);
+    when(server.getGameRules()).thenReturn(rules);
+
+    GameRuleManager.handleServerStarting(server);
+
+    assertEquals(false, readStaticField("configuredDoFireTick"));
+  }
+
+  @Test
+  void highLoadDisablesAndNormalLoadRestoresDoFireTick() {
+    MinecraftServer server = mock(MinecraftServer.class,
+      withSettings().mockMaker(MockMakers.SUBCLASS));
+    GameRules rules = new GameRules();
+    when(server.getGameRules()).thenReturn(rules);
+
+    try {
+      writeServerManagerField("minecraftServer", server);
+      GameRuleManager.handleServerStarting(server);
+      assertTrue(rules.getBoolean(GameRules.RULE_DOFIRETICK));
+
+      GameRuleManager.handleServerLoadEvent(
+        new ServerLoadEvent(ServerLoadLevel.HIGH, ServerLoadLevel.NORMAL, 75.0, 50.0));
+      assertFalse(rules.getBoolean(GameRules.RULE_DOFIRETICK));
+
+      writeStaticField("lastUpdateTime", 0L);
+      GameRuleManager.handleServerLoadEvent(
+        new ServerLoadEvent(ServerLoadLevel.NORMAL, ServerLoadLevel.HIGH, 50.0, 75.0));
+      assertTrue(rules.getBoolean(GameRules.RULE_DOFIRETICK));
+    } catch (Exception exception) {
+      throw new AssertionError(exception);
+    } finally {
+      try {
+        writeServerManagerField("minecraftServer", null);
+      } catch (Exception ignored) {
+      }
     }
   }
 }

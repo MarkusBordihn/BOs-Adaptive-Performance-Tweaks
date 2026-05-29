@@ -63,12 +63,12 @@ public class SpawnThrottleGameTest {
     SpawnThrottleTests.testEntityPlayerLimitVirtualZoneAt5(helper);
   }
 
-  @GameTest(template = "gametest.1x1x1")
+  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
   public void testStructureSpawnGetsWorldBonus(GameTestHelper helper) {
     SpawnThrottleTests.testStructureSpawnGetsWorldBonus(helper);
   }
 
-  @GameTest(template = "gametest.1x1x1")
+  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
   public void testStructureSpawnBonusDisabledAboveMaxLoad(GameTestHelper helper) {
     SpawnThrottleTests.testStructureSpawnBonusDisabledAboveMaxLoad(helper);
   }

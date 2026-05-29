@@ -1,0 +1,7 @@
+{
+  "mod_id": "niftycarts",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "vehicle_structure",
+  "reason": "NiftyCarts cart entities are transport structures and should not be tracked."
+}

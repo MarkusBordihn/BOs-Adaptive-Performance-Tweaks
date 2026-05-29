@@ -120,8 +120,8 @@ public class BenchmarkCommand extends CustomCommand {
       .append(Component.literal(abbreviatePath(resultPath))
         .withStyle(ChatFormatting.AQUA)
         .withStyle(style -> style
-          .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
-            "/aptweaks benchmark openresult"))
+          .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE,
+            resultPath.toString()))
           .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
             Component.literal(resultPath.toString())))));
   }

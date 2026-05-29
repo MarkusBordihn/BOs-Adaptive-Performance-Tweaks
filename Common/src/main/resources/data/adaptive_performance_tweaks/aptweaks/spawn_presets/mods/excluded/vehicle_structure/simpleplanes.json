@@ -1,0 +1,7 @@
+{
+  "mod_id": "simpleplanes",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "vehicle_structure",
+  "reason": "Simple Planes aircraft entities are transport structures and should not be tracked."
+}

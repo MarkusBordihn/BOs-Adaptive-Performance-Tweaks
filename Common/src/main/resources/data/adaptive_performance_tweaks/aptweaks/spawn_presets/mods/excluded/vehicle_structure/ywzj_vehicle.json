@@ -1,0 +1,7 @@
+{
+  "mod_id": "ywzj_vehicle",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "vehicle_structure",
+  "reason": "Limitless Vehicle entities are transport structures and should not be tracked."
+}

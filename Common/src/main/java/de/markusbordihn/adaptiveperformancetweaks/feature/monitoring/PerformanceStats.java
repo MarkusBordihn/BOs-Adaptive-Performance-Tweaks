@@ -48,6 +48,7 @@ public final class PerformanceStats {
   public static long trackingTracked;
   public static long xpOrbsMerged;
   public static long xpOrbsRemoved;
+  public static long entityChunkCleanupRemoved;
   public static long arrowsRemoved;
   public static long gameRulesChanged;
   public static long viewDistanceChanges;
@@ -101,6 +102,7 @@ public final class PerformanceStats {
     trackingTracked = 0;
     xpOrbsMerged = 0;
     xpOrbsRemoved = 0;
+    entityChunkCleanupRemoved = 0;
     arrowsRemoved = 0;
     gameRulesChanged = 0;
     viewDistanceChanges = 0;
@@ -123,6 +125,7 @@ public final class PerformanceStats {
       trackingProtectedLiving, trackingProtectedPersistent, trackingTracked,
       Collections.unmodifiableMap(buildTrackingCategorySnapshot()),
       xpOrbsMerged, xpOrbsRemoved,
+      entityChunkCleanupRemoved,
       arrowsRemoved,
       gameRulesChanged, viewDistanceChanges, simulationDistanceChanges,
       simulationDistanceMovementAdjustments,
@@ -159,6 +162,7 @@ public final class PerformanceStats {
       Collections.unmodifiableMap(trackingDelta),
       end.xpOrbsMerged() - start.xpOrbsMerged(),
       end.xpOrbsRemoved() - start.xpOrbsRemoved(),
+      end.entityChunkCleanupRemoved() - start.entityChunkCleanupRemoved(),
       end.arrowsRemoved() - start.arrowsRemoved(),
       end.gameRulesChanged() - start.gameRulesChanged(),
       end.viewDistanceChanges() - start.viewDistanceChanges(),
@@ -203,6 +207,7 @@ public final class PerformanceStats {
     Map<TrackingCategory, Long> trackingExcludedByCategory,
     long xpOrbsMerged,
     long xpOrbsRemoved,
+    long entityChunkCleanupRemoved,
     long arrowsRemoved,
     long gameRulesChanged,
     long viewDistanceChanges,

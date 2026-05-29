@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.withSettings;
+import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnPreset;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -36,6 +37,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.level.ServerLevel;
@@ -44,6 +46,7 @@ import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Skeleton;
 import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.level.Level;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -103,7 +106,11 @@ class CoreEntityManagerTest {
   }
 
   private static Entity mockEntity(EntityType<?> entityType, boolean removed) {
-    ServerLevel level = mock(ServerLevel.class, withSettings().mockMaker(MockMakers.SUBCLASS));
+    return mockEntity(entityType, removed,
+      mock(ServerLevel.class, withSettings().mockMaker(MockMakers.SUBCLASS)));
+  }
+
+  private static Entity mockEntity(EntityType<?> entityType, boolean removed, ServerLevel level) {
     Entity entity;
     if (entityType == EntityType.ZOMBIE) {
       entity = new Zombie(EntityType.ZOMBIE, level);
@@ -126,16 +133,24 @@ class CoreEntityManagerTest {
     return entitySet;
   }
 
+  private static ServerLevel mockOverworldLevel() {
+    ServerLevel level = mock(ServerLevel.class, withSettings().mockMaker(MockMakers.SUBCLASS));
+    org.mockito.Mockito.when(level.dimension()).thenReturn(Level.OVERWORLD);
+    return level;
+  }
+
   @BeforeEach
   void resetExcludedNamespaces() throws Exception {
     setExcludedNamespacesViaReflection(Collections.emptySet());
     CoreEntityManager.reset();
+    PerformanceStats.reset();
   }
 
   @AfterEach
   void cleanupExcludedNamespaces() throws Exception {
     setExcludedNamespacesViaReflection(Collections.emptySet());
     CoreEntityManager.reset();
+    PerformanceStats.reset();
   }
 
   @Test
@@ -160,10 +175,19 @@ class CoreEntityManagerTest {
     "create:contraption",
     "create:seat",
     "create:super_glue",
+    "sable:sub_level",
+    "simpleplanes:plane",
+    "astikorcartsredux:supply_cart",
+    "niftycarts:supply_cart",
+    "shippy-ships:sailboat",
+    "ywzj_vehicle:ah64d",
     "botania:spark",
     "botania:mana_burst",
     "mana-and-artifice:residual_magic",
     "appliedenergistics2:meteor",
+    "drones:buddy_drone",
+    "diligentstalker:drone_stalker",
+    "ccdrones:drone",
     "mekanism:robit",
     "minecolonies:citizen",
     "immersive_aircraft:biplane",
@@ -207,19 +231,30 @@ class CoreEntityManagerTest {
   @Test
   void multipleNamespacesAllExcluded() {
     CoreEntityManager.setExcludedModNamespaces(
-      Set.of("create", "botania", "mana-and-artifice", "minecolonies",
-        "appliedenergistics2", "mekanism", "industrialforegoing",
-        "immersive_aircraft", "immersiveengineering", "fluxnetworks", "guardvillagers",
-        "human_companions", "lootr", "biggerreactors", "modularrouters",
-        "pipez", "pokecube_aio", "refinedstorage", "storagedrawers",
-        "ultimate_car", "viescraft_machines", "weather2", "xnet",
-        "corpse", "easy_npc"));
+      Set.of("create", "sable", "simpleplanes", "astikorcartsredux",
+        "niftycarts", "shippy-ships", "ywzj_vehicle", "botania",
+        "mana-and-artifice", "appliedenergistics2", "drones",
+        "diligentstalker", "ccdrones", "mekanism", "minecolonies",
+        "immersive_aircraft", "industrialforegoing", "immersiveengineering",
+        "fluxnetworks", "guardvillagers", "human_companions", "lootr",
+        "biggerreactors", "modularrouters", "pipez", "pokecube_aio",
+        "refinedstorage", "storagedrawers", "ultimate_car",
+        "viescraft_machines", "weather2", "xnet", "corpse", "easy_npc"));
 
     assertTrue(CoreEntityManager.isExcludedModNamespace("create:contraption"));
+    assertTrue(CoreEntityManager.isExcludedModNamespace("sable:sub_level"));
+    assertTrue(CoreEntityManager.isExcludedModNamespace("simpleplanes:plane"));
+    assertTrue(CoreEntityManager.isExcludedModNamespace("astikorcartsredux:supply_cart"));
+    assertTrue(CoreEntityManager.isExcludedModNamespace("niftycarts:supply_cart"));
+    assertTrue(CoreEntityManager.isExcludedModNamespace("shippy-ships:sailboat"));
+    assertTrue(CoreEntityManager.isExcludedModNamespace("ywzj_vehicle:ah64d"));
     assertTrue(CoreEntityManager.isExcludedModNamespace("botania:mana_burst"));
     assertTrue(CoreEntityManager.isExcludedModNamespace("mana-and-artifice:residual_magic"));
     assertTrue(CoreEntityManager.isExcludedModNamespace("minecolonies:citizen"));
     assertTrue(CoreEntityManager.isExcludedModNamespace("appliedenergistics2:tiny_tnt"));
+    assertTrue(CoreEntityManager.isExcludedModNamespace("drones:buddy_drone"));
+    assertTrue(CoreEntityManager.isExcludedModNamespace("diligentstalker:drone_stalker"));
+    assertTrue(CoreEntityManager.isExcludedModNamespace("ccdrones:drone"));
     assertTrue(CoreEntityManager.isExcludedModNamespace("mekanism:robit"));
     assertTrue(CoreEntityManager.isExcludedModNamespace("immersive_aircraft:biplane"));
     assertTrue(CoreEntityManager.isExcludedModNamespace("industrialforegoing:pink_slime"));
@@ -374,6 +409,84 @@ class CoreEntityManagerTest {
       CoreEntityManager.getNumberOfEntitiesInChunk(levelName, EntityType.SKELETON, blockPos));
     assertEquals(2,
       CoreEntityManager.getTrackedEntityCountInChunk(levelKey, blockPos));
+  }
+
+  @Test
+  void chunkMobCleanupRemovesOldestSurplusTrackedMobs() throws Exception {
+    String levelName = "minecraft:overworld";
+    ServerLevel level = mockOverworldLevel();
+    ResourceLocation levelKey = ResourceLocation.tryParse(levelName);
+    Object chunkKey = newChunkTrackingKey(levelName, 0, 0);
+    Object entityMapKey = newEntityTrackingKey(levelName, "minecraft:zombie");
+
+    Zombie oldest = (Zombie) mockEntity(EntityType.ZOMBIE, false, level);
+    oldest.tickCount = 300;
+    Zombie newer = (Zombie) mockEntity(EntityType.ZOMBIE, false, level);
+    newer.tickCount = 200;
+    Zombie newest = (Zombie) mockEntity(EntityType.ZOMBIE, false, level);
+    newest.tickCount = 100;
+
+    writeStaticField("entityMap", new ConcurrentHashMap<>(Map.of(
+      entityMapKey, newEntitySet(oldest, newer, newest))));
+    writeStaticField("entityMapPerChunk", new ConcurrentHashMap<>(Map.of(
+      chunkKey, newEntitySet(oldest, newer, newest))));
+    writeStaticField("entityMapGlobal", new ConcurrentHashMap<>(Map.of(
+      EntityType.ZOMBIE, newEntitySet(oldest, newer, newest))));
+    writeStaticField("entityChunkKeyMap", new ConcurrentHashMap<>(Map.of(
+      oldest, chunkKey,
+      newer, chunkKey,
+      newest, chunkKey)));
+    Set<Object> entityChunkMap = readStaticField("entityChunkMap");
+    entityChunkMap.clear();
+    entityChunkMap.add(chunkKey);
+
+    CoreEntityManager.ChunkMobCleanupResult result = CoreEntityManager.cleanupChunkMobFarms(2);
+
+    assertEquals(1, result.removedEntities());
+    assertEquals(1, result.affectedChunks());
+    assertEquals(1, result.affectedEntityTypes());
+    assertTrue(oldest.isRemoved());
+    assertFalse(newer.isRemoved());
+    assertFalse(newest.isRemoved());
+    assertEquals(1L,
+      de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats.entityChunkCleanupRemoved);
+  }
+
+  @Test
+  void chunkMobCleanupKeepsProtectedNamedMobs() throws Exception {
+    String levelName = "minecraft:overworld";
+    ServerLevel level = mockOverworldLevel();
+    Object chunkKey = newChunkTrackingKey(levelName, 0, 0);
+    Object entityMapKey = newEntityTrackingKey(levelName, "minecraft:zombie");
+
+    Zombie namedZombie = (Zombie) mockEntity(EntityType.ZOMBIE, false, level);
+    namedZombie.setCustomName(Component.literal("Tagged"));
+    namedZombie.tickCount = 500;
+    Zombie olderNormal = (Zombie) mockEntity(EntityType.ZOMBIE, false, level);
+    olderNormal.tickCount = 300;
+    Zombie newerNormal = (Zombie) mockEntity(EntityType.ZOMBIE, false, level);
+    newerNormal.tickCount = 100;
+
+    writeStaticField("entityMap", new ConcurrentHashMap<>(Map.of(
+      entityMapKey, newEntitySet(namedZombie, olderNormal, newerNormal))));
+    writeStaticField("entityMapPerChunk", new ConcurrentHashMap<>(Map.of(
+      chunkKey, newEntitySet(namedZombie, olderNormal, newerNormal))));
+    writeStaticField("entityMapGlobal", new ConcurrentHashMap<>(Map.of(
+      EntityType.ZOMBIE, newEntitySet(namedZombie, olderNormal, newerNormal))));
+    writeStaticField("entityChunkKeyMap", new ConcurrentHashMap<>(Map.of(
+      namedZombie, chunkKey,
+      olderNormal, chunkKey,
+      newerNormal, chunkKey)));
+    Set<Object> entityChunkMap = readStaticField("entityChunkMap");
+    entityChunkMap.clear();
+    entityChunkMap.add(chunkKey);
+
+    CoreEntityManager.ChunkMobCleanupResult result = CoreEntityManager.cleanupChunkMobFarms(1);
+
+    assertEquals(1, result.removedEntities());
+    assertFalse(namedZombie.isRemoved());
+    assertTrue(olderNormal.isRemoved());
+    assertFalse(newerNormal.isRemoved());
   }
 
   @Test

@@ -46,6 +46,7 @@ public final class GameRulesConfig extends Config {
 
   public static boolean blockExplodesEnabled = true;
   public static boolean elytraMovementCheckEnabled = true;
+  public static boolean fireTickEnabled = true;
   public static boolean insomniaEnabled = true;
   public static boolean mobExplodesEnabled = true;
   public static boolean patrolSpawningEnabled = true;
@@ -84,6 +85,7 @@ public final class GameRulesConfig extends Config {
       blockExplodesEnabled);
     elytraMovementCheckEnabled = parseConfigValue(properties, "elytraMovementCheckEnabled",
       elytraMovementCheckEnabled);
+    fireTickEnabled = parseConfigValue(properties, "fireTickEnabled", fireTickEnabled);
     insomniaEnabled = parseConfigValue(properties, "insomniaEnabled", insomniaEnabled);
     mobExplodesEnabled = parseConfigValue(properties, "mobExplodesEnabled", mobExplodesEnabled);
     patrolSpawningEnabled = parseConfigValue(properties, "patrolSpawningEnabled",
