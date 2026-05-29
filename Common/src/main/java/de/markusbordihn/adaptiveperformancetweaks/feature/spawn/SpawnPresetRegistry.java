@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -86,13 +86,13 @@ public final class SpawnPresetRegistry {
       return SpawnDecision.ALLOW;
     }
 
-    ResourceLocation dimensionKey = ResourceLocation.tryParse(dimensionId);
+    Identifier dimensionKey = Identifier.tryParse(dimensionId);
     return dimensionKey != null ? evaluate(entityType, dimensionKey)
       : evaluate(entityType, dimensionId);
   }
 
   public static SpawnDecision evaluate(EntityType<?> entityType, String dimensionId) {
-    ResourceLocation dimensionKey = ResourceLocation.tryParse(dimensionId);
+    Identifier dimensionKey = Identifier.tryParse(dimensionId);
     if (dimensionKey != null) {
       return evaluate(entityType, dimensionKey);
     }
@@ -114,7 +114,7 @@ public final class SpawnPresetRegistry {
     return SpawnDecision.ALLOW;
   }
 
-  public static SpawnDecision evaluate(EntityType<?> entityType, ResourceLocation dimensionId) {
+  public static SpawnDecision evaluate(EntityType<?> entityType, Identifier dimensionId) {
     ResolvedPreset resolvedPreset = getEffectivePreset(entityType, dimensionId);
     if (resolvedPreset == null) {
       return SpawnDecision.ALLOW;
@@ -144,7 +144,7 @@ public final class SpawnPresetRegistry {
 
   public static int getEffectivePerPlayerMax(EntityType<?> entityType, String dimensionId,
     ServerLoadLevel loadLevel) {
-    ResourceLocation dimensionKey = ResourceLocation.tryParse(dimensionId);
+    Identifier dimensionKey = Identifier.tryParse(dimensionId);
     if (dimensionKey != null) {
       return getEffectivePerPlayerMax(entityType, dimensionKey, loadLevel);
     }
@@ -153,7 +153,7 @@ public final class SpawnPresetRegistry {
       SpawnConfig.spawnLimitationMaxMobsPerPlayer, ResolvedPreset::perPlayerLimits);
   }
 
-  public static int getEffectivePerPlayerMax(EntityType<?> entityType, ResourceLocation dimensionId,
+  public static int getEffectivePerPlayerMax(EntityType<?> entityType, Identifier dimensionId,
     ServerLoadLevel loadLevel) {
     return getEffectiveLimit(entityType, dimensionId, loadLevel,
       SpawnConfig.spawnLimitationMaxMobsPerPlayer, ResolvedPreset::perPlayerLimits);
@@ -171,7 +171,7 @@ public final class SpawnPresetRegistry {
 
   public static int getEffectivePerWorldMax(EntityType<?> entityType, String dimensionId,
     ServerLoadLevel loadLevel) {
-    ResourceLocation dimensionKey = ResourceLocation.tryParse(dimensionId);
+    Identifier dimensionKey = Identifier.tryParse(dimensionId);
     if (dimensionKey != null) {
       return getEffectivePerWorldMax(entityType, dimensionKey, loadLevel);
     }
@@ -180,7 +180,7 @@ public final class SpawnPresetRegistry {
       SpawnConfig.spawnLimitationMaxMobsPerWorld, ResolvedPreset::perWorldLimits);
   }
 
-  public static int getEffectivePerWorldMax(EntityType<?> entityType, ResourceLocation dimensionId,
+  public static int getEffectivePerWorldMax(EntityType<?> entityType, Identifier dimensionId,
     ServerLoadLevel loadLevel) {
     return getEffectiveLimit(entityType, dimensionId, loadLevel,
       SpawnConfig.spawnLimitationMaxMobsPerWorld, ResolvedPreset::perWorldLimits);
@@ -198,7 +198,7 @@ public final class SpawnPresetRegistry {
 
   public static int getEffectivePerServerMax(EntityType<?> entityType, String dimensionId,
     ServerLoadLevel loadLevel) {
-    ResourceLocation dimensionKey = ResourceLocation.tryParse(dimensionId);
+    Identifier dimensionKey = Identifier.tryParse(dimensionId);
     if (dimensionKey != null) {
       return getEffectivePerServerMax(entityType, dimensionKey, loadLevel);
     }
@@ -207,7 +207,7 @@ public final class SpawnPresetRegistry {
       SpawnConfig.spawnLimitationMaxMobsPerServer, ResolvedPreset::perServerLimits);
   }
 
-  public static int getEffectivePerServerMax(EntityType<?> entityType, ResourceLocation dimensionId,
+  public static int getEffectivePerServerMax(EntityType<?> entityType, Identifier dimensionId,
     ServerLoadLevel loadLevel) {
     return getEffectiveLimit(entityType, dimensionId, loadLevel,
       SpawnConfig.spawnLimitationMaxMobsPerServer, ResolvedPreset::perServerLimits);
@@ -225,7 +225,7 @@ public final class SpawnPresetRegistry {
 
   public static int getEffectivePerChunkMax(EntityType<?> entityType, String dimensionId,
     ServerLoadLevel loadLevel) {
-    ResourceLocation dimensionKey = ResourceLocation.tryParse(dimensionId);
+    Identifier dimensionKey = Identifier.tryParse(dimensionId);
     if (dimensionKey != null) {
       return getEffectivePerChunkMax(entityType, dimensionKey, loadLevel);
     }
@@ -234,7 +234,7 @@ public final class SpawnPresetRegistry {
       SpawnConfig.spawnLimitationMaxMobsPerChunk, ResolvedPreset::perChunkLimits);
   }
 
-  public static int getEffectivePerChunkMax(EntityType<?> entityType, ResourceLocation dimensionId,
+  public static int getEffectivePerChunkMax(EntityType<?> entityType, Identifier dimensionId,
     ServerLoadLevel loadLevel) {
     return getEffectiveLimit(entityType, dimensionId, loadLevel,
       SpawnConfig.spawnLimitationMaxMobsPerChunk, ResolvedPreset::perChunkLimits);
@@ -252,7 +252,7 @@ public final class SpawnPresetRegistry {
   }
 
   private static int getEffectiveLimit(
-    EntityType<?> entityType, ResourceLocation dimensionId, ServerLoadLevel loadLevel,
+    EntityType<?> entityType, Identifier dimensionId, ServerLoadLevel loadLevel,
     int globalDefault, java.util.function.Function<ResolvedPreset, int[]> limitExtractor) {
     ResolvedPreset preset = getEffectivePreset(entityType, dimensionId);
     if (preset == null) {
@@ -284,7 +284,7 @@ public final class SpawnPresetRegistry {
   }
 
   private static ResolvedPreset getEffectivePreset(
-    EntityType<?> entityType, ResourceLocation dimensionId) {
+    EntityType<?> entityType, Identifier dimensionId) {
     PresetCacheKey cacheKey = new PresetCacheKey(entityType, dimensionId.toString());
     ResolvedPreset cachedPreset = entityPresetCache.get(cacheKey);
     if (cachedPreset != null) {
@@ -320,7 +320,7 @@ public final class SpawnPresetRegistry {
     return null;
   }
 
-  private static ResolvedPreset findPreset(EntityType<?> entityType, ResourceLocation dimensionId) {
+  private static ResolvedPreset findPreset(EntityType<?> entityType, Identifier dimensionId) {
     List<ResolvedPreset> candidatePresets = presetsByEntityType.get(entityType);
     if (candidatePresets == null || candidatePresets.isEmpty()) {
       return null;
@@ -352,7 +352,7 @@ public final class SpawnPresetRegistry {
     return true;
   }
 
-  private static boolean appliesToDimension(ResolvedPreset preset, ResourceLocation dimensionId) {
+  private static boolean appliesToDimension(ResolvedPreset preset, Identifier dimensionId) {
     if (preset.ignoredDimensions().contains(dimensionId)) {
       return false;
     }
@@ -368,7 +368,7 @@ public final class SpawnPresetRegistry {
     Map<String, Set<EntityType<?>>> entityTypesByNamespace = new HashMap<>();
     Set<EntityType<?>> allEntityTypes = new LinkedHashSet<>();
     for (EntityType<?> entityType : BuiltInRegistries.ENTITY_TYPE) {
-      ResourceLocation entityKey = BuiltInRegistries.ENTITY_TYPE.getKey(entityType);
+      Identifier entityKey = BuiltInRegistries.ENTITY_TYPE.getKey(entityType);
       if (entityKey == null) {
         continue;
       }
@@ -437,14 +437,14 @@ public final class SpawnPresetRegistry {
     return limits;
   }
 
-  private static Set<ResourceLocation> resolveDimensionIds(List<String> dimensionIds) {
+  private static Set<Identifier> resolveDimensionIds(List<String> dimensionIds) {
     if (dimensionIds == null || dimensionIds.isEmpty()) {
       return Collections.emptySet();
     }
 
-    LinkedHashSet<ResourceLocation> resolvedDimensions = new LinkedHashSet<>();
+    LinkedHashSet<Identifier> resolvedDimensions = new LinkedHashSet<>();
     for (String dimensionId : dimensionIds) {
-      ResourceLocation dimensionKey = ResourceLocation.tryParse(dimensionId);
+      Identifier dimensionKey = Identifier.tryParse(dimensionId);
       if (dimensionKey != null) {
         resolvedDimensions.add(dimensionKey);
       }
@@ -491,12 +491,12 @@ public final class SpawnPresetRegistry {
       return null;
     }
 
-    ResourceLocation entityKey = ResourceLocation.tryParse(entityId);
+    Identifier entityKey = Identifier.tryParse(entityId);
     if (entityKey == null || !BuiltInRegistries.ENTITY_TYPE.containsKey(entityKey)) {
       return null;
     }
 
-    return BuiltInRegistries.ENTITY_TYPE.get(entityKey);
+    return BuiltInRegistries.ENTITY_TYPE.get(entityKey).map(ref -> ref.value()).orElse(null);
   }
 
   private record PresetCacheKey(
@@ -516,9 +516,9 @@ public final class SpawnPresetRegistry {
     Set<EntityType<?>> allowTypes,
     Set<EntityType<?>> denyTypes,
     Set<EntityType<?>> coveredTypes,
-    Set<ResourceLocation> allowedDimensions,
-    Set<ResourceLocation> deniedDimensions,
-    Set<ResourceLocation> ignoredDimensions,
+    Set<Identifier> allowedDimensions,
+    Set<Identifier> deniedDimensions,
+    Set<Identifier> ignoredDimensions,
     int[] perPlayerLimits,
     int[] perWorldLimits,
     int[] perServerLimits,

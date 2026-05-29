@@ -27,9 +27,10 @@ import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.BenchmarkMan
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenarioId;
 import java.nio.file.Path;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
@@ -43,7 +44,7 @@ public class BenchmarkCommand extends CustomCommand {
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
     return Commands.literal("benchmark")
-      .requires(source -> source.hasPermission(2))
+      .requires(cs -> cs.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
       .executes(command)
       .then(Commands.literal("start")
         .executes(ctx -> startBenchmark(ctx, DEFAULT_PHASE_SECONDS, true))
@@ -120,10 +121,8 @@ public class BenchmarkCommand extends CustomCommand {
       .append(Component.literal(abbreviatePath(resultPath))
         .withStyle(ChatFormatting.AQUA)
         .withStyle(style -> style
-          .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
-            "/aptweaks benchmark openresult"))
-          .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-            Component.literal(resultPath.toString())))));
+          .withClickEvent(new ClickEvent.RunCommand("/aptweaks benchmark openresult"))
+          .withHoverEvent(new HoverEvent.ShowText(Component.literal(resultPath.toString())))));
   }
 
   private static int openLastResult(CommandContext<CommandSourceStack> context) {

@@ -23,7 +23,7 @@ import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnManager;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.level.LevelAccessor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -35,9 +35,9 @@ public abstract class MobMixin {
 
   @Inject(method = "checkSpawnRules", at = @At("HEAD"), cancellable = true)
   private void aptweaks_checkSpawnRules(
-    LevelAccessor level, MobSpawnType spawnType, CallbackInfoReturnable<Boolean> cir) {
+    LevelAccessor level, EntitySpawnReason spawnType, CallbackInfoReturnable<Boolean> cir) {
     if (FeatureToggle.SPAWN.isEnabled()
-      && spawnType != MobSpawnType.NATURAL
+      && spawnType != EntitySpawnReason.NATURAL
       && level instanceof ServerLevel serverLevel) {
       Mob thisMob = (Mob) (Object) this;
       if (SpawnManager.shouldDenyMobSpawnAt(

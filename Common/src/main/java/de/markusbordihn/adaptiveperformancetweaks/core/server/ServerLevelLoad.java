@@ -117,7 +117,7 @@ public final class ServerLevelLoad {
         String indicator = ServerLoad.getLoadChangeIndicator(lastTickTime, currentAvgTickTime);
         log.debug("{} Level load for {} changed from {} (avg. {}ms) to {} (avg. {}ms)",
           indicator,
-          serverLevel.dimension().location(),
+          serverLevel.dimension().identifier(),
           lastLoadLevel, String.format("%.1f", lastTickTime),
           loadLevel, String.format("%.1f", currentAvgTickTime));
       }
@@ -156,7 +156,7 @@ public final class ServerLevelLoad {
       }
 
       snapshots.add(new LevelLoadSnapshot(
-        serverLevel.dimension().location().toString(),
+        serverLevel.dimension().identifier().toString(),
         ServerLoadLevel.fromAverageTickTime(averageTickTime),
         averageTickTime));
     }

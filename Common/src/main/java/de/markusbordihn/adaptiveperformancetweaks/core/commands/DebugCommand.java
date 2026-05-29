@@ -27,6 +27,7 @@ import de.markusbordihn.adaptiveperformancetweaks.core.debug.DebugModule;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.network.chat.Component;
 
 public class DebugCommand extends CustomCommand {
@@ -37,7 +38,7 @@ public class DebugCommand extends CustomCommand {
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
     var debugNode =
       Commands.literal("debug")
-        .requires(source -> source.hasPermission(2))
+        .requires(cs -> cs.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
         .executes(DebugCommand::showAllStatus);
 
     for (DebugModule module : DebugModule.values()) {

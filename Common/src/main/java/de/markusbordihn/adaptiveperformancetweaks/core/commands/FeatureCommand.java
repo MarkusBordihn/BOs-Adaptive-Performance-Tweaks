@@ -27,6 +27,7 @@ import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.server.permissions.Permissions;
 
 public class FeatureCommand extends CustomCommand {
 
@@ -34,7 +35,7 @@ public class FeatureCommand extends CustomCommand {
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
     return Commands.literal("feature")
-      .requires(source -> source.hasPermission(2))
+      .requires(cs -> cs.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
       .then(
         Commands.argument("id", StringArgumentType.word())
           .suggests(

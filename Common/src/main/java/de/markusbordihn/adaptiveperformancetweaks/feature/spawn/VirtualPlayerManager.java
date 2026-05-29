@@ -70,6 +70,6 @@ public final class VirtualPlayerManager {
   }
 
   private static String dimensionId(ServerLevel level) {
-    return level.dimension().location().toString();
+    return level.dimension().identifier().toString();
   }
 }

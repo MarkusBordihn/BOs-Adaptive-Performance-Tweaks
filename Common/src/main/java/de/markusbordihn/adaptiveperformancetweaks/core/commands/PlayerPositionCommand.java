@@ -26,6 +26,7 @@ import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPositionMana
 import java.util.Map;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.server.permissions.Permissions;
 
 public class PlayerPositionCommand extends CustomCommand {
 
@@ -33,7 +34,7 @@ public class PlayerPositionCommand extends CustomCommand {
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
     return Commands.literal("playerPositions")
-      .requires(source -> source.hasPermission(2))
+      .requires(cs -> cs.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
       .executes(command);
   }
 

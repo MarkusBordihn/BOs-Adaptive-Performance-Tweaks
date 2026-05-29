@@ -49,11 +49,11 @@ public class PlayerPosition {
     this(
       player.getName().getString(),
       player.getUUID(),
-      player.level().dimension().location().toString(),
+      player.level().dimension().identifier().toString(),
       player.blockPosition().getX(),
       player.blockPosition().getY(),
       player.blockPosition().getZ(),
-      getViewAreaDistance(player, player.level().dimension().location().toString(),
+      getViewAreaDistance(player, player.level().dimension().identifier().toString(),
         viewDistance, simulationDistance));
     this.lastPosX = player.getX();
     this.lastPosY = player.getY();

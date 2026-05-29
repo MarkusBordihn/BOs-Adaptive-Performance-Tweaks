@@ -27,7 +27,7 @@ import de.markusbordihn.adaptiveperformancetweaks.core.debug.DebugManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureRegistry;
 import java.util.Optional;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.bus.BusGroup;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -44,7 +44,7 @@ public class AdaptivePerformanceTweaks {
 
   @SuppressWarnings("java:S2440")
   public AdaptivePerformanceTweaks(FMLJavaModLoadingContext context) {
-    final IEventBus modEventBus = context.getModEventBus();
+    final BusGroup modBusGroup = context.getModBusGroup();
     log.info("Initializing {} (Forge) ...", Constants.MOD_NAME);
 
     log.debug("{} Debug Manager ...", Constants.LOG_REGISTER_PREFIX);
@@ -75,7 +75,7 @@ public class AdaptivePerformanceTweaks {
     FeatureRegistry.registerCommon();
 
     if (FMLEnvironment.dist == Dist.CLIENT) {
-      new AdaptivePerformanceTweaksClient(modEventBus);
+      new AdaptivePerformanceTweaksClient(modBusGroup);
     }
   }
 }

@@ -1,9 +1,7 @@
 plugins {
   id 'idea'
-  id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.8"
+  id "org.jetbrains.gradle.plugin.idea-ext" version "1.3"
 }
-
-apply plugin: 'java'
 
 def ghostRefScript = file(findProperty('ghostRefIndex') ?: '')
 if (ghostRefScript.exists()) apply from: ghostRefScript
@@ -26,8 +24,15 @@ subprojects {
     }
   }
 
+  dependencies {
+    configurations.configureEach {
+      resolutionStrategy.force 'org.ow2.asm:asm:9.8'
+      resolutionStrategy.force 'org.ow2.asm:asm-commons:9.8'
+    }
+  }
+
   tasks.register('wrapper', Wrapper) {
-    gradleVersion = '8.14.5'
+    gradleVersion = '9.5.1'
     distributionType = Wrapper.DistributionType.BIN
   }
 
@@ -44,16 +49,11 @@ subprojects {
   }
 
   tasks.register("prepareKotlinBuildScriptModel") {}
-}
 
-tasks.register('allGameTests') {
-  group = 'verification'
-  description = 'Runs Fabric, Forge, and NeoForge game tests.'
-  dependsOn ':Fabric:runGameTest', ':Forge:runGameTestServer', ':NeoForge:runGameTestServer'
-}
-
-tasks.register('fullCheck') {
-  group = 'verification'
-  description = 'Runs the standard checks and Fabric, Forge, and NeoForge game tests.'
-  dependsOn 'check', 'allGameTests'
+  idea {
+    module {
+      downloadSources = true
+      downloadJavadoc = true
+    }
+  }
 }

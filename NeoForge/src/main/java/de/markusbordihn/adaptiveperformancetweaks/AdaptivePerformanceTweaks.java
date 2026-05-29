@@ -19,13 +19,11 @@
 
 package de.markusbordihn.adaptiveperformancetweaks;
 
-import cpw.mods.modlauncher.Launcher;
-import cpw.mods.modlauncher.api.IEnvironment;
+
 import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModCompat;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.Config;
 import de.markusbordihn.adaptiveperformancetweaks.core.debug.DebugManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureRegistry;
-import java.util.Optional;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
@@ -45,18 +43,14 @@ public class AdaptivePerformanceTweaks {
     log.info("Initializing {} (NeoForge) ...", Constants.MOD_NAME);
 
     log.debug("{} Debug Manager ...", Constants.LOG_REGISTER_PREFIX);
-    Optional<String> version =
-      Launcher.INSTANCE.environment().getProperty(IEnvironment.Keys.VERSION.get());
-    if (version.isPresent() && "MOD_DEV".equals(version.get())) {
-      DebugManager.setDevelopmentEnvironment(true);
-    }
+    DebugManager.setDevelopmentEnvironment(!FMLEnvironment.isProduction());
     DebugManager.checkForDebugLogging(Constants.LOG_NAME);
 
     log.debug("{} Constants ...", Constants.LOG_REGISTER_PREFIX);
     Constants.GAME_DIR = FMLPaths.GAMEDIR.get();
     Constants.CONFIG_DIR = FMLPaths.CONFIGDIR.get();
 
-    boolean isDedicatedServer = FMLEnvironment.dist == Dist.DEDICATED_SERVER;
+    boolean isDedicatedServer = FMLEnvironment.getDist() == Dist.DEDICATED_SERVER;
 
     log.debug("{} Mod Compat ...", Constants.LOG_REGISTER_PREFIX);
     ModCompat.setModLoadedChecker(
@@ -71,7 +65,7 @@ public class AdaptivePerformanceTweaks {
     log.debug("{} Feature Registry ...", Constants.LOG_REGISTER_PREFIX);
     FeatureRegistry.registerCommon();
 
-    if (FMLEnvironment.dist == Dist.CLIENT) {
+    if (FMLEnvironment.getDist() == Dist.CLIENT) {
       new AdaptivePerformanceTweaksClient(modEventBus);
     }
   }

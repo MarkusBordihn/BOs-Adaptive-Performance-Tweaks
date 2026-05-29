@@ -27,13 +27,14 @@ import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.server.permissions.Permissions;
 
 public class ReloadCommand extends CustomCommand {
 
   private static final ReloadCommand command = new ReloadCommand();
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
-    return Commands.literal("reload").requires(source -> source.hasPermission(2)).executes(command);
+    return Commands.literal("reload").requires(cs -> cs.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)).executes(command);
   }
 
   @Override

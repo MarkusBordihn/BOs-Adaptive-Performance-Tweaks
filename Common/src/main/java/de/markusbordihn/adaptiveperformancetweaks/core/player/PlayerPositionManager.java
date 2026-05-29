@@ -154,7 +154,7 @@ public final class PlayerPositionManager {
       playerPositionMap.computeIfAbsent(
         player.getStringUUID(),
         key -> new PlayerPosition(player, viewDistance, simulationDistance));
-    String levelName = player.level().dimension().location().toString();
+    String levelName = player.level().dimension().identifier().toString();
     if (movementUpdate) {
       playerPosition.updateMovement(player, levelName, currentTick, playerMovementWindowSamples,
         playerMovementUpdateTick);

@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnPreset;
 import java.lang.reflect.Constructor;
@@ -36,14 +37,16 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.Bootstrap;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.waypoints.ServerWaypointManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.monster.Skeleton;
-import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.skeleton.Skeleton;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -103,7 +106,11 @@ class CoreEntityManagerTest {
   }
 
   private static Entity mockEntity(EntityType<?> entityType, boolean removed) {
+    MinecraftServer server = mock(MinecraftServer.class, withSettings().mockMaker(MockMakers.SUBCLASS));
     ServerLevel level = mock(ServerLevel.class, withSettings().mockMaker(MockMakers.SUBCLASS));
+    when(level.getServer()).thenReturn(server);
+    when(level.getWaypointManager()).thenReturn(
+      mock(ServerWaypointManager.class, withSettings().mockMaker(MockMakers.SUBCLASS)));
     Entity entity;
     if (entityType == EntityType.ZOMBIE) {
       entity = new Zombie(EntityType.ZOMBIE, level);
@@ -253,7 +260,10 @@ class CoreEntityManagerTest {
       Set.of());
     CoreEntityManager.reloadTrackingRules(List.of(preset));
 
-    Zombie zombie = new Zombie(EntityType.ZOMBIE, mock(ServerLevel.class));
+    Zombie zombie = new Zombie(EntityType.ZOMBIE, mock(ServerLevel.class, withSettings().mockMaker(MockMakers.SUBCLASS).defaultAnswer(inv -> {
+      if (inv.getMethod().getName().equals("getServer")) return mock(MinecraftServer.class, withSettings().mockMaker(MockMakers.SUBCLASS));
+      return null;
+    })));
     assertFalse(CoreEntityManager.isRelevantEntity(zombie, "testnpc:guard"));
     assertFalse(CoreEntityManager.isRelevantEntity(zombie, "testnpc:guard"),
       "Second call should use the cached namespace decision");
@@ -275,7 +285,10 @@ class CoreEntityManagerTest {
       Set.of());
     CoreEntityManager.reloadTrackingRules(List.of(preset));
 
-    Zombie zombie = new Zombie(EntityType.ZOMBIE, mock(ServerLevel.class));
+    Zombie zombie = new Zombie(EntityType.ZOMBIE, mock(ServerLevel.class, withSettings().mockMaker(MockMakers.SUBCLASS).defaultAnswer(inv -> {
+      if (inv.getMethod().getName().equals("getServer")) return mock(MinecraftServer.class, withSettings().mockMaker(MockMakers.SUBCLASS));
+      return null;
+    })));
     assertFalse(CoreEntityManager.isRelevantEntity(zombie, "aeronautics:airship_assembler"));
   }
 
@@ -352,7 +365,7 @@ class CoreEntityManagerTest {
   @Test
   void chunkEntityCountingMatchesTypedAndStringLookup() throws Exception {
     String levelName = "minecraft:overworld";
-    ResourceLocation levelKey = ResourceLocation.tryParse(levelName);
+    Identifier levelKey = Identifier.tryParse(levelName);
     BlockPos blockPos = BlockPos.ZERO;
     Object chunkKey = newChunkTrackingKey(levelName, 0, 0);
 
@@ -379,7 +392,7 @@ class CoreEntityManagerTest {
   @Test
   void globalAndLevelEntityCountingMatchesTypedAndStringLookup() throws Exception {
     String levelName = "minecraft:overworld";
-    ResourceLocation levelKey = ResourceLocation.tryParse(levelName);
+    Identifier levelKey = Identifier.tryParse(levelName);
     String entityName = "minecraft:zombie";
     Object entityMapKey = newEntityTrackingKey(levelName, entityName);
 

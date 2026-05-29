@@ -62,7 +62,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
@@ -646,10 +646,8 @@ public final class BenchmarkManager {
           .append(Component.literal(displayPath)
             .withStyle(ChatFormatting.AQUA)
             .withStyle(style -> style
-              .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
-                "/aptweaks benchmark openresult"))
-              .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                Component.literal(lastResultPath.toString())))));
+              .withClickEvent(new ClickEvent.RunCommand("/aptweaks benchmark openresult"))
+              .withHoverEvent(new HoverEvent.ShowText(Component.literal(lastResultPath.toString())))));
         sendMessage(player, fileLink);
       }
     }
@@ -711,7 +709,7 @@ public final class BenchmarkManager {
   }
 
   private static BenchmarkScenarioContext currentScenarioContext(BenchmarkScenario scenario) {
-    ServerLevel level = benchmarkPlayer.serverLevel();
+    ServerLevel level = (ServerLevel) benchmarkPlayer.level();
     Vec3 baseCenter = playerStartPos != null ? playerStartPos : benchmarkPlayer.position();
     Vec3 offset = scenario.centerOffset();
     Vec3 center = baseCenter.add(offset.x, offset.y, offset.z);
@@ -775,7 +773,11 @@ public final class BenchmarkManager {
 
     try {
       if (allowKill && entity instanceof LivingEntity livingEntity) {
-        livingEntity.kill();
+        if (livingEntity.level() instanceof ServerLevel serverLevel) {
+          livingEntity.kill(serverLevel);
+        } else {
+          livingEntity.discard();
+        }
       } else if (entity instanceof Projectile projectile) {
         projectile.discard();
       } else {
@@ -1272,7 +1274,7 @@ public final class BenchmarkManager {
       .append(Component.literal(command)
         .withStyle(ChatFormatting.GOLD)
         .withStyle(style -> style.withClickEvent(
-          new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command)))));
+          new ClickEvent.SuggestCommand(command)))));
   }
 
   private static void sendStageMessage(

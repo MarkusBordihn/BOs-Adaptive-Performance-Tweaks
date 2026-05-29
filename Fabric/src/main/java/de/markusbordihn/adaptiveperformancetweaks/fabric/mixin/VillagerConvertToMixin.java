@@ -21,6 +21,8 @@ package de.markusbordihn.adaptiveperformancetweaks.fabric.mixin;
 
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnManager;
+import net.minecraft.world.entity.ConversionParams;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,7 +35,8 @@ public abstract class VillagerConvertToMixin {
 
   @Inject(method = "convertTo", at = @At("HEAD"))
   private <T extends Mob> void aptweaks_convertTo(
-    EntityType<T> type, boolean keepEquipment, CallbackInfoReturnable<T> cir) {
+      EntityType<T> type, ConversionParams params, EntitySpawnReason spawnReason,
+      ConversionParams.AfterConversion<T> afterConversion, CallbackInfoReturnable<T> cir) {
     if (FeatureToggle.SPAWN.isEnabled()) {
       SpawnManager.handleEntityConversion((Mob) (Object) this);
     }

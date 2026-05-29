@@ -40,15 +40,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.FileToIdConverter;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.profiling.InactiveProfiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class SpawnPresetLoader extends SimpleJsonResourceReloadListener {
+public class SpawnPresetLoader extends SimpleJsonResourceReloadListener<JsonElement> {
 
   public static final String ALLOW_FIELD = "allow";
   public static final String ALLOW_LIST_FIELD = "allow_list";
@@ -84,7 +86,7 @@ public class SpawnPresetLoader extends SimpleJsonResourceReloadListener {
   private static final Gson GSON = new GsonBuilder().create();
 
   public SpawnPresetLoader() {
-    super(GSON, "aptweaks/spawn_presets");
+    super(ExtraCodecs.JSON, FileToIdConverter.json("aptweaks/spawn_presets"));
   }
 
   private static void scanConfigDirectory(List<SpawnPreset> output) {
@@ -318,13 +320,13 @@ public class SpawnPresetLoader extends SimpleJsonResourceReloadListener {
 
   @Override
   protected void apply(
-    Map<ResourceLocation, JsonElement> jsons,
+    Map<Identifier, JsonElement> jsons,
     ResourceManager resourceManager,
     ProfilerFiller profiler) {
     List<SpawnPreset> presets = new ArrayList<>();
     int missingModCount = 0;
 
-    for (Map.Entry<ResourceLocation, JsonElement> entry : jsons.entrySet()) {
+    for (Map.Entry<Identifier, JsonElement> entry : jsons.entrySet()) {
       ParseResult parseResult = parseAndAdd(entry.getKey().toString(), entry.getValue(), presets);
       if (parseResult == ParseResult.SKIPPED_MISSING_MOD) {
         missingModCount++;

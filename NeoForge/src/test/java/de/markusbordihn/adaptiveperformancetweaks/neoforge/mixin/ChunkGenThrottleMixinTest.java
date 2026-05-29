@@ -32,7 +32,7 @@ class ChunkGenThrottleMixinTest {
   @Test
   void targetsServerChunkCacheDistanceManagerUpdates() throws IOException {
     String source = Files.readString(Path.of(
-      "src/main/java/de/markusbordihn/adaptiveperformancetweaks/forge/mixin/ChunkGenThrottleMixin.java"));
+      "src/main/java/de/markusbordihn/adaptiveperformancetweaks/neoforge/mixin/ChunkGenThrottleMixin.java"));
     assertTrue(source.contains("@Mixin(ServerChunkCache.class)"));
     assertTrue(source.contains("method = \"runDistanceManagerUpdates\""));
     assertTrue(source.contains("getThrottleDivisor(this.level)"));

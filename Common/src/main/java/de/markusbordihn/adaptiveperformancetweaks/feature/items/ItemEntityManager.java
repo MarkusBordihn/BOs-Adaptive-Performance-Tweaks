@@ -128,7 +128,7 @@ public final class ItemEntityManager {
   }
 
   public static boolean handleItemEntityJoinLevel(ItemEntity itemEntity, Level level) {
-    if (level.isClientSide || itemEntity.isRemoved()) {
+    if (level.isClientSide() || itemEntity.isRemoved()) {
       return false;
     }
 
@@ -148,7 +148,7 @@ public final class ItemEntityManager {
       return false;
     }
 
-    String levelName = level.dimension().location().toString();
+    String levelName = level.dimension().identifier().toString();
     String itemTypeKey = '[' + levelName + ']' + itemName;
 
     itemTypeEntityMap.computeIfAbsent(
@@ -180,10 +180,10 @@ public final class ItemEntityManager {
   }
 
   public static void handleItemEntityLeaveLevel(ItemEntity itemEntity, Level level) {
-    if (level.isClientSide) {
+    if (level.isClientSide()) {
       return;
     }
-    String levelName = level.dimension().location().toString();
+    String levelName = level.dimension().identifier().toString();
 
     Set<ItemEntity> itemWorldEntities = itemWorldEntityMap.get(levelName);
     if (itemWorldEntities != null) {

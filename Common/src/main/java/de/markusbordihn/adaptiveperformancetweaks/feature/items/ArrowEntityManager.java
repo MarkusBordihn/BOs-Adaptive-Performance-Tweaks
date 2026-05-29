@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Entity.RemovalReason;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.level.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -114,7 +114,7 @@ public final class ArrowEntityManager {
   }
 
   public static void handleArrowJoinLevel(AbstractArrow arrowEntity, Level level) {
-    if (level.isClientSide || arrowEntity.isRemoved()) {
+    if (level.isClientSide() || arrowEntity.isRemoved()) {
       return;
     }
 
@@ -127,18 +127,18 @@ public final class ArrowEntityManager {
       return;
     }
 
-    String levelName = level.dimension().location().toString();
+    String levelName = level.dimension().identifier().toString();
     arrowWorldEntityMap.computeIfAbsent(
       levelName, ignored -> new ConcurrentSkipListSet<>(Comparator.comparingInt(Entity::getId)));
     arrowWorldEntityMap.get(levelName).add(arrowEntity);
   }
 
   public static void handleArrowLeaveLevel(AbstractArrow arrowEntity, Level level) {
-    if (level.isClientSide) {
+    if (level.isClientSide()) {
       return;
     }
 
-    String levelName = level.dimension().location().toString();
+    String levelName = level.dimension().identifier().toString();
     Set<AbstractArrow> worldArrows = arrowWorldEntityMap.get(levelName);
     if (worldArrows != null) {
       worldArrows.remove(arrowEntity);

@@ -32,7 +32,7 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 public abstract class PlayerDamageMixin {
 
   @ModifyArgs(
-    method = "actuallyHurt",
+    method = "actuallyHurt(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)V",
     at =
     @At(
       value = "INVOKE",

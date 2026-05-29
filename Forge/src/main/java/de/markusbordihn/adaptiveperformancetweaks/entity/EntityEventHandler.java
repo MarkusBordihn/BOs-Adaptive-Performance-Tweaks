@@ -23,8 +23,8 @@ import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.Priority;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 @SuppressWarnings("unused")
@@ -34,22 +34,17 @@ public final class EntityEventHandler {
   private EntityEventHandler() {
   }
 
-  @SubscribeEvent(priority = EventPriority.HIGH)
-  public static void handleEntityJoinLevel(EntityJoinLevelEvent event) {
-    if (event.isCanceled()) {
-      return;
-    }
-    if (CommonEntityEventHandler.handleEntityJoinLevel(event.getEntity(), event.getLevel())) {
-      event.setCanceled(true);
-    }
+  @SubscribeEvent(priority = Priority.HIGH)
+  public static boolean handleEntityJoinLevel(EntityJoinLevelEvent event) {
+    return CommonEntityEventHandler.handleEntityJoinLevel(event.getEntity(), event.getLevel());
   }
 
-  @SubscribeEvent(priority = EventPriority.HIGH)
+  @SubscribeEvent(priority = Priority.HIGH)
   public static void handleEntityLeaveLevel(EntityLeaveLevelEvent event) {
     CommonEntityEventHandler.handleEntityLeaveLevel(event.getEntity(), event.getLevel());
   }
 
-  @SubscribeEvent(priority = EventPriority.HIGH)
+  @SubscribeEvent(priority = Priority.HIGH)
   public static void handleLivingDeath(LivingDeathEvent event) {
     CommonEntityEventHandler.handleLivingDeath(event.getEntity());
   }

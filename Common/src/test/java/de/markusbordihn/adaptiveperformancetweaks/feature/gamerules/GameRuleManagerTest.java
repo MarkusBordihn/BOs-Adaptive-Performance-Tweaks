@@ -21,6 +21,8 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.gamerules;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
@@ -30,7 +32,9 @@ import java.lang.reflect.Method;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRule;
+import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.level.storage.WorldData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockMakers;
@@ -94,9 +98,15 @@ class GameRuleManagerTest {
     MinecraftServer server = mock(MinecraftServer.class,
       withSettings().mockMaker(MockMakers.SUBCLASS));
     GameRules rules = mock(GameRules.class);
-    when(server.getGameRules()).thenReturn(rules);
-    when(rules.getInt(GameRules.RULE_RANDOMTICKING)).thenReturn(5);
-    when(rules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING)).thenReturn(19);
+    doAnswer(inv -> {
+      Object key = inv.getArgument(0);
+      if (key == GameRules.RANDOM_TICK_SPEED) return 5;
+      if (key == GameRules.MAX_ENTITY_CRAMMING) return 19;
+      return false;
+    }).when(rules).get(any(GameRule.class));
+    WorldData worldData = mock(WorldData.class, withSettings().mockMaker(MockMakers.SUBCLASS));
+    when(server.getWorldData()).thenReturn(worldData);
+    when(worldData.getGameRules()).thenReturn(rules);
 
     try {
       FeatureToggle.GAMERULES.setEnabled(false);

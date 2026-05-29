@@ -98,11 +98,11 @@ public final class ExperienceOrbManager {
   }
 
   public static boolean handleExperienceOrbJoinLevel(ExperienceOrb orbEntity, Level level) {
-    if (level.isClientSide) {
+    if (level.isClientSide()) {
       return false;
     }
 
-    String levelName = level.dimension().location().toString();
+    String levelName = level.dimension().identifier().toString();
 
     if (ExperienceOrbsConfig.optimizeExperienceOrbs
       && ((ExperienceOrbAccessor) orbEntity).getValue() <= 0) {
@@ -148,7 +148,7 @@ public final class ExperienceOrbManager {
             double newY = Math.max(existing.getY(), orbEntity.getY());
             existing.setPos(orbEntity.getX(), newY, orbEntity.getZ());
           }
-          orbEntity.moveTo(existing.getX(), existing.getY(), existing.getZ());
+          orbEntity.setPos(existing.getX(), existing.getY(), existing.getZ());
           orbEntity.remove(RemovalReason.DISCARDED);
           PerformanceStats.xpOrbsMerged++;
           return true;
@@ -162,11 +162,11 @@ public final class ExperienceOrbManager {
   }
 
   public static void handleExperienceOrbLeaveLevel(ExperienceOrb orbEntity, Level level) {
-    if (level.isClientSide) {
+    if (level.isClientSide()) {
       return;
     }
 
-    String levelName = level.dimension().location().toString();
+    String levelName = level.dimension().identifier().toString();
     Set<ExperienceOrb> worldOrbs = experienceOrbEntityMap.get(levelName);
     if (worldOrbs != null) {
       worldOrbs.remove(orbEntity);

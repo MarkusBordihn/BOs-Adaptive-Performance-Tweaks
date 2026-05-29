@@ -27,7 +27,7 @@ import de.markusbordihn.adaptiveperformancetweaks.feature.items.ItemEntityManage
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.level.Level;
 
 public final class CommonEntityEventHandler {

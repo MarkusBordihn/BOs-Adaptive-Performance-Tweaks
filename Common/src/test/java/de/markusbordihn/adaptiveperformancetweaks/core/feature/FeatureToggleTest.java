@@ -226,7 +226,7 @@ class FeatureToggleTest {
     try {
       FeatureToggle.GAMERULES.setEnabled(true);
       writeStaticField(GameRuleManager.class, "gameRules",
-        mock(net.minecraft.world.level.GameRules.class));
+        mock(net.minecraft.world.level.gamerules.GameRules.class));
       writeStaticField(GameRuleManager.class, "randomTickWarmupUntilTime",
         System.currentTimeMillis() + 1_000L);
 

@@ -22,16 +22,14 @@ package de.markusbordihn.adaptiveperformancetweaks.forge.mixin;
 import de.markusbordihn.adaptiveperformancetweaks.accessor.ExperienceOrbAccessor;
 import net.minecraft.world.entity.ExperienceOrb;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(ExperienceOrb.class)
-public interface ExperienceOrbAccessorMixin extends ExperienceOrbAccessor {
+public abstract class ExperienceOrbAccessorMixin implements ExperienceOrbAccessor {
 
-  @Override
-  @Accessor("value")
-  int getValue();
+  @Shadow
+  public abstract int getValue();
 
-  @Override
-  @Accessor("value")
-  void setValue(int value);
+  @Shadow
+  public abstract void setValue(int value);
 }

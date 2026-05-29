@@ -45,7 +45,7 @@ final class BenchmarkResultWriter {
     }
 
     try {
-      String mcVersion = SharedConstants.getCurrentVersion().getName();
+      String mcVersion = SharedConstants.getCurrentVersion().name();
       String loader = BenchmarkManager.detectLoader();
       String modVersion = BenchmarkManager.resolveModVersion();
       String timestamp = TIMESTAMP_FORMATTER.format(

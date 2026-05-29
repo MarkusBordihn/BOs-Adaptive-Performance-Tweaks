@@ -38,7 +38,7 @@ import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 @SuppressWarnings("unused")
@@ -69,24 +69,20 @@ public final class ServerEventHandler {
   }
 
   @SubscribeEvent
-  public static void handleServerTick(TickEvent.ServerTickEvent event) {
-    if (event.phase == TickEvent.Phase.END) {
-      CommonServerEventHandler.handleServerTick();
+  public static void handleServerTick(TickEvent.ServerTickEvent.Post event) {
+    CommonServerEventHandler.handleServerTick();
+  }
+
+  @SubscribeEvent
+  public static void handleLevelTickStart(TickEvent.LevelTickEvent.Pre event) {
+    if (event.level() instanceof ServerLevel serverLevel) {
+      CommonServerEventHandler.handleServerLevelTickStart(serverLevel);
     }
   }
 
   @SubscribeEvent
-  public static void handleLevelTick(TickEvent.LevelTickEvent event) {
-    if (!(event.level instanceof ServerLevel serverLevel)) {
-      return;
-    }
-
-    if (event.phase == TickEvent.Phase.START) {
-      CommonServerEventHandler.handleServerLevelTickStart(serverLevel);
-      return;
-    }
-
-    if (event.phase == TickEvent.Phase.END) {
+  public static void handleLevelTickEnd(TickEvent.LevelTickEvent.Post event) {
+    if (event.level() instanceof ServerLevel serverLevel) {
       CommonServerEventHandler.handleServerLevelTickEnd(serverLevel);
     }
   }
@@ -101,7 +97,7 @@ public final class ServerEventHandler {
   @SubscribeEvent
   public static void handleFinalizeSpawn(MobSpawnEvent.FinalizeSpawn event) {
     if (event.getLevel() instanceof ServerLevel serverLevel
-      && SpawnManager.shouldDenyMobSpawn(event.getEntity(), serverLevel, event.getSpawnType())) {
+      && SpawnManager.shouldDenyMobSpawn(event.getEntity(), serverLevel, event.getSpawnReason())) {
       event.setSpawnCancelled(true);
     }
   }
@@ -140,17 +136,17 @@ public final class ServerEventHandler {
   }
 
   @SubscribeEvent
-  public static void handleLivingHurt(LivingHurtEvent event) {
+  public static boolean handleLivingHurt(LivingHurtEvent event) {
     if (!FeatureToggle.PLAYER_EASY_CHILD_MODE.isEnabled()
       && !FeatureToggle.PLAYER_STARTER_PROTECTION.isEnabled()) {
-      return;
+      return false;
     }
     float modified = PlayerDamageManager.handleLivingHurt(event.getEntity(), event.getAmount());
     if (modified <= 0f) {
-      event.setCanceled(true);
-    } else {
-      event.setAmount(modified);
+      return true;
     }
+    event.setAmount(modified);
+    return false;
   }
 
   @SubscribeEvent

@@ -23,6 +23,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.server.permissions.Permissions;
 
 public class KillCommand extends CustomCommand {
 
@@ -30,7 +31,7 @@ public class KillCommand extends CustomCommand {
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
     return Commands.literal("kill")
-      .requires(source -> source.hasPermission(2))
+      .requires(cs -> cs.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
       .then(Commands.literal("all_items").executes(command::killAllItems))
       .then(Commands.literal("all_dropped_items").executes(command::killAllDroppedItems));
   }

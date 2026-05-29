@@ -30,7 +30,8 @@ import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimulationDis
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRule;
+import net.minecraft.world.level.gamerules.GameRules;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -44,10 +45,10 @@ public final class GameRuleManager {
   private static int configuredRandomTickSpeedMax = 3;
   private static int configuredMaxEntityCramming = GameRulesConfig.maxEntityCramming;
   private static boolean configuredBlockExplosionDropDecay;
-  private static boolean configuredDisableElytraMovementCheck;
-  private static boolean configuredDoInsomnia;
+  private static boolean configuredElytraMovementCheck;
+  private static boolean configuredSpawnPhantoms;
   private static boolean configuredMobExplosionDropDecay;
-  private static boolean configuredDisableRaids;
+  private static boolean configuredRaids;
   private static boolean configuredDoPatrolSpawning;
   private static boolean configuredDoTraderSpawning;
   private static boolean configuredTntExplosionDropDecay;
@@ -60,22 +61,21 @@ public final class GameRuleManager {
   }
 
   public static void handleServerStarting(MinecraftServer minecraftServer) {
-    gameRules = minecraftServer.getGameRules();
-    configuredRandomTickSpeedMax = gameRules.getInt(GameRules.RULE_RANDOMTICKING);
-    configuredMaxEntityCramming = gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
+    gameRules = minecraftServer.getWorldData().getGameRules();
+    configuredRandomTickSpeedMax = (Integer) gameRules.get(GameRules.RANDOM_TICK_SPEED);
+    configuredMaxEntityCramming = (Integer) gameRules.get(GameRules.MAX_ENTITY_CRAMMING);
     configuredBlockExplosionDropDecay =
-      gameRules.getBoolean(GameRules.RULE_BLOCK_EXPLOSION_DROP_DECAY);
-    configuredDisableElytraMovementCheck =
-      gameRules.getBoolean(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK);
-    configuredDoInsomnia = gameRules.getBoolean(GameRules.RULE_DOINSOMNIA);
-    configuredMobExplosionDropDecay = gameRules.getBoolean(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY);
-    configuredDisableRaids = gameRules.getBoolean(GameRules.RULE_DISABLE_RAIDS);
-    configuredDoPatrolSpawning = gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING);
-    configuredDoTraderSpawning = gameRules.getBoolean(GameRules.RULE_DO_TRADER_SPAWNING);
+      (Boolean) gameRules.get(GameRules.BLOCK_EXPLOSION_DROP_DECAY);
+    configuredElytraMovementCheck = (Boolean) gameRules.get(GameRules.ELYTRA_MOVEMENT_CHECK);
+    configuredSpawnPhantoms = (Boolean) gameRules.get(GameRules.SPAWN_PHANTOMS);
+    configuredMobExplosionDropDecay = (Boolean) gameRules.get(GameRules.MOB_EXPLOSION_DROP_DECAY);
+    configuredRaids = (Boolean) gameRules.get(GameRules.RAIDS);
+    configuredDoPatrolSpawning = (Boolean) gameRules.get(GameRules.SPAWN_PATROLS);
+    configuredDoTraderSpawning = (Boolean) gameRules.get(GameRules.SPAWN_WANDERING_TRADERS);
     configuredTntExplosionDropDecay =
-      gameRules.getBoolean(GameRules.RULE_TNT_EXPLOSION_DROP_DECAY);
-    configuredDoVinesSpread = gameRules.getBoolean(GameRules.RULE_DO_VINES_SPREAD);
-    configuredDoWardenSpawning = gameRules.getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING);
+      (Boolean) gameRules.get(GameRules.TNT_EXPLOSION_DROP_DECAY);
+    configuredDoVinesSpread = (Boolean) gameRules.get(GameRules.SPREAD_VINES);
+    configuredDoWardenSpawning = (Boolean) gameRules.get(GameRules.SPAWN_WARDENS);
     lastUpdateTime = System.currentTimeMillis();
     randomTickWarmupUntilTime = 0L;
 
@@ -87,7 +87,7 @@ public final class GameRuleManager {
       log.debug(
         "{} Random Tick Speed will be optimized between 1 and {}",
         LOG_PREFIX, getConfiguredRandomTickSpeedMax());
-      if (gameRules.getInt(GameRules.RULE_RANDOMTICKING) != getConfiguredRandomTickSpeedMax()) {
+      if ((Integer) gameRules.get(GameRules.RANDOM_TICK_SPEED) != getConfiguredRandomTickSpeedMax()) {
         setRandomTickSpeed(getConfiguredRandomTickSpeedMax());
       }
     }
@@ -97,7 +97,7 @@ public final class GameRuleManager {
         LOG_PREFIX,
         GameRulesConfig.minEntityCramming,
         GameRulesConfig.maxEntityCramming);
-      if (gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING)
+      if ((Integer) gameRules.get(GameRules.MAX_ENTITY_CRAMMING)
         != GameRulesConfig.maxEntityCramming) {
         setMaxEntityCramming(GameRulesConfig.maxEntityCramming);
       }
@@ -133,7 +133,7 @@ public final class GameRuleManager {
       return;
     }
 
-    gameRules = minecraftServer.getGameRules();
+    gameRules = minecraftServer.getWorldData().getGameRules();
     randomTickWarmupUntilTime = 0L;
     restoreConfiguredDefaults();
   }
@@ -147,7 +147,7 @@ public final class GameRuleManager {
     if (minecraftServer == null) {
       return;
     }
-    gameRules = minecraftServer.getGameRules();
+    gameRules = minecraftServer.getWorldData().getGameRules();
     boolean randomTickWarmupActive = isRandomTickWarmupActive();
 
     if (event.hasVeryHighServerLoad()) {
@@ -314,170 +314,169 @@ public final class GameRuleManager {
   }
 
   public static void enableBlockExplosionDropDecay() {
-    if (!gameRules.getBoolean(GameRules.RULE_BLOCK_EXPLOSION_DROP_DECAY)) {
+    if (!(Boolean) gameRules.get(GameRules.BLOCK_EXPLOSION_DROP_DECAY)) {
       log.debug("{} blockExplosionDropDecay -> true", LOG_PREFIX);
-      executeGameRuleChange(GameRules.RULE_BLOCK_EXPLOSION_DROP_DECAY, true);
+      executeGameRuleChange(GameRules.BLOCK_EXPLOSION_DROP_DECAY, true);
     }
   }
 
   private static void restoreConfiguredDefaults() {
     restoreRandomTickSpeed();
     restoreMaxEntityCramming();
-    setGameRule(GameRules.RULE_BLOCK_EXPLOSION_DROP_DECAY, configuredBlockExplosionDropDecay);
-    setGameRule(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK,
-      configuredDisableElytraMovementCheck);
-    setGameRule(GameRules.RULE_DOINSOMNIA, configuredDoInsomnia);
-    setGameRule(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY, configuredMobExplosionDropDecay);
-    setGameRule(GameRules.RULE_DISABLE_RAIDS, configuredDisableRaids);
-    setGameRule(GameRules.RULE_DO_PATROL_SPAWNING, configuredDoPatrolSpawning);
-    setGameRule(GameRules.RULE_DO_TRADER_SPAWNING, configuredDoTraderSpawning);
-    setGameRule(GameRules.RULE_TNT_EXPLOSION_DROP_DECAY, configuredTntExplosionDropDecay);
-    setGameRule(GameRules.RULE_DO_VINES_SPREAD, configuredDoVinesSpread);
-    setGameRule(GameRules.RULE_DO_WARDEN_SPAWNING, configuredDoWardenSpawning);
+    setGameRule(GameRules.BLOCK_EXPLOSION_DROP_DECAY, configuredBlockExplosionDropDecay);
+    setGameRule(GameRules.ELYTRA_MOVEMENT_CHECK, configuredElytraMovementCheck);
+    setGameRule(GameRules.SPAWN_PHANTOMS, configuredSpawnPhantoms);
+    setGameRule(GameRules.MOB_EXPLOSION_DROP_DECAY, configuredMobExplosionDropDecay);
+    setGameRule(GameRules.RAIDS, configuredRaids);
+    setGameRule(GameRules.SPAWN_PATROLS, configuredDoPatrolSpawning);
+    setGameRule(GameRules.SPAWN_WANDERING_TRADERS, configuredDoTraderSpawning);
+    setGameRule(GameRules.TNT_EXPLOSION_DROP_DECAY, configuredTntExplosionDropDecay);
+    setGameRule(GameRules.SPREAD_VINES, configuredDoVinesSpread);
+    setGameRule(GameRules.SPAWN_WARDENS, configuredDoWardenSpawning);
   }
 
   public static void enableElytraMovementCheck() {
-    if (gameRules.getBoolean(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK)) {
-      log.debug("{} disableElytraMovementCheck -> false", LOG_PREFIX);
-      executeGameRuleChange(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK, false);
+    if (!(Boolean) gameRules.get(GameRules.ELYTRA_MOVEMENT_CHECK)) {
+      log.debug("{} elytraMovementCheck -> true", LOG_PREFIX);
+      executeGameRuleChange(GameRules.ELYTRA_MOVEMENT_CHECK, true);
     }
   }
 
   public static void disableElytraMovementCheck() {
-    if (!gameRules.getBoolean(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK)) {
-      log.debug("{} disableElytraMovementCheck -> true", LOG_PREFIX);
-      executeGameRuleChange(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK, true);
+    if ((Boolean) gameRules.get(GameRules.ELYTRA_MOVEMENT_CHECK)) {
+      log.debug("{} elytraMovementCheck -> false", LOG_PREFIX);
+      executeGameRuleChange(GameRules.ELYTRA_MOVEMENT_CHECK, false);
     }
   }
 
   public static void enableInsomnia() {
-    if (!gameRules.getBoolean(GameRules.RULE_DOINSOMNIA)) {
-      log.debug("{} doInsomnia -> true", LOG_PREFIX);
-      executeGameRuleChange(GameRules.RULE_DOINSOMNIA, true);
+    if (!(Boolean) gameRules.get(GameRules.SPAWN_PHANTOMS)) {
+      log.debug("{} spawnPhantoms -> true", LOG_PREFIX);
+      executeGameRuleChange(GameRules.SPAWN_PHANTOMS, true);
     }
   }
 
   public static void disableInsomnia() {
-    if (gameRules.getBoolean(GameRules.RULE_DOINSOMNIA)) {
-      log.debug("{} doInsomnia -> false", LOG_PREFIX);
-      executeGameRuleChange(GameRules.RULE_DOINSOMNIA, false);
+    if ((Boolean) gameRules.get(GameRules.SPAWN_PHANTOMS)) {
+      log.debug("{} spawnPhantoms -> false", LOG_PREFIX);
+      executeGameRuleChange(GameRules.SPAWN_PHANTOMS, false);
     }
   }
 
   public static void enableMobExplosionDropDecay() {
-    if (!gameRules.getBoolean(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY)) {
+    if (!(Boolean) gameRules.get(GameRules.MOB_EXPLOSION_DROP_DECAY)) {
       log.debug("{} mobExplosionDropDecay -> true", LOG_PREFIX);
-      executeGameRuleChange(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY, true);
+      executeGameRuleChange(GameRules.MOB_EXPLOSION_DROP_DECAY, true);
     }
   }
 
   public static void enablePatrolSpawning() {
-    if (!gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)) {
+    if (!(Boolean) gameRules.get(GameRules.SPAWN_PATROLS)) {
       log.debug("{} doPatrolSpawning -> true", LOG_PREFIX);
-      executeGameRuleChange(GameRules.RULE_DO_PATROL_SPAWNING, true);
+      executeGameRuleChange(GameRules.SPAWN_PATROLS, true);
     }
   }
 
   public static void disablePatrolSpawning() {
-    if (gameRules.getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)) {
+    if ((Boolean) gameRules.get(GameRules.SPAWN_PATROLS)) {
       log.debug("{} doPatrolSpawning -> false", LOG_PREFIX);
-      executeGameRuleChange(GameRules.RULE_DO_PATROL_SPAWNING, false);
+      executeGameRuleChange(GameRules.SPAWN_PATROLS, false);
     }
   }
 
   public static void enableRaids() {
-    if (gameRules.getBoolean(GameRules.RULE_DISABLE_RAIDS)) {
-      log.debug("{} disableRaids -> false", LOG_PREFIX);
-      executeGameRuleChange(GameRules.RULE_DISABLE_RAIDS, false);
+    if (!(Boolean) gameRules.get(GameRules.RAIDS)) {
+      log.debug("{} raids -> true", LOG_PREFIX);
+      executeGameRuleChange(GameRules.RAIDS, true);
     }
   }
 
   public static void disableRaids() {
-    if (!gameRules.getBoolean(GameRules.RULE_DISABLE_RAIDS)) {
-      log.debug("{} disableRaids -> true", LOG_PREFIX);
-      executeGameRuleChange(GameRules.RULE_DISABLE_RAIDS, true);
+    if ((Boolean) gameRules.get(GameRules.RAIDS)) {
+      log.debug("{} raids -> false", LOG_PREFIX);
+      executeGameRuleChange(GameRules.RAIDS, false);
     }
   }
 
   public static void enableTraderSpawning() {
-    if (!gameRules.getBoolean(GameRules.RULE_DO_TRADER_SPAWNING)) {
+    if (!(Boolean) gameRules.get(GameRules.SPAWN_WANDERING_TRADERS)) {
       log.debug("{} doTraderSpawning -> true", LOG_PREFIX);
-      executeGameRuleChange(GameRules.RULE_DO_TRADER_SPAWNING, true);
+      executeGameRuleChange(GameRules.SPAWN_WANDERING_TRADERS, true);
     }
   }
 
   public static void disableTraderSpawning() {
-    if (gameRules.getBoolean(GameRules.RULE_DO_TRADER_SPAWNING)) {
+    if ((Boolean) gameRules.get(GameRules.SPAWN_WANDERING_TRADERS)) {
       log.debug("{} doTraderSpawning -> false", LOG_PREFIX);
-      executeGameRuleChange(GameRules.RULE_DO_TRADER_SPAWNING, false);
+      executeGameRuleChange(GameRules.SPAWN_WANDERING_TRADERS, false);
     }
   }
 
   public static void enableTntExplosionDropDecay() {
-    if (!gameRules.getBoolean(GameRules.RULE_TNT_EXPLOSION_DROP_DECAY)) {
+    if (!(Boolean) gameRules.get(GameRules.TNT_EXPLOSION_DROP_DECAY)) {
       log.debug("{} tntExplosionDropDecay -> true", LOG_PREFIX);
-      executeGameRuleChange(GameRules.RULE_TNT_EXPLOSION_DROP_DECAY, true);
+      executeGameRuleChange(GameRules.TNT_EXPLOSION_DROP_DECAY, true);
     }
   }
 
   public static void disableTntExplosionDropDecay() {
-    if (gameRules.getBoolean(GameRules.RULE_TNT_EXPLOSION_DROP_DECAY)) {
+    if ((Boolean) gameRules.get(GameRules.TNT_EXPLOSION_DROP_DECAY)) {
       log.debug("{} tntExplosionDropDecay -> false", LOG_PREFIX);
-      executeGameRuleChange(GameRules.RULE_TNT_EXPLOSION_DROP_DECAY, false);
+      executeGameRuleChange(GameRules.TNT_EXPLOSION_DROP_DECAY, false);
     }
   }
 
   public static void enableVinesSpread() {
-    if (!gameRules.getBoolean(GameRules.RULE_DO_VINES_SPREAD)) {
+    if (!(Boolean) gameRules.get(GameRules.SPREAD_VINES)) {
       log.debug("{} doVinesSpread -> true", LOG_PREFIX);
-      executeGameRuleChange(GameRules.RULE_DO_VINES_SPREAD, true);
+      executeGameRuleChange(GameRules.SPREAD_VINES, true);
     }
   }
 
   public static void disableVinesSpread() {
-    if (gameRules.getBoolean(GameRules.RULE_DO_VINES_SPREAD)) {
+    if ((Boolean) gameRules.get(GameRules.SPREAD_VINES)) {
       log.debug("{} doVinesSpread -> false", LOG_PREFIX);
-      executeGameRuleChange(GameRules.RULE_DO_VINES_SPREAD, false);
+      executeGameRuleChange(GameRules.SPREAD_VINES, false);
     }
   }
 
   public static void enableWardenSpawning() {
-    if (!gameRules.getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING)) {
+    if (!(Boolean) gameRules.get(GameRules.SPAWN_WARDENS)) {
       log.debug("{} doWardenSpawning -> true", LOG_PREFIX);
-      executeGameRuleChange(GameRules.RULE_DO_WARDEN_SPAWNING, true);
+      executeGameRuleChange(GameRules.SPAWN_WARDENS, true);
     }
   }
 
   public static void disableWardenSpawning() {
-    if (gameRules.getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING)) {
+    if ((Boolean) gameRules.get(GameRules.SPAWN_WARDENS)) {
       log.debug("{} doWardenSpawning -> false", LOG_PREFIX);
-      executeGameRuleChange(GameRules.RULE_DO_WARDEN_SPAWNING, false);
+      executeGameRuleChange(GameRules.SPAWN_WARDENS, false);
     }
   }
 
   public static void decreaseRandomTickSpeed() {
-    setRandomTickSpeed(gameRules.getInt(GameRules.RULE_RANDOMTICKING) - 1);
+    setRandomTickSpeed((Integer) gameRules.get(GameRules.RANDOM_TICK_SPEED) - 1);
   }
 
   public static void increaseRandomTickSpeed() {
-    setRandomTickSpeed(gameRules.getInt(GameRules.RULE_RANDOMTICKING) + 1);
+    setRandomTickSpeed((Integer) gameRules.get(GameRules.RANDOM_TICK_SPEED) + 1);
   }
 
   public static void setRandomTickSpeed(int tickSpeed) {
     int clamped = Math.max(1, Math.min(tickSpeed, getConfiguredRandomTickSpeedMax()));
-    int current = gameRules.getInt(GameRules.RULE_RANDOMTICKING);
+    int current = (Integer) gameRules.get(GameRules.RANDOM_TICK_SPEED);
     if (current != clamped) {
       log.debug("{} randomTickSpeed: {} -> {}", LOG_PREFIX, current, clamped);
-      executeGameRuleChange(GameRules.RULE_RANDOMTICKING, clamped);
+      executeGameRuleChange(GameRules.RANDOM_TICK_SPEED, clamped);
     }
   }
 
   public static void decreaseMaxEntityCramming() {
-    setMaxEntityCramming(gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING) - 1);
+    setMaxEntityCramming((Integer) gameRules.get(GameRules.MAX_ENTITY_CRAMMING) - 1);
   }
 
   public static void increaseMaxEntityCramming() {
-    setMaxEntityCramming(gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING) + 1);
+    setMaxEntityCramming((Integer) gameRules.get(GameRules.MAX_ENTITY_CRAMMING) + 1);
   }
 
   public static void setMaxEntityCramming(int maxEntity) {
@@ -490,7 +489,7 @@ public final class GameRuleManager {
       && clamped < GameRulesConfig.minEntityCrammingMineColonies) {
       clamped = GameRulesConfig.minEntityCrammingMineColonies;
     }
-    int current = gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
+    int current = (Integer) gameRules.get(GameRules.MAX_ENTITY_CRAMMING);
     if (current != clamped) {
       if (clamped != preAdjustedClamped) {
         log.warn(
@@ -500,41 +499,41 @@ public final class GameRuleManager {
           GameRulesConfig.minEntityCrammingMineColonies);
       }
       log.debug("{} maxEntityCramming: {} -> {}", LOG_PREFIX, current, clamped);
-      executeGameRuleChange(GameRules.RULE_MAX_ENTITY_CRAMMING, clamped);
+      executeGameRuleChange(GameRules.MAX_ENTITY_CRAMMING, clamped);
     }
   }
 
   private static void restoreRandomTickSpeed() {
-    int current = gameRules.getInt(GameRules.RULE_RANDOMTICKING);
+    int current = (Integer) gameRules.get(GameRules.RANDOM_TICK_SPEED);
     if (current != configuredRandomTickSpeedMax) {
       log.debug("{} randomTickSpeed: {} -> {}", LOG_PREFIX, current, configuredRandomTickSpeedMax);
-      executeGameRuleChange(GameRules.RULE_RANDOMTICKING, configuredRandomTickSpeedMax);
+      executeGameRuleChange(GameRules.RANDOM_TICK_SPEED, configuredRandomTickSpeedMax);
     }
   }
 
   private static void restoreMaxEntityCramming() {
-    int current = gameRules.getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
+    int current = (Integer) gameRules.get(GameRules.MAX_ENTITY_CRAMMING);
     if (current != configuredMaxEntityCramming) {
       log.debug("{} maxEntityCramming: {} -> {}", LOG_PREFIX, current,
         configuredMaxEntityCramming);
-      executeGameRuleChange(GameRules.RULE_MAX_ENTITY_CRAMMING, configuredMaxEntityCramming);
+      executeGameRuleChange(GameRules.MAX_ENTITY_CRAMMING, configuredMaxEntityCramming);
     }
   }
 
   private static void executeGameRuleChange(
-    GameRules.Key<GameRules.BooleanValue> rule, boolean value) {
+    GameRule rule, boolean value) {
     PerformanceStats.gameRulesChanged++;
     CommandManager.executeGameRuleCommand(rule, value);
   }
 
   private static void executeGameRuleChange(
-    GameRules.Key<GameRules.IntegerValue> rule, int value) {
+    GameRule rule, int value) {
     PerformanceStats.gameRulesChanged++;
     CommandManager.executeGameRuleCommand(rule, value);
   }
 
-  private static void setGameRule(GameRules.Key<GameRules.BooleanValue> rule, boolean value) {
-    if (gameRules.getBoolean(rule) != value) {
+  private static void setGameRule(GameRule rule, boolean value) {
+    if ((Boolean) gameRules.get(rule) != value) {
       executeGameRuleChange(rule, value);
     }
   }
@@ -549,7 +548,7 @@ public final class GameRuleManager {
       return;
     }
 
-    gameRules = minecraftServer.getGameRules();
+    gameRules = minecraftServer.getWorldData().getGameRules();
     randomTickWarmupUntilTime = Math.max(randomTickWarmupUntilTime,
       System.currentTimeMillis() + SimulationDistanceConfig.movementThrottleLoginTicks
         * MILLIS_PER_TICK);

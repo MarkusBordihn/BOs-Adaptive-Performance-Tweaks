@@ -20,8 +20,9 @@
 package de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.Vec3;
 
@@ -29,7 +30,7 @@ public final class EntityScenario implements BenchmarkScenario {
 
   private static final int ENTITY_COUNT = 96;
   private static final double ENTITY_RADIUS = 30.0d;
-  private static final ResourceLocation ENTITY_TYPE_ID = ResourceLocation.tryParse("minecraft:cow");
+  private static final Identifier ENTITY_TYPE_ID = Identifier.tryParse("minecraft:cow");
 
   @Override
   public BenchmarkScenarioId id() {
@@ -52,25 +53,23 @@ public final class EntityScenario implements BenchmarkScenario {
       return;
     }
 
-    EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(ENTITY_TYPE_ID);
+    EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(ENTITY_TYPE_ID).map(ref -> ref.value()).orElse(null);
     if (entityType == null) {
       return;
     }
 
     Vec3 center = context.center();
     for (int index = 0; index < ENTITY_COUNT; index++) {
-      Entity entity = entityType.create(context.level());
-      if (entity == null) {
-        continue;
-      }
-
       double angle = (Math.PI * 2.0d * index) / ENTITY_COUNT;
       double ring = 8.0d + (index % 6) * 4.0d;
       double distance = Math.min(ring, ENTITY_RADIUS);
-      entity.moveTo(
-        center.x + Math.cos(angle) * distance,
-        center.y,
-        center.z + Math.sin(angle) * distance);
+      double spawnX = center.x + Math.cos(angle) * distance;
+      double spawnZ = center.z + Math.sin(angle) * distance;
+      Entity entity = entityType.create(context.level(), EntitySpawnReason.COMMAND);
+      if (entity == null) {
+        continue;
+      }
+      entity.setPos(spawnX, center.y, spawnZ);
       context.tagEntity(entity);
       context.level().addFreshEntity(entity);
     }

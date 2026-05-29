@@ -28,7 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.SharedConstants;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.world.entity.EntityType;
 import org.junit.jupiter.api.AfterEach;
@@ -258,7 +258,7 @@ class SpawnPresetRegistryTest {
       Set.of());
     SpawnPresetRegistry.reload(List.of(overworldPreset));
 
-    ResourceLocation overworld = ResourceLocation.tryParse(OVERWORLD);
+    Identifier overworld = Identifier.tryParse(OVERWORLD);
     assertEquals(
       SpawnPresetRegistry.evaluate(EntityType.ZOMBIE, OVERWORLD),
       SpawnPresetRegistry.evaluate(EntityType.ZOMBIE, overworld));

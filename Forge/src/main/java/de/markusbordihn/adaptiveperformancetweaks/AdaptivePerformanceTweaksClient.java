@@ -20,7 +20,7 @@
 package de.markusbordihn.adaptiveperformancetweaks;
 
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureRegistry;
-import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.bus.BusGroup;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,7 +30,7 @@ public class AdaptivePerformanceTweaksClient {
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   @SuppressWarnings("java:S1118")
-  public AdaptivePerformanceTweaksClient(IEventBus modEventBus) {
+  public AdaptivePerformanceTweaksClient(BusGroup modBusGroup) {
     log.info("Initializing {} (Forge-Client) ...", Constants.MOD_NAME);
     FeatureRegistry.registerClient();
   }

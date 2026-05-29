@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.entity.Entity;
 
 public class EntityCommand extends CustomCommand {
@@ -36,7 +37,7 @@ public class EntityCommand extends CustomCommand {
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
     return Commands.literal("entities")
-      .requires(source -> source.hasPermission(2))
+      .requires(cs -> cs.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
       .executes(command)
       .then(Commands.literal("overview").executes(command::overview))
       .then(Commands.literal("overview_per_chunk").executes(command::overviewPerChunk))

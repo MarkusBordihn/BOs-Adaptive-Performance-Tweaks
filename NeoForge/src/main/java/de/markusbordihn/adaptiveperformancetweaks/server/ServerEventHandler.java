@@ -25,11 +25,12 @@ import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.feature.player.PlayerDamageManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnPresetLoader;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
@@ -91,9 +92,11 @@ public final class ServerEventHandler {
   }
 
   @SubscribeEvent
-  public static void handleAddReloadListener(AddReloadListenerEvent event) {
+  public static void handleAddReloadListener(AddServerReloadListenersEvent event) {
     if (FeatureToggle.SPAWN.isEnabled()) {
-      event.addListener(new SpawnPresetLoader());
+      event.addListener(
+        Identifier.fromNamespaceAndPath(Constants.MOD_ID, "spawn_presets"),
+        new SpawnPresetLoader());
     }
   }
 

@@ -27,6 +27,7 @@ import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.server.level.ServerLevel;
 
 public class LoadCommand extends CustomCommand {
@@ -34,7 +35,7 @@ public class LoadCommand extends CustomCommand {
   private static final LoadCommand command = new LoadCommand();
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
-    return Commands.literal("load").requires(source -> source.hasPermission(2)).executes(command);
+    return Commands.literal("load").requires(cs -> cs.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)).executes(command);
   }
 
   @Override
@@ -52,7 +53,7 @@ public class LoadCommand extends CustomCommand {
       message.append(
         String.format(
           "%n%s: %s (avg. %.1fms)",
-          serverLevel.dimension().location(),
+          serverLevel.dimension().identifier(),
           ServerLevelLoad.getLevelLoad(serverLevel),
           ServerLevelLoad.getAverageTickTime(serverLevel)));
     }

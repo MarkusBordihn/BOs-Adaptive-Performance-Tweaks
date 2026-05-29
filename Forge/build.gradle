@@ -1,8 +1,8 @@
 plugins {
   id 'maven-publish'
-  id 'net.minecraftforge.gradle' version '[6.0.24,6.2)'
-  id 'org.spongepowered.mixin' version '0.7.+'
-  id 'com.matthewprenger.cursegradle' version '1.4.0'
+  id 'net.minecraftforge.accesstransformers' version '5.0.1'
+  id 'net.minecraftforge.gradle' version '7.0.0-beta.46'
+  id 'net.darkhax.curseforgegradle' version '1.1.28'
   id 'nu.studer.credentials' version '3.0'
   id "com.modrinth.minotaur" version "2.+"
 }
@@ -13,83 +13,76 @@ base {
   archivesName = "${mod_id}-forge-${minecraft_version}"
 }
 
+println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
+
 minecraft {
   mappings channel: 'official', version: "${project.minecraft_version}"
 
-  reobf = false
-  copyIdeResources = true
-
-  accessTransformer = file("src/main/resources/META-INF/accesstransformer.cfg")
+  accessTransformers = true
 
   runs {
-    client {
-      workingDirectory project.file('run/client')
-      property 'forge.logging.markers', 'REGISTRIES'
-      property 'forge.logging.console.level', 'debug'
-      property 'forge.enabledGameTestNamespaces', "${project.mod_id}"
-      mods {
-        "${project.mod_id}" { source sourceSets.main }
-      }
 
-      // Mixin Support
-      property 'mixin.env.remapRefMap', 'true'
-      property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+    configureEach {
+      systemProperty 'forge.logging.console.level', 'debug'
+      systemProperty 'eventbus.api.strictRuntimeChecks', 'true'
     }
 
-    client2 {
-      parent minecraft.runs.client
-      workingDirectory project.file('run/client2')
-      args '--username', 'guest_player'
+    client {
+      workingDir = project.file('run/client')
     }
 
     server {
-      workingDirectory project.file('run/server')
-      property 'forge.logging.markers', 'REGISTRIES'
-      property 'forge.logging.console.level', 'debug'
-      property 'forge.enabledGameTestNamespaces', "${project.mod_id}"
-      mods {
-        "${project.mod_id}" { source sourceSets.main }
-      }
-
-      // Mixin Support
-      property 'mixin.env.remapRefMap', 'true'
-      property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+      workingDir = project.file('run/server')
     }
 
     gameTestServer {
-      workingDirectory project.file('run/gametestserver')
-      property 'forge.logging.markers', 'REGISTRIES'
-      property 'forge.logging.console.level', 'debug'
-      property 'forge.enabledGameTestNamespaces', "${project.mod_id}"
-      mods {
-        "${project.mod_id}" { source sourceSets.main }
-      }
+      workingDir = project.file('run/gametest')
+      systemProperty 'forge.enableGameTest', 'true'
+      systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+    }
 
-      // Mixin Support
-      property 'mixin.env.remapRefMap', 'true'
-      property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+    data {
+      workingDir = project.file('run/data')
+      args '--mod', "${project.mod_id}", '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
     }
   }
 }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
-dependencies {
-  minecraft "net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}"
+repositories {
+  mavenCentral()
+  maven minecraft.mavenizer
+  maven fg.forgeMaven
+  maven fg.minecraftLibsMaven
+  maven {
+    name = 'Forge'
+    url = 'https://maven.minecraftforge.net'
+  }
+  maven {
+    name = 'Minecraft libraries'
+    url = 'https://libraries.minecraft.net'
+  }
+  exclusiveContent {
+    forRepository {
+      maven {
+        name = 'Sponge'
+        url = 'https://repo.spongepowered.org/repository/maven-public'
+      }
+    }
+    filter {
+      includeGroupAndSubgroups('org.spongepowered')
+    }
+  }
+}
 
-  // Mixin dependencies
-  annotationProcessor "org.spongepowered:mixin:0.8.7:processor"
+dependencies {
+  implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
+
+  annotationProcessor 'net.minecraftforge:eventbus-validator:7.0-beta.12'
 
   // Include Common code
   compileOnly project(":Common")
-
-  // Hack fix: force jopt-simple to 5.0.4 because Mojang ships that version,
-  // but some transitive dependencies request 6.0+ which breaks the module path
-  implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
-
-  // Test dependencies
-  testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
-  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
   // Additional helpful Mods for development (runtime dependency)
   if (project.hasProperty('forge_spark_mod') && project.forge_spark_mod) {
@@ -98,25 +91,23 @@ dependencies {
   if (project.hasProperty('forge_xaeros_minimap_mod') && project.forge_xaeros_minimap_mod) {
     runtimeOnly fg.deobf("curse.maven:xaeros_minimap-263420:${project.forge_xaeros_minimap_mod}")
   }
-}
 
-mixin {
-  config 'adaptiveperformancetweaks.mixins.json'
-
-  add sourceSets.main, "adaptiveperformancetweaks.refmap.json"
-  debug.verbose = true
-  debug.export = true
+  implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
 }
 
 tasks.withType(JavaCompile).configureEach {
   source(project(":Common").sourceSets.main.allSource)
 }
 
+tasks.withType(Test).configureEach {
+  failOnNoDiscoveredTests = false
+}
+
 processResources {
   from project(":Common").sourceSets.main.resources
 }
 
-tasks.named('jar', Jar).configure {
+jar {
   manifest {
     attributes([
         "Specification-Title"     : "${project.mod_name}",
@@ -125,38 +116,30 @@ tasks.named('jar', Jar).configure {
         "Implementation-Title"    : project.name,
         "Implementation-Version"  : "${project.version}",
         "Implementation-Vendor"   : "${project.mod_id}",
-        "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-        "MixinConfigs"            : "adaptiveperformancetweaks.mixins.json",
+        "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
     ])
   }
 }
 
-test {
-  useJUnitPlatform()
-}
-
-publishing {
-  publications {
-    mavenJava(MavenPublication) {
-      artifact jar
-    }
-  }
+sourceSets.each {
+  def dir = layout.buildDirectory.dir("sourcesSets/$it.name")
+  it.output.resourcesDir = dir
+  it.java.destinationDirectory = dir
 }
 
 // CurseForge Publishing
 if (project.hasProperty('curseforge_project_id') && project.curseforge_project_id) {
-  curseforge {
-    apiKey = "${credentials.forKey('curseforge_api_token')}"
-    project {
-      id = "${project.curseforge_project_id}"
-      changelog = rootProject.file("CHANGELOG.md")
-      changelogType = 'markdown'
-      releaseType = "${project.curseforge_release_type}"
-      addGameVersion("${project.minecraft_version}")
-      addGameVersion("Forge")
-      addGameVersion("NeoForge")
-      mainArtifact(jar)
-    }
+  tasks.register('curseforge', net.darkhax.curseforgegradle.TaskPublishCurseForge) {
+    group = 'publishing'
+    description = 'Uploads to CurseForge'
+    apiToken = "${credentials.forKey('curseforge_api_token')}"
+
+    def mainFile = upload(project.curseforge_project_id, jar)
+    mainFile.changelogType = 'markdown'
+    mainFile.changelog = rootProject.file("CHANGELOG.md").text
+    mainFile.releaseType = project.curseforge_release_type
+    mainFile.addModLoader('Forge')
+    mainFile.addGameVersion(project.minecraft_version)
   }
 }
 
@@ -171,14 +154,6 @@ if (project.hasProperty('modrinth_project_id') && project.modrinth_project_id) {
     changelog = rootProject.file("CHANGELOG.md").text
     uploadFile = jar
     gameVersions = ["${project.minecraft_version}"]
-    loaders = ["forge", "neoforge"]
+    loaders = ["forge"]
   }
-}
-
-// Merge the resources and classes into the same directory.
-// This is done because java expects modules to be in a single directory.
-sourceSets.each {
-  def dir = layout.buildDirectory.dir("sourcesSets/$it.name")
-  it.output.resourcesDir = dir
-  it.java.destinationDirectory = dir
 }
