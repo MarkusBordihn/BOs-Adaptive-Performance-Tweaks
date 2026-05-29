@@ -52,8 +52,10 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -65,6 +67,7 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.LogManager;
@@ -115,6 +118,7 @@ public final class BenchmarkManager {
   private static ServerPlayer pendingConfirmPlayer;
   private static ServerPlayer benchmarkPlayer;
   private static Vec3 playerStartPos;
+  private static Vec3 benchmarkOriginPos;
   private static List<BenchmarkScenario> configuredScenarios = List.of();
   private static List<Vec3> baselineMoveWaypoints = new ArrayList<>();
   private static List<Vec3> activeMoveWaypoints = new ArrayList<>();
@@ -129,6 +133,8 @@ public final class BenchmarkManager {
   private static GameType savedGameMode;
   private static double lastCpuPercent = -1.0d;
   private static PerformanceStats.Snapshot currentMeasurementStartStats;
+  private static long currentMeasurementStartHeapUsed;
+  private static long currentMeasurementPeakHeapUsed;
   private static BenchmarkCompareResult lastResult;
   private static Path lastResultPath;
 
@@ -152,6 +158,7 @@ public final class BenchmarkManager {
 
     benchmarkPlayer = player;
     playerStartPos = player.position();
+    benchmarkOriginPos = resolveBenchmarkOriginPos(player);
     currentBlock = BenchmarkBlock.BASELINE;
     currentScenarioIndex = 0;
     currentWaypointIndex = 0;
@@ -166,8 +173,8 @@ public final class BenchmarkManager {
     if (autoMoveRequested && configuredScenarios.stream()
       .anyMatch(scenario -> scenario.id().supportsAutoMove())) {
       Set<Long> reservedChunkKeys = new HashSet<>(MOVE_WAYPOINT_COUNT * 2);
-      baselineMoveWaypoints = computeWaypoints(playerStartPos, reservedChunkKeys);
-      activeMoveWaypoints = computeWaypoints(playerStartPos, reservedChunkKeys);
+      baselineMoveWaypoints = computeWaypoints(benchmarkOriginPos, reservedChunkKeys);
+      activeMoveWaypoints = computeWaypoints(benchmarkOriginPos, reservedChunkKeys);
     } else {
       baselineMoveWaypoints = new ArrayList<>();
       activeMoveWaypoints = new ArrayList<>();
@@ -186,6 +193,15 @@ public final class BenchmarkManager {
     if (savedGameMode != GameType.CREATIVE) {
       player.setGameMode(GameType.CREATIVE);
       sendNoteMessage(player, "Switched to Creative mode for benchmark safety.");
+    }
+
+    if (player.getAbilities().flying) {
+      player.getAbilities().flying = false;
+      player.onUpdateAbilities();
+    }
+
+    if (benchmarkOriginPos != null) {
+      teleportToPos(player, benchmarkOriginPos);
     }
 
     PerformanceStats.reset();
@@ -389,12 +405,11 @@ public final class BenchmarkManager {
     sampleBlockedUntilMs = now;
     state = BenchmarkState.BLOCK_WARMUP;
 
-    String message = block == BenchmarkBlock.BASELINE
-      ? "Base block warm-up started - all mod features disabled."
-      : "Active block warm-up started - configured feature state restored.";
     log.info("{} benchmark block warm-up started.", block.getDisplayName());
     if (benchmarkPlayer != null) {
-      sendNoteMessage(benchmarkPlayer, message);
+      sendNoteMessage(benchmarkPlayer, block == BenchmarkBlock.BASELINE
+        ? "Base block warm-up started - all mod features disabled."
+        : "Active block warm-up started - configured feature state restored.");
     }
   }
 
@@ -418,12 +433,11 @@ public final class BenchmarkManager {
 
   private static void runScenarioSetup(long now) {
     BenchmarkScenario scenario = currentScenario();
-    if (benchmarkPlayer != null && playerStartPos != null) {
-      teleportToPos(benchmarkPlayer, playerStartPos);
+    if (benchmarkPlayer != null && benchmarkOriginPos != null) {
+      teleportToPos(benchmarkPlayer, benchmarkOriginPos);
     }
 
-    BenchmarkScenarioContext context = currentScenarioContext(scenario);
-    scenario.setup(context);
+    scenario.setup(currentScenarioContext(scenario));
 
     currentScenarioDurationMs = scenarioDurationMs.getOrDefault(scenario.id(),
       configuredBlockDurationMs);
@@ -446,7 +460,10 @@ public final class BenchmarkManager {
     currentCpuSamples.clear();
     currentLoadDist.clear();
     currentMsptDist.clear();
-    currentMeasurementStartStats = PerformanceStats.snapshot();
+    currentMeasurementStartStats =
+      captureMeasurementStartStats(scenario, currentScenarioContext(scenario));
+    currentMeasurementStartHeapUsed = getCurrentHeapUsage();
+    currentMeasurementPeakHeapUsed = currentMeasurementStartHeapUsed;
 
     stageStartMs = now;
     lastSampleMs = now;
@@ -471,6 +488,7 @@ public final class BenchmarkManager {
 
   private static void handleScenarioMeasurement(long now) {
     BenchmarkScenario scenario = currentScenario();
+    runScenarioMeasurementTick(scenario, currentScenarioContext(scenario));
     boolean sampleDue = now - lastSampleMs >= SAMPLE_INTERVAL_MS;
     boolean sampleAllowed = sampleDue && now >= sampleBlockedUntilMs;
     boolean moveDue = scenario.usesAutoMove(autoMoveRequested)
@@ -482,6 +500,8 @@ public final class BenchmarkManager {
       double sampleMspt = ServerManager.getAverageTickTime();
       MsptBucket sampleBucket = MsptBucket.fromTickTime(sampleMspt);
       currentSamples.add(sampleMspt);
+      currentMeasurementPeakHeapUsed =
+        Math.max(currentMeasurementPeakHeapUsed, getCurrentHeapUsage());
       lastCpuPercent = getProcessCpuPercent();
       if (lastCpuPercent >= 0.0d) {
         currentCpuSamples.add(lastCpuPercent);
@@ -517,7 +537,7 @@ public final class BenchmarkManager {
       max(currentSamples),
       Map.copyOf(currentLoadDist),
       Map.copyOf(currentMsptDist),
-      ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed(),
+      getCurrentPeakHeapDeltaBytes(),
       countEntities(),
       average(currentCpuSamples, -1.0d),
       max(currentCpuSamples, -1.0d),
@@ -539,8 +559,8 @@ public final class BenchmarkManager {
     scenario.cleanup(context);
     cleanupBenchmarkArtifacts(context.level(), context.center(), scenario.cleanupRadius(),
       context.scenarioTag());
-    if (benchmarkPlayer != null && playerStartPos != null) {
-      teleportToPos(benchmarkPlayer, playerStartPos);
+    if (benchmarkPlayer != null && benchmarkOriginPos != null) {
+      teleportToPos(benchmarkPlayer, benchmarkOriginPos);
     }
 
     stageStartMs = now;
@@ -635,19 +655,16 @@ public final class BenchmarkManager {
       if (lastResultPath == null) {
         sendMessage(player, "Benchmark complete!");
       }
+
       for (Component line : lastResult.formatChat()) {
         sendMessage(player, line);
       }
-      if (lastResultPath != null) {
-        String displayPath = abbreviatePath(lastResultPath);
-        MutableComponent fileLink = Component.literal("See Details: ")
-          .withStyle(ChatFormatting.GOLD)
-          .append(Component.literal(displayPath)
-            .withStyle(ChatFormatting.AQUA)
-            .withStyle(style -> style.withClickEvent(
-              new ClickEvent(ClickEvent.Action.OPEN_FILE, lastResultPath.toString()))));
-        sendMessage(player, fileLink);
+
+      if (lastResultPath == null) {
+        return;
       }
+
+      sendReportLocation(player, lastResultPath);
     }
   }
 
@@ -658,19 +675,14 @@ public final class BenchmarkManager {
     }
 
     long elapsedMs = Math.max(0L, now - stageStartMs);
-    long remainingMs = Math.max(0L, stageDurationMs - elapsedMs);
-    double mspt = ServerManager.getAverageTickTime();
-    double headroom = (50.0d - mspt) / 50.0d * 100.0d;
-    String memory = formatBytes(ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed());
-    String blockLabel = currentBlock.getStatusLabel();
-    String scenarioLabel = currentScenarioShortLabel();
-    String phaseLabel = formatStageLabel(stageLabel);
+    ChatFormatting stageColor = getStageColor(stageLabel, currentBlock);
     MutableComponent message = Component.literal("[APT Benchmark] ").withStyle(ChatFormatting.GOLD)
       .append(Component.literal(formatProgressBar(elapsedMs, stageDurationMs))
-        .withStyle(getStageColor(stageLabel, currentBlock)))
+        .withStyle(stageColor))
       .append(Component.literal(
-          String.format(" %s: %s %s ", blockLabel, scenarioLabel, phaseLabel))
-        .withStyle(getStageColor(stageLabel, currentBlock)));
+          String.format(" %s: %s %s ", currentBlock.getStatusLabel(), currentScenarioShortLabel(),
+            formatStageLabel(stageLabel)))
+        .withStyle(stageColor));
 
     if (measurement) {
       int sampleCount = currentSamples.size();
@@ -678,12 +690,17 @@ public final class BenchmarkManager {
       message = message.append(Component.literal(sampleCount + "/" + totalSamples + " | "));
     }
 
+    long remainingMs = Math.max(0L, stageDurationMs - elapsedMs);
+    double mspt = ServerManager.getAverageTickTime();
+    double headroom = (50.0d - mspt) / 50.0d * 100.0d;
     message = message
       .append(Component.literal(formatDuration(remainingMs) + " | "))
       .append(Component.literal(String.format("%.1fms", mspt)).withStyle(getMsptColor(mspt)))
       .append(Component.literal(String.format(" | %.0f%% hr", headroom))
         .withStyle(getHeadroomColor(headroom)))
-      .append(Component.literal(" | RAM " + memory).withStyle(ChatFormatting.AQUA));
+      .append(Component.literal(
+          " | RAM " + formatBytes(ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed()))
+        .withStyle(ChatFormatting.AQUA));
 
     if (lastCpuPercent >= 0.0d) {
       message = message.append(
@@ -692,6 +709,26 @@ public final class BenchmarkManager {
     }
 
     sendMessage(benchmarkPlayer, message);
+  }
+
+  private static PerformanceStats.Snapshot captureMeasurementStartStats(BenchmarkScenario scenario,
+    BenchmarkScenarioContext context) {
+    scenario.beforeMeasurement(context);
+    return PerformanceStats.snapshot();
+  }
+
+  private static long getCurrentHeapUsage() {
+    return ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed();
+  }
+
+  private static long getCurrentPeakHeapDeltaBytes() {
+    long peakHeapUsed = Math.max(currentMeasurementPeakHeapUsed, getCurrentHeapUsage());
+    return Math.max(0L, peakHeapUsed - currentMeasurementStartHeapUsed);
+  }
+
+  private static void runScenarioMeasurementTick(BenchmarkScenario scenario,
+    BenchmarkScenarioContext context) {
+    scenario.onMeasurementTick(context);
   }
 
   private static ChatFormatting getStageColor(String stageLabel, BenchmarkBlock block) {
@@ -707,14 +744,13 @@ public final class BenchmarkManager {
   }
 
   private static BenchmarkScenarioContext currentScenarioContext(BenchmarkScenario scenario) {
-    ServerLevel level = benchmarkPlayer.serverLevel();
-    Vec3 baseCenter = playerStartPos != null ? playerStartPos : benchmarkPlayer.position();
-    Vec3 offset = scenario.centerOffset();
-    Vec3 center = baseCenter.add(offset.x, offset.y, offset.z);
+    Vec3 baseCenter = benchmarkOriginPos != null ? benchmarkOriginPos : benchmarkPlayer.position();
+    Vec3 centerOffset = scenario.centerOffset();
+    Vec3 center = baseCenter.add(centerOffset.x, centerOffset.y, centerOffset.z);
 
     return new BenchmarkScenarioContext(
       benchmarkPlayer,
-      level,
+      benchmarkPlayer.serverLevel(),
       center,
       scenario.id(),
       currentBlock == BenchmarkBlock.ACTIVE,
@@ -1056,10 +1092,40 @@ public final class BenchmarkManager {
     return "..." + sep + parent + path.getFileName();
   }
 
+  private static boolean supportsLocalReportLink(ServerPlayer player) {
+    return player != null && player.getServer() != null && !player.getServer().isDedicatedServer();
+  }
+
+  private static Vec3 resolveBenchmarkOriginPos(ServerPlayer player) {
+    ServerLevel level = player.serverLevel();
+    BlockPos surfacePos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+      BlockPos.containing(player.getX(), 0.0d, player.getZ()));
+    return new Vec3(player.getX(), surfacePos.getY() + 1.0d, player.getZ());
+  }
+
+  private static void sendReportLocation(ServerPlayer player, Path resultPath) {
+    if (supportsLocalReportLink(player)) {
+      sendMessage(player, Component.literal("See Details: ")
+        .withStyle(ChatFormatting.GOLD)
+        .append(Component.literal(abbreviatePath(resultPath))
+          .withStyle(ChatFormatting.AQUA)
+          .withStyle(style -> style
+            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE,
+              resultPath.toString()))
+            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+              Component.literal(resultPath.toString()))))));
+      return;
+    }
+
+    sendMessage(player, Component.literal("Report Path: ").withStyle(ChatFormatting.GOLD)
+      .append(Component.literal(resultPath.toString()).withStyle(ChatFormatting.AQUA)));
+  }
+
   private static void clearSessionState() {
     benchmarkPlayer = null;
     pendingConfirmPlayer = null;
     playerStartPos = null;
+    benchmarkOriginPos = null;
     savedGameMode = null;
     lastCpuPercent = -1.0d;
     configuredScenarios = List.of();
@@ -1069,6 +1135,8 @@ public final class BenchmarkManager {
     currentWaypointIndex = 0;
     currentScenarioDurationMs = 0L;
     currentMeasurementStartStats = null;
+    currentMeasurementStartHeapUsed = 0L;
+    currentMeasurementPeakHeapUsed = 0L;
     currentSamples.clear();
     currentCpuSamples.clear();
     currentLoadDist.clear();

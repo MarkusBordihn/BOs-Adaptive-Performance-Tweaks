@@ -28,7 +28,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.level.Level;
@@ -56,6 +55,11 @@ public final class ExperienceOrbManager {
       log.info(
         "XP orb clustering enabled with radius of {} blocks.",
         ExperienceOrbsConfig.experienceOrbsClusterRange);
+    }
+    if (ExperienceOrbsConfig.removeStaleExperienceOrbs) {
+      log.info(
+        "Stale XP orb cleanup enabled for orbs older than {} ticks.",
+        ExperienceOrbsConfig.staleExperienceOrbAgeTicks);
     }
   }
 
@@ -104,12 +108,7 @@ public final class ExperienceOrbManager {
 
     String levelName = level.dimension().location().toString();
 
-    if (ExperienceOrbsConfig.optimizeExperienceOrbs
-      && ((ExperienceOrbAccessor) orbEntity).getValue() <= 0) {
-      log.debug("[XP Orb] Zero-value orb at {} in {} removed",
-        orbEntity.blockPosition(), levelName);
-      orbEntity.remove(RemovalReason.DISCARDED);
-      PerformanceStats.xpOrbsRemoved++;
+    if (removeInvalidOrb(orbEntity, levelName)) {
       return true;
     }
 
@@ -183,8 +182,14 @@ public final class ExperienceOrbManager {
       Set<ExperienceOrb> orbs = entry.getValue();
       Iterator<ExperienceOrb> orbIterator = orbs.iterator();
       while (orbIterator.hasNext()) {
-        Entity entity = orbIterator.next();
-        if (entity == null || entity.isRemoved() || !entity.isAlive()) {
+        ExperienceOrb orbEntity = orbIterator.next();
+        if (orbEntity == null || orbEntity.isRemoved() || !orbEntity.isAlive()) {
+          orbIterator.remove();
+          removedEntries++;
+          continue;
+        }
+        if (removeInvalidOrb(orbEntity, entry.getKey()) || removeStaleOrb(orbEntity,
+          entry.getKey())) {
           orbIterator.remove();
           removedEntries++;
         }
@@ -199,5 +204,31 @@ public final class ExperienceOrbManager {
       log.debug("[XP Verification] Removed {} stale orbs from {} worlds",
         removedEntries, removedSets);
     }
+  }
+
+  private static boolean removeInvalidOrb(ExperienceOrb orbEntity, String levelName) {
+    if (!ExperienceOrbsConfig.optimizeExperienceOrbs
+      || ((ExperienceOrbAccessor) orbEntity).getValue() > 0) {
+      return false;
+    }
+
+    log.debug("[XP Orb] Zero-value orb at {} in {} removed",
+      orbEntity.blockPosition(), levelName);
+    orbEntity.remove(RemovalReason.DISCARDED);
+    PerformanceStats.xpOrbsRemoved++;
+    return true;
+  }
+
+  private static boolean removeStaleOrb(ExperienceOrb orbEntity, String levelName) {
+    if (!ExperienceOrbsConfig.removeStaleExperienceOrbs
+      || orbEntity.tickCount < ExperienceOrbsConfig.staleExperienceOrbAgeTicks) {
+      return false;
+    }
+
+    log.debug("[XP Orb] Stale orb at {} in {} removed after {} ticks",
+      orbEntity.blockPosition(), levelName, orbEntity.tickCount);
+    orbEntity.remove(RemovalReason.DISCARDED);
+    PerformanceStats.xpOrbsRemoved++;
+    return true;
   }
 }

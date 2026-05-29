@@ -44,6 +44,12 @@ public interface BenchmarkScenario {
   default void setup(BenchmarkScenarioContext context) {
   }
 
+  default void beforeMeasurement(BenchmarkScenarioContext context) {
+  }
+
+  default void onMeasurementTick(BenchmarkScenarioContext context) {
+  }
+
   default void cleanup(BenchmarkScenarioContext context) {
   }
 }

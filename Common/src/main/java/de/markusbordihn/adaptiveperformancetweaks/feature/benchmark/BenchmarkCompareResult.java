@@ -97,7 +97,7 @@ public record BenchmarkCompareResult(
     long autoExcluded = snapshot.trackingExcludedAutoNamespace()
       + snapshot.trackingExcludedAutoEntity();
     return String.format(
-      "spawn=%d denied=%d natural=%d/%d items=%d/%d xp=%d/%d arrows=%d sim=%d moves=%d tracking=%d manual=%d auto=%d",
+      "spawn=%d denied=%d natural=%d/%d items=%d/%d xp=%d/%d farm=%d arrows=%d sim=%d moves=%d tracking=%d manual=%d auto=%d",
       snapshot.mobSpawnChecks(),
       snapshot.mobSpawnsDenied(),
       snapshot.naturalSpawnChecks(),
@@ -106,6 +106,7 @@ public record BenchmarkCompareResult(
       snapshot.itemsRemoved(),
       snapshot.xpOrbsMerged(),
       snapshot.xpOrbsRemoved(),
+      snapshot.entityChunkCleanupRemoved(),
       snapshot.arrowsRemoved(),
       snapshot.simulationDistanceChanges(),
       snapshot.simulationDistanceMovementAdjustments(),
@@ -246,11 +247,11 @@ public record BenchmarkCompareResult(
       case GENERAL ->
         "Measures broad world activity with movement/chunk travel. Relevant areas: general tracking overhead, ambient spawn pressure and other global APTweaks effects during exploration.";
       case ITEMS ->
-        "Spawns a dense field of dropped cobblestone items. Relevant areas: item merge behavior, item cleanup pressure and item-related entity load. Setup/settle is excluded, so counters mainly show work that continues during the measured window.";
+        "Spawns a dense field of dropped cobblestone items and keeps adding fresh drops during measurement. Relevant areas: item merge behavior, item cleanup pressure and item-related entity load inside the measured window.";
       case XP ->
-        "Spawns many small XP orbs close together. Relevant areas: XP orb merging, XP cleanup pressure and short-lived entity handling. Setup/settle is excluded, so counters mainly show work that continues during the measured window.";
+        "Spawns many small XP orbs close together and keeps adding more during measurement. Relevant areas: XP orb merging, XP cleanup pressure and short-lived entity handling inside the measured window.";
       case ENTITIES ->
-        "Spawns many passive mobs directly into the world. Relevant areas: steady-state entity/tracking cost. Because the benchmark injects mobs directly with addFreshEntity(), spawn-denial counters mainly reflect ambient world spawns, not the injected test mobs.";
+        "Spawns a dense passive-mob farm across neighboring chunks and keeps feeding it during measurement. Relevant areas: steady-state entity/tracking cost and chunk cleanup pressure, while ambient spawn-denial counters still mainly reflect the surrounding world.";
       case RECOVERY ->
         "Adds no new load after cleanup. Relevant areas: how quickly the server returns to a low-load state once the previous benchmark pressure is gone.";
     };
@@ -460,7 +461,7 @@ public record BenchmarkCompareResult(
     double headroomDelta = result.activeHeadroomPercent() - result.baselineHeadroomPercent();
     double scoreDelta = result.activePerformanceScore() - result.baselinePerformanceScore();
     double fastDelta = result.activeFastRatio() - result.baselineFastRatio();
-    long heapDelta = active.heapUsedBytes() - baseline.heapUsedBytes();
+    long heapDelta = active.peakHeapDeltaBytes() - baseline.peakHeapDeltaBytes();
     double cpuDelta = active.avgCpuPercent() - baseline.avgCpuPercent();
     int entityDelta = active.entityCount() - baseline.entityCount();
 
@@ -503,9 +504,9 @@ public record BenchmarkCompareResult(
         getEfficiencyColor(cpuDelta, result.tickTimeImprovementPercent())));
     }
     lines.add(metricLine(
-      "Heap used",
-      formatBytes(baseline.heapUsedBytes()),
-      formatBytes(active.heapUsedBytes()),
+      "Heap peak",
+      formatBytes(baseline.peakHeapDeltaBytes()),
+      formatBytes(active.peakHeapDeltaBytes()),
       formatSignedBytes(heapDelta),
       getEfficiencyColor(heapDelta, result.tickTimeImprovementPercent())));
     lines.add(metricLine(
@@ -532,7 +533,7 @@ public record BenchmarkCompareResult(
     double headroomDelta = result.activeHeadroomPercent() - result.baselineHeadroomPercent();
     double scoreDelta = result.activePerformanceScore() - result.baselinePerformanceScore();
     double fastDelta = result.activeFastRatio() - result.baselineFastRatio();
-    long heapDelta = active.heapUsedBytes() - baseline.heapUsedBytes();
+    long heapDelta = active.peakHeapDeltaBytes() - baseline.peakHeapDeltaBytes();
     double cpuDelta = active.avgCpuPercent() - baseline.avgCpuPercent();
     int entityDelta = active.entityCount() - baseline.entityCount();
 
@@ -576,9 +577,9 @@ public record BenchmarkCompareResult(
         String.format("%+.1fpp", cpuDelta)));
     }
     lines.add(markdownMetricLine(
-      "Heap used",
-      formatBytes(baseline.heapUsedBytes()),
-      formatBytes(active.heapUsedBytes()),
+      "Heap peak",
+      formatBytes(baseline.peakHeapDeltaBytes()),
+      formatBytes(active.peakHeapDeltaBytes()),
       formatSignedBytes(heapDelta)));
     lines.add(markdownMetricLine(
       "Entities",
@@ -873,6 +874,8 @@ public record BenchmarkCompareResult(
       + String.format("merged=%d, removed=%d", snapshot.itemsMerged(), snapshot.itemsRemoved()));
     lines.add("- XP control: "
       + String.format("merged=%d, removed=%d", snapshot.xpOrbsMerged(), snapshot.xpOrbsRemoved()));
+    lines.add("- Mob farm cleanup: "
+      + String.format("removed=%d", snapshot.entityChunkCleanupRemoved()));
     lines.add("- Tracking: "
       + String.format(
       "evaluated=%d, tracked=%d, manual excludes=%d, auto excludes=%d, cache=%d, protected living=%d, protected persistent=%d",

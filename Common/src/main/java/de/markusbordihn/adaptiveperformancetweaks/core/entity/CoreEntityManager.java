@@ -31,6 +31,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -39,6 +42,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -591,6 +595,62 @@ public final class CoreEntityManager {
     return entityChunkMap.contains(new ChunkTrackingKey(levelName, blockPos));
   }
 
+  public static ChunkMobCleanupResult cleanupChunkMobFarms(int perTypeLimit) {
+    return cleanupChunkMobFarms(perTypeLimit, entity -> true);
+  }
+
+  public static ChunkMobCleanupResult cleanupChunkMobFarms(int perTypeLimit,
+    Predicate<Entity> extraEntityFilter) {
+    if (perTypeLimit < 0 || entityMapPerChunk.isEmpty()) {
+      return ChunkMobCleanupResult.EMPTY;
+    }
+
+    Predicate<Entity> cleanupFilter =
+      extraEntityFilter != null ? extraEntityFilter : entity -> true;
+    int removedEntities = 0;
+    Set<ChunkTrackingKey> affectedChunks = new HashSet<>();
+    Set<EntityType<?>> affectedTypes = new HashSet<>();
+
+    for (Map.Entry<ChunkTrackingKey, Set<Entity>> entry : entityMapPerChunk.entrySet()) {
+      Set<Entity> rawEntities = entry.getValue();
+      if (rawEntities == null || rawEntities.isEmpty()) {
+        continue;
+      }
+
+      Map<EntityType<?>, List<Entity>> entitiesByType = new HashMap<>();
+      for (Entity entity : new ArrayList<>(rawEntities)) {
+        if (!isChunkCleanupCandidate(entity) || !cleanupFilter.test(entity)) {
+          continue;
+        }
+
+        entitiesByType.computeIfAbsent(entity.getType(), ignored -> new ArrayList<>()).add(entity);
+      }
+
+      for (Map.Entry<EntityType<?>, List<Entity>> typeEntry : entitiesByType.entrySet()) {
+        List<Entity> candidates = typeEntry.getValue();
+        if (candidates.size() <= perTypeLimit) {
+          continue;
+        }
+
+        candidates.sort(Comparator.<Entity>comparingInt(entity -> entity.tickCount)
+          .thenComparingInt(entity -> entity.getId()));
+
+        for (int index = perTypeLimit; index < candidates.size(); index++) {
+          Entity entity = candidates.get(index);
+          if (removeChunkCleanupEntity(entity)) {
+            removedEntities++;
+            affectedChunks.add(entry.getKey());
+            affectedTypes.add(typeEntry.getKey());
+          }
+        }
+      }
+    }
+
+    return removedEntities > 0
+      ? new ChunkMobCleanupResult(removedEntities, affectedChunks.size(), affectedTypes.size())
+      : ChunkMobCleanupResult.EMPTY;
+  }
+
   public static boolean isRelevantEntity(Entity entity) {
     if (entity == null) {
       return false;
@@ -726,32 +786,10 @@ public final class CoreEntityManager {
   }
 
   private static boolean passesProtectedInstanceFilters(Entity entity) {
-    if (entity.hasCustomName()) {
+    if (isProtectedPersistentEntity(entity)) {
       PerformanceStats.trackingProtectedPersistent++;
       return false;
     }
-
-    if (entity instanceof TamableAnimal tamableAnimal && tamableAnimal.isTame()) {
-      PerformanceStats.trackingProtectedPersistent++;
-      return false;
-    }
-
-    if (entity instanceof Bee bee && bee.hasHive()) {
-      PerformanceStats.trackingProtectedPersistent++;
-      return false;
-    }
-
-    if (entity instanceof Raider raider && raider.hasActiveRaid()) {
-      PerformanceStats.trackingProtectedPersistent++;
-      return false;
-    }
-
-    if (entity instanceof Mob mob
-      && (mob.isLeashed() || mob.isPersistenceRequired() || mob.requiresCustomPersistence())) {
-      PerformanceStats.trackingProtectedPersistent++;
-      return false;
-    }
-
     return true;
   }
 
@@ -1161,6 +1199,50 @@ public final class CoreEntityManager {
     return count;
   }
 
+  private static boolean isProtectedPersistentEntity(Entity entity) {
+    if (entity.hasCustomName()) {
+      return true;
+    }
+
+    if (entity instanceof TamableAnimal tamableAnimal && tamableAnimal.isTame()) {
+      return true;
+    }
+
+    if (entity instanceof Bee bee && bee.hasHive()) {
+      return true;
+    }
+
+    if (entity instanceof Raider raider && raider.hasActiveRaid()) {
+      return true;
+    }
+
+    return entity instanceof Mob mob
+      && (mob.isLeashed() || mob.isPersistenceRequired() || mob.requiresCustomPersistence());
+  }
+
+  private static boolean isChunkCleanupCandidate(Entity entity) {
+    return entity instanceof Mob
+      && entity.isAlive()
+      && !entity.isRemoved()
+      && !isProtectedPersistentEntity(entity);
+  }
+
+  private static boolean removeChunkCleanupEntity(Entity entity) {
+    if (entity == null || entity.isRemoved()) {
+      return false;
+    }
+
+    ResourceLocation entityKey = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+    if (entityKey == null) {
+      return false;
+    }
+
+    removeEntity(entity, entityKey.toString(), entity.level().dimension().location());
+    entity.discard();
+    PerformanceStats.entityChunkCleanupRemoved++;
+    return true;
+  }
+
   private static String getEntityName(EntityType<?> entityType) {
     ResourceLocation entityKey = BuiltInRegistries.ENTITY_TYPE.getKey(entityType);
     return entityKey != null ? entityKey.toString() : null;
@@ -1273,5 +1355,11 @@ public final class CoreEntityManager {
     private String asString() {
       return "[" + levelName + ':' + chunkX + 'x' + chunkZ + ']';
     }
+  }
+
+  public record ChunkMobCleanupResult(int removedEntities, int affectedChunks,
+                                      int affectedEntityTypes) {
+
+    private static final ChunkMobCleanupResult EMPTY = new ChunkMobCleanupResult(0, 0, 0);
   }
 }

@@ -34,11 +34,14 @@ public final class ExperienceOrbsConfig extends Config {
       
        Controls XP orb merging to reduce entity count.
        Orbs within clusterRange blocks will be merged into a single orb.
+       Optionally removes very old XP orbs that survive far beyond normal lifetime.
       """;
 
   public static boolean optimizeExperienceOrbs = true;
   public static int experienceOrbsClusterRange = 2;
   public static boolean movePositionToLastDrop = false;
+  public static boolean removeStaleExperienceOrbs = true;
+  public static int staleExperienceOrbAgeTicks = 120_000;
 
   private ExperienceOrbsConfig() {
   }
@@ -60,13 +63,19 @@ public final class ExperienceOrbsConfig extends Config {
       experienceOrbsClusterRange);
     movePositionToLastDrop = parseConfigValue(properties, "movePositionToLastDrop",
       movePositionToLastDrop);
+    removeStaleExperienceOrbs = parseConfigValue(properties, "removeStaleExperienceOrbs",
+      removeStaleExperienceOrbs);
+    staleExperienceOrbAgeTicks = parseConfigValue(properties, "staleExperienceOrbAgeTicks",
+      staleExperienceOrbAgeTicks);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
 
     log.debug(
-      "ExperienceOrbs config: optimize={}, clusterRange={}, moveToLastDrop={}",
+      "ExperienceOrbs config: optimize={}, clusterRange={}, moveToLastDrop={}, removeStale={}, staleAgeTicks={}",
       optimizeExperienceOrbs,
       experienceOrbsClusterRange,
-      movePositionToLastDrop);
+      movePositionToLastDrop,
+      removeStaleExperienceOrbs,
+      staleExperienceOrbAgeTicks);
   }
 }

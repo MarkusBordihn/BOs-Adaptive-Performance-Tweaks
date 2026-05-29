@@ -31,6 +31,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -113,8 +114,11 @@ public class BenchmarkCommand extends CustomCommand {
     return Component.literal("Last result: ")
       .append(Component.literal(abbreviatePath(resultPath))
         .withStyle(ChatFormatting.AQUA)
-        .withStyle(style -> style.withClickEvent(
-          new ClickEvent(ClickEvent.Action.OPEN_FILE, resultPath.toString()))));
+        .withStyle(style -> style
+          .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE,
+            resultPath.toString()))
+          .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+            Component.literal(resultPath.toString())))));
   }
 
   @Override

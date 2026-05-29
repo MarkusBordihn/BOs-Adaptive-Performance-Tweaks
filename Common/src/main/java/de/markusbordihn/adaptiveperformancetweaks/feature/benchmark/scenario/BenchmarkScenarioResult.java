@@ -89,7 +89,7 @@ public record BenchmarkScenarioResult(
     double maxTickMs,
     Map<ServerLoadLevel, Integer> loadDistribution,
     Map<MsptBucket, Integer> msptDistribution,
-    long heapUsedBytes,
+    long peakHeapDeltaBytes,
     int entityCount,
     double avgCpuPercent,
     double maxCpuPercent,
