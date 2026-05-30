@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[0,)"
+loaderVersion = "${forge_loader_version_range}"
 license = "MIT"
 issueTrackerURL = "https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/issues"
 
@@ -14,6 +14,7 @@ authors = "Markus Bordihn"
 description = '''Server-side optimization mod that adapts load with dynamic spawn limits,
 simulation distance, AI throttling, chunk generation throttling, and monitoring tools for
 dedicated servers, single-player worlds, and LAN worlds.'''
+features = { java_version = "${java_version_range}" }
 
 [[mixins]]
 config = "adaptiveperformancetweaks.mixins.json"
@@ -21,13 +22,13 @@ config = "adaptiveperformancetweaks.mixins.json"
 [[dependencies.adaptive_performance_tweaks]]
 modId = "forge"
 mandatory = true
-versionRange = "[0,)"
+versionRange = "${forge_version_range}"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.adaptive_performance_tweaks]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.21.11,1.22)"
+versionRange = "${minecraft_version_range}"
 ordering = "NONE"
 side = "BOTH"

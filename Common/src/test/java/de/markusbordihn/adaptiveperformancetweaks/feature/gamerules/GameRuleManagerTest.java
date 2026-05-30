@@ -38,7 +38,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.gamerules.GameRule;
 import net.minecraft.world.level.gamerules.GameRules;
-import net.minecraft.world.level.storage.WorldData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockMakers;
@@ -110,14 +109,18 @@ class GameRuleManagerTest {
     GameRules rules = mock(GameRules.class);
     doAnswer(inv -> {
       Object key = inv.getArgument(0);
-      if (key == GameRules.RANDOM_TICK_SPEED) return 5;
-      if (key == GameRules.MAX_ENTITY_CRAMMING) return 19;
-      if (key == GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER) return 128;
+      if (key == GameRules.RANDOM_TICK_SPEED) {
+        return 5;
+      }
+      if (key == GameRules.MAX_ENTITY_CRAMMING) {
+        return 19;
+      }
+      if (key == GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER) {
+        return 128;
+      }
       return false;
     }).when(rules).get(any(GameRule.class));
-    WorldData worldData = mock(WorldData.class, withSettings().mockMaker(MockMakers.SUBCLASS));
-    when(server.getWorldData()).thenReturn(worldData);
-    when(worldData.getGameRules()).thenReturn(rules);
+    when(server.getGameRules()).thenReturn(rules);
 
     try {
       FeatureToggle.GAMERULES.setEnabled(false);
@@ -137,9 +140,7 @@ class GameRuleManagerTest {
       withSettings().mockMaker(MockMakers.SUBCLASS));
     GameRules rules = new GameRules(FeatureFlags.DEFAULT_FLAGS);
     rules.set(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER, 32, null);
-    WorldData worldData = mock(WorldData.class, withSettings().mockMaker(MockMakers.SUBCLASS));
-    when(server.getWorldData()).thenReturn(worldData);
-    when(worldData.getGameRules()).thenReturn(rules);
+    when(server.getGameRules()).thenReturn(rules);
 
     GameRuleManager.handleServerStarting(server);
 
@@ -152,9 +153,7 @@ class GameRuleManagerTest {
       withSettings().mockMaker(MockMakers.SUBCLASS));
     GameRules rules = new GameRules(FeatureFlags.DEFAULT_FLAGS);
     rules.set(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER, 64, null);
-    WorldData worldData = mock(WorldData.class, withSettings().mockMaker(MockMakers.SUBCLASS));
-    when(server.getWorldData()).thenReturn(worldData);
-    when(worldData.getGameRules()).thenReturn(rules);
+    when(server.getGameRules()).thenReturn(rules);
 
     try {
       writeServerManagerField("minecraftServer", server);

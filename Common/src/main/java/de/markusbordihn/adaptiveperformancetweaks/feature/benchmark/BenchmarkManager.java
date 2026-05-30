@@ -64,8 +64,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -769,7 +769,7 @@ public final class BenchmarkManager {
     for (ServerLevel level : ServerManager.getAllLevels()) {
       List<Entity> taggedEntities = new ArrayList<>();
       for (Entity entity : level.getAllEntities()) {
-        if (entity.getTags().contains(BENCHMARK_TAG)) {
+        if (entity.entityTags().contains(BENCHMARK_TAG)) {
           taggedEntities.add(entity);
         }
       }
@@ -786,10 +786,10 @@ public final class BenchmarkManager {
     AABB cleanupArea = new AABB(center, center).inflate(safeRadius);
 
     List<Entity> taggedEntities = level.getEntities((Entity) null, cleanupArea, entity ->
-      entity.getTags().contains(BENCHMARK_TAG) || entity.getTags().contains(scenarioTag));
+      entity.entityTags().contains(BENCHMARK_TAG) || entity.entityTags().contains(scenarioTag));
     for (Entity entity : taggedEntities) {
       removeBenchmarkEntity(entity, entity instanceof LivingEntity
-        && entity.getTags().contains(scenarioTag));
+        && entity.entityTags().contains(scenarioTag));
     }
 
     List<Entity> sweepEntities = level.getEntities((Entity) null, cleanupArea, entity ->
@@ -1168,7 +1168,7 @@ public final class BenchmarkManager {
     while (points.size() < MOVE_WAYPOINT_COUNT && attempts++ < maxAttempts) {
       int chunkX = originChunkX + rng.nextInt(moveAreaHalfChunks * 2 + 1) - moveAreaHalfChunks;
       int chunkZ = originChunkZ + rng.nextInt(moveAreaHalfChunks * 2 + 1) - moveAreaHalfChunks;
-      long chunkKey = ChunkPos.asLong(chunkX, chunkZ);
+      long chunkKey = ChunkPos.pack(chunkX, chunkZ);
       if (!reservedChunkKeys.add(chunkKey)) {
         continue;
       }
@@ -1196,7 +1196,7 @@ public final class BenchmarkManager {
   }
 
   private static long getChunkKey(Vec3 target) {
-    return ChunkPos.asLong(blockToChunk(target.x), blockToChunk(target.z));
+    return ChunkPos.pack(blockToChunk(target.x), blockToChunk(target.z));
   }
 
   private static void teleportToNextWaypoint(ServerPlayer player, List<Vec3> moveWaypoints) {

@@ -35,8 +35,8 @@ public abstract class VillagerConvertToMixin {
 
   @Inject(method = "convertTo", at = @At("HEAD"))
   private <T extends Mob> void aptweaks_convertTo(
-      EntityType<T> type, ConversionParams params, EntitySpawnReason spawnReason,
-      ConversionParams.AfterConversion<T> afterConversion, CallbackInfoReturnable<T> cir) {
+    EntityType<T> type, ConversionParams params, EntitySpawnReason spawnReason,
+    ConversionParams.AfterConversion<T> afterConversion, CallbackInfoReturnable<T> cir) {
     if (!FeatureToggle.SPAWN.isEnabled()) {
       return;
     }

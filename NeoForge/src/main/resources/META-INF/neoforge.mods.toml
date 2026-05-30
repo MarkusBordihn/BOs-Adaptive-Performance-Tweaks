@@ -19,13 +19,13 @@ config = "adaptiveperformancetweaks.mixins.json"
 [[dependencies.adaptive_performance_tweaks]]
 modId = "neoforge"
 type = "required"
-versionRange = "[21.11.0,)"
+versionRange = "${neoforge_version_range}"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.adaptive_performance_tweaks]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21.11,1.22)"
+versionRange = "${minecraft_version_range}"
 ordering = "NONE"
 side = "BOTH"

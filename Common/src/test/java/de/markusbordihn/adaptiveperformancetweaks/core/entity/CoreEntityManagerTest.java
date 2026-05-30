@@ -38,8 +38,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -109,7 +109,8 @@ class CoreEntityManagerTest {
   }
 
   private static Entity mockEntity(EntityType<?> entityType, boolean removed) {
-    MinecraftServer server = mock(MinecraftServer.class, withSettings().mockMaker(MockMakers.SUBCLASS));
+    MinecraftServer server = mock(MinecraftServer.class,
+      withSettings().mockMaker(MockMakers.SUBCLASS));
     ServerLevel level = mock(ServerLevel.class, withSettings().mockMaker(MockMakers.SUBCLASS));
     when(level.getServer()).thenReturn(server);
     when(level.getWaypointManager()).thenReturn(
@@ -141,7 +142,8 @@ class CoreEntityManagerTest {
   }
 
   private static ServerLevel mockOverworldLevel() {
-    MinecraftServer server = mock(MinecraftServer.class, withSettings().mockMaker(MockMakers.SUBCLASS));
+    MinecraftServer server = mock(MinecraftServer.class,
+      withSettings().mockMaker(MockMakers.SUBCLASS));
     ServerLevel level = mock(ServerLevel.class, withSettings().mockMaker(MockMakers.SUBCLASS));
     when(level.getServer()).thenReturn(server);
     when(level.getWaypointManager()).thenReturn(
@@ -299,10 +301,13 @@ class CoreEntityManagerTest {
       Set.of());
     CoreEntityManager.reloadTrackingRules(List.of(preset));
 
-    Zombie zombie = new Zombie(EntityType.ZOMBIE, mock(ServerLevel.class, withSettings().mockMaker(MockMakers.SUBCLASS).defaultAnswer(inv -> {
-      if (inv.getMethod().getName().equals("getServer")) return mock(MinecraftServer.class, withSettings().mockMaker(MockMakers.SUBCLASS));
-      return null;
-    })));
+    Zombie zombie = new Zombie(EntityType.ZOMBIE,
+      mock(ServerLevel.class, withSettings().mockMaker(MockMakers.SUBCLASS).defaultAnswer(inv -> {
+        if (inv.getMethod().getName().equals("getServer")) {
+          return mock(MinecraftServer.class, withSettings().mockMaker(MockMakers.SUBCLASS));
+        }
+        return null;
+      })));
     assertFalse(CoreEntityManager.isRelevantEntity(zombie, "testnpc:guard"));
     assertFalse(CoreEntityManager.isRelevantEntity(zombie, "testnpc:guard"),
       "Second call should use the cached namespace decision");
@@ -324,10 +329,13 @@ class CoreEntityManagerTest {
       Set.of());
     CoreEntityManager.reloadTrackingRules(List.of(preset));
 
-    Zombie zombie = new Zombie(EntityType.ZOMBIE, mock(ServerLevel.class, withSettings().mockMaker(MockMakers.SUBCLASS).defaultAnswer(inv -> {
-      if (inv.getMethod().getName().equals("getServer")) return mock(MinecraftServer.class, withSettings().mockMaker(MockMakers.SUBCLASS));
-      return null;
-    })));
+    Zombie zombie = new Zombie(EntityType.ZOMBIE,
+      mock(ServerLevel.class, withSettings().mockMaker(MockMakers.SUBCLASS).defaultAnswer(inv -> {
+        if (inv.getMethod().getName().equals("getServer")) {
+          return mock(MinecraftServer.class, withSettings().mockMaker(MockMakers.SUBCLASS));
+        }
+        return null;
+      })));
     assertFalse(CoreEntityManager.isRelevantEntity(zombie, "aeronautics:airship_assembler"));
   }
 

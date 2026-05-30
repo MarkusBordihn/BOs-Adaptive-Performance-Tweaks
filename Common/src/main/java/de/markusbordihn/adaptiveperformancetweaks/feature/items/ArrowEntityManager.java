@@ -177,7 +177,7 @@ public final class ArrowEntityManager {
         continue;
       }
 
-      long chunkKey = arrow.chunkPosition().toLong();
+      long chunkKey = arrow.chunkPosition().pack();
       byChunk.computeIfAbsent(chunkKey, ignored -> new ArrayList<>()).add(arrow);
     }
 

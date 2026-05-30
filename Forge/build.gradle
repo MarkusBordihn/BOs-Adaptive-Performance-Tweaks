@@ -1,8 +1,8 @@
 plugins {
   id 'maven-publish'
   id 'net.minecraftforge.accesstransformers' version '5.0.1'
-  id 'net.minecraftforge.gradle' version '7.0.0-beta.46'
-  id 'net.darkhax.curseforgegradle' version '1.1.28'
+  id 'net.minecraftforge.gradle' version '[7.0.17,8)'
+  id 'net.darkhax.curseforgegradle' version '1.2.30'
   id 'nu.studer.credentials' version '3.0'
   id "com.modrinth.minotaur" version "2.+"
 }
@@ -18,8 +18,6 @@ println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getPro
 minecraft {
   mappings channel: 'official', version: "${project.minecraft_version}"
 
-  accessTransformers = true
-
   runs {
 
     configureEach {
@@ -33,6 +31,7 @@ minecraft {
 
     server {
       workingDir = project.file('run/server')
+      args '--nogui'
     }
 
     gameTestServer {
@@ -79,7 +78,7 @@ repositories {
 dependencies {
   implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
 
-  annotationProcessor 'net.minecraftforge:eventbus-validator:7.0-beta.12'
+  annotationProcessor 'net.minecraftforge:eventbus-validator:7.0.1'
 
   // Include Common code
   compileOnly project(":Common")
@@ -105,6 +104,25 @@ tasks.withType(Test).configureEach {
 
 processResources {
   from project(":Common").sourceSets.main.resources
+  def minecraftVersionParts = project.minecraft_version.tokenize('.')
+  def javaVersion = project.extensions
+      .getByType(org.gradle.api.plugins.JavaPluginExtension)
+      .toolchain
+      .languageVersion
+      .get()
+      .asInt()
+  def replaceProperties = [
+      file                      : [jarVersion: '${file.jarVersion}'],
+      forge_loader_version_range: "[${project.forge_version.tokenize('.')[0]},)",
+      forge_version_range       : "[${project.forge_version},)",
+      minecraft_version_range   : "[${project.minecraft_version},${minecraftVersionParts[0]}.${(minecraftVersionParts[1] as int) + 1})",
+      java_version_range        : "[${javaVersion},)"
+  ]
+  inputs.properties replaceProperties
+
+  filesMatching("META-INF/mods.toml") {
+    expand replaceProperties
+  }
 }
 
 tasks.named('jar', Jar).configure {
@@ -122,6 +140,14 @@ tasks.named('jar', Jar).configure {
         "Implementation-Vendor"   : "${project.mod_id}",
         "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
     ])
+  }
+}
+
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      artifact jar
+    }
   }
 }
 

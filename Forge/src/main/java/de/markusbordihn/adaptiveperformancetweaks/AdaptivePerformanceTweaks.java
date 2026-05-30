@@ -63,7 +63,7 @@ public class AdaptivePerformanceTweaks {
 
     log.debug("{} Mod Compat ...", Constants.LOG_REGISTER_PREFIX);
     ModCompat.setModLoadedChecker(
-      modId -> "minecraft".equals(modId) || ModList.get().isLoaded(modId));
+      modId -> "minecraft".equals(modId) || ModList.isLoaded(modId));
 
     log.debug(
       "{} Configuration ({}) ...",

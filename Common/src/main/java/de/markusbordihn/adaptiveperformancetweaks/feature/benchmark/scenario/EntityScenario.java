@@ -104,7 +104,8 @@ public final class EntityScenario implements BenchmarkScenario {
       return;
     }
 
-    EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(ENTITY_TYPE_ID).map(ref -> ref.value()).orElse(null);
+    EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(ENTITY_TYPE_ID)
+      .map(ref -> ref.value()).orElse(null);
     if (entityType == null) {
       return;
     }
@@ -123,7 +124,8 @@ public final class EntityScenario implements BenchmarkScenario {
       return;
     }
 
-    EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(ENTITY_TYPE_ID).map(ref -> ref.value()).orElse(null);
+    EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(ENTITY_TYPE_ID)
+      .map(ref -> ref.value()).orElse(null);
     if (entityType == null) {
       return;
     }
@@ -143,7 +145,7 @@ public final class EntityScenario implements BenchmarkScenario {
     if (context.activeBlock()) {
       CoreEntityManager.cleanupChunkMobFarms(
         SpawnConfig.entityChunkCleanupPerTypeLimit,
-        entity -> entity.getTags().contains(context.scenarioTag()));
+        entity -> entity.entityTags().contains(context.scenarioTag()));
     }
   }
 }

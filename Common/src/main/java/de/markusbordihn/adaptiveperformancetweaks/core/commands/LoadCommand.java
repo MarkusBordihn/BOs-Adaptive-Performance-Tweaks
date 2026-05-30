@@ -27,15 +27,17 @@ import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.server.permissions.Permissions;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.permissions.Permissions;
 
 public class LoadCommand extends CustomCommand {
 
   private static final LoadCommand command = new LoadCommand();
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
-    return Commands.literal("load").requires(cs -> cs.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)).executes(command);
+    return Commands.literal("load")
+      .requires(cs -> cs.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
+      .executes(command);
   }
 
   @Override

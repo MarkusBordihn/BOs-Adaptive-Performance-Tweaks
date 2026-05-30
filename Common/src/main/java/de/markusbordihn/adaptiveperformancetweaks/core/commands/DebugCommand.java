@@ -27,8 +27,8 @@ import de.markusbordihn.adaptiveperformancetweaks.core.debug.DebugModule;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.server.permissions.Permissions;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.permissions.Permissions;
 
 public class DebugCommand extends CustomCommand {
 

@@ -40,16 +40,18 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.server.permissions.Permissions;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.permissions.Permissions;
 
 public class StatsCommand extends CustomCommand {
 
   private static final StatsCommand command = new StatsCommand();
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
-    return Commands.literal("stats").requires(cs -> cs.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)).executes(command)
+    return Commands.literal("stats")
+      .requires(cs -> cs.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
+      .executes(command)
       .then(Commands.literal("items").executes(context -> {
         showItemDetails(context);
         return 0;

@@ -20,6 +20,7 @@
 package de.markusbordihn.adaptiveperformancetweaks.entity;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
+import java.util.function.Predicate;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -31,12 +32,13 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 @EventBusSubscriber(modid = Constants.MOD_ID)
 public final class EntityEventHandler {
 
-  private EntityEventHandler() {
+  static {
+    EntityJoinLevelEvent.BUS.addListener(Priority.HIGH,
+      (Predicate<EntityJoinLevelEvent>) event ->
+        CommonEntityEventHandler.handleEntityJoinLevel(event.getEntity(), event.getLevel()));
   }
 
-  @SubscribeEvent(priority = Priority.HIGH)
-  public static boolean handleEntityJoinLevel(EntityJoinLevelEvent event) {
-    return CommonEntityEventHandler.handleEntityJoinLevel(event.getEntity(), event.getLevel());
+  private EntityEventHandler() {
   }
 
   @SubscribeEvent(priority = Priority.HIGH)

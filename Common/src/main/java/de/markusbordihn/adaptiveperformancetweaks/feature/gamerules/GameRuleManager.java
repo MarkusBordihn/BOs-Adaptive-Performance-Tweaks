@@ -61,7 +61,7 @@ public final class GameRuleManager {
   }
 
   public static void handleServerStarting(MinecraftServer minecraftServer) {
-    gameRules = minecraftServer.getWorldData().getGameRules();
+    gameRules = minecraftServer.getGameRules();
     configuredRandomTickSpeedMax = (Integer) gameRules.get(GameRules.RANDOM_TICK_SPEED);
     configuredMaxEntityCramming = (Integer) gameRules.get(GameRules.MAX_ENTITY_CRAMMING);
     configuredBlockExplosionDropDecay =
@@ -89,7 +89,8 @@ public final class GameRuleManager {
       log.debug(
         "{} Random Tick Speed will be optimized between 1 and {}",
         LOG_PREFIX, getConfiguredRandomTickSpeedMax());
-      if ((Integer) gameRules.get(GameRules.RANDOM_TICK_SPEED) != getConfiguredRandomTickSpeedMax()) {
+      if ((Integer) gameRules.get(GameRules.RANDOM_TICK_SPEED)
+        != getConfiguredRandomTickSpeedMax()) {
         setRandomTickSpeed(getConfiguredRandomTickSpeedMax());
       }
     }
@@ -136,7 +137,7 @@ public final class GameRuleManager {
       return;
     }
 
-    gameRules = minecraftServer.getWorldData().getGameRules();
+    gameRules = minecraftServer.getGameRules();
     randomTickWarmupUntilTime = 0L;
     restoreConfiguredDefaults();
   }
@@ -150,7 +151,7 @@ public final class GameRuleManager {
     if (minecraftServer == null) {
       return;
     }
-    gameRules = minecraftServer.getWorldData().getGameRules();
+    gameRules = minecraftServer.getGameRules();
     boolean randomTickWarmupActive = isRandomTickWarmupActive();
 
     if (event.hasVeryHighServerLoad()) {
@@ -596,7 +597,7 @@ public final class GameRuleManager {
       return;
     }
 
-    gameRules = minecraftServer.getWorldData().getGameRules();
+    gameRules = minecraftServer.getGameRules();
     randomTickWarmupUntilTime = Math.max(randomTickWarmupUntilTime,
       System.currentTimeMillis() + SimulationDistanceConfig.movementThrottleLoginTicks
         * MILLIS_PER_TICK);

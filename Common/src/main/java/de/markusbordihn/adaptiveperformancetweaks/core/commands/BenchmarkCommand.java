@@ -27,15 +27,15 @@ import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.BenchmarkMan
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenarioId;
 import java.nio.file.Path;
 import net.minecraft.ChatFormatting;
-import net.minecraft.util.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.server.permissions.Permissions;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
+import net.minecraft.util.Util;
 
 public class BenchmarkCommand extends CustomCommand {
 
