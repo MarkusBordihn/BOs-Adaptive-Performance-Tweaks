@@ -72,6 +72,9 @@ public final class SpawnConfig extends Config {
   public static int specialSpawnBonusPerWorld = 16;
   public static int specialSpawnBonusPerServer = 32;
   public static ServerLoadLevel specialSpawnBonusMaxLoadLevel = ServerLoadLevel.MEDIUM;
+  public static boolean entityChunkCleanupEnabled = true;
+  public static int entityChunkCleanupPerTypeLimit = 64;
+  public static int entityChunkCleanupIntervalTicks = 2400;
   public static boolean presetReloadOnDatapackReload = true;
 
   private SpawnConfig() {
@@ -142,13 +145,21 @@ public final class SpawnConfig extends Config {
       specialSpawnBonusPerServer);
     specialSpawnBonusMaxLoadLevel = parseConfigValue(properties, "specialSpawnBonusMaxLoadLevel",
       specialSpawnBonusMaxLoadLevel);
+    entityChunkCleanupEnabled = parseConfigValue(properties, "entityChunkCleanupEnabled",
+      entityChunkCleanupEnabled);
+    entityChunkCleanupPerTypeLimit = parseConfigValue(properties,
+      "entityChunkCleanupPerTypeLimit",
+      entityChunkCleanupPerTypeLimit);
+    entityChunkCleanupIntervalTicks = parseConfigValue(properties,
+      "entityChunkCleanupIntervalTicks",
+      entityChunkCleanupIntervalTicks);
     presetReloadOnDatapackReload = parseConfigValue(properties, "presetReloadOnDatapackReload",
       presetReloadOnDatapackReload);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
 
     log.debug(
-      "Spawn config: spawnLimitationEnabled={}, naturalSpawnLimitationEnabled={}, passRates=[vl={}, l={}, n={}, m={}, h={}, vh={}], maxPerPlayer={}, maxPerWorld={}, maxPerServer={}, maxPerChunk={}, specialSpawnBonusEnabled={}, specialSpawnBonusTypes={}, specialSpawnBonusMaxLoadLevel={}",
+      "Spawn config: spawnLimitationEnabled={}, naturalSpawnLimitationEnabled={}, passRates=[vl={}, l={}, n={}, m={}, h={}, vh={}], maxPerPlayer={}, maxPerWorld={}, maxPerServer={}, maxPerChunk={}, specialSpawnBonusEnabled={}, specialSpawnBonusTypes={}, specialSpawnBonusMaxLoadLevel={}, entityChunkCleanupEnabled={}, entityChunkCleanupPerTypeLimit={}, entityChunkCleanupIntervalTicks={}",
       spawnLimitationEnabled,
       naturalSpawnLimitationEnabled,
       naturalSpawnPassRateVeryLow, naturalSpawnPassRateLow, naturalSpawnPassRateNormal,
@@ -159,7 +170,10 @@ public final class SpawnConfig extends Config {
       spawnLimitationMaxMobsPerChunk,
       specialSpawnTypeBonusEnabled,
       specialSpawnBonusTypes,
-      specialSpawnBonusMaxLoadLevel);
+      specialSpawnBonusMaxLoadLevel,
+      entityChunkCleanupEnabled,
+      entityChunkCleanupPerTypeLimit,
+      entityChunkCleanupIntervalTicks);
   }
 
 }

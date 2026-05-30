@@ -31,6 +31,10 @@ public class ServerPlayerTeleportMixin {
 
   @Inject(method = "teleportTo(DDD)V", at = @At("TAIL"))
   private void aptweaks_handleSameDimensionTeleport(double x, double y, double z, CallbackInfo ci) {
-    CommonServerEventHandler.handlePlayerTeleported((ServerPlayer) (Object) this);
+    if (!((Object) this instanceof ServerPlayer serverPlayer)) {
+      return;
+    }
+
+    CommonServerEventHandler.handlePlayerTeleported(serverPlayer);
   }
 }

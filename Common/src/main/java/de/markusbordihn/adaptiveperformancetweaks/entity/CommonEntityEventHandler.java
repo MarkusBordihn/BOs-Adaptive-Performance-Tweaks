@@ -36,6 +36,10 @@ public final class CommonEntityEventHandler {
   }
 
   public static boolean handleEntityJoinLevel(Entity entity, Level level) {
+    if (level.isClientSide()) {
+      return false;
+    }
+
     if (FeatureToggle.ITEMS.isEnabled() && entity instanceof ItemEntity itemEntity) {
       if (ItemEntityManager.handleItemEntityJoinLevel(itemEntity, level)) {
         return true;
@@ -48,12 +52,16 @@ public final class CommonEntityEventHandler {
       ArrowEntityManager.handleArrowJoinLevel(arrowEntity, level);
     }
 
-    CoreEntityManager.handleEntityJoinLevel(entity, level.isClientSide());
+    CoreEntityManager.handleEntityJoinLevel(entity, false);
 
     return false;
   }
 
   public static void handleEntityLeaveLevel(Entity entity, Level level) {
+    if (level.isClientSide()) {
+      return;
+    }
+
     if (FeatureToggle.ITEMS.isEnabled() && entity instanceof ItemEntity itemEntity) {
       ItemEntityManager.handleItemEntityLeaveLevel(itemEntity, level);
     } else if (FeatureToggle.EXPERIENCE_ORBS.isEnabled()
@@ -62,10 +70,14 @@ public final class CommonEntityEventHandler {
     } else if (FeatureToggle.ARROWS.isEnabled() && entity instanceof AbstractArrow arrowEntity) {
       ArrowEntityManager.handleArrowLeaveLevel(arrowEntity, level);
     }
-    CoreEntityManager.handleEntityLeaveLevel(entity, level.isClientSide());
+    CoreEntityManager.handleEntityLeaveLevel(entity, false);
   }
 
   public static void handleLivingDeath(Entity entity) {
-    CoreEntityManager.handleLivingDeath(entity, entity.level().isClientSide());
+    if (entity == null || entity.level().isClientSide()) {
+      return;
+    }
+
+    CoreEntityManager.handleLivingDeath(entity, false);
   }
 }

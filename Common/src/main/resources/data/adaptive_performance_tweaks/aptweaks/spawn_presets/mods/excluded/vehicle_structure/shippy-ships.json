@@ -1,0 +1,7 @@
+{
+  "mod_id": "shippy-ships",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "vehicle_structure",
+  "reason": "Shippy Ships vessel entities are transport structures and should not be tracked."
+}

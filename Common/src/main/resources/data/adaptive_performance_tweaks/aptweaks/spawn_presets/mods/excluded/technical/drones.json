@@ -1,0 +1,7 @@
+{
+  "mod_id": "drones",
+  "priority": 100,
+  "mode": "exclude_namespace",
+  "category": "technical",
+  "reason": "Buddy Drones helper entities are modular automation drones and should not be tracked."
+}

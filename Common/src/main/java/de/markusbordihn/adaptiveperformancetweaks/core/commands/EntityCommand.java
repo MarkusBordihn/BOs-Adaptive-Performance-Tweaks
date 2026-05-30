@@ -22,6 +22,7 @@ package de.markusbordihn.adaptiveperformancetweaks.core.commands;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreEntityManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnConfig;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.commands.CommandSourceStack;
@@ -39,6 +40,7 @@ public class EntityCommand extends CustomCommand {
     return Commands.literal("entities")
       .requires(cs -> cs.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
       .executes(command)
+      .then(Commands.literal("cleanup_per_chunk").executes(command::cleanupPerChunk))
       .then(Commands.literal("overview").executes(command::overview))
       .then(Commands.literal("overview_per_chunk").executes(command::overviewPerChunk))
       .then(Commands.literal("overview_per_level").executes(command::overviewPerLevel));
@@ -50,10 +52,21 @@ public class EntityCommand extends CustomCommand {
       context,
       """
         Usage:
+        /aptweaks entities cleanup_per_chunk - trim overloaded mob-farm chunks
         /aptweaks entities overview - entities by type (global)
         /aptweaks entities overview_per_chunk - entities per chunk
         /aptweaks entities overview_per_level - entities per level""");
     return 0;
+  }
+
+  public int cleanupPerChunk(CommandContext<CommandSourceStack> context) {
+    var result = CoreEntityManager.cleanupChunkMobFarms(SpawnConfig.entityChunkCleanupPerTypeLimit);
+    sendFeedback(context, String.format(
+      "Chunk mob cleanup removed %d entities across %d chunks and %d entity types.",
+      result.removedEntities(),
+      result.affectedChunks(),
+      result.affectedEntityTypes()));
+    return result.removedEntities();
   }
 
   public int overview(CommandContext<CommandSourceStack> context) {

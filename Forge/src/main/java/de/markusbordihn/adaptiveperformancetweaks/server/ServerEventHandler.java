@@ -136,21 +136,29 @@ public final class ServerEventHandler {
   }
 
   @SubscribeEvent
-  public static boolean handleLivingHurt(LivingHurtEvent event) {
+  public static void handleLivingHurt(LivingHurtEvent event) {
+    if (event.getEntity().level().isClientSide()) {
+      return;
+    }
+
     if (!FeatureToggle.PLAYER_EASY_CHILD_MODE.isEnabled()
       && !FeatureToggle.PLAYER_STARTER_PROTECTION.isEnabled()) {
-      return false;
+      return;
     }
+
     float modified = PlayerDamageManager.handleLivingHurt(event.getEntity(), event.getAmount());
     if (modified <= 0f) {
-      return true;
+      return;
     }
     event.setAmount(modified);
-    return false;
   }
 
   @SubscribeEvent
   public static void handleLivingDamage(LivingDamageEvent event) {
+    if (event.getEntity().level().isClientSide()) {
+      return;
+    }
+
     event.setAmount(PlayerDamageManager.handleLivingDamage(event.getSource(), event.getAmount()));
   }
 }

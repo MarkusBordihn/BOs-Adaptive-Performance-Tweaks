@@ -37,8 +37,15 @@ public abstract class VillagerConvertToMixin {
   private <T extends Mob> void aptweaks_convertTo(
       EntityType<T> type, ConversionParams params, EntitySpawnReason spawnReason,
       ConversionParams.AfterConversion<T> afterConversion, CallbackInfoReturnable<T> cir) {
-    if (FeatureToggle.SPAWN.isEnabled()) {
-      SpawnManager.handleEntityConversion((Mob) (Object) this);
+    if (!FeatureToggle.SPAWN.isEnabled()) {
+      return;
     }
+
+    Mob thisMob = (Mob) (Object) this;
+    if (thisMob.level().isClientSide()) {
+      return;
+    }
+
+    SpawnManager.handleEntityConversion(thisMob);
   }
 }

@@ -19,18 +19,69 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario;
 
+import de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreEntityManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnConfig;
+import java.util.concurrent.ThreadLocalRandom;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
 public final class EntityScenario implements BenchmarkScenario {
 
-  private static final int ENTITY_COUNT = 96;
-  private static final double ENTITY_RADIUS = 30.0d;
-  private static final Identifier ENTITY_TYPE_ID = Identifier.tryParse("minecraft:cow");
+  private static final int OVERLOADED_CHUNK_ENTITY_COUNT = 72;
+  private static final int SUPPORT_CHUNK_ENTITY_COUNT = 32;
+  private static final double CHUNK_ANCHOR_OFFSET = 4.0d;
+  private static final double CHUNK_ANCHOR_JITTER = 2.4d;
+  private static final double SPAWN_CLEARANCE_Y = 3.0d;
+  private static final double SPAWN_Y_VARIATION = 0.6d;
+  private static final Identifier ENTITY_TYPE_ID = Identifier.tryParse("minecraft:chicken");
+
+  private static Vec3 getChunkCenter(Vec3 position) {
+    int chunkX = Mth.floor(position.x) >> 4;
+    int chunkZ = Mth.floor(position.z) >> 4;
+    return new Vec3((chunkX << 4) + 8.0d, position.y, (chunkZ << 4) + 8.0d);
+  }
+
+  private static Vec3[] getChunkAnchors(Vec3 chunkCenter) {
+    Vec3 resolvedChunkCenter = getChunkCenter(chunkCenter);
+    return new Vec3[]{
+      resolvedChunkCenter.add(-CHUNK_ANCHOR_OFFSET, 0.0d, -CHUNK_ANCHOR_OFFSET),
+      resolvedChunkCenter.add(CHUNK_ANCHOR_OFFSET, 0.0d, -CHUNK_ANCHOR_OFFSET),
+      resolvedChunkCenter.add(-CHUNK_ANCHOR_OFFSET, 0.0d, CHUNK_ANCHOR_OFFSET),
+      resolvedChunkCenter.add(CHUNK_ANCHOR_OFFSET, 0.0d, CHUNK_ANCHOR_OFFSET)
+    };
+  }
+
+  private static void spawnChunk(BenchmarkScenarioContext context, EntityType<?> entityType,
+    Vec3 chunkCenter, int amount) {
+    ThreadLocalRandom random = ThreadLocalRandom.current();
+    Vec3[] anchors = getChunkAnchors(chunkCenter);
+    for (int index = 0; index < amount; index++) {
+      Entity entity = entityType.create(context.level(), EntitySpawnReason.COMMAND);
+      if (entity == null) {
+        continue;
+      }
+
+      Vec3 anchor = anchors[random.nextInt(anchors.length)];
+      BlockPos surfacePos = context.level()
+        .getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+          BlockPos.containing(anchor.x, 0.0d, anchor.z));
+      entity.snapTo(
+        anchor.x + random.nextDouble(-CHUNK_ANCHOR_JITTER, CHUNK_ANCHOR_JITTER),
+        surfacePos.getY() + SPAWN_CLEARANCE_Y + random.nextDouble(0.0d, SPAWN_Y_VARIATION),
+        anchor.z + random.nextDouble(-CHUNK_ANCHOR_JITTER, CHUNK_ANCHOR_JITTER),
+        random.nextFloat() * 360.0f,
+        0.0f);
+      context.tagEntity(entity);
+      context.level().addFreshEntity(entity);
+    }
+  }
 
   @Override
   public BenchmarkScenarioId id() {
@@ -39,7 +90,7 @@ public final class EntityScenario implements BenchmarkScenario {
 
   @Override
   public double cleanupRadius() {
-    return 36.0d;
+    return 64.0d;
   }
 
   @Override
@@ -59,19 +110,40 @@ public final class EntityScenario implements BenchmarkScenario {
     }
 
     Vec3 center = context.center();
-    for (int index = 0; index < ENTITY_COUNT; index++) {
-      double angle = (Math.PI * 2.0d * index) / ENTITY_COUNT;
-      double ring = 8.0d + (index % 6) * 4.0d;
-      double distance = Math.min(ring, ENTITY_RADIUS);
-      double spawnX = center.x + Math.cos(angle) * distance;
-      double spawnZ = center.z + Math.sin(angle) * distance;
-      Entity entity = entityType.create(context.level(), EntitySpawnReason.COMMAND);
-      if (entity == null) {
-        continue;
-      }
-      entity.setPos(spawnX, center.y, spawnZ);
-      context.tagEntity(entity);
-      context.level().addFreshEntity(entity);
+    spawnChunk(context, entityType, center, OVERLOADED_CHUNK_ENTITY_COUNT);
+    spawnChunk(context, entityType, center.add(16.0d, 0.0d, 0.0d), OVERLOADED_CHUNK_ENTITY_COUNT);
+    spawnChunk(context, entityType, center.add(0.0d, 0.0d, 16.0d), OVERLOADED_CHUNK_ENTITY_COUNT);
+    spawnChunk(context, entityType, center.add(16.0d, 0.0d, 16.0d), SUPPORT_CHUNK_ENTITY_COUNT);
+  }
+
+  @Override
+  public void onMeasurementTick(BenchmarkScenarioContext context) {
+    ThreadLocalRandom random = ThreadLocalRandom.current();
+    if (random.nextInt(4) != 0 || ENTITY_TYPE_ID == null) {
+      return;
+    }
+
+    EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(ENTITY_TYPE_ID).map(ref -> ref.value()).orElse(null);
+    if (entityType == null) {
+      return;
+    }
+
+    Vec3 center = context.center();
+    spawnChunk(context, entityType, center, random.nextInt(1, 3));
+    if (random.nextBoolean()) {
+      spawnChunk(context, entityType, center.add(16.0d, 0.0d, 0.0d), random.nextInt(1, 3));
+    }
+    if (random.nextBoolean()) {
+      spawnChunk(context, entityType, center.add(0.0d, 0.0d, 16.0d), random.nextInt(1, 3));
+    }
+    if (random.nextInt(3) == 0) {
+      spawnChunk(context, entityType, center.add(16.0d, 0.0d, 16.0d), 1);
+    }
+
+    if (context.activeBlock()) {
+      CoreEntityManager.cleanupChunkMobFarms(
+        SpawnConfig.entityChunkCleanupPerTypeLimit,
+        entity -> entity.getTags().contains(context.scenarioTag()));
     }
   }
 }

@@ -44,9 +44,14 @@ public abstract class PlayerDamageMixin {
       return;
     }
 
+    if (!((Object) this instanceof LivingEntity targetEntity) || targetEntity.level()
+      .isClientSide()) {
+      return;
+    }
+
     DamageSource source = args.get(0);
     float amount = args.get(1);
-    float modified = PlayerDamageManager.handleLivingHurt((LivingEntity) (Object) this, amount);
+    float modified = PlayerDamageManager.handleLivingHurt(targetEntity, amount);
     modified = PlayerDamageManager.handleLivingDamage(source, modified);
     args.set(1, modified);
   }

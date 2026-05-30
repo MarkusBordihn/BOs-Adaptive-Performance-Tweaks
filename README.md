@@ -24,9 +24,14 @@
 > Remove all old APTweaks module jars before installing 12.x. Do not mix 11.x and 12.x files in
 > the same `mods/` folder.
 
-Adaptive Performance Tweaks is a **single server-focused optimization mod** for **Forge, Fabric,
-and NeoForge** on **Minecraft 1.20.1**.
-It watches server load and adjusts selected systems automatically to reduce lag pressure.
+Adaptive Performance Tweaks is a **server-side optimization mod** for **Forge, Fabric, and
+NeoForge** on **Minecraft 1.20.1**.
+It watches Minecraft's server-side load and adjusts selected systems automatically to reduce lag
+pressure on dedicated servers, single-player worlds, and LAN-open worlds.
+
+That means APTweaks is not only for public or dedicated servers.
+It can also help in normal client worlds, because single-player and LAN sessions still run the same
+server-side systems for spawning, ticking, gamerules, items, XP orbs, and simulation distance.
 
 Instead of asking you to assemble separate modules, 12.x bundles the major feature groups in one
 mod:
@@ -46,7 +51,14 @@ APTweaks helps most when performance problems are caused by:
 - too many mobs or repeated spawn attempts
 - large amounts of dropped items, XP orbs, or stuck arrows
 - overloaded exploration and chunk generation
-- servers that need softer automatic reactions instead of permanent hard limits
+- worlds or servers that need softer automatic reactions instead of permanent hard limits
+
+APTweaks is especially useful for:
+
+- dedicated servers that need adaptive protection under changing player load
+- modpacks with heavy entity pressure
+- single-player worlds with farms, exploration, or too much dropped loot
+- LAN worlds where the host machine struggles with the integrated server load
 
 It is less helpful for issues that come mainly from:
 
@@ -61,7 +73,7 @@ It is less helpful for issues that come mainly from:
    the [CurseForge](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks)
    or [Modrinth](https://modrinth.com/mod/adaptive-performance-tweaks) launcher.
    Manual install: download the jar for your loader from one of those pages and place it in `mods/`.
-3. Start the game or server once.
+3. Start the game, world, or server once.
 4. Review the generated files in `config/adaptive_performance_tweaks/`.
 5. Leave defaults on for a first test run before tuning anything.
 
@@ -85,7 +97,7 @@ Spawn presets are loaded from:
 | AI Throttling       | Optional advanced slowdown for far-away mob AI                                                               |
 | Chunk Gen Throttle  | Optional advanced slowdown for chunk generation work                                                         |
 | Monitoring          | Optional log-based visibility into load and entity pressure                                                  |
-| Benchmark           | Built-in scenario-based baseline/active measurement suite for real servers and modpacks                      |
+| Benchmark           | Built-in scenario-based baseline/active measurement suite for real worlds, servers, and modpacks             |
 
 Simulation Distance stays load-aware as before, but can now also clamp down harder during
 heavy exploration at `MEDIUM+` load and then recover gradually after players stop moving or finish

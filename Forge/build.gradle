@@ -107,7 +107,11 @@ processResources {
   from project(":Common").sourceSets.main.resources
 }
 
-jar {
+tasks.named('jar', Jar).configure {
+  from(project(":Common").sourceSets.main.output)
+
+  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
   manifest {
     attributes([
         "Specification-Title"     : "${project.mod_name}",

@@ -36,14 +36,16 @@ public abstract class MobMixin {
   @Inject(method = "checkSpawnRules", at = @At("HEAD"), cancellable = true)
   private void aptweaks_checkSpawnRules(
     LevelAccessor level, EntitySpawnReason spawnType, CallbackInfoReturnable<Boolean> cir) {
-    if (FeatureToggle.SPAWN.isEnabled()
-      && spawnType != EntitySpawnReason.NATURAL
-      && level instanceof ServerLevel serverLevel) {
-      Mob thisMob = (Mob) (Object) this;
-      if (SpawnManager.shouldDenyMobSpawnAt(
-        thisMob.getType(), serverLevel, thisMob.blockPosition(), spawnType)) {
-        cir.setReturnValue(false);
-      }
+    if (!FeatureToggle.SPAWN.isEnabled()
+      || spawnType == EntitySpawnReason.NATURAL
+      || !(level instanceof ServerLevel serverLevel)) {
+      return;
+    }
+
+    Mob thisMob = (Mob) (Object) this;
+    if (SpawnManager.shouldDenyMobSpawnAt(
+      thisMob.getType(), serverLevel, thisMob.blockPosition(), spawnType)) {
+      cir.setReturnValue(false);
     }
   }
 }

@@ -27,11 +27,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.gamerules.GameRule;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.WorldData;
@@ -58,6 +62,12 @@ class GameRuleManagerTest {
     Field field = GameRuleManager.class.getDeclaredField(fieldName);
     field.setAccessible(true);
     return field.get(null);
+  }
+
+  private static void writeServerManagerField(String fieldName, Object value) throws Exception {
+    Field field = ServerManager.class.getDeclaredField(fieldName);
+    field.setAccessible(true);
+    field.set(null, value);
   }
 
   private static int invokeIntMethod(String methodName) throws Exception {
@@ -102,6 +112,7 @@ class GameRuleManagerTest {
       Object key = inv.getArgument(0);
       if (key == GameRules.RANDOM_TICK_SPEED) return 5;
       if (key == GameRules.MAX_ENTITY_CRAMMING) return 19;
+      if (key == GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER) return 128;
       return false;
     }).when(rules).get(any(GameRule.class));
     WorldData worldData = mock(WorldData.class, withSettings().mockMaker(MockMakers.SUBCLASS));
@@ -117,6 +128,54 @@ class GameRuleManagerTest {
       assertEquals(19, readStaticField("configuredMaxEntityCramming"));
     } finally {
       FeatureToggle.GAMERULES.setEnabled(previousState);
+    }
+  }
+
+  @Test
+  void handleServerStartingCapturesFireSpreadRadiusDefault() throws Exception {
+    MinecraftServer server = mock(MinecraftServer.class,
+      withSettings().mockMaker(MockMakers.SUBCLASS));
+    GameRules rules = new GameRules(FeatureFlags.DEFAULT_FLAGS);
+    rules.set(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER, 32, null);
+    WorldData worldData = mock(WorldData.class, withSettings().mockMaker(MockMakers.SUBCLASS));
+    when(server.getWorldData()).thenReturn(worldData);
+    when(worldData.getGameRules()).thenReturn(rules);
+
+    GameRuleManager.handleServerStarting(server);
+
+    assertEquals(32, readStaticField("configuredFireSpreadRadiusAroundPlayer"));
+  }
+
+  @Test
+  void highLoadDisablesAndNormalLoadRestoresFireSpreadRadius() {
+    MinecraftServer server = mock(MinecraftServer.class,
+      withSettings().mockMaker(MockMakers.SUBCLASS));
+    GameRules rules = new GameRules(FeatureFlags.DEFAULT_FLAGS);
+    rules.set(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER, 64, null);
+    WorldData worldData = mock(WorldData.class, withSettings().mockMaker(MockMakers.SUBCLASS));
+    when(server.getWorldData()).thenReturn(worldData);
+    when(worldData.getGameRules()).thenReturn(rules);
+
+    try {
+      writeServerManagerField("minecraftServer", server);
+      GameRuleManager.handleServerStarting(server);
+      assertEquals(64, (Integer) rules.get(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER));
+
+      GameRuleManager.handleServerLoadEvent(
+        new ServerLoadEvent(ServerLoadLevel.HIGH, ServerLoadLevel.NORMAL, 75.0, 50.0));
+      assertEquals(0, (Integer) rules.get(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER));
+
+      writeStaticField("lastUpdateTime", 0L);
+      GameRuleManager.handleServerLoadEvent(
+        new ServerLoadEvent(ServerLoadLevel.NORMAL, ServerLoadLevel.HIGH, 50.0, 75.0));
+      assertEquals(64, (Integer) rules.get(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER));
+    } catch (Exception exception) {
+      throw new AssertionError(exception);
+    } finally {
+      try {
+        writeServerManagerField("minecraftServer", null);
+      } catch (Exception ignored) {
+      }
     }
   }
 }

@@ -20,7 +20,6 @@
 package de.markusbordihn.adaptiveperformancetweaks.feature.gamerules;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
-import de.markusbordihn.adaptiveperformancetweaks.core.commands.CommandManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModCompat;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
@@ -47,6 +46,7 @@ public final class GameRuleManager {
   private static boolean configuredBlockExplosionDropDecay;
   private static boolean configuredElytraMovementCheck;
   private static boolean configuredSpawnPhantoms;
+  private static int configuredFireSpreadRadiusAroundPlayer = 128;
   private static boolean configuredMobExplosionDropDecay;
   private static boolean configuredRaids;
   private static boolean configuredDoPatrolSpawning;
@@ -68,6 +68,8 @@ public final class GameRuleManager {
       (Boolean) gameRules.get(GameRules.BLOCK_EXPLOSION_DROP_DECAY);
     configuredElytraMovementCheck = (Boolean) gameRules.get(GameRules.ELYTRA_MOVEMENT_CHECK);
     configuredSpawnPhantoms = (Boolean) gameRules.get(GameRules.SPAWN_PHANTOMS);
+    configuredFireSpreadRadiusAroundPlayer =
+      (Integer) gameRules.get(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER);
     configuredMobExplosionDropDecay = (Boolean) gameRules.get(GameRules.MOB_EXPLOSION_DROP_DECAY);
     configuredRaids = (Boolean) gameRules.get(GameRules.RAIDS);
     configuredDoPatrolSpawning = (Boolean) gameRules.get(GameRules.SPAWN_PATROLS);
@@ -113,6 +115,7 @@ public final class GameRuleManager {
     gameRules = null;
     configuredRandomTickSpeedMax = 3;
     configuredMaxEntityCramming = GameRulesConfig.maxEntityCramming;
+    configuredFireSpreadRadiusAroundPlayer = 128;
     lastUpdateTime = System.currentTimeMillis();
     randomTickWarmupUntilTime = 0L;
   }
@@ -199,6 +202,9 @@ public final class GameRuleManager {
     if (GameRulesConfig.elytraMovementCheckEnabled) {
       disableElytraMovementCheck();
     }
+    if (GameRulesConfig.fireTickEnabled) {
+      disableFireTick();
+    }
     if (GameRulesConfig.insomniaEnabled) {
       disableInsomnia();
     }
@@ -233,6 +239,9 @@ public final class GameRuleManager {
         decreaseRandomTickSpeed();
       }
     }
+    if (GameRulesConfig.fireTickEnabled) {
+      disableFireTick();
+    }
     if (GameRulesConfig.raidsEnabled) {
       disableRaids();
     }
@@ -241,6 +250,9 @@ public final class GameRuleManager {
   private static void restoreNormalLoad() {
     if (GameRulesConfig.elytraMovementCheckEnabled) {
       enableElytraMovementCheck();
+    }
+    if (GameRulesConfig.fireTickEnabled) {
+      enableFireTick();
     }
     if (GameRulesConfig.raidsEnabled) {
       enableRaids();
@@ -268,7 +280,8 @@ public final class GameRuleManager {
   private static void logOptimizationInfo() {
     StringBuilder active = new StringBuilder();
     if (GameRulesConfig.blockExplodesEnabled) {
-      log.debug("{} Block explosions will be disabled during very high server load.", LOG_PREFIX);
+      log.debug("{} Block explosions will use drop decay during very high server load.",
+        LOG_PREFIX);
       active.append(!active.isEmpty() ? ", " : "").append("blockExplosions");
     }
     if (GameRulesConfig.elytraMovementCheckEnabled) {
@@ -276,12 +289,18 @@ public final class GameRuleManager {
         LOG_PREFIX);
       active.append(!active.isEmpty() ? ", " : "").append("elytraMovementCheck");
     }
+    if (GameRulesConfig.fireTickEnabled) {
+      log.debug("{} Fire spread around players will be disabled during high server load.",
+        LOG_PREFIX);
+      active.append(!active.isEmpty() ? ", " : "").append("fireTick");
+    }
     if (GameRulesConfig.insomniaEnabled) {
       log.debug("{} Insomnia will be disabled during very high server load.", LOG_PREFIX);
       active.append(!active.isEmpty() ? ", " : "").append("insomnia");
     }
     if (GameRulesConfig.mobExplodesEnabled) {
-      log.debug("{} Mob explosions will be disabled during very high server load.", LOG_PREFIX);
+      log.debug("{} Mob explosions will use drop decay during very high server load.",
+        LOG_PREFIX);
       active.append(!active.isEmpty() ? ", " : "").append("mobExplosions");
     }
     if (GameRulesConfig.patrolSpawningEnabled) {
@@ -297,7 +316,8 @@ public final class GameRuleManager {
       active.append(!active.isEmpty() ? ", " : "").append("traderSpawning");
     }
     if (GameRulesConfig.tntExplodesEnabled) {
-      log.debug("{} TNT explosions will be disabled during very high server load.", LOG_PREFIX);
+      log.debug("{} TNT explosions will use drop decay during very high server load.",
+        LOG_PREFIX);
       active.append(!active.isEmpty() ? ", " : "").append("tntExplosions");
     }
     if (GameRulesConfig.vinesSpreadEnabled) {
@@ -326,6 +346,8 @@ public final class GameRuleManager {
     setGameRule(GameRules.BLOCK_EXPLOSION_DROP_DECAY, configuredBlockExplosionDropDecay);
     setGameRule(GameRules.ELYTRA_MOVEMENT_CHECK, configuredElytraMovementCheck);
     setGameRule(GameRules.SPAWN_PHANTOMS, configuredSpawnPhantoms);
+    setGameRule(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER,
+      configuredFireSpreadRadiusAroundPlayer);
     setGameRule(GameRules.MOB_EXPLOSION_DROP_DECAY, configuredMobExplosionDropDecay);
     setGameRule(GameRules.RAIDS, configuredRaids);
     setGameRule(GameRules.SPAWN_PATROLS, configuredDoPatrolSpawning);
@@ -346,6 +368,24 @@ public final class GameRuleManager {
     if ((Boolean) gameRules.get(GameRules.ELYTRA_MOVEMENT_CHECK)) {
       log.debug("{} elytraMovementCheck -> false", LOG_PREFIX);
       executeGameRuleChange(GameRules.ELYTRA_MOVEMENT_CHECK, false);
+    }
+  }
+
+  public static void enableFireTick() {
+    int current = (Integer) gameRules.get(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER);
+    if (current != configuredFireSpreadRadiusAroundPlayer) {
+      log.debug("{} fireSpreadRadiusAroundPlayer: {} -> {}", LOG_PREFIX, current,
+        configuredFireSpreadRadiusAroundPlayer);
+      executeGameRuleChange(
+        GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER, configuredFireSpreadRadiusAroundPlayer);
+    }
+  }
+
+  public static void disableFireTick() {
+    int current = (Integer) gameRules.get(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER);
+    if (current != 0) {
+      log.debug("{} fireSpreadRadiusAroundPlayer: {} -> 0", LOG_PREFIX, current);
+      executeGameRuleChange(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER, 0);
     }
   }
 
@@ -520,20 +560,28 @@ public final class GameRuleManager {
     }
   }
 
-  private static void executeGameRuleChange(
-    GameRule rule, boolean value) {
+  private static void executeGameRuleChange(GameRule<Boolean> rule, boolean value) {
     PerformanceStats.gameRulesChanged++;
-    CommandManager.executeGameRuleCommand(rule, value);
+    if (gameRules != null) {
+      gameRules.set(rule, value, ServerManager.getMinecraftServer());
+    }
   }
 
-  private static void executeGameRuleChange(
-    GameRule rule, int value) {
+  private static void executeGameRuleChange(GameRule<Integer> rule, int value) {
     PerformanceStats.gameRulesChanged++;
-    CommandManager.executeGameRuleCommand(rule, value);
+    if (gameRules != null) {
+      gameRules.set(rule, value, ServerManager.getMinecraftServer());
+    }
   }
 
-  private static void setGameRule(GameRule rule, boolean value) {
+  private static void setGameRule(GameRule<Boolean> rule, boolean value) {
     if ((Boolean) gameRules.get(rule) != value) {
+      executeGameRuleChange(rule, value);
+    }
+  }
+
+  private static void setGameRule(GameRule<Integer> rule, int value) {
+    if ((Integer) gameRules.get(rule) != value) {
       executeGameRuleChange(rule, value);
     }
   }

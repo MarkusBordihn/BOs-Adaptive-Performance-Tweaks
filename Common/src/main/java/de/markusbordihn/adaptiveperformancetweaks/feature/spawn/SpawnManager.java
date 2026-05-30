@@ -70,6 +70,7 @@ public final class SpawnManager {
   private static volatile boolean serverStartedDelay = false;
   private static int serverStartedDelayTicks = 0;
   private static int friendlyChunkCounter = 0;
+  private static int entityChunkCleanupTicks = 0;
 
   private SpawnManager() {
   }
@@ -80,6 +81,7 @@ public final class SpawnManager {
     serverStartedDelay = false;
     serverStartedDelayTicks = 0;
     friendlyChunkCounter = 0;
+    entityChunkCleanupTicks = 0;
     worldCountDelta.clear();
     chunkCountDelta.clear();
     nearPlayerCountDelta.clear();
@@ -120,6 +122,16 @@ public final class SpawnManager {
         serverStartedDelay = true;
         log.info("Spawn limits are now active.");
       }
+    }
+
+    if (!SpawnConfig.entityChunkCleanupEnabled || !currentLoadLevel.isHigh()) {
+      entityChunkCleanupTicks = 0;
+      return;
+    }
+
+    if (++entityChunkCleanupTicks >= Math.max(20, SpawnConfig.entityChunkCleanupIntervalTicks)) {
+      entityChunkCleanupTicks = 0;
+      CoreEntityManager.cleanupChunkMobFarms(SpawnConfig.entityChunkCleanupPerTypeLimit);
     }
   }
 
