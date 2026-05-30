@@ -75,5 +75,12 @@ class SpawnPresetExcludedConfigTest {
     assertNotEquals(TrackingCategory.UNKNOWN, trackingCategory,
       name + ": unknown 'category' value '" + categoryStr
         + "' - valid values: technical, vehicle_structure, world_effect, managed_living, storage_network, manual_override");
+
+    assertFalse(jsonObject.has("entities"),
+      name + ": excluded tracking presets must not define 'entities'");
+    assertFalse(jsonObject.has("dimensions"),
+      name + ": excluded tracking presets must not define 'dimensions'");
+    assertFalse(jsonObject.has("load_factors"),
+      name + ": excluded tracking presets must not define 'load_factors'");
   }
 }

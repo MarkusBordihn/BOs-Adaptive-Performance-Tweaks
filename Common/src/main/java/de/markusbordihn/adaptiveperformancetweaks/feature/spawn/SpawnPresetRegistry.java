@@ -51,7 +51,13 @@ public final class SpawnPresetRegistry {
     long startTime = System.nanoTime();
     entityPresetCache.clear();
     missingPresetCache.clear();
-    List<SpawnPreset> sorted = new ArrayList<>(presets);
+    SpawnPresetPartitioner.Partition partition = SpawnPresetPartitioner.partition(presets);
+    List<SpawnPreset> sorted = new ArrayList<>(partition.spawnPresets());
+    for (SpawnPreset preset : partition.trackingPresets()) {
+      log.debug("Skipping tracking-only preset '{}' ({}) during spawn reload.",
+        preset.modId(), preset.mode());
+    }
+
     sorted.sort((presetA, presetB) -> Integer.compare(presetB.priority(), presetA.priority()));
     RegistrySnapshot registrySnapshot = buildRegistrySnapshot();
     List<ResolvedPreset> resolvedPresets = new ArrayList<>(sorted.size());

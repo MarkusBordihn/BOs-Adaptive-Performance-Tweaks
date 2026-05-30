@@ -321,18 +321,9 @@ public class SpawnPresetLoader extends SimpleJsonResourceReloadListener {
     }
 
     scanConfigDirectory(presets);
-    CoreEntityManager.reloadTrackingRules(presets);
-
-    List<SpawnPreset> spawnPresets = new ArrayList<>();
-    for (SpawnPreset preset : presets) {
-      if (preset.mode() != null) {
-        continue;
-      }
-
-      spawnPresets.add(preset);
-    }
-
-    SpawnPresetRegistry.reload(spawnPresets);
+    SpawnPresetPartitioner.Partition partition = SpawnPresetPartitioner.partition(presets);
+    CoreEntityManager.reloadTrackingRules(partition.trackingPresets());
+    SpawnPresetRegistry.reload(partition.spawnPresets());
   }
 
   public void loadPresetsFrom(ResourceManager resourceManager) {

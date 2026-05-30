@@ -355,6 +355,7 @@ public record BenchmarkCompareResult(
     lines.add(overallConclusion());
     appendDistributionDetails(lines,
       aggregateMsptDistribution(false), aggregateMsptDistribution(true),
+      aggregateFineMsptDistribution(false), aggregateFineMsptDistribution(true),
       aggregateLoadDistribution(false), aggregateLoadDistribution(true));
     lines.add(Component.literal(""));
     lines.add(Component.literal(
@@ -430,6 +431,7 @@ public record BenchmarkCompareResult(
     lines.add("");
     appendMarkdownDistributionRows(lines,
       aggregateMsptDistribution(false), aggregateMsptDistribution(true),
+      aggregateFineMsptDistribution(false), aggregateFineMsptDistribution(true),
       aggregateLoadDistribution(false), aggregateLoadDistribution(true));
     lines.add("");
     lines.add("## Scenario Summary");
@@ -517,6 +519,7 @@ public record BenchmarkCompareResult(
       entityDelta <= 0 ? ChatFormatting.GREEN : ChatFormatting.RED));
     appendDistributionDetails(lines,
       baseline.msptDistribution(), active.msptDistribution(),
+      baseline.fineMsptDistribution(), active.fineMsptDistribution(),
       baseline.loadDistribution(), active.loadDistribution());
     lines.add(assessmentLine(result));
     lines.add(Component.literal("Baseline actions: ").withStyle(ChatFormatting.AQUA)
@@ -589,6 +592,7 @@ public record BenchmarkCompareResult(
     lines.add("");
     appendMarkdownDistributionRows(lines,
       baseline.msptDistribution(), active.msptDistribution(),
+      baseline.fineMsptDistribution(), active.fineMsptDistribution(),
       baseline.loadDistribution(), active.loadDistribution());
     lines.add("");
     lines.add("Assessment: " + assessmentLine(result).getString().replace("Assessment: ", ""));
@@ -756,6 +760,12 @@ public record BenchmarkCompareResult(
       MsptBucket.class);
   }
 
+  private Map<FineMsptBucket, Integer> aggregateFineMsptDistribution(boolean activePhase) {
+    return aggregateDistribution(activePhase,
+      PhaseResult::fineMsptDistribution,
+      FineMsptBucket.class);
+  }
+
   private Map<ServerLoadLevel, Integer> aggregateLoadDistribution(boolean activePhase) {
     return aggregateDistribution(activePhase,
       PhaseResult::loadDistribution,
@@ -791,6 +801,8 @@ public record BenchmarkCompareResult(
   private void appendDistributionDetails(List<Component> lines,
     Map<MsptBucket, Integer> baselineMsptDistribution,
     Map<MsptBucket, Integer> activeMsptDistribution,
+    Map<FineMsptBucket, Integer> baselineFineMsptDistribution,
+    Map<FineMsptBucket, Integer> activeFineMsptDistribution,
     Map<ServerLoadLevel, Integer> baselineLoadDistribution,
     Map<ServerLoadLevel, Integer> activeLoadDistribution) {
     lines.add(Component.literal("MSPT distribution:         Baseline   Active")
@@ -802,6 +814,17 @@ public record BenchmarkCompareResult(
       lines.add(distributionLine(bucket.getLabel(),
         percentage(baselineMsptDistribution, bucket),
         percentage(activeMsptDistribution, bucket)));
+    }
+
+    lines.add(Component.literal("Fine MSPT distribution:    Baseline   Active")
+      .withStyle(ChatFormatting.GRAY));
+    for (FineMsptBucket bucket : FineMsptBucket.values()) {
+      if (!hasDistributionData(baselineFineMsptDistribution, activeFineMsptDistribution, bucket)) {
+        continue;
+      }
+      lines.add(distributionLine(bucket.getLabel(),
+        percentage(baselineFineMsptDistribution, bucket),
+        percentage(activeFineMsptDistribution, bucket)));
     }
 
     lines.add(Component.literal("Load distribution:         Baseline   Active")
@@ -819,6 +842,8 @@ public record BenchmarkCompareResult(
   private void appendMarkdownDistributionRows(List<String> lines,
     Map<MsptBucket, Integer> baselineMsptDistribution,
     Map<MsptBucket, Integer> activeMsptDistribution,
+    Map<FineMsptBucket, Integer> baselineFineMsptDistribution,
+    Map<FineMsptBucket, Integer> activeFineMsptDistribution,
     Map<ServerLoadLevel, Integer> baselineLoadDistribution,
     Map<ServerLoadLevel, Integer> activeLoadDistribution) {
     lines.add("**MSPT distribution:**");
@@ -833,6 +858,21 @@ public record BenchmarkCompareResult(
         bucket.getLabel(),
         percentage(baselineMsptDistribution, bucket),
         percentage(activeMsptDistribution, bucket)));
+    }
+
+    lines.add("");
+    lines.add("**Fine MSPT distribution:**");
+    lines.add("");
+    lines.add("| Bucket | Baseline | Active |");
+    lines.add("|--------|---------:|-------:|");
+    for (FineMsptBucket bucket : FineMsptBucket.values()) {
+      if (!hasDistributionData(baselineFineMsptDistribution, activeFineMsptDistribution, bucket)) {
+        continue;
+      }
+      lines.add(markdownDistributionLine(
+        bucket.getLabel(),
+        percentage(baselineFineMsptDistribution, bucket),
+        percentage(activeFineMsptDistribution, bucket)));
     }
 
     lines.add("");

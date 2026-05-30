@@ -28,6 +28,8 @@ import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.SharedConstants;
 import org.apache.logging.log4j.Logger;
 
@@ -53,7 +55,8 @@ final class BenchmarkResultWriter {
       String filename = buildBenchmarkFilename(timestamp, mcVersion, loader, modVersion);
       Files.createDirectories(Constants.BENCHMARK_DIR);
       Path path = Constants.BENCHMARK_DIR.resolve(filename);
-      Files.write(path, result.formatMarkdown(), StandardCharsets.UTF_8,
+      Files.write(path, buildMarkdownReport(result, mcVersion, loader, modVersion),
+        StandardCharsets.UTF_8,
         StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
       log.info("Benchmark result saved to: {}", path);
       return path;
@@ -70,5 +73,39 @@ final class BenchmarkResultWriter {
     }
 
     return String.format("benchmark_%s_mc%s_%s_v%s.md", timestamp, mcVersion, loader, modVersion);
+  }
+
+  static List<String> buildMarkdownReport(
+    BenchmarkCompareResult result, String mcVersion, String loader, String modVersion) {
+    List<String> sourceLines = result.formatMarkdown();
+    List<String> lines = new ArrayList<>(sourceLines.size() + 1);
+    if (sourceLines.isEmpty()) {
+      return lines;
+    }
+
+    lines.add(sourceLines.get(0));
+    String serverVersionLine = buildServerVersionLine(mcVersion, loader, modVersion);
+    if (!serverVersionLine.isBlank()) {
+      lines.add(serverVersionLine);
+    }
+
+    int startIndex = sourceLines.size() > 1 && sourceLines.get(1).isBlank() ? 2 : 1;
+    for (int index = startIndex; index < sourceLines.size(); index++) {
+      lines.add(sourceLines.get(index));
+    }
+    return lines;
+  }
+
+  private static String buildServerVersionLine(
+    String mcVersion, String loader, String modVersion) {
+    StringBuilder line = new StringBuilder("- Server version: Minecraft ")
+      .append(mcVersion);
+    if (loader != null && !loader.isBlank()) {
+      line.append(" / ").append(loader);
+    }
+    if (modVersion != null && !modVersion.isBlank()) {
+      line.append(" / APTweaks ").append(modVersion);
+    }
+    return line.toString();
   }
 }

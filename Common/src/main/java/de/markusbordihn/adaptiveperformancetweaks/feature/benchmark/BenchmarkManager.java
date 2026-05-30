@@ -537,6 +537,7 @@ public final class BenchmarkManager {
       max(currentSamples),
       Map.copyOf(currentLoadDist),
       Map.copyOf(currentMsptDist),
+      buildFineMsptDistribution(currentSamples),
       getCurrentPeakHeapDeltaBytes(),
       countEntities(),
       average(currentCpuSamples, -1.0d),
@@ -894,6 +895,14 @@ public final class BenchmarkManager {
 
     return BLOCK_WARMUP_DURATION_MS * 2L
       + (measurementDuration + SCENARIO_SETTLE_DURATION_MS + SCENARIO_POST_SETTLE_DURATION_MS) * 2L;
+  }
+
+  private static Map<FineMsptBucket, Integer> buildFineMsptDistribution(List<Double> samples) {
+    EnumMap<FineMsptBucket, Integer> distribution = new EnumMap<>(FineMsptBucket.class);
+    for (double sampleMspt : samples) {
+      distribution.merge(FineMsptBucket.fromTickTime(sampleMspt), 1, Integer::sum);
+    }
+    return Map.copyOf(distribution);
   }
 
   private static String formatScenarioDurationsForMessage() {

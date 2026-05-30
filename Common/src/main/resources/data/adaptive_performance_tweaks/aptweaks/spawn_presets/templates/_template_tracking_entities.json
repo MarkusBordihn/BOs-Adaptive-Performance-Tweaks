@@ -1,0 +1,10 @@
+{
+  "template": true,
+  "notes": "TEMPLATE - Copy this file into config/adaptive_performance_tweaks/spawn_presets/, rename it without the leading _, then remove 'template: true'. Targets specific entities for tracking protection or exclusion. Use protect_entity or exclude_entity as needed.",
+  "mod_id": "your_sensitive_mod",
+  "priority": 210,
+  "mode": "protect_entity",
+  "category": "managed_living",
+  "entity_ids": ["your_sensitive_mod:entity_one", "your_sensitive_mod:entity_two"],
+  "reason": "Specific managed entities should stay protected from generic tracking cleanup."
+}

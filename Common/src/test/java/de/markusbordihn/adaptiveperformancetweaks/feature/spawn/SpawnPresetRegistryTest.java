@@ -61,8 +61,8 @@ class SpawnPresetRegistryTest {
       new SpawnPreset.DimensionFilter(List.of(), List.of(), List.of()),
       new SpawnPreset.EntityLimits(Set.of("minecraft:*"), Set.of(), 7, 21, 42, 3),
       SpawnPreset.LoadFactors.defaults(),
-      TrackingMode.EXCLUDE_ENTITY,
-      TrackingCategory.UNKNOWN,
+      null,
+      null,
       "",
       Set.of())));
 
@@ -88,8 +88,8 @@ class SpawnPresetRegistryTest {
       new SpawnPreset.DimensionFilter(List.of(), List.of(), List.of()),
       new SpawnPreset.EntityLimits(Set.of(), Set.of("*"), 5, 10, 15, 2),
       SpawnPreset.LoadFactors.defaults(),
-      TrackingMode.EXCLUDE_ENTITY,
-      TrackingCategory.UNKNOWN,
+      null,
+      null,
       "",
       Set.of())));
 
@@ -109,8 +109,8 @@ class SpawnPresetRegistryTest {
       new SpawnPreset.DimensionFilter(List.of(), List.of(), List.of()),
       new SpawnPreset.EntityLimits(Set.of(), Set.of(), 9, 18, 27, 3),
       SpawnPreset.LoadFactors.defaults(),
-      TrackingMode.EXCLUDE_NAMESPACE,
-      TrackingCategory.UNKNOWN,
+      null,
+      null,
       "",
       Set.of())));
 
@@ -132,8 +132,8 @@ class SpawnPresetRegistryTest {
       new SpawnPreset.DimensionFilter(List.of(), List.of(), List.of()),
       new SpawnPreset.EntityLimits(Set.of("minecraft:zombie"), Set.of(), 4, 8, 12, 2),
       SpawnPreset.LoadFactors.defaults(),
-      TrackingMode.EXCLUDE_ENTITY,
-      TrackingCategory.UNKNOWN,
+      null,
+      null,
       "",
       Set.of());
     SpawnPreset overworldPreset = new SpawnPreset(
@@ -144,8 +144,8 @@ class SpawnPresetRegistryTest {
       new SpawnPreset.DimensionFilter(List.of(OVERWORLD), List.of(), List.of()),
       new SpawnPreset.EntityLimits(Set.of("minecraft:zombie"), Set.of(), 7, 21, 42, 3),
       SpawnPreset.LoadFactors.defaults(),
-      TrackingMode.EXCLUDE_ENTITY,
-      TrackingCategory.UNKNOWN,
+      null,
+      null,
       "",
       Set.of());
     SpawnPresetRegistry.reload(List.of(globalPreset, overworldPreset));
@@ -168,8 +168,8 @@ class SpawnPresetRegistryTest {
       new SpawnPreset.DimensionFilter(List.of(), List.of(), List.of()),
       new SpawnPreset.EntityLimits(Set.of("minecraft:zombie"), Set.of(), 4, 8, 12, 2),
       SpawnPreset.LoadFactors.defaults(),
-      TrackingMode.EXCLUDE_ENTITY,
-      TrackingCategory.UNKNOWN,
+      null,
+      null,
       "",
       Set.of());
     SpawnPreset deniedOverworldPreset = new SpawnPreset(
@@ -180,8 +180,8 @@ class SpawnPresetRegistryTest {
       new SpawnPreset.DimensionFilter(List.of(), List.of(OVERWORLD), List.of()),
       new SpawnPreset.EntityLimits(Set.of("minecraft:zombie"), Set.of(), 7, 21, 42, 3),
       SpawnPreset.LoadFactors.defaults(),
-      TrackingMode.EXCLUDE_ENTITY,
-      TrackingCategory.UNKNOWN,
+      null,
+      null,
       "",
       Set.of());
     SpawnPresetRegistry.reload(List.of(globalPreset, deniedOverworldPreset));
@@ -214,8 +214,8 @@ class SpawnPresetRegistryTest {
       new SpawnPreset.DimensionFilter(List.of(), List.of(), List.of()),
       new SpawnPreset.EntityLimits(Set.of("minecraft:zombie"), Set.of(), 10, 20, 30, 4),
       new SpawnPreset.LoadFactors(1.0, 0.8, 0.6, 0.5, 0.4, 0.2),
-      TrackingMode.EXCLUDE_ENTITY,
-      TrackingCategory.UNKNOWN,
+      null,
+      null,
       "",
       Set.of())));
 
@@ -252,8 +252,8 @@ class SpawnPresetRegistryTest {
       new SpawnPreset.DimensionFilter(List.of(OVERWORLD), List.of(), List.of()),
       new SpawnPreset.EntityLimits(Set.of("minecraft:zombie"), Set.of(), 7, 21, 42, 3),
       SpawnPreset.LoadFactors.defaults(),
-      TrackingMode.EXCLUDE_ENTITY,
-      TrackingCategory.UNKNOWN,
+      null,
+      null,
       "",
       Set.of());
     SpawnPresetRegistry.reload(List.of(overworldPreset));
@@ -266,6 +266,28 @@ class SpawnPresetRegistryTest {
       SpawnPresetRegistry.getEffectivePerWorldMax(EntityType.ZOMBIE, OVERWORLD,
         ServerLoadLevel.VERY_LOW),
       SpawnPresetRegistry.getEffectivePerWorldMax(EntityType.ZOMBIE, overworld,
+        ServerLoadLevel.VERY_LOW));
+  }
+
+  @Test
+  void trackingOnlyPresetIsIgnoredByRegistry() {
+    SpawnPresetRegistry.reload(List.of(new SpawnPreset(
+      false,
+      "minecraft",
+      List.of(),
+      100,
+      new SpawnPreset.DimensionFilter(List.of(), List.of(), List.of()),
+      new SpawnPreset.EntityLimits(Set.of(), Set.of("*"), 1, 1, 1, 1),
+      SpawnPreset.LoadFactors.defaults(),
+      TrackingMode.EXCLUDE_NAMESPACE,
+      TrackingCategory.TECHNICAL,
+      "Tracking-only presets must not affect spawn limits.",
+      Set.of())));
+
+    assertEquals(SpawnDecision.ALLOW,
+      SpawnPresetRegistry.evaluate(EntityType.ZOMBIE, OVERWORLD));
+    assertEquals(SpawnConfig.spawnLimitationMaxMobsPerWorld,
+      SpawnPresetRegistry.getEffectivePerWorldMax(EntityType.ZOMBIE, OVERWORLD,
         ServerLoadLevel.VERY_LOW));
   }
 }

@@ -1,6 +1,6 @@
 {
   "template": true,
-  "notes": "TEMPLATE — Use deny_list to permanently block specific entities from spawning. Remove 'template: true' to activate.",
+  "notes": "TEMPLATE - Copy this file into config/adaptive_performance_tweaks/spawn_presets/, rename it without the leading _, then remove 'template: true'. Use deny_list to permanently block specific entities from spawning.",
   "replace": false,
   "mod_id": "your_mod_id",
   "priority": 200,
