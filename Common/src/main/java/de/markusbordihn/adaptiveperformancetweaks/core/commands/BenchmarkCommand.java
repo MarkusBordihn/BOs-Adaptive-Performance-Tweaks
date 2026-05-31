@@ -41,6 +41,7 @@ public class BenchmarkCommand extends CustomCommand {
 
   private static final BenchmarkCommand command = new BenchmarkCommand();
   private static final long DEFAULT_PHASE_SECONDS = 240L;
+  private static final String OPEN_RESULT_COMMAND = "/aptweaks benchmark openresult";
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
     return Commands.literal("benchmark")
@@ -138,6 +139,13 @@ public class BenchmarkCommand extends CustomCommand {
           .withStyle(ChatFormatting.RED));
       return 0;
     }
+
+    if (context.getSource().getServer().isDedicatedServer()) {
+      sendFeedback(context, Component.literal("Report Path: ").withStyle(ChatFormatting.GOLD)
+        .append(Component.literal(resultPath.toString()).withStyle(ChatFormatting.AQUA)));
+      return 0;
+    }
+
     Util.getPlatform().openFile(resultPath.toFile());
     return 0;
   }
