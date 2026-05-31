@@ -64,8 +64,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -92,6 +92,7 @@ public final class BenchmarkManager {
   private static final long MIN_SUITE_SPECIAL_SECONDS = 15L;
   private static final double TELEPORT_Y = 100.0d;
   private static final String BENCHMARK_TAG = "aptweaks_benchmark";
+  private static final String OPEN_RESULT_COMMAND = "/aptweaks benchmark openresult";
   private static final List<BenchmarkScenario> DEFAULT_SCENARIOS = createScenarioSuite();
   private static final EnumMap<FeatureToggle, Boolean> savedFeatureState =
     new EnumMap<>(FeatureToggle.class);
@@ -538,6 +539,7 @@ public final class BenchmarkManager {
       max(currentSamples),
       Map.copyOf(currentLoadDist),
       Map.copyOf(currentMsptDist),
+      buildFineMsptDistribution(currentSamples),
       getCurrentPeakHeapDeltaBytes(),
       countEntities(),
       average(currentCpuSamples, -1.0d),
@@ -899,6 +901,14 @@ public final class BenchmarkManager {
 
     return BLOCK_WARMUP_DURATION_MS * 2L
       + (measurementDuration + SCENARIO_SETTLE_DURATION_MS + SCENARIO_POST_SETTLE_DURATION_MS) * 2L;
+  }
+
+  private static Map<FineMsptBucket, Integer> buildFineMsptDistribution(List<Double> samples) {
+    EnumMap<FineMsptBucket, Integer> distribution = new EnumMap<>(FineMsptBucket.class);
+    for (double sampleMspt : samples) {
+      distribution.merge(FineMsptBucket.fromTickTime(sampleMspt), 1, Integer::sum);
+    }
+    return Map.copyOf(distribution);
   }
 
   private static String formatScenarioDurationsForMessage() {

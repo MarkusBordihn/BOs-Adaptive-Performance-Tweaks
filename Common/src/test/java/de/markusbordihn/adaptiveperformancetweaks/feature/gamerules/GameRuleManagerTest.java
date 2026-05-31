@@ -110,9 +110,15 @@ class GameRuleManagerTest {
     GameRules rules = mock(GameRules.class);
     doAnswer(inv -> {
       Object key = inv.getArgument(0);
-      if (key == GameRules.RANDOM_TICK_SPEED) return 5;
-      if (key == GameRules.MAX_ENTITY_CRAMMING) return 19;
-      if (key == GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER) return 128;
+      if (key == GameRules.RANDOM_TICK_SPEED) {
+        return 5;
+      }
+      if (key == GameRules.MAX_ENTITY_CRAMMING) {
+        return 19;
+      }
+      if (key == GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER) {
+        return 128;
+      }
       return false;
     }).when(rules).get(any(GameRule.class));
     WorldData worldData = mock(WorldData.class, withSettings().mockMaker(MockMakers.SUBCLASS));

@@ -20,7 +20,6 @@
 package de.markusbordihn.adaptiveperformancetweaks.feature.items;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
-import de.markusbordihn.adaptiveperformancetweaks.accessor.ExperienceOrbAccessor;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import java.util.Iterator;
@@ -131,24 +130,33 @@ public final class ExperienceOrbManager {
           && (orbX - range < existingX && existingX < orbX + range)
           && (orbY - range < existingY && existingY < orbY + range)
           && (orbZ - range < existingZ && existingZ < orbZ + range)) {
-          ExperienceOrbAccessor existingAccessor = (ExperienceOrbAccessor) existing;
-          ExperienceOrbAccessor orbAccessor = (ExperienceOrbAccessor) orbEntity;
-          int mergedValue = existingAccessor.getValue() + orbAccessor.getValue();
+          int mergedValue = existing.getValue() + orbEntity.getValue();
           log.debug(
             "[XP Merge] {}+{}={} xp at {} in {}",
-            orbAccessor.getValue(),
-            existingAccessor.getValue(),
+            orbEntity.getValue(),
+            existing.getValue(),
             mergedValue,
             orbEntity.blockPosition(),
             levelName);
-          existingAccessor.setValue(mergedValue);
-          orbAccessor.setValue(0);
+          double mergedX = existing.getX();
+          double mergedY = existing.getY();
+          double mergedZ = existing.getZ();
           if (ExperienceOrbsConfig.movePositionToLastDrop) {
-            double newY = Math.max(existing.getY(), orbEntity.getY());
-            existing.setPos(orbEntity.getX(), newY, orbEntity.getZ());
+            mergedX = orbEntity.getX();
+            mergedY = Math.max(existing.getY(), orbEntity.getY());
+            mergedZ = orbEntity.getZ();
           }
-          orbEntity.setPos(existing.getX(), existing.getY(), existing.getZ());
+
+          ExperienceOrb mergedOrb = new ExperienceOrb(level, mergedX, mergedY, mergedZ,
+            mergedValue);
+          mergedOrb.tickCount = Math.max(existing.tickCount, orbEntity.tickCount);
+          existing.getTags().forEach(mergedOrb::addTag);
+          orbEntity.getTags().forEach(mergedOrb::addTag);
+
+          worldOrbs.remove(existing);
+          existing.remove(RemovalReason.DISCARDED);
           orbEntity.remove(RemovalReason.DISCARDED);
+          level.addFreshEntity(mergedOrb);
           PerformanceStats.xpOrbsMerged++;
           return true;
         }
@@ -212,7 +220,7 @@ public final class ExperienceOrbManager {
 
   private static boolean removeInvalidOrb(ExperienceOrb orbEntity, String levelName) {
     if (!ExperienceOrbsConfig.optimizeExperienceOrbs
-      || ((ExperienceOrbAccessor) orbEntity).getValue() > 0) {
+      || orbEntity.getValue() > 0) {
       return false;
     }
 

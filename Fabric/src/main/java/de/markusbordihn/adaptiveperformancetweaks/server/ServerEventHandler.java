@@ -97,7 +97,7 @@ public final class ServerEventHandler {
   }
 
   private static final class SpawnPresetReloadListener extends SpawnPresetLoader
-      implements IdentifiableResourceReloadListener {
+    implements IdentifiableResourceReloadListener {
 
     @Override
     public Identifier getFabricId() {

@@ -38,10 +38,10 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.LogManager;
@@ -181,7 +181,8 @@ public final class SpawnManager {
     return denied;
   }
 
-  public static boolean shouldDenyMobSpawn(Mob mob, ServerLevel level, EntitySpawnReason spawnType) {
+  public static boolean shouldDenyMobSpawn(Mob mob, ServerLevel level,
+    EntitySpawnReason spawnType) {
     return shouldDenyMobSpawnAt(mob.getType(), level, mob.blockPosition(), spawnType);
   }
 

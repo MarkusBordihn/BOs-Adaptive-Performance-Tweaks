@@ -27,15 +27,17 @@ import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoad;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.server.permissions.Permissions;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.permissions.Permissions;
 
 public class StatusCommand extends CustomCommand {
 
   private static final StatusCommand command = new StatusCommand();
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
-    return Commands.literal("status").requires(cs -> cs.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)).executes(command);
+    return Commands.literal("status")
+      .requires(cs -> cs.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
+      .executes(command);
   }
 
   @Override

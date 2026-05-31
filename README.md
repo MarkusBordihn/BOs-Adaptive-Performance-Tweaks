@@ -18,7 +18,11 @@
 > Older docs or setup guides may still describe the legacy 11.x multi-module layout.
 >
 > 💾 **Back up your world and config files before updating.**
-> 12.x is still marked beta and some configuration details may change between releases.
+> 12.x is still in alpha and some configuration details may change between releases.
+>
+> 📝 **Known limitations before stable release**
+> There is no in-game config GUI yet. 12.x currently uses a config-first workflow, and larger
+> servers will usually need some spawn tuning beyond the defaults.
 >
 > 🔄 **Upgrading from 11.x?**
 > Remove all old APTweaks module jars before installing 12.x. Do not mix 11.x and 12.x files in
@@ -76,11 +80,16 @@ It is less helpful for issues that come mainly from:
 3. Start the game, world, or server once.
 4. Review the generated files in `config/adaptive_performance_tweaks/`.
 5. Leave defaults on for a first test run before tuning anything.
+6. If you run a larger server, review spawn limits early. The fallback spawn defaults are tuned for
+   about 4 players.
 
 Spawn presets are loaded from:
 
 - `config/adaptive_performance_tweaks/spawn_presets/`
 - `data/<namespace>/aptweaks/spawn_presets/`
+
+If you want to customize presets, start with the templates and examples in
+[wiki/SpawnPresets.md](wiki/SpawnPresets.md).
 
 ## Feature overview 🧩
 
@@ -126,6 +135,19 @@ Useful commands include:
 - `/aptweaks benchmark start`
 - `/aptweaks benchmark start scenario <general|items|xp|entities|recovery>`
 
+If something feels wrong, run these four commands first:
+
+- `/aptweaks status`
+- `/aptweaks load`
+- `/aptweaks stats`
+- `/aptweaks debug <module> true`
+
+Reload note:
+
+- `/aptweaks reload` reloads the `.cfg` files
+- spawn preset JSON changes are safer with vanilla `/reload` or a restart
+- feature on/off changes may still require a restart to take full effect
+
 ## Learn more 📚
 
 The wiki is the main 12.x documentation:
@@ -133,6 +155,7 @@ The wiki is the main 12.x documentation:
 - [Home](wiki/Home.md)
 - [How To Use](wiki/HowToUse.md)
 - [Modules and Features](wiki/Modules.md)
+- [Spawn Presets](wiki/SpawnPresets.md)
 - [FAQ](wiki/FAQ.md)
 - [Troubleshooting](wiki/Troubleshooting.md)
 - [Benchmark](wiki/Benchmark.md)

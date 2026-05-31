@@ -57,9 +57,9 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.bee.Bee;
-import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.decoration.HangingEntity;
@@ -73,8 +73,8 @@ import net.minecraft.world.entity.projectile.EvokerFangs;
 import net.minecraft.world.entity.projectile.EyeOfEnder;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.raid.Raider;
-import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.boat.Boat;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -1259,7 +1259,8 @@ public final class CoreEntityManager {
     }
 
     Identifier entityKey = Identifier.tryParse(entityName);
-    return entityKey != null ? BuiltInRegistries.ENTITY_TYPE.get(entityKey).map(ref -> ref.value()).orElse(null) : null;
+    return entityKey != null ? BuiltInRegistries.ENTITY_TYPE.get(entityKey).map(ref -> ref.value())
+      .orElse(null) : null;
   }
 
   private static Identifier resolveLevelKey(String levelName) {

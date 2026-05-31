@@ -78,6 +78,11 @@ class BenchmarkManagerTest {
     msptDist.put(MsptBucket.UNDER_5_MS, avgTick <= 5.0 ? 1 : 0);
     msptDist.put(MsptBucket.FROM_5_TO_10_MS, avgTick > 5.0 && avgTick <= 10.0 ? 1 : 0);
     msptDist.put(MsptBucket.FROM_10_TO_VERY_LOW_MS, avgTick > 10.0 && avgTick <= 20.0 ? 1 : 0);
+    EnumMap<FineMsptBucket, Integer> fineMsptDist = new EnumMap<>(FineMsptBucket.class);
+    fineMsptDist.put(FineMsptBucket.UNDER_3_MS, avgTick < 3.0 ? 1 : 0);
+    fineMsptDist.put(FineMsptBucket.FROM_3_TO_5_MS, avgTick >= 3.0 && avgTick < 5.0 ? 1 : 0);
+    fineMsptDist.put(FineMsptBucket.FROM_5_TO_10_MS, avgTick >= 5.0 && avgTick < 10.0 ? 1 : 0);
+    fineMsptDist.put(FineMsptBucket.FROM_10_MS_UP, avgTick >= 10.0 ? 1 : 0);
     return new BenchmarkScenarioResult.PhaseResult(
       durationMs,
       avgTick,
@@ -86,6 +91,7 @@ class BenchmarkManagerTest {
       p95Tick + 1.2,
       loadDist,
       msptDist,
+      fineMsptDist,
       0L,
       0,
       avgCpu,
@@ -127,6 +133,36 @@ class BenchmarkManagerTest {
     String filename = buildBenchmarkFilename("1.2.3");
 
     assertTrue(filename.endsWith("_forge_v1.2.3.md"));
+  }
+
+  @Test
+  void savedMarkdownReportIncludesServerVersionHeader() {
+    BenchmarkScenarioResult scenarioResult = new BenchmarkScenarioResult(
+      BenchmarkScenarioId.GENERAL,
+      phaseResult(120_000L, 8.1, 11.6, 27.8, 43.8, emptySnapshot()),
+      phaseResult(120_000L, 3.7, 5.7, 19.2, 31.8, emptySnapshot()));
+    EnumMap<BenchmarkScenarioId, Long> durations = new EnumMap<>(BenchmarkScenarioId.class);
+    durations.put(BenchmarkScenarioId.GENERAL, 120_000L);
+
+    BenchmarkCompareResult result = new BenchmarkCompareResult(
+      "General",
+      false,
+      120_000L,
+      30_000L,
+      5_000L,
+      3_000L,
+      durations,
+      List.of(scenarioResult),
+      0, 9, 4, 0,
+      false, 0, 0, 0,
+      Instant.parse("2026-05-27T10:18:54.893486400Z"));
+
+    List<String> lines =
+      BenchmarkResultWriter.buildMarkdownReport(result, "1.20.1", "forge", "12.0.0-alpha");
+
+    assertTrue(lines.stream()
+      .anyMatch(
+        line -> line.equals("- Server version: Minecraft 1.20.1 / forge / APTweaks 12.0.0-alpha")));
   }
 
   @Test
@@ -232,6 +268,8 @@ class BenchmarkManagerTest {
     assertTrue(
       lines.stream().anyMatch(line -> line.startsWith("| Metric | Baseline | Active | Delta |")));
     assertTrue(lines.stream().anyMatch(line -> line.contains("MSPT distribution:")));
+    assertTrue(lines.stream().anyMatch(line -> line.contains("Fine MSPT distribution:")));
+    assertTrue(lines.stream().anyMatch(line -> line.contains("3-5ms")));
     assertTrue(lines.stream().anyMatch(line -> line.contains("Load distribution:")));
     assertTrue(lines.stream().anyMatch(line -> line.contains("Measures broad world activity")));
   }

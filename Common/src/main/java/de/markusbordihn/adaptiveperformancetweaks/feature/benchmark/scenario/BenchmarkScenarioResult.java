@@ -21,6 +21,7 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario;
 
 import de.markusbordihn.adaptiveperformancetweaks.core.server.MsptBucket;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
+import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.FineMsptBucket;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import java.util.Map;
 
@@ -89,6 +90,7 @@ public record BenchmarkScenarioResult(
     double maxTickMs,
     Map<ServerLoadLevel, Integer> loadDistribution,
     Map<MsptBucket, Integer> msptDistribution,
+    Map<FineMsptBucket, Integer> fineMsptDistribution,
     long peakHeapDeltaBytes,
     int entityCount,
     double avgCpuPercent,

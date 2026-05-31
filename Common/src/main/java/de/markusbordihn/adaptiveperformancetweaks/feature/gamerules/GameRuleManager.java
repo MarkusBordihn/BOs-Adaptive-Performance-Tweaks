@@ -89,7 +89,8 @@ public final class GameRuleManager {
       log.debug(
         "{} Random Tick Speed will be optimized between 1 and {}",
         LOG_PREFIX, getConfiguredRandomTickSpeedMax());
-      if ((Integer) gameRules.get(GameRules.RANDOM_TICK_SPEED) != getConfiguredRandomTickSpeedMax()) {
+      if ((Integer) gameRules.get(GameRules.RANDOM_TICK_SPEED)
+        != getConfiguredRandomTickSpeedMax()) {
         setRandomTickSpeed(getConfiguredRandomTickSpeedMax());
       }
     }

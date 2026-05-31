@@ -27,20 +27,21 @@ import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.BenchmarkMan
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenarioId;
 import java.nio.file.Path;
 import net.minecraft.ChatFormatting;
-import net.minecraft.util.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.server.permissions.Permissions;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
+import net.minecraft.util.Util;
 
 public class BenchmarkCommand extends CustomCommand {
 
   private static final BenchmarkCommand command = new BenchmarkCommand();
   private static final long DEFAULT_PHASE_SECONDS = 240L;
+  private static final String OPEN_RESULT_COMMAND = "/aptweaks benchmark openresult";
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
     return Commands.literal("benchmark")
@@ -138,6 +139,13 @@ public class BenchmarkCommand extends CustomCommand {
           .withStyle(ChatFormatting.RED));
       return 0;
     }
+
+    if (context.getSource().getServer().isDedicatedServer()) {
+      sendFeedback(context, Component.literal("Report Path: ").withStyle(ChatFormatting.GOLD)
+        .append(Component.literal(resultPath.toString()).withStyle(ChatFormatting.AQUA)));
+      return 0;
+    }
+
     Util.getPlatform().openFile(resultPath.toFile());
     return 0;
   }
