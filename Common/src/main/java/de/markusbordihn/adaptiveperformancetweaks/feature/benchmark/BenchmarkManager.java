@@ -91,6 +91,7 @@ public final class BenchmarkManager {
   private static final long MIN_SUITE_SPECIAL_SECONDS = 15L;
   private static final double TELEPORT_Y = 100.0d;
   private static final String BENCHMARK_TAG = "aptweaks_benchmark";
+  private static final String OPEN_RESULT_COMMAND = "/aptweaks benchmark openresult";
   private static final List<BenchmarkScenario> DEFAULT_SCENARIOS = createScenarioSuite();
   private static final EnumMap<FeatureToggle, Boolean> savedFeatureState =
     new EnumMap<>(FeatureToggle.class);
@@ -537,6 +538,7 @@ public final class BenchmarkManager {
       max(currentSamples),
       Map.copyOf(currentLoadDist),
       Map.copyOf(currentMsptDist),
+      buildFineMsptDistribution(currentSamples),
       getCurrentPeakHeapDeltaBytes(),
       countEntities(),
       average(currentCpuSamples, -1.0d),
@@ -896,6 +898,14 @@ public final class BenchmarkManager {
       + (measurementDuration + SCENARIO_SETTLE_DURATION_MS + SCENARIO_POST_SETTLE_DURATION_MS) * 2L;
   }
 
+  private static Map<FineMsptBucket, Integer> buildFineMsptDistribution(List<Double> samples) {
+    EnumMap<FineMsptBucket, Integer> distribution = new EnumMap<>(FineMsptBucket.class);
+    for (double sampleMspt : samples) {
+      distribution.merge(FineMsptBucket.fromTickTime(sampleMspt), 1, Integer::sum);
+    }
+    return Map.copyOf(distribution);
+  }
+
   private static String formatScenarioDurationsForMessage() {
     return configuredScenarios.stream()
       .map(scenario -> scenario.displayName() + '='
@@ -1111,8 +1121,8 @@ public final class BenchmarkManager {
         .append(Component.literal(abbreviatePath(resultPath))
           .withStyle(ChatFormatting.AQUA)
           .withStyle(style -> style
-            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE,
-              resultPath.toString()))
+            .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
+              OPEN_RESULT_COMMAND))
             .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
               Component.literal(resultPath.toString()))))));
       return;

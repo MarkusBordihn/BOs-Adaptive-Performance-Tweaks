@@ -40,6 +40,7 @@ public class BenchmarkCommand extends CustomCommand {
 
   private static final BenchmarkCommand command = new BenchmarkCommand();
   private static final long DEFAULT_PHASE_SECONDS = 240L;
+  private static final String OPEN_RESULT_COMMAND = "/aptweaks benchmark openresult";
 
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
     return Commands.literal("benchmark")
@@ -120,8 +121,8 @@ public class BenchmarkCommand extends CustomCommand {
       .append(Component.literal(abbreviatePath(resultPath))
         .withStyle(ChatFormatting.AQUA)
         .withStyle(style -> style
-          .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE,
-            resultPath.toString()))
+          .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
+            OPEN_RESULT_COMMAND))
           .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
             Component.literal(resultPath.toString())))));
   }
@@ -139,6 +140,13 @@ public class BenchmarkCommand extends CustomCommand {
           .withStyle(ChatFormatting.RED));
       return 0;
     }
+
+    if (context.getSource().getServer().isDedicatedServer()) {
+      sendFeedback(context, Component.literal("Report Path: ").withStyle(ChatFormatting.GOLD)
+        .append(Component.literal(resultPath.toString()).withStyle(ChatFormatting.AQUA)));
+      return 0;
+    }
+
     Util.getPlatform().openFile(resultPath.toFile());
     return 0;
   }

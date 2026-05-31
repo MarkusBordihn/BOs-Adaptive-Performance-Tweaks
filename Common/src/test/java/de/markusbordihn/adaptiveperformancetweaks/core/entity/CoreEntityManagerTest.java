@@ -315,6 +315,50 @@ class CoreEntityManagerTest {
   }
 
   @Test
+  void excludeEntityRuleTreatsVehicleHelpersAsTechnical() {
+    SpawnPreset preset = new SpawnPreset(
+      false,
+      null,
+      List.of(),
+      100,
+      new SpawnPreset.DimensionFilter(List.of(), List.of(), List.of()),
+      new SpawnPreset.EntityLimits(Set.of(), Set.of(), 1, 1, 1, 1),
+      SpawnPreset.LoadFactors.defaults(),
+      TrackingMode.EXCLUDE_ENTITY,
+      TrackingCategory.VEHICLE_STRUCTURE,
+      "Specific vehicle helper entities should not be tracked.",
+      Set.of("immersive_aircraft:biplane"));
+    CoreEntityManager.reloadTrackingRules(List.of(preset));
+
+    Zombie zombie = new Zombie(EntityType.ZOMBIE, mock(ServerLevel.class));
+    assertFalse(CoreEntityManager.isRelevantEntity(zombie, "immersive_aircraft:biplane"));
+    assertFalse(CoreEntityManager.isRelevantEntity(zombie, "immersive_aircraft:biplane"),
+      "Second call should use the cached entity decision");
+  }
+
+  @Test
+  void protectEntityRuleKeepsManagedLivingEntityIdsOutOfTracking() {
+    SpawnPreset preset = new SpawnPreset(
+      false,
+      null,
+      List.of(),
+      100,
+      new SpawnPreset.DimensionFilter(List.of(), List.of(), List.of()),
+      new SpawnPreset.EntityLimits(Set.of(), Set.of(), 1, 1, 1, 1),
+      SpawnPreset.LoadFactors.defaults(),
+      TrackingMode.PROTECT_ENTITY,
+      TrackingCategory.MANAGED_LIVING,
+      "Managed living entity ids should be protected from tracking.",
+      Set.of("minecolonies:citizen"));
+    CoreEntityManager.reloadTrackingRules(List.of(preset));
+
+    Zombie zombie = new Zombie(EntityType.ZOMBIE, mock(ServerLevel.class));
+    assertFalse(CoreEntityManager.isRelevantEntity(zombie, "minecolonies:citizen"));
+    assertFalse(CoreEntityManager.isRelevantEntity(zombie, "minecolonies:citizen"),
+      "Second call should use the cached entity decision");
+  }
+
+  @Test
   void replacingExclusionSetTakesPrecedence() {
     CoreEntityManager.setExcludedModNamespaces(Set.of("create"));
     assertTrue(CoreEntityManager.isExcludedModNamespace("create:contraption"));

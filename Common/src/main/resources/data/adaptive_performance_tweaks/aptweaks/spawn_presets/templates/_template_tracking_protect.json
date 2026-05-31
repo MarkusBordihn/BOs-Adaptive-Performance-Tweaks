@@ -1,0 +1,9 @@
+{
+  "template": true,
+  "notes": "TEMPLATE - Copy this file into config/adaptive_performance_tweaks/spawn_presets/, rename it without the leading _, then remove 'template: true'. Protects a compatibility-sensitive namespace from generic tracking cleanup. Switch mode to exclude_namespace if the namespace should be fully excluded instead.",
+  "mod_id": "your_sensitive_mod",
+  "priority": 200,
+  "mode": "protect_namespace",
+  "category": "managed_living",
+  "reason": "Server-managed NPCs or companions should stay protected from generic tracking cleanup."
+}

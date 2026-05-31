@@ -1,6 +1,6 @@
 {
   "template": true,
-  "notes": "TEMPLATE — Copy this file, rename it (without leading _), remove 'template: true'. Limits all mod_id:* entities globally.",
+  "notes": "TEMPLATE - Copy this file into config/adaptive_performance_tweaks/spawn_presets/, rename it without the leading _, then remove 'template: true'. Limits all mod_id:* entities globally.",
   "replace": false,
   "mod_id": "your_mod_id",
   "priority": 100,
