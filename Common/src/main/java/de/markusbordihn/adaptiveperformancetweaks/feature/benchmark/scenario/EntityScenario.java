@@ -33,8 +33,8 @@ import net.minecraft.world.phys.Vec3;
 
 public final class EntityScenario implements BenchmarkScenario {
 
-  private static final int OVERLOADED_CHUNK_ENTITY_COUNT = 72;
-  private static final int SUPPORT_CHUNK_ENTITY_COUNT = 32;
+  private static final int OVERLOADED_CHUNK_ENTITY_COUNT = 80;
+  private static final int SUPPORT_CHUNK_ENTITY_COUNT = 35;
   private static final double CHUNK_ANCHOR_OFFSET = 4.0d;
   private static final double CHUNK_ANCHOR_JITTER = 2.4d;
   private static final double SPAWN_CLEARANCE_Y = 3.0d;

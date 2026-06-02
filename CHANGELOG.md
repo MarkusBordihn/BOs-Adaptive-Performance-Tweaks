@@ -1,9 +1,18 @@
-# Changelog for Adaptive Performance Tweaks 1.20.1
+# Changelog for Adaptive Performance Tweaks 1.21.1
 
 ## Note
 
 This change log includes the summarized changes.
 For the full changelog, please go to the [GitHub History][history] instead.
+
+### 12.4.0
+
+- Added player warmup for simulation distance and random tick speed on login, teleport and fast
+  movement.
+- Added config toggles for login and movement warmup independent of minOptimizationLoadLevel.
+- Improved load-based simulation distance changes with step-by-step reductions.
+- Improved warmup recovery to only restore values below normal server load.
+- Improved reset handling and tests for restoring server default values.
 
 ### 12.3.0
 

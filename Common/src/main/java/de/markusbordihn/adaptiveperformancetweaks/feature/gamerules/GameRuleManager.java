@@ -22,6 +22,8 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.gamerules;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModCompat;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
+import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPosition;
+import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPositionManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
@@ -53,8 +55,11 @@ public final class GameRuleManager {
   private static boolean configuredTntExplosionDropDecay;
   private static boolean configuredDoVinesSpread;
   private static boolean configuredDoWardenSpawning;
+  private static ServerLoadLevel currentLoadLevel = ServerLoadLevel.NORMAL;
   private static long lastUpdateTime = System.currentTimeMillis();
+  private static long lastRandomTickRecoveryTime = System.currentTimeMillis();
   private static long randomTickWarmupUntilTime = 0L;
+  private static boolean randomTickPlayerActivityRecoveryPending = false;
 
   private GameRuleManager() {
   }
@@ -78,7 +83,9 @@ public final class GameRuleManager {
     configuredDoVinesSpread = gameRules.getBoolean(GameRules.RULE_DO_VINES_SPREAD);
     configuredDoWardenSpawning = gameRules.getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING);
     lastUpdateTime = System.currentTimeMillis();
+    lastRandomTickRecoveryTime = lastUpdateTime;
     randomTickWarmupUntilTime = 0L;
+    randomTickPlayerActivityRecoveryPending = false;
 
     if (!FeatureToggle.GAMERULES.isEnabled()) {
       return;
@@ -116,27 +123,57 @@ public final class GameRuleManager {
     configuredMaxEntityCramming = GameRulesConfig.maxEntityCramming;
     configuredDoFireTick = true;
     lastUpdateTime = System.currentTimeMillis();
+    lastRandomTickRecoveryTime = lastUpdateTime;
     randomTickWarmupUntilTime = 0L;
+    randomTickPlayerActivityRecoveryPending = false;
   }
 
   public static void handlePlayerLoggedIn(ServerPlayer player) {
-    applyPlayerWarmup();
+    applyPlayerWarmup("login");
   }
 
   public static void handlePlayerTeleported(ServerPlayer player) {
-    applyPlayerWarmup();
+    applyPlayerWarmup("teleport");
+  }
+
+  public static void handleServerTick() {
+    if (!FeatureToggle.GAMERULES.isEnabled() || !GameRulesConfig.randomTickSpeedEnabled) {
+      return;
+    }
+
+    MinecraftServer minecraftServer = ServerManager.getMinecraftServer();
+    if (minecraftServer == null) {
+      return;
+    }
+
+    gameRules = minecraftServer.getGameRules();
+    if (GameRulesConfig.movementWarmupEnabled && hasActiveMovementWarmup()) {
+      applyPlayerWarmup("movement");
+    }
+
+    if (isRandomTickWarmupActive()) {
+      setRandomTickSpeed(1);
+      randomTickPlayerActivityRecoveryPending = true;
+      return;
+    }
+
+    recoverRandomTickSpeedFromPlayerWarmup();
   }
 
   public static void handleFeatureDisabled() {
     MinecraftServer minecraftServer = ServerManager.getMinecraftServer();
     if (minecraftServer == null) {
       gameRules = null;
+      lastRandomTickRecoveryTime = System.currentTimeMillis();
       randomTickWarmupUntilTime = 0L;
+      randomTickPlayerActivityRecoveryPending = false;
       return;
     }
 
     gameRules = minecraftServer.getGameRules();
+    lastRandomTickRecoveryTime = System.currentTimeMillis();
     randomTickWarmupUntilTime = 0L;
+    randomTickPlayerActivityRecoveryPending = false;
     restoreConfiguredDefaults();
   }
 
@@ -145,6 +182,7 @@ public final class GameRuleManager {
       return;
     }
 
+    currentLoadLevel = event.getServerLoadLevel();
     MinecraftServer minecraftServer = ServerManager.getMinecraftServer();
     if (minecraftServer == null) {
       return;
@@ -163,6 +201,7 @@ public final class GameRuleManager {
     }
 
     if (randomTickWarmupActive && GameRulesConfig.randomTickSpeedEnabled) {
+      randomTickPlayerActivityRecoveryPending = true;
       setRandomTickSpeed(1);
     }
 
@@ -172,8 +211,9 @@ public final class GameRuleManager {
 
     restoreNormalLoad();
 
-    if (event.getServerLoadLevel().ordinal() < ServerLoadLevel.NORMAL.ordinal()) {
-      if (GameRulesConfig.randomTickSpeedEnabled && !randomTickWarmupActive) {
+    if (!event.getServerLoadLevel().isAtLeast(ServerLoadLevel.NORMAL)) {
+      if (GameRulesConfig.randomTickSpeedEnabled && !randomTickWarmupActive
+        && !randomTickPlayerActivityRecoveryPending) {
         increaseRandomTickSpeed();
       }
       if (GameRulesConfig.entityCrammingEnabled) {
@@ -577,8 +617,15 @@ public final class GameRuleManager {
     }
   }
 
-  private static void applyPlayerWarmup() {
+  private static void applyPlayerWarmup(String triggerSource) {
     if (!FeatureToggle.GAMERULES.isEnabled() || !GameRulesConfig.randomTickSpeedEnabled) {
+      return;
+    }
+    if ("movement".equals(triggerSource)) {
+      if (!GameRulesConfig.movementWarmupEnabled) {
+        return;
+      }
+    } else if (!GameRulesConfig.loginWarmupEnabled) {
       return;
     }
 
@@ -588,10 +635,61 @@ public final class GameRuleManager {
     }
 
     gameRules = minecraftServer.getGameRules();
-    randomTickWarmupUntilTime = Math.max(randomTickWarmupUntilTime,
-      System.currentTimeMillis() + SimulationDistanceConfig.movementThrottleLoginTicks
-        * MILLIS_PER_TICK);
+    long now = System.currentTimeMillis();
+    long previousWarmupUntilTime = randomTickWarmupUntilTime;
+    long warmupUntilTime = now + SimulationDistanceConfig.movementThrottleLoginTicks
+      * MILLIS_PER_TICK;
+    randomTickWarmupUntilTime = Math.max(randomTickWarmupUntilTime, warmupUntilTime);
+    lastRandomTickRecoveryTime = now;
+    randomTickPlayerActivityRecoveryPending = true;
+    if (now >= previousWarmupUntilTime) {
+      log.debug("{} randomTick {} warmup started for {} ticks", LOG_PREFIX, triggerSource,
+        SimulationDistanceConfig.movementThrottleLoginTicks);
+    } else if (!"movement".equals(triggerSource)
+      || randomTickWarmupUntilTime - previousWarmupUntilTime >= 1_000L) {
+      log.debug("{} randomTick {} warmup extended to {}ms", LOG_PREFIX, triggerSource,
+        randomTickWarmupUntilTime - now);
+    }
     setRandomTickSpeed(1);
+  }
+
+  private static boolean hasActiveMovementWarmup() {
+    for (PlayerPosition playerPosition : PlayerPositionManager.getPlayerPositionMap().values()) {
+      if (playerPosition.hasRecentMovementDistance(
+        SimulationDistanceConfig.movementThrottleDistanceThresholdBlocks)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private static void recoverRandomTickSpeedFromPlayerWarmup() {
+    if (!randomTickPlayerActivityRecoveryPending
+      || currentLoadLevel.isAtLeast(ServerLoadLevel.NORMAL)
+      || gameRules == null) {
+      return;
+    }
+
+    long now = System.currentTimeMillis();
+    if (now - lastRandomTickRecoveryTime < 10_000L) {
+      return;
+    }
+
+    int targetRandomTickSpeed = getConfiguredRandomTickSpeedMax();
+    int currentRandomTickSpeed = gameRules.getInt(GameRules.RULE_RANDOMTICKING);
+    if (currentRandomTickSpeed >= targetRandomTickSpeed) {
+      randomTickPlayerActivityRecoveryPending = false;
+      lastRandomTickRecoveryTime = now;
+      return;
+    }
+
+    int nextRandomTickSpeed = Math.min(targetRandomTickSpeed, currentRandomTickSpeed + 1);
+    log.debug("{} randomTick player warmup recovery: {} -> {} (load={})", LOG_PREFIX,
+      currentRandomTickSpeed, nextRandomTickSpeed, currentLoadLevel);
+    setRandomTickSpeed(nextRandomTickSpeed);
+    lastRandomTickRecoveryTime = now;
+    randomTickPlayerActivityRecoveryPending = nextRandomTickSpeed < targetRandomTickSpeed;
   }
 
   private static int getConfiguredRandomTickSpeedMax() {

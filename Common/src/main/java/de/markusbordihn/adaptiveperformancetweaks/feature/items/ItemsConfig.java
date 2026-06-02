@@ -22,6 +22,7 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.items;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.Config;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Properties;
@@ -39,6 +40,7 @@ public final class ItemsConfig extends Config {
        Leave a list empty to disable it.
       """;
 
+  public static ServerLoadLevel minOptimizationLoadLevel = ServerLoadLevel.NORMAL;
   public static boolean optimizeItems = true;
   public static int maxNumberOfItemsPerType = 64;
   public static int maxNumberOfItems = 128;
@@ -72,6 +74,8 @@ public final class ItemsConfig extends Config {
       FeatureToggle.ITEMS,
       parseConfigValue(properties, "enabled", FeatureToggle.ITEMS.getDefaultState()));
 
+    minOptimizationLoadLevel = parseOptimizationLevel(properties, "minOptimizationLoadLevel",
+      minOptimizationLoadLevel);
     optimizeItems = parseConfigValue(properties, "optimizeItems", optimizeItems);
     maxNumberOfItemsPerType = parseConfigValue(properties, "maxNumberOfItemsPerType",
       maxNumberOfItemsPerType);

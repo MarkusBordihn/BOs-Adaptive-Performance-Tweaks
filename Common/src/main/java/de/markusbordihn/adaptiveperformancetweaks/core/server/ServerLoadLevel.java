@@ -31,6 +31,10 @@ public enum ServerLoadLevel {
     return MsptBucket.fromTickTime(averageTickTimeMs).getMappedLoadLevel();
   }
 
+  public boolean isAtLeast(ServerLoadLevel other) {
+    return this.ordinal() >= other.ordinal();
+  }
+
   public boolean isHigherThan(ServerLoadLevel other) {
     return this.ordinal() > other.ordinal();
   }

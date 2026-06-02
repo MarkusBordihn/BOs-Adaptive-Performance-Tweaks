@@ -38,7 +38,13 @@ import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.Gen
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.ItemScenario;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.RecoveryScenario;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.XpScenario;
+import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimulationDistanceConfig;
+import de.markusbordihn.adaptiveperformancetweaks.feature.gamerules.GameRulesConfig;
+import de.markusbordihn.adaptiveperformancetweaks.feature.items.ArrowsConfig;
+import de.markusbordihn.adaptiveperformancetweaks.feature.items.ExperienceOrbsConfig;
+import de.markusbordihn.adaptiveperformancetweaks.feature.items.ItemsConfig;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
+import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnConfig;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -111,6 +117,12 @@ public final class BenchmarkManager {
     new EnumMap<>(ServerLoadLevel.class);
   private static final EnumMap<MsptBucket, Integer> currentMsptDist =
     new EnumMap<>(MsptBucket.class);
+  private static ServerLoadLevel savedItemsMinLoad;
+  private static ServerLoadLevel savedXpMinLoad;
+  private static ServerLoadLevel savedArrowsMinLoad;
+  private static ServerLoadLevel savedSpawnMinLoad;
+  private static ServerLoadLevel savedGameRulesMinLoad;
+  private static ServerLoadLevel savedSimDistMinLoad;
   private static BenchmarkState state = BenchmarkState.IDLE;
   private static BenchmarkBlock currentBlock = BenchmarkBlock.BASELINE;
   private static boolean suiteMode = true;
@@ -182,6 +194,7 @@ public final class BenchmarkManager {
     }
 
     saveFeatureState();
+    saveMinLoadLevels();
     disableAllFeatures();
     saveAllDebugStates();
     boolean anyDebugActive = savedDebugStates.containsValue(true);
@@ -218,6 +231,7 @@ public final class BenchmarkManager {
 
     restoreFeatures();
     restoreDebugState();
+    restoreMinLoadLevels();
     cleanupAllBenchmarkArtifacts();
     PerformanceStats.setDetailedTrackingStatsEnabled(false);
     restoreGameMode(benchmarkPlayer);
@@ -296,6 +310,7 @@ public final class BenchmarkManager {
     if (state != BenchmarkState.IDLE && state != BenchmarkState.COMPLETE) {
       restoreFeatures();
       restoreDebugState();
+      restoreMinLoadLevels();
       cleanupAllBenchmarkArtifacts();
       restoreGameMode(benchmarkPlayer);
     }
@@ -597,6 +612,7 @@ public final class BenchmarkManager {
   private static void completeBlockTransition(long now) {
     restoreFeatures();
     disableAllDebug();
+    forceMinLoadLevels();
     PerformanceStats.reset();
     PerformanceStats.setDetailedTrackingStatsEnabled(true);
     startBlockWarmup(now, BenchmarkBlock.ACTIVE);
@@ -633,6 +649,7 @@ public final class BenchmarkManager {
 
     restoreFeatures();
     restoreDebugState();
+    restoreMinLoadLevels();
     cleanupAllBenchmarkArtifacts();
     PerformanceStats.setDetailedTrackingStatsEnabled(false);
 
@@ -990,6 +1007,33 @@ public final class BenchmarkManager {
     return ChatFormatting.RED;
   }
 
+  private static void saveMinLoadLevels() {
+    savedItemsMinLoad = ItemsConfig.minOptimizationLoadLevel;
+    savedXpMinLoad = ExperienceOrbsConfig.minOptimizationLoadLevel;
+    savedArrowsMinLoad = ArrowsConfig.minOptimizationLoadLevel;
+    savedSpawnMinLoad = SpawnConfig.minOptimizationLoadLevel;
+    savedGameRulesMinLoad = GameRulesConfig.minOptimizationLoadLevel;
+    savedSimDistMinLoad = SimulationDistanceConfig.minOptimizationLoadLevel;
+  }
+
+  private static void forceMinLoadLevels() {
+    ItemsConfig.minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;
+    ExperienceOrbsConfig.minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;
+    ArrowsConfig.minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;
+    SpawnConfig.minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;
+    GameRulesConfig.minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;
+    SimulationDistanceConfig.minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;
+  }
+
+  private static void restoreMinLoadLevels() {
+    ItemsConfig.minOptimizationLoadLevel = savedItemsMinLoad;
+    ExperienceOrbsConfig.minOptimizationLoadLevel = savedXpMinLoad;
+    ArrowsConfig.minOptimizationLoadLevel = savedArrowsMinLoad;
+    SpawnConfig.minOptimizationLoadLevel = savedSpawnMinLoad;
+    GameRulesConfig.minOptimizationLoadLevel = savedGameRulesMinLoad;
+    SimulationDistanceConfig.minOptimizationLoadLevel = savedSimDistMinLoad;
+  }
+
   private static void saveFeatureState() {
     savedFeatureState.clear();
     savedFeatureDecision.clear();
@@ -1158,6 +1202,12 @@ public final class BenchmarkManager {
     savedFeatureState.clear();
     savedFeatureDecision.clear();
     savedDebugStates.clear();
+    savedItemsMinLoad = null;
+    savedXpMinLoad = null;
+    savedArrowsMinLoad = null;
+    savedSpawnMinLoad = null;
+    savedGameRulesMinLoad = null;
+    savedSimDistMinLoad = null;
     requestedScenarioLabel = "Full Suite";
     suiteMode = true;
     autoMoveRequested = false;

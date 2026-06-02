@@ -40,6 +40,7 @@ public final class SimulationDistanceConfig extends Config {
        Optional movement throttling adds temporary reductions during heavy exploration at MEDIUM+.
       """;
 
+  public static ServerLoadLevel minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;
   public static int simDistanceVeryLow = 12;
   public static int simDistanceLow = 10;
   public static int simDistanceNormal = 8;
@@ -49,8 +50,9 @@ public final class SimulationDistanceConfig extends Config {
 
   public static int simDistanceMin = 2;
   public static int simDistanceMax = 12;
+  public static boolean loginWarmupEnabled = true;
   public static boolean movementThrottleEnabled = true;
-  public static ServerLoadLevel movementThrottleMinimumLoadLevel = ServerLoadLevel.MEDIUM;
+  public static ServerLoadLevel movementThrottleMinimumLoadLevel = ServerLoadLevel.VERY_LOW;
   public static int movementThrottleWindowSamples = 3;
   public static int movementThrottleWindowSamplesMax = 5;
   public static int movementThrottleSampleTicks = 20;
@@ -77,6 +79,8 @@ public final class SimulationDistanceConfig extends Config {
       parseConfigValue(properties, "enabled",
         FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.getDefaultState()));
 
+    minOptimizationLoadLevel = parseOptimizationLevel(properties, "minOptimizationLoadLevel",
+      minOptimizationLoadLevel);
     simDistanceVeryLow = parseConfigValue(properties, "simDistanceVeryLow", simDistanceVeryLow);
     simDistanceLow = parseConfigValue(properties, "simDistanceLow", simDistanceLow);
     simDistanceNormal = parseConfigValue(properties, "simDistanceNormal", simDistanceNormal);
@@ -85,9 +89,10 @@ public final class SimulationDistanceConfig extends Config {
     simDistanceVeryHigh = parseConfigValue(properties, "simDistanceVeryHigh", simDistanceVeryHigh);
     simDistanceMin = parseConfigValue(properties, "simDistanceMin", simDistanceMin);
     simDistanceMax = parseConfigValue(properties, "simDistanceMax", simDistanceMax);
+    loginWarmupEnabled = parseConfigValue(properties, "loginWarmupEnabled", loginWarmupEnabled);
     movementThrottleEnabled = parseConfigValue(properties, "movementThrottleEnabled",
       movementThrottleEnabled);
-    movementThrottleMinimumLoadLevel = parseConfigValue(properties,
+    movementThrottleMinimumLoadLevel = parseOptimizationLevel(properties,
       "movementThrottleMinimumLoadLevel", movementThrottleMinimumLoadLevel);
     movementThrottleWindowSamplesMax = Math.max(1,
       parseConfigValue(properties, "movementThrottleWindowSamplesMax",
@@ -118,10 +123,10 @@ public final class SimulationDistanceConfig extends Config {
     PlayerPositionManager.configureMovementTracking(movementThrottleSampleTicks,
       movementThrottleWindowSamples);
     log.debug(
-      "Simulation distance per load: VERY_LOW={} LOW={} NORMAL={} MEDIUM={} HIGH={} VERY_HIGH={} | movementThrottle={} minLoad={} samples={}/{} sampleTicks={} threshold={} recoveryDelay={} recoveryStep={} loginTicks={} recoverOnlyWhenStable={} reduction={}..{}",
+      "Simulation distance per load: VERY_LOW={} LOW={} NORMAL={} MEDIUM={} HIGH={} VERY_HIGH={} | loginWarmup={} movementThrottle={} minLoad={} samples={}/{} sampleTicks={} threshold={} recoveryDelay={} recoveryStep={} loginTicks={} recoverOnlyWhenStable={} reduction={}..{}",
       simDistanceVeryLow, simDistanceLow, simDistanceNormal,
       simDistanceMedium, simDistanceHigh, simDistanceVeryHigh,
-      movementThrottleEnabled, movementThrottleMinimumLoadLevel,
+      loginWarmupEnabled, movementThrottleEnabled, movementThrottleMinimumLoadLevel,
       movementThrottleWindowSamples, movementThrottleWindowSamplesMax,
       movementThrottleSampleTicks, movementThrottleDistanceThresholdBlocks,
       movementThrottleRecoveryDelayTicks, movementThrottleRecoveryStepTicks,

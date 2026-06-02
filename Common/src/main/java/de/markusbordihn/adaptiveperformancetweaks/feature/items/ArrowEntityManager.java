@@ -21,6 +21,8 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.items;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -47,6 +49,7 @@ public final class ArrowEntityManager {
   private static final double STUCK_VELOCITY_THRESHOLD = 1.0E-8;
 
   private static Map<String, Set<AbstractArrow>> arrowWorldEntityMap = new ConcurrentHashMap<>();
+  private static volatile ServerLoadLevel currentLoadLevel = ServerLoadLevel.NORMAL;
   private static boolean hasArrowsAllowList = false;
   private static boolean hasArrowsDenyList = false;
   private static short ticks = 0;
@@ -97,8 +100,13 @@ public final class ArrowEntityManager {
     return result;
   }
 
+  public static void handleServerLoadEvent(ServerLoadEvent event) {
+    currentLoadLevel = event.getServerLoadLevel();
+  }
+
   private static void resetState() {
     arrowWorldEntityMap = new ConcurrentHashMap<>();
+    currentLoadLevel = ServerLoadLevel.NORMAL;
     hasArrowsAllowList = !ArrowsConfig.arrowsAllowList.isEmpty();
     hasArrowsDenyList = !ArrowsConfig.arrowsDenyList.isEmpty();
     ticks = 0;
@@ -109,7 +117,9 @@ public final class ArrowEntityManager {
       return;
     }
     ticks = 0;
-    enforceArrowLimits();
+    if (currentLoadLevel.isAtLeast(ArrowsConfig.minOptimizationLoadLevel)) {
+      enforceArrowLimits();
+    }
     verifyEntities();
   }
 
