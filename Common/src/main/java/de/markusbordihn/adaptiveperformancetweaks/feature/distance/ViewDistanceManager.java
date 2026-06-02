@@ -154,7 +154,7 @@ public final class ViewDistanceManager {
     if (currentDistance < 0 || baselineTarget <= currentDistance) {
       return baselineTarget;
     }
-    if (currentLoadLevel.ordinal() >= ServerLoadLevel.NORMAL.ordinal()) {
+    if (currentLoadLevel.isAtLeast(ServerLoadLevel.NORMAL)) {
       return currentDistance;
     }
     if (System.currentTimeMillis() - lastRecoveryTime < 10_000L) {

@@ -22,6 +22,7 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.items;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.Config;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Properties;
@@ -40,6 +41,7 @@ public final class ArrowsConfig extends Config {
        Leave a list empty to disable it.
       """;
 
+  public static ServerLoadLevel minOptimizationLoadLevel = ServerLoadLevel.NORMAL;
   public static int maxNumberOfArrowsPerWorld = 512;
   public static int maxNumberOfArrowsPerChunk = 32;
   public static Set<String> arrowsAllowList = new HashSet<>();
@@ -59,6 +61,8 @@ public final class ArrowsConfig extends Config {
       FeatureToggle.ARROWS,
       parseConfigValue(properties, "enabled", FeatureToggle.ARROWS.getDefaultState()));
 
+    minOptimizationLoadLevel = parseOptimizationLevel(properties, "minOptimizationLoadLevel",
+      minOptimizationLoadLevel);
     maxNumberOfArrowsPerWorld = parseConfigValue(properties, "maxNumberOfArrowsPerWorld",
       maxNumberOfArrowsPerWorld);
     maxNumberOfArrowsPerChunk = parseConfigValue(properties, "maxNumberOfArrowsPerChunk",

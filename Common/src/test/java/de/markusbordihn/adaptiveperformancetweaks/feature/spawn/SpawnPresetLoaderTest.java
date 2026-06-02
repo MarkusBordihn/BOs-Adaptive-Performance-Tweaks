@@ -28,8 +28,8 @@ import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModCompat;
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.TrackingCategory;
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.TrackingMode;
-import java.lang.reflect.Method;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -238,7 +238,7 @@ class SpawnPresetLoaderTest {
       assertTrue(inputStream != null);
       JsonObject jsonObject = JsonParser.parseReader(
         new java.io.InputStreamReader(inputStream)).getAsJsonObject();
-    List<SpawnPreset> output = new ArrayList<>();
+      List<SpawnPreset> output = new ArrayList<>();
 
       Object result = invokePrivateMethod("parseAndAdd",
         new Class<?>[]{String.class, com.google.gson.JsonElement.class, List.class},

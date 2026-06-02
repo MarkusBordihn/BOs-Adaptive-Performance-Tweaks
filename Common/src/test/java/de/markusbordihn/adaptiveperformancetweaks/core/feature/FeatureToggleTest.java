@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPositionManager;
@@ -38,6 +39,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.players.PlayerList;
+import net.minecraft.world.level.GameRules;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockMakers;
@@ -229,13 +231,67 @@ class FeatureToggleTest {
         mock(net.minecraft.world.level.GameRules.class));
       writeStaticField(GameRuleManager.class, "randomTickWarmupUntilTime",
         System.currentTimeMillis() + 1_000L);
+      writeStaticField(GameRuleManager.class, "randomTickPlayerActivityRecoveryPending", true);
 
       FeatureToggle.GAMERULES.setEnabled(false);
 
       assertNull(readStaticField(GameRuleManager.class, "gameRules"));
       assertEquals(0L, readStaticField(GameRuleManager.class, "randomTickWarmupUntilTime"));
+      assertEquals(false,
+        readStaticField(GameRuleManager.class, "randomTickPlayerActivityRecoveryPending"));
     } finally {
       FeatureToggle.GAMERULES.setEnabled(previousState);
+    }
+  }
+
+  @Test
+  void disablingGamerulesRestoresRandomTickSpeedToServerDefault() throws Exception {
+    boolean previousState = FeatureToggle.GAMERULES.isEnabled();
+    MinecraftServer server = mock(MinecraftServer.class,
+      withSettings().mockMaker(MockMakers.SUBCLASS));
+    GameRules rules = new GameRules();
+    rules.getRule(GameRules.RULE_RANDOMTICKING).set(5, null);
+    when(server.getGameRules()).thenReturn(rules);
+
+    try {
+      writeStaticField(ServerManager.class, "minecraftServer", server);
+      FeatureToggle.GAMERULES.setEnabled(false);
+      FeatureToggle.GAMERULES.setEnabled(true);
+      writeStaticField(GameRuleManager.class, "configuredRandomTickSpeedMax", 5);
+      rules.getRule(GameRules.RULE_RANDOMTICKING).set(1, null);
+
+      FeatureToggle.GAMERULES.setEnabled(false);
+
+      assertEquals(5, rules.getInt(GameRules.RULE_RANDOMTICKING));
+    } finally {
+      FeatureToggle.GAMERULES.setEnabled(previousState);
+      writeStaticField(ServerManager.class, "minecraftServer", null);
+    }
+  }
+
+  @Test
+  void disablingAdaptiveSimulationDistanceRestoresServerSimulationDistance() throws Exception {
+    boolean previousState = FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled();
+    MinecraftServer server = mock(MinecraftServer.class,
+      withSettings().mockMaker(MockMakers.SUBCLASS));
+    PlayerList playerList = mock(PlayerList.class,
+      withSettings().mockMaker(MockMakers.SUBCLASS));
+    when(server.getPlayerList()).thenReturn(playerList);
+    when(playerList.getSimulationDistance()).thenReturn(10);
+
+    try {
+      writeStaticField(ServerManager.class, "minecraftServer", server);
+      FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.setEnabled(false);
+      FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.setEnabled(true);
+      writeStaticField(SimulationDistanceManager.class, "currentDistance", 4);
+
+      FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.setEnabled(false);
+
+      assertEquals(10, readStaticField(SimulationDistanceManager.class, "currentDistance"));
+      verify(playerList).setSimulationDistance(10);
+    } finally {
+      FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.setEnabled(previousState);
+      writeStaticField(ServerManager.class, "minecraftServer", null);
     }
   }
 

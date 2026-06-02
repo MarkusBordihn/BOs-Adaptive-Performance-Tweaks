@@ -59,13 +59,14 @@ public final class DistanceAdaptationTests {
   public static void testSimulationDistanceDecreasesUnderVeryHighLoad(GameTestHelper helper) {
     MinecraftServer server = helper.getLevel().getServer();
     SimulationDistanceManager.handleServerStarting(server);
+    SimulationDistanceManager.handleServerLoadEvent(
+      new ServerLoadEvent(ServerLoadLevel.NORMAL, ServerLoadLevel.NORMAL, 50.0, 50.0));
+    int previous = server.getPlayerList().getSimulationDistance();
 
     SimulationDistanceManager.handleServerLoadEvent(
       new ServerLoadEvent(ServerLoadLevel.VERY_HIGH, ServerLoadLevel.NORMAL, 200.0, 50.0));
 
-    int expected = Math.max(SimulationDistanceConfig.simDistanceMin,
-      Math.min(SimulationDistanceConfig.simDistanceMax,
-        SimulationDistanceConfig.simDistanceVeryHigh));
+    int expected = Math.max(SimulationDistanceConfig.simDistanceMin, previous - 1);
     GameTestHelpers.assertEquals(
       helper,
       "Simulation distance should be reduced under VERY_HIGH load",

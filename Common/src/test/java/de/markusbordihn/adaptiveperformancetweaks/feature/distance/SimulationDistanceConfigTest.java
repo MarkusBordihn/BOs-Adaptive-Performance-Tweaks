@@ -68,7 +68,7 @@ class SimulationDistanceConfigTest {
   @Test
   void defaultMovementThrottleValues() {
     assertTrue(SimulationDistanceConfig.movementThrottleEnabled);
-    assertEquals(ServerLoadLevel.MEDIUM,
+    assertEquals(ServerLoadLevel.VERY_LOW,
       SimulationDistanceConfig.movementThrottleMinimumLoadLevel);
     assertEquals(3, SimulationDistanceConfig.movementThrottleWindowSamples);
     assertEquals(5, SimulationDistanceConfig.movementThrottleWindowSamplesMax);

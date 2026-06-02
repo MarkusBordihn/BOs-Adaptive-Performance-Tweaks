@@ -20,9 +20,9 @@
 package de.markusbordihn.adaptiveperformancetweaks.feature.distance;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPositionManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -42,12 +42,25 @@ class SimulationDistanceManagerTest {
     return (int) method.invoke(null);
   }
 
+  private static Object readStaticField(String fieldName) throws Exception {
+    Field field = SimulationDistanceManager.class.getDeclaredField(fieldName);
+    field.setAccessible(true);
+    return field.get(null);
+  }
+
+  private static void invokeUpdateMovementThrottle(boolean recordMovementSample) throws Exception {
+    Method method = SimulationDistanceManager.class.getDeclaredMethod("updateMovementThrottle",
+      boolean.class);
+    method.setAccessible(true);
+    method.invoke(null, recordMovementSample);
+  }
+
   @Test
-  void lowAndNormalLoadDoNotThrottleMovement() {
-    assertFalse(SimulationDistanceManager.supportsMovementThrottle(ServerLoadLevel.LOW));
-    assertFalse(SimulationDistanceManager.supportsMovementThrottle(ServerLoadLevel.NORMAL));
-    assertEquals(0, SimulationDistanceManager.calculateMovementReduction(
-      ServerLoadLevel.NORMAL, 4, 4));
+  void allLoadLevelsThrottleMovement() {
+    assertTrue(SimulationDistanceManager.supportsMovementThrottle(ServerLoadLevel.VERY_LOW));
+    assertTrue(SimulationDistanceManager.supportsMovementThrottle(ServerLoadLevel.LOW));
+    assertTrue(SimulationDistanceManager.supportsMovementThrottle(ServerLoadLevel.NORMAL));
+    assertTrue(SimulationDistanceManager.supportsMovementThrottle(ServerLoadLevel.HIGH));
   }
 
   @Test
@@ -85,5 +98,39 @@ class SimulationDistanceManagerTest {
 
     writeStaticField("configuredDistanceMax", SimulationDistanceConfig.simDistanceMin);
     assertEquals(0, invokeIntMethod("getWarmupReduction"));
+  }
+
+  @Test
+  void movementRecoveryResumesAtLowLoad() throws Exception {
+    PlayerPositionManager.reset();
+    writeStaticField("currentLoadLevel", ServerLoadLevel.LOW);
+    writeStaticField("currentMovementReduction", 2);
+    writeStaticField("recoveryStartTick", 0);
+    writeStaticField("nextRecoveryTick", 0);
+
+    invokeUpdateMovementThrottle(false);
+
+    assertEquals(1, readStaticField("currentMovementReduction"));
+  }
+
+  @Test
+  void movementRecoveryPausesAtNormalLoad() throws Exception {
+    PlayerPositionManager.reset();
+    writeStaticField("currentLoadLevel", ServerLoadLevel.NORMAL);
+    writeStaticField("currentMovementReduction", 2);
+    writeStaticField("recoveryStartTick", 0);
+    writeStaticField("nextRecoveryTick", 0);
+
+    invokeUpdateMovementThrottle(false);
+
+    assertEquals(2, readStaticField("currentMovementReduction"));
+  }
+
+  @Test
+  void loadBasedBaselineDropsByOneStepAtHighLoad() {
+    assertEquals(7, SimulationDistanceManager.resolveNextLoadBaselineDistance(
+      ServerLoadLevel.HIGH, 8));
+    assertEquals(6, SimulationDistanceManager.resolveNextLoadBaselineDistance(
+      ServerLoadLevel.VERY_HIGH, 7));
   }
 }

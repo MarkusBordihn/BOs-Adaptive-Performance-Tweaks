@@ -33,8 +33,11 @@ import de.markusbordihn.adaptiveperformancetweaks.feature.distance.ViewDistanceC
 import de.markusbordihn.adaptiveperformancetweaks.feature.distance.ViewDistanceManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.gamerules.GameRuleManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.gamerules.GameRulesConfig;
+import de.markusbordihn.adaptiveperformancetweaks.feature.items.ArrowEntityManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ArrowsConfig;
+import de.markusbordihn.adaptiveperformancetweaks.feature.items.ExperienceOrbManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ExperienceOrbsConfig;
+import de.markusbordihn.adaptiveperformancetweaks.feature.items.ItemEntityManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ItemsConfig;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.MonitoringConfig;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.MonitoringManager;
@@ -114,6 +117,15 @@ public final class FeatureRegistry {
       }
       if (toggle == FeatureToggle.SPAWN) {
         ServerLoadDispatcher.register(SpawnManager::handleServerLoadEvent);
+      }
+      if (toggle == FeatureToggle.ITEMS) {
+        ServerLoadDispatcher.register(ItemEntityManager::handleServerLoadEvent);
+      }
+      if (toggle == FeatureToggle.EXPERIENCE_ORBS) {
+        ServerLoadDispatcher.register(ExperienceOrbManager::handleServerLoadEvent);
+      }
+      if (toggle == FeatureToggle.ARROWS) {
+        ServerLoadDispatcher.register(ArrowEntityManager::handleServerLoadEvent);
       }
     }
   }
