@@ -28,7 +28,7 @@ import net.minecraft.world.phys.Vec3;
 
 public final class ItemScenario implements BenchmarkScenario {
 
-  private static final int ITEM_COUNT = 192;
+  private static final int ITEM_COUNT = 216;
   private static final double ITEM_RADIUS = 5.0d;
   private static final double ITEM_SPACING = 0.45d;
   private static final int GRID_WIDTH = 12;

@@ -58,7 +58,7 @@ class FeatureRegistryTest {
       listeners.clear();
       FeatureRegistry.registerCommon();
 
-      assertEquals(7, listeners.size());
+      assertEquals(10, listeners.size());
     } finally {
       listeners.clear();
       listeners.addAll(originalListeners);

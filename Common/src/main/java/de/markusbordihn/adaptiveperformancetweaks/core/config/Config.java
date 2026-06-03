@@ -22,6 +22,7 @@ package de.markusbordihn.adaptiveperformancetweaks.core.config;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureRegistry;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureState;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import java.io.File;
 import java.io.FileWriter;
 import java.nio.file.Files;
@@ -235,6 +236,23 @@ public class Config {
     properties.setProperty(key, defaultValue.name().toLowerCase(Locale.ROOT));
 
     return defaultValue;
+  }
+
+  protected static ServerLoadLevel parseOptimizationLevel(
+    final Properties properties, final String key, final ServerLoadLevel featureDefault) {
+    if (properties.containsKey(key)) {
+      String raw = properties.getProperty(key).trim();
+      if (!raw.isEmpty() && !"auto".equalsIgnoreCase(raw)) {
+        try {
+          return ServerLoadLevel.valueOf(raw.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException exception) {
+          log.error("{} Invalid optimizationLevel '{}' for key {}, using default {}:",
+            LOG_PREFIX, raw, key, featureDefault);
+        }
+      }
+    }
+    properties.setProperty(key, "auto");
+    return featureDefault;
   }
 
   protected static <E extends Enum<E>> E parseConfigValue(

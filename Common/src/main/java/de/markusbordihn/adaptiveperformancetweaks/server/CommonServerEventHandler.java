@@ -102,6 +102,9 @@ public final class CommonServerEventHandler {
     if (FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled()) {
       SimulationDistanceManager.handleServerTick();
     }
+    if (FeatureToggle.GAMERULES.isEnabled()) {
+      GameRuleManager.handleServerTick();
+    }
   }
 
   public static void handleServerLevelTickStart(ServerLevel serverLevel) {
