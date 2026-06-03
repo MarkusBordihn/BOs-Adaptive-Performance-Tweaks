@@ -165,6 +165,6 @@ public final class ServerEventHandler {
       return;
     }
 
-    PlayerDamageManager.handleLivingDamage(event.getSource(), event.getNewDamage());
+    PlayerDamageManager.handleLivingDamage(event.getSource(), event.getInflictedDamage());
   }
 }

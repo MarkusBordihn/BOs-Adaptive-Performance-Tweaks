@@ -23,6 +23,7 @@ import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreItemEntityManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -48,7 +49,7 @@ public final class ItemEntityManager {
 
   private static Map<String, Set<ItemEntity>> itemTypeEntityMap = new ConcurrentHashMap<>();
   private static Map<String, Set<ItemEntity>> itemWorldEntityMap = new ConcurrentHashMap<>();
-  private static boolean hasHighServerLoad = false;
+  private static volatile ServerLoadLevel currentLoadLevel = ServerLoadLevel.NORMAL;
   private static boolean hasItemsAllowList = false;
   private static boolean hasItemsDenyList = false;
   private static short ticks = 0;
@@ -108,14 +109,14 @@ public final class ItemEntityManager {
   private static void resetState() {
     itemTypeEntityMap = new ConcurrentHashMap<>();
     itemWorldEntityMap = new ConcurrentHashMap<>();
-    hasHighServerLoad = false;
+    currentLoadLevel = ServerLoadLevel.NORMAL;
     hasItemsAllowList = !ItemsConfig.itemsAllowList.isEmpty();
     hasItemsDenyList = !ItemsConfig.itemsDenyList.isEmpty();
     ticks = 0;
   }
 
   public static void handleServerLoadEvent(ServerLoadEvent event) {
-    hasHighServerLoad = event.hasHighServerLoad() || event.hasVeryHighServerLoad();
+    currentLoadLevel = event.getServerLoadLevel();
   }
 
   public static void handleServerTick() {
@@ -156,7 +157,10 @@ public final class ItemEntityManager {
       ignored -> new ConcurrentSkipListSet<>(Comparator.comparingInt(Entity::getId)));
     Set<ItemEntity> itemTypeEntities = itemTypeEntityMap.get(itemTypeKey);
 
-    if (ItemsConfig.optimizeItems && tryMergeItemEntity(itemEntity, itemTypeEntities, level)) {
+    boolean optimizeActive = ItemsConfig.optimizeItems
+      && currentLoadLevel.isAtLeast(ItemsConfig.minOptimizationLoadLevel);
+
+    if (optimizeActive && tryMergeItemEntity(itemEntity, itemTypeEntities, level)) {
       PerformanceStats.itemsMerged++;
       return true;
     }
@@ -166,13 +170,13 @@ public final class ItemEntityManager {
     Set<ItemEntity> itemWorldEntities = itemWorldEntityMap.get(levelName);
     itemWorldEntities.add(itemEntity);
 
-    if (ItemsConfig.optimizeItems) {
+    if (optimizeActive) {
       enforceWorldLimit(itemWorldEntities, levelName, itemTypeEntityMap);
     }
 
     itemTypeEntities.add(itemEntity);
 
-    if (ItemsConfig.optimizeItems) {
+    if (optimizeActive) {
       enforceTypeLimit(itemTypeEntities, itemWorldEntities);
     }
 

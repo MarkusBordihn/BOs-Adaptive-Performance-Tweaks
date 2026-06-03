@@ -21,17 +21,21 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.gamerules;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
+import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPosition;
+import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPositionManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.UUID;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.MinecraftServer;
@@ -75,6 +79,12 @@ class GameRuleManagerTest {
     return (int) method.invoke(null);
   }
 
+  private static void invokePlayerWarmup(String triggerSource) throws Exception {
+    Method method = GameRuleManager.class.getDeclaredMethod("applyPlayerWarmup", String.class);
+    method.setAccessible(true);
+    method.invoke(null, triggerSource);
+  }
+
   @Test
   void configuredRandomTickSpeedMaxRespectsStartupServerLimit() throws Exception {
     int previousConfig = GameRulesConfig.randomTickSpeed;
@@ -94,11 +104,13 @@ class GameRuleManagerTest {
   void handleFeatureDisabledWithoutServerClearsWarmupState() throws Exception {
     writeStaticField("gameRules", mock(GameRules.class));
     writeStaticField("randomTickWarmupUntilTime", System.currentTimeMillis() + 5_000L);
+    writeStaticField("randomTickPlayerActivityRecoveryPending", true);
 
     GameRuleManager.handleFeatureDisabled();
 
     assertNull(readStaticField("gameRules"));
     assertEquals(0L, readStaticField("randomTickWarmupUntilTime"));
+    assertEquals(false, readStaticField("randomTickPlayerActivityRecoveryPending"));
   }
 
   @Test
@@ -171,6 +183,164 @@ class GameRuleManagerTest {
     } catch (Exception exception) {
       throw new AssertionError(exception);
     } finally {
+      try {
+        writeServerManagerField("minecraftServer", null);
+      } catch (Exception ignored) {
+      }
+    }
+  }
+
+  @Test
+  void loginWarmupIgnoresMinOptimizationLoadLevel() throws Exception {
+    boolean previousState = FeatureToggle.GAMERULES.isEnabled();
+    ServerLoadLevel previousMinOptimizationLoadLevel = GameRulesConfig.minOptimizationLoadLevel;
+    MinecraftServer server = mock(MinecraftServer.class,
+      withSettings().mockMaker(MockMakers.SUBCLASS));
+    GameRules rules = new GameRules(FeatureFlags.DEFAULT_FLAGS);
+    when(server.getGameRules()).thenReturn(rules);
+
+    try {
+      writeServerManagerField("minecraftServer", server);
+      FeatureToggle.GAMERULES.setEnabled(true);
+      GameRulesConfig.minOptimizationLoadLevel = ServerLoadLevel.VERY_HIGH;
+      GameRuleManager.handleServerStarting(server);
+      writeStaticField("currentLoadLevel", ServerLoadLevel.VERY_LOW);
+
+      invokePlayerWarmup("login");
+
+      assertTrue((Long) readStaticField("randomTickWarmupUntilTime") > System.currentTimeMillis());
+      assertEquals(1, (Integer) rules.get(GameRules.RANDOM_TICK_SPEED));
+      assertEquals(true, readStaticField("randomTickPlayerActivityRecoveryPending"));
+    } finally {
+      FeatureToggle.GAMERULES.setEnabled(previousState);
+      GameRulesConfig.minOptimizationLoadLevel = previousMinOptimizationLoadLevel;
+      writeServerManagerField("minecraftServer", null);
+    }
+  }
+
+  @Test
+  void movementWarmupTriggersFromTrackedMovement() throws Exception {
+    boolean previousState = FeatureToggle.GAMERULES.isEnabled();
+    MinecraftServer server = mock(MinecraftServer.class,
+      withSettings().mockMaker(MockMakers.SUBCLASS));
+    GameRules rules = new GameRules(FeatureFlags.DEFAULT_FLAGS);
+    when(server.getGameRules()).thenReturn(rules);
+    PlayerPosition playerPosition =
+      new PlayerPosition("tester", UUID.randomUUID(), "minecraft:overworld", 0, 64, 0, 128);
+    Field movementWindowField = PlayerPosition.class.getDeclaredField("movementWindow");
+    Field movementWindowCountField = PlayerPosition.class.getDeclaredField("movementWindowCount");
+    Field movementWindowDistanceField =
+      PlayerPosition.class.getDeclaredField("movementWindowDistance");
+    movementWindowField.setAccessible(true);
+    movementWindowCountField.setAccessible(true);
+    movementWindowDistanceField.setAccessible(true);
+    movementWindowField.set(playerPosition, new double[]{32.0D, 0.0D, 0.0D});
+    movementWindowCountField.set(playerPosition, 3);
+    movementWindowDistanceField.set(playerPosition, 32.0D);
+
+    try {
+      writeServerManagerField("minecraftServer", server);
+      FeatureToggle.GAMERULES.setEnabled(true);
+      PlayerPositionManager.reset();
+      PlayerPositionManager.getPlayerPositionMap().put("tester", playerPosition);
+      GameRuleManager.handleServerStarting(server);
+      writeStaticField("currentLoadLevel", ServerLoadLevel.NORMAL);
+
+      GameRuleManager.handleServerTick();
+
+      assertTrue((Long) readStaticField("randomTickWarmupUntilTime") > System.currentTimeMillis());
+      assertEquals(1, (Integer) rules.get(GameRules.RANDOM_TICK_SPEED));
+      assertEquals(true, readStaticField("randomTickPlayerActivityRecoveryPending"));
+    } finally {
+      FeatureToggle.GAMERULES.setEnabled(previousState);
+      PlayerPositionManager.reset();
+      writeServerManagerField("minecraftServer", null);
+    }
+  }
+
+  @Test
+  void playerWarmupRecoveryRunsBelowNormalLoad() throws Exception {
+    boolean previousState = FeatureToggle.GAMERULES.isEnabled();
+    MinecraftServer server = mock(MinecraftServer.class,
+      withSettings().mockMaker(MockMakers.SUBCLASS));
+    GameRules rules = new GameRules(FeatureFlags.DEFAULT_FLAGS);
+    rules.set(GameRules.RANDOM_TICK_SPEED, 3, null);
+    when(server.getGameRules()).thenReturn(rules);
+
+    try {
+      writeServerManagerField("minecraftServer", server);
+      FeatureToggle.GAMERULES.setEnabled(true);
+      GameRuleManager.handleServerStarting(server);
+      rules.set(GameRules.RANDOM_TICK_SPEED, 1, null);
+      writeStaticField("currentLoadLevel", ServerLoadLevel.LOW);
+      writeStaticField("randomTickWarmupUntilTime", 0L);
+      writeStaticField("randomTickPlayerActivityRecoveryPending", true);
+      writeStaticField("lastRandomTickRecoveryTime", 0L);
+
+      GameRuleManager.handleServerTick();
+
+      assertEquals(2, (Integer) rules.get(GameRules.RANDOM_TICK_SPEED));
+      assertEquals(true, readStaticField("randomTickPlayerActivityRecoveryPending"));
+    } finally {
+      FeatureToggle.GAMERULES.setEnabled(previousState);
+      writeServerManagerField("minecraftServer", null);
+    }
+  }
+
+  @Test
+  void playerWarmupRecoveryPausesAtNormalLoad() throws Exception {
+    boolean previousState = FeatureToggle.GAMERULES.isEnabled();
+    MinecraftServer server = mock(MinecraftServer.class,
+      withSettings().mockMaker(MockMakers.SUBCLASS));
+    GameRules rules = new GameRules(FeatureFlags.DEFAULT_FLAGS);
+    rules.set(GameRules.RANDOM_TICK_SPEED, 3, null);
+    when(server.getGameRules()).thenReturn(rules);
+
+    try {
+      writeServerManagerField("minecraftServer", server);
+      FeatureToggle.GAMERULES.setEnabled(true);
+      GameRuleManager.handleServerStarting(server);
+      rules.set(GameRules.RANDOM_TICK_SPEED, 1, null);
+      writeStaticField("currentLoadLevel", ServerLoadLevel.NORMAL);
+      writeStaticField("randomTickWarmupUntilTime", 0L);
+      writeStaticField("randomTickPlayerActivityRecoveryPending", true);
+      writeStaticField("lastRandomTickRecoveryTime", 0L);
+
+      GameRuleManager.handleServerTick();
+
+      assertEquals(1, (Integer) rules.get(GameRules.RANDOM_TICK_SPEED));
+      assertEquals(true, readStaticField("randomTickPlayerActivityRecoveryPending"));
+    } finally {
+      FeatureToggle.GAMERULES.setEnabled(previousState);
+      writeServerManagerField("minecraftServer", null);
+    }
+  }
+
+  @Test
+  void highLoadRandomTickSpeedDropsByOneStep() {
+    boolean previousState = FeatureToggle.GAMERULES.isEnabled();
+    int previousRandomTickSpeed = GameRulesConfig.randomTickSpeed;
+    MinecraftServer server = mock(MinecraftServer.class,
+      withSettings().mockMaker(MockMakers.SUBCLASS));
+    GameRules rules = new GameRules(FeatureFlags.DEFAULT_FLAGS);
+    rules.set(GameRules.RANDOM_TICK_SPEED, 5, null);
+    when(server.getGameRules()).thenReturn(rules);
+
+    try {
+      writeServerManagerField("minecraftServer", server);
+      FeatureToggle.GAMERULES.setEnabled(true);
+      GameRulesConfig.randomTickSpeed = 5;
+      GameRuleManager.handleServerStarting(server);
+
+      GameRuleManager.handleServerLoadEvent(
+        new ServerLoadEvent(ServerLoadLevel.HIGH, ServerLoadLevel.NORMAL, 75.0, 50.0));
+
+      assertEquals(4, (Integer) rules.get(GameRules.RANDOM_TICK_SPEED));
+    } catch (Exception exception) {
+      throw new AssertionError(exception);
+    } finally {
+      FeatureToggle.GAMERULES.setEnabled(previousState);
+      GameRulesConfig.randomTickSpeed = previousRandomTickSpeed;
       try {
         writeServerManagerField("minecraftServer", null);
       } catch (Exception ignored) {

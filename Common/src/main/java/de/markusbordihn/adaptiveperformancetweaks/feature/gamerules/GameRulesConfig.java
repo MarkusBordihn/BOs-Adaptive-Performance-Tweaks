@@ -22,6 +22,7 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.gamerules;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.Config;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import java.io.File;
 import java.util.Properties;
 
@@ -36,7 +37,10 @@ public final class GameRulesConfig extends Config {
        Integer values define the min/max boundaries used during optimization.
       """;
 
+  public static ServerLoadLevel minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;
   public static boolean randomTickSpeedEnabled = true;
+  public static boolean loginWarmupEnabled = true;
+  public static boolean movementWarmupEnabled = true;
   public static int randomTickSpeed = 3;
 
   public static boolean entityCrammingEnabled = true;
@@ -70,8 +74,13 @@ public final class GameRulesConfig extends Config {
       FeatureToggle.GAMERULES,
       parseConfigValue(properties, "enabled", FeatureToggle.GAMERULES.getDefaultState()));
 
+    minOptimizationLoadLevel = parseOptimizationLevel(properties, "minOptimizationLoadLevel",
+      minOptimizationLoadLevel);
     randomTickSpeedEnabled = parseConfigValue(properties, "randomTickSpeedEnabled",
       randomTickSpeedEnabled);
+    loginWarmupEnabled = parseConfigValue(properties, "loginWarmupEnabled", loginWarmupEnabled);
+    movementWarmupEnabled =
+      parseConfigValue(properties, "movementWarmupEnabled", movementWarmupEnabled);
     randomTickSpeed = parseConfigValue(properties, "randomTickSpeed", randomTickSpeed);
 
     entityCrammingEnabled = parseConfigValue(properties, "entityCrammingEnabled",
@@ -101,8 +110,10 @@ public final class GameRulesConfig extends Config {
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
 
     log.debug(
-      "GameRules config loaded: randomTickSpeed={} (max {}), entityCramming={} ({}-{})",
+      "GameRules config loaded: randomTickSpeed={} loginWarmup={} movementWarmup={} (max {}), entityCramming={} ({}-{})",
       randomTickSpeedEnabled,
+      loginWarmupEnabled,
+      movementWarmupEnabled,
       randomTickSpeed,
       entityCrammingEnabled,
       minEntityCramming,

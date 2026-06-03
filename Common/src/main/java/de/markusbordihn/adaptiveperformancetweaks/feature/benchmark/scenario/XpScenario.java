@@ -26,7 +26,7 @@ import net.minecraft.world.phys.Vec3;
 
 public final class XpScenario implements BenchmarkScenario {
 
-  private static final int ORB_COUNT = 96;
+  private static final int ORB_COUNT = 104;
   private static final double ORB_RADIUS = 4.5d;
   private static final double ORB_SPACING = 0.6d;
   private static final int GRID_WIDTH = 8;

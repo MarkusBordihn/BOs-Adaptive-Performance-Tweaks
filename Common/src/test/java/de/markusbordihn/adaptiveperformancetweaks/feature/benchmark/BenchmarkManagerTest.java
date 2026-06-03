@@ -23,25 +23,48 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.TrackingCategory;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.MsptBucket;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenario;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenarioContext;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenarioId;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenarioResult;
+import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimulationDistanceManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.gamerules.GameRuleManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.items.ItemsConfig;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.Bootstrap;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.Vec3;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockMakers;
 
 class BenchmarkManagerTest {
+
+  @BeforeAll
+  static void bootstrapMinecraft() {
+    SharedConstants.tryDetectVersion();
+    Bootstrap.bootStrap();
+    Bootstrap.validate();
+  }
 
   private static Object invokePrivateMethod(
     String methodName, Class<?>[] parameterTypes, Object... args) throws Exception {
@@ -52,6 +75,19 @@ class BenchmarkManagerTest {
 
   private static void invokePrivateMethod(String methodName) throws Exception {
     invokePrivateMethod(methodName, new Class<?>[0]);
+  }
+
+  private static void writeStaticField(Class<?> owner, String fieldName, Object value)
+    throws Exception {
+    java.lang.reflect.Field field = owner.getDeclaredField(fieldName);
+    field.setAccessible(true);
+    field.set(null, value);
+  }
+
+  private static Object readStaticField(Class<?> owner, String fieldName) throws Exception {
+    java.lang.reflect.Field field = owner.getDeclaredField(fieldName);
+    field.setAccessible(true);
+    return field.get(null);
   }
 
   private static String buildBenchmarkFilename(String modVersion) throws Exception {
@@ -100,6 +136,28 @@ class BenchmarkManagerTest {
   }
 
   @Test
+  void blockWarmupDurationIs30Seconds() throws Exception {
+    java.lang.reflect.Field field =
+      BenchmarkManager.class.getDeclaredField("BLOCK_WARMUP_DURATION_MS");
+    field.setAccessible(true);
+    assertEquals(30_000L, field.get(null));
+  }
+
+  @Test
+  void minLoadLevelsForceToVeryLowDuringActiveBlockTransition() throws Exception {
+    ServerLoadLevel originalLevel = ItemsConfig.minOptimizationLoadLevel;
+    try {
+      invokePrivateMethod("saveMinLoadLevels");
+      invokePrivateMethod("completeBlockTransition", new Class<?>[]{long.class},
+        System.currentTimeMillis());
+      assertEquals(ServerLoadLevel.VERY_LOW, ItemsConfig.minOptimizationLoadLevel);
+    } finally {
+      ItemsConfig.minOptimizationLoadLevel = originalLevel;
+      invokePrivateMethod("clearSessionState");
+    }
+  }
+
+  @Test
   void restoreFeaturesKeepsPreviouslyDisabledFeatureDisabled() throws Exception {
     boolean previousItemsState = FeatureToggle.ITEMS.isEnabled();
     boolean previousSpawnState = FeatureToggle.SPAWN.isEnabled();
@@ -117,6 +175,45 @@ class BenchmarkManagerTest {
       invokePrivateMethod("clearSessionState");
       FeatureToggle.ITEMS.setEnabled(previousItemsState);
       FeatureToggle.SPAWN.setEnabled(previousSpawnState);
+    }
+  }
+
+  @Test
+  void benchmarkDisableAllFeaturesRestoresServerDefaultsForRuntimeValues() throws Exception {
+    boolean previousGameRulesState = FeatureToggle.GAMERULES.isEnabled();
+    boolean previousSimDistState = FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled();
+    MinecraftServer server = mock(MinecraftServer.class,
+      withSettings().mockMaker(MockMakers.SUBCLASS));
+    PlayerList playerList = mock(PlayerList.class,
+      withSettings().mockMaker(MockMakers.SUBCLASS));
+    GameRules rules = new GameRules(FeatureFlags.DEFAULT_FLAGS);
+    rules.set(GameRules.RANDOM_TICK_SPEED, 6, null);
+    when(server.getGameRules()).thenReturn(rules);
+    when(server.getPlayerList()).thenReturn(playerList);
+    when(playerList.getSimulationDistance()).thenReturn(10);
+
+    try {
+      writeStaticField(ServerManager.class, "minecraftServer", server);
+      FeatureToggle.GAMERULES.setEnabled(false);
+      FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.setEnabled(false);
+      FeatureToggle.GAMERULES.setEnabled(true);
+      FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.setEnabled(true);
+      writeStaticField(GameRuleManager.class, "configuredRandomTickSpeedMax", 6);
+      writeStaticField(SimulationDistanceManager.class, "configuredDistanceMax", 10);
+      rules.set(GameRules.RANDOM_TICK_SPEED, 1, null);
+      writeStaticField(SimulationDistanceManager.class, "currentDistance", 4);
+
+      invokePrivateMethod("saveFeatureState");
+      invokePrivateMethod("disableAllFeatures");
+
+      assertEquals(6, (Integer) rules.get(GameRules.RANDOM_TICK_SPEED));
+      assertEquals(10, readStaticField(SimulationDistanceManager.class, "currentDistance"));
+      verify(playerList).setSimulationDistance(10);
+    } finally {
+      invokePrivateMethod("clearSessionState");
+      FeatureToggle.GAMERULES.setEnabled(previousGameRulesState);
+      FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.setEnabled(previousSimDistState);
+      writeStaticField(ServerManager.class, "minecraftServer", null);
     }
   }
 

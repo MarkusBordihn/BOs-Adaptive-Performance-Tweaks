@@ -77,7 +77,6 @@ public final class SimulationDistanceManager {
     }
 
     currentLoadLevel = event.getServerLoadLevel();
-    currentLoadBaselineDistance = targetDistanceForLevel(currentLoadLevel);
     evaluateAndApply(false);
   }
 
@@ -96,7 +95,7 @@ public final class SimulationDistanceManager {
     }
 
     PlayerPositionManager.handlePlayerLoggedIn(player);
-    markPlayerWarmup(player);
+    markPlayerWarmup(player, "login");
     evaluateAndApply(false);
   }
 
@@ -106,7 +105,7 @@ public final class SimulationDistanceManager {
     }
 
     PlayerPositionManager.handlePlayerTeleported(player);
-    markPlayerWarmup(player);
+    markPlayerWarmup(player, "teleport");
     evaluateAndApply(false);
   }
 
@@ -187,8 +186,24 @@ public final class SimulationDistanceManager {
   }
 
   static boolean supportsMovementThrottle(ServerLoadLevel loadLevel) {
-    return loadLevel.ordinal()
-      >= SimulationDistanceConfig.movementThrottleMinimumLoadLevel.ordinal();
+    return loadLevel.isAtLeast(SimulationDistanceConfig.movementThrottleMinimumLoadLevel);
+  }
+
+  static int resolveNextLoadBaselineDistance(
+    ServerLoadLevel loadLevel, int currentBaselineDistance) {
+    int targetBaselineDistance = targetDistanceForLevel(loadLevel);
+    if (currentBaselineDistance < 0) {
+      return targetBaselineDistance;
+    }
+    if (targetBaselineDistance < currentBaselineDistance) {
+      return Math.max(targetBaselineDistance, currentBaselineDistance - 1);
+    }
+    if (targetBaselineDistance > currentBaselineDistance
+      && !loadLevel.isAtLeast(ServerLoadLevel.NORMAL)) {
+      return targetBaselineDistance;
+    }
+
+    return currentBaselineDistance;
   }
 
   private static void evaluateAndApply(boolean recordMovementSample) {
@@ -197,8 +212,12 @@ public final class SimulationDistanceManager {
       return;
     }
 
-    if (currentLoadBaselineDistance < 0) {
-      currentLoadBaselineDistance = targetDistanceForLevel(currentLoadLevel);
+    int previousLoadBaselineDistance = currentLoadBaselineDistance;
+    currentLoadBaselineDistance = resolveNextLoadBaselineDistance(currentLoadLevel,
+      currentLoadBaselineDistance);
+    if (currentLoadBaselineDistance != previousLoadBaselineDistance) {
+      log.debug("Simulation distance load baseline: {} -> {} (load={})",
+        previousLoadBaselineDistance, currentLoadBaselineDistance, currentLoadLevel);
     }
 
     updateMovementThrottle(recordMovementSample);
@@ -230,6 +249,7 @@ public final class SimulationDistanceManager {
     int trackedPlayers = playerPositions.size();
     int newActiveExplorerCount = 0;
     int warmupPlayerCount = 0;
+    int previousReduction = currentMovementReduction;
     boolean allPlayersStable = trackedPlayers == 0;
     for (PlayerPosition playerPosition : playerPositions.values()) {
       boolean warmupActive = playerPosition.isLoginWarmupActive(currentTick);
@@ -249,12 +269,14 @@ public final class SimulationDistanceManager {
 
     activeExplorerCount = newActiveExplorerCount;
     int targetReduction = 0;
-    if (warmupPlayerCount > 0) {
+    boolean loginWarmupActive = warmupPlayerCount > 0;
+    if (loginWarmupActive) {
       targetReduction = getWarmupReduction();
     }
-    if (SimulationDistanceConfig.movementThrottleEnabled
+    boolean movementWarmupActive = SimulationDistanceConfig.movementThrottleEnabled
       && supportsMovementThrottle(currentLoadLevel)
-      && activeExplorerCount > 0) {
+      && activeExplorerCount > 0;
+    if (movementWarmupActive) {
       targetReduction = Math.max(targetReduction,
         calculateMovementReduction(currentLoadLevel, trackedPlayers, activeExplorerCount));
     }
@@ -269,6 +291,11 @@ public final class SimulationDistanceManager {
           Math.max(PerformanceStats.simulationDistanceMovementMaxReduction,
             currentMovementReduction);
       }
+      if (!loginWarmupActive && currentMovementReduction != previousReduction) {
+        log.debug(
+          "Simulation distance movement warmup: reduction {} -> {} (activeExplorers={} load={})",
+          previousReduction, currentMovementReduction, activeExplorerCount, currentLoadLevel);
+      }
       return;
     }
 
@@ -277,7 +304,7 @@ public final class SimulationDistanceManager {
       return;
     }
 
-    if (currentLoadLevel.ordinal() >= ServerLoadLevel.NORMAL.ordinal()) {
+    if (currentLoadLevel.isAtLeast(ServerLoadLevel.NORMAL)) {
       return;
     }
 
@@ -297,6 +324,10 @@ public final class SimulationDistanceManager {
     }
 
     currentMovementReduction = Math.max(0, currentMovementReduction - 1);
+    if (currentMovementReduction != previousReduction) {
+      log.debug("Simulation distance warmup recovery: reduction {} -> {} (load={})",
+        previousReduction, currentMovementReduction, currentLoadLevel);
+    }
     if (currentMovementReduction == 0) {
       recoveryStartTick = -1;
       nextRecoveryTick = -1;
@@ -322,8 +353,8 @@ public final class SimulationDistanceManager {
     return Math.max(0, getConfiguredDistanceMax() - SimulationDistanceConfig.simDistanceMin);
   }
 
-  private static void markPlayerWarmup(ServerPlayer player) {
-    if (player == null) {
+  private static void markPlayerWarmup(ServerPlayer player, String triggerSource) {
+    if (player == null || !SimulationDistanceConfig.loginWarmupEnabled) {
       return;
     }
 
@@ -331,6 +362,9 @@ public final class SimulationDistanceManager {
       player.getStringUUID());
     if (playerPosition != null) {
       playerPosition.setLoginWarmup(PlayerPositionManager.getCurrentServerTick(),
+        SimulationDistanceConfig.movementThrottleLoginTicks);
+      log.debug("Simulation distance {} warmup triggered for {} ({} ticks)",
+        triggerSource, player.getName().getString(),
         SimulationDistanceConfig.movementThrottleLoginTicks);
     }
   }

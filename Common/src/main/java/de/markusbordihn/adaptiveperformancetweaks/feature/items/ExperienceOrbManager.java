@@ -21,6 +21,8 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.items;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -39,6 +41,7 @@ public final class ExperienceOrbManager {
   private static final int VERIFICATION_TICK = 30 * 20;
 
   private static Map<String, Set<ExperienceOrb>> experienceOrbEntityMap = new ConcurrentHashMap<>();
+  private static volatile ServerLoadLevel currentLoadLevel = ServerLoadLevel.NORMAL;
   private static short ticks = 0;
 
   private ExperienceOrbManager() {
@@ -86,8 +89,13 @@ public final class ExperienceOrbManager {
     return result;
   }
 
+  public static void handleServerLoadEvent(ServerLoadEvent event) {
+    currentLoadLevel = event.getServerLoadLevel();
+  }
+
   private static void resetState() {
     experienceOrbEntityMap = new ConcurrentHashMap<>();
+    currentLoadLevel = ServerLoadLevel.NORMAL;
     ticks = 0;
   }
 
@@ -114,7 +122,9 @@ public final class ExperienceOrbManager {
     experienceOrbEntityMap.computeIfAbsent(levelName, ignored -> ConcurrentHashMap.newKeySet());
     Set<ExperienceOrb> worldOrbs = experienceOrbEntityMap.get(levelName);
 
-    if (ExperienceOrbsConfig.optimizeExperienceOrbs && !worldOrbs.isEmpty()) {
+    if (ExperienceOrbsConfig.optimizeExperienceOrbs
+      && currentLoadLevel.isAtLeast(ExperienceOrbsConfig.minOptimizationLoadLevel)
+      && !worldOrbs.isEmpty()) {
       int orbX = (int) orbEntity.getX();
       int orbY = (int) orbEntity.getY();
       int orbZ = (int) orbEntity.getZ();

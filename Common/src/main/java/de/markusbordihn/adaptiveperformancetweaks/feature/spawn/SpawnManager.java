@@ -124,7 +124,8 @@ public final class SpawnManager {
       }
     }
 
-    if (!SpawnConfig.entityChunkCleanupEnabled || !currentLoadLevel.isHigh()) {
+    if (!SpawnConfig.entityChunkCleanupEnabled
+      || !currentLoadLevel.isAtLeast(SpawnConfig.minOptimizationLoadLevel)) {
       entityChunkCleanupTicks = 0;
       return;
     }
@@ -145,7 +146,8 @@ public final class SpawnManager {
 
   public static boolean shouldDenyNaturalSpawn(
     MobCategory category, ServerLevel level, BlockPos pos) {
-    if (!SpawnConfig.naturalSpawnLimitationEnabled || !serverStartedDelay) {
+    if (!SpawnConfig.naturalSpawnLimitationEnabled || !serverStartedDelay
+      || !currentLoadLevel.isAtLeast(SpawnConfig.minOptimizationLoadLevel)) {
       return false;
     }
 
@@ -188,6 +190,9 @@ public final class SpawnManager {
 
   public static boolean shouldDenyMobSpawnAt(
     EntityType<?> entityType, ServerLevel level, BlockPos pos, EntitySpawnReason spawnType) {
+    if (!currentLoadLevel.isAtLeast(SpawnConfig.minOptimizationLoadLevel)) {
+      return false;
+    }
     String entityId = BuiltInRegistries.ENTITY_TYPE.getKey(entityType).toString();
     Identifier dimensionId = level.dimension().identifier();
     boolean deny = evaluateDenyMobSpawn(entityType, level, pos, spawnType, entityId, dimensionId);
