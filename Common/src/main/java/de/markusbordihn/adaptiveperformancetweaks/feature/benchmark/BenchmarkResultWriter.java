@@ -30,6 +30,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import net.minecraft.SharedConstants;
 import org.apache.logging.log4j.Logger;
 
@@ -55,10 +56,16 @@ final class BenchmarkResultWriter {
       String filename = buildBenchmarkFilename(timestamp, mcVersion, loader, modVersion);
       Files.createDirectories(Constants.BENCHMARK_DIR);
       Path path = Constants.BENCHMARK_DIR.resolve(filename);
-      Files.write(path, buildMarkdownReport(result, mcVersion, loader, modVersion),
-        StandardCharsets.UTF_8,
-        StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-      log.info("Benchmark result saved to: {}", path);
+      List<String> report = buildMarkdownReport(result, mcVersion, loader, modVersion);
+      CompletableFuture.runAsync(() -> {
+        try {
+          Files.write(path, report, StandardCharsets.UTF_8,
+            StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+          log.info("Benchmark result saved to: {}", path);
+        } catch (IOException exception) {
+          log.warn("Failed to save benchmark result: {}", exception.getMessage());
+        }
+      });
       return path;
     } catch (IOException exception) {
       log.warn("Failed to save benchmark result: {}", exception.getMessage());
