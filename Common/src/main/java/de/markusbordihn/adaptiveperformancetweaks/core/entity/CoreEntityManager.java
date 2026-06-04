@@ -40,6 +40,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Predicate;
@@ -120,10 +121,11 @@ public final class CoreEntityManager {
   }
 
   public static void reloadTrackingRules(List<SpawnPreset> presets) {
-    synchronized (trackingRuleLock) {
-      LinkedHashMap<String, TrackingRuleInfo> manualNamespaces = new LinkedHashMap<>();
-      LinkedHashMap<String, TrackingRuleInfo> manualEntities = new LinkedHashMap<>();
+    LinkedHashMap<String, TrackingRuleInfo> manualNamespaces = new LinkedHashMap<>();
+    LinkedHashMap<String, TrackingRuleInfo> manualEntities = new LinkedHashMap<>();
+    NamespaceAnalysis analysis;
 
+    synchronized (trackingRuleLock) {
       for (SpawnPreset preset : presets) {
         TrackingMode mode = preset.mode();
         if (mode == null) {
@@ -151,8 +153,7 @@ public final class CoreEntityManager {
         }
       }
 
-      NamespaceAnalysis analysis = analyzeRegisteredEntities(manualNamespaces.keySet(),
-        manualEntities.keySet());
+      analysis = analyzeRegisteredEntities(manualNamespaces.keySet(), manualEntities.keySet());
 
       excludedModNamespaces = Collections.unmodifiableSet(
         getLegacyExcludedNamespaces(manualNamespaces));
@@ -165,13 +166,15 @@ public final class CoreEntityManager {
       namespaceProfiles = Collections.unmodifiableMap(analysis.namespaceProfiles());
       demotedNamespaces = Collections.emptySet();
       entityDecisionCache.clear();
-      writeTrackingReport(manualNamespaces, manualEntities, analysis);
 
       log.debug(
         "[Entity Manager] Tracking rules reloaded: {} manual namespaces, {} manual entity ids, {} auto namespaces, {} auto entity ids.",
         manualNamespaceRules.size(), manualEntityRules.size(),
         autoExcludedNamespaces.size(), autoExcludedEntityIds.size());
     }
+
+    CompletableFuture.runAsync(
+      () -> writeTrackingReport(manualNamespaces, manualEntities, analysis));
   }
 
   public static void setExcludedModNamespaces(Set<String> namespaces) {
