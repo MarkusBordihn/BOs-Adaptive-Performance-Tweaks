@@ -49,11 +49,6 @@ public final class VirtualPlayerManager {
     positions.clear();
   }
 
-  public static List<Vec3> getPositions(ServerLevel level) {
-    return Collections.unmodifiableList(
-      positions.getOrDefault(dimensionId(level), Collections.emptyList()));
-  }
-
   public static Vec3 nearest(ServerLevel level, Vec3 origin) {
     List<Vec3> list = positions.getOrDefault(dimensionId(level), Collections.emptyList());
     Vec3 nearest = null;

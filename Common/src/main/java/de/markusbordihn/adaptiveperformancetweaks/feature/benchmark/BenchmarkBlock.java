@@ -17,31 +17,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.adaptiveperformancetweaks.gametest;
+package de.markusbordihn.adaptiveperformancetweaks.feature.benchmark;
 
-import de.markusbordihn.adaptiveperformancetweaks.Constants;
-import net.minecraft.gametest.framework.GameTest;
-import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraftforge.gametest.GameTestHolder;
-import net.minecraftforge.gametest.PrefixGameTestTemplate;
+import net.minecraft.ChatFormatting;
 
-@SuppressWarnings("unused")
-@PrefixGameTestTemplate(value = false)
-@GameTestHolder(Constants.MOD_ID)
-public class ItemOptimizationGameTest {
+public enum BenchmarkBlock {
+  BASELINE("Baseline", "Base", ChatFormatting.AQUA),
+  ACTIVE("Active", "Active", ChatFormatting.GREEN);
 
-  @GameTest(template = "gametest.1x1x1")
-  public void testXpOrbClustering(GameTestHelper helper) {
-    ItemOptimizationTests.testXpOrbClustering(helper);
+  private final String displayName;
+  private final String statusLabel;
+  private final ChatFormatting stageColor;
+
+  BenchmarkBlock(String displayName, String statusLabel, ChatFormatting stageColor) {
+    this.displayName = displayName;
+    this.statusLabel = statusLabel;
+    this.stageColor = stageColor;
   }
 
-  @GameTest(template = "gametest.1x1x1")
-  public void testItemEntityMerging(GameTestHelper helper) {
-    ItemOptimizationTests.testItemEntityMerging(helper);
+  public String getDisplayName() {
+    return this.displayName;
   }
 
-  @GameTest(template = "gametest.1x1x1")
-  public void testStaleXpOrbCleanup(GameTestHelper helper) {
-    ItemOptimizationTests.testStaleXpOrbCleanup(helper);
+  public String getStatusLabel() {
+    return this.statusLabel;
+  }
+
+  public ChatFormatting getStageColor() {
+    return this.stageColor;
   }
 }

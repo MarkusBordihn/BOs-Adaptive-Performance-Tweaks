@@ -22,10 +22,6 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.benchmark;
 import com.sun.management.OperatingSystemMXBean;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
-import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
-import de.markusbordihn.adaptiveperformancetweaks.core.debug.DebugManager;
-import de.markusbordihn.adaptiveperformancetweaks.core.debug.DebugModule;
-import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.MsptBucket;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
@@ -38,13 +34,7 @@ import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.Gen
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.ItemScenario;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.RecoveryScenario;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.XpScenario;
-import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimulationDistanceConfig;
-import de.markusbordihn.adaptiveperformancetweaks.feature.gamerules.GameRulesConfig;
-import de.markusbordihn.adaptiveperformancetweaks.feature.items.ArrowsConfig;
-import de.markusbordihn.adaptiveperformancetweaks.feature.items.ExperienceOrbsConfig;
-import de.markusbordihn.adaptiveperformancetweaks.feature.items.ItemsConfig;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
-import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnConfig;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -59,9 +49,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -92,18 +80,11 @@ public final class BenchmarkManager {
   private static final long CONFIRM_TIMEOUT_MS = 120_000L;
   private static final int MOVE_AREA_HALF_SIZE = 10_000;
   private static final int MOVE_WAYPOINT_COUNT = 60;
-  private static final int PROGRESS_BAR_WIDTH = 10;
   private static final long MIN_SUITE_GENERAL_SECONDS = 60L;
   private static final long MIN_SUITE_SPECIAL_SECONDS = 15L;
   private static final double TELEPORT_Y = 100.0d;
   private static final String BENCHMARK_TAG = "aptweaks_benchmark";
   private static final List<BenchmarkScenario> DEFAULT_SCENARIOS = createScenarioSuite();
-  private static final EnumMap<FeatureToggle, Boolean> savedFeatureState =
-    new EnumMap<>(FeatureToggle.class);
-  private static final EnumMap<FeatureToggle, ModConflictDetector.FeatureDecision>
-    savedFeatureDecision = new EnumMap<>(FeatureToggle.class);
-  private static final EnumMap<DebugModule, Boolean> savedDebugStates =
-    new EnumMap<>(DebugModule.class);
   private static final EnumMap<BenchmarkScenarioId, Long> scenarioDurationMs =
     new EnumMap<>(BenchmarkScenarioId.class);
   private static final EnumMap<BenchmarkScenarioId, BenchmarkScenarioResult.PhaseResult>
@@ -116,12 +97,6 @@ public final class BenchmarkManager {
     new EnumMap<>(ServerLoadLevel.class);
   private static final EnumMap<MsptBucket, Integer> currentMsptDist =
     new EnumMap<>(MsptBucket.class);
-  private static ServerLoadLevel savedItemsMinLoad;
-  private static ServerLoadLevel savedXpMinLoad;
-  private static ServerLoadLevel savedArrowsMinLoad;
-  private static ServerLoadLevel savedSpawnMinLoad;
-  private static ServerLoadLevel savedGameRulesMinLoad;
-  private static ServerLoadLevel savedSimDistMinLoad;
   private static BenchmarkState state = BenchmarkState.IDLE;
   private static BenchmarkBlock currentBlock = BenchmarkBlock.BASELINE;
   private static boolean suiteMode = true;
@@ -164,7 +139,7 @@ public final class BenchmarkManager {
 
   public static void confirm(ServerPlayer player) {
     if (state != BenchmarkState.PENDING_CONFIRM) {
-      sendMessage(player, "No benchmark is waiting for confirmation.");
+      BenchmarkMessenger.sendMessage(player, "No benchmark is waiting for confirmation.");
       return;
     }
 
@@ -192,20 +167,21 @@ public final class BenchmarkManager {
       activeMoveWaypoints = new ArrayList<>();
     }
 
-    saveFeatureState();
-    saveMinLoadLevels();
-    disableAllFeatures();
-    saveAllDebugStates();
-    boolean anyDebugActive = savedDebugStates.containsValue(true);
-    disableAllDebug();
+    BenchmarkFeatureState.saveFeatureState();
+    BenchmarkFeatureState.saveMinLoadLevels();
+    BenchmarkFeatureState.disableAllFeatures();
+    BenchmarkFeatureState.saveAllDebugStates();
+    boolean anyDebugActive = BenchmarkFeatureState.hasAnyDebugActive();
+    BenchmarkFeatureState.disableAllDebug();
     if (anyDebugActive) {
-      sendNoteMessage(player, "Debug logging disabled for all modules for accurate results.");
+      BenchmarkMessenger.sendNoteMessage(player,
+        "Debug logging disabled for all modules for accurate results.");
     }
 
     savedGameMode = player.gameMode.getGameModeForPlayer();
     if (savedGameMode != GameType.CREATIVE) {
       player.setGameMode(GameType.CREATIVE);
-      sendNoteMessage(player, "Switched to Creative mode for benchmark safety.");
+      BenchmarkMessenger.sendNoteMessage(player, "Switched to Creative mode for benchmark safety.");
     }
 
     if (player.getAbilities().flying) {
@@ -224,13 +200,13 @@ public final class BenchmarkManager {
 
   public static void cancel(ServerPlayer player) {
     if (state == BenchmarkState.IDLE || state == BenchmarkState.COMPLETE) {
-      sendMessage(player, "No benchmark is running.");
+      BenchmarkMessenger.sendMessage(player, "No benchmark is running.");
       return;
     }
 
-    restoreFeatures();
-    restoreDebugState();
-    restoreMinLoadLevels();
+    BenchmarkFeatureState.restoreFeatures();
+    BenchmarkFeatureState.restoreDebugState();
+    BenchmarkFeatureState.restoreMinLoadLevels();
     cleanupAllBenchmarkArtifacts();
     PerformanceStats.setDetailedTrackingStatsEnabled(false);
     restoreGameMode(benchmarkPlayer);
@@ -240,7 +216,7 @@ public final class BenchmarkManager {
 
     state = BenchmarkState.IDLE;
     clearSessionState();
-    sendMessage(player, "Benchmark cancelled. Features restored.");
+    BenchmarkMessenger.sendMessage(player, "Benchmark cancelled. Features restored.");
     log.info("Benchmark cancelled by {}", player.getName().getString());
   }
 
@@ -251,7 +227,8 @@ public final class BenchmarkManager {
       if (now - stageStartMs > CONFIRM_TIMEOUT_MS) {
         state = BenchmarkState.IDLE;
         if (pendingConfirmPlayer != null) {
-          sendWarningMessage(pendingConfirmPlayer, "Benchmark confirmation timed out.");
+          BenchmarkMessenger.sendWarningMessage(pendingConfirmPlayer,
+            "Benchmark confirmation timed out.");
         }
         pendingConfirmPlayer = null;
       }
@@ -307,9 +284,9 @@ public final class BenchmarkManager {
 
   public static void reset() {
     if (state != BenchmarkState.IDLE && state != BenchmarkState.COMPLETE) {
-      restoreFeatures();
-      restoreDebugState();
-      restoreMinLoadLevels();
+      BenchmarkFeatureState.restoreFeatures();
+      BenchmarkFeatureState.restoreDebugState();
+      BenchmarkFeatureState.restoreMinLoadLevels();
       cleanupAllBenchmarkArtifacts();
       restoreGameMode(benchmarkPlayer);
     }
@@ -333,7 +310,7 @@ public final class BenchmarkManager {
     if (state == BenchmarkState.COMPLETE) {
       state = BenchmarkState.IDLE;
     } else if (state != BenchmarkState.IDLE) {
-      sendMessage(player,
+      BenchmarkMessenger.sendMessage(player,
         "Benchmark is already running. Use /aptweaks benchmark cancel to stop it.");
       return;
     }
@@ -342,7 +319,7 @@ public final class BenchmarkManager {
       ? DEFAULT_SCENARIOS
       : DEFAULT_SCENARIOS.stream().filter(scenario -> scenario.id() == scenarioId).toList();
     if (scenarioSelection.isEmpty()) {
-      sendMessage(player, "Unable to resolve benchmark scenario.");
+      BenchmarkMessenger.sendMessage(player, "Unable to resolve benchmark scenario.");
       return;
     }
 
@@ -362,7 +339,7 @@ public final class BenchmarkManager {
       if (validationError != null) {
         state = BenchmarkState.IDLE;
         pendingConfirmPlayer = null;
-        sendMessage(player, validationError);
+        BenchmarkMessenger.sendMessage(player, validationError);
         return;
       }
       scenarioDurationMs.putAll(buildSuiteScenarioDurationsMillis(seconds));
@@ -377,36 +354,39 @@ public final class BenchmarkManager {
     long totalRuntimeMs = suiteMode
       ? totalSuiteRuntimeMs()
       : totalSingleScenarioRuntimeMs(configuredScenarios.get(0).id());
-    sendWarningMessage(player, "=== APTweaks Benchmark - WARNING ===");
-    sendMessage(player, String.format(
+    BenchmarkMessenger.sendWarningMessage(player, "=== APTweaks Benchmark - WARNING ===");
+    BenchmarkMessenger.sendMessage(player, String.format(
       "Target: %s | total runtime: ~%s",
-      requestedScenarioLabel, formatDuration(totalRuntimeMs)));
-    sendMessage(player, String.format(
+      requestedScenarioLabel, BenchmarkMessenger.formatDuration(totalRuntimeMs)));
+    BenchmarkMessenger.sendMessage(player, String.format(
       "Block warm-up: %s | settle: %s | cleanup settle: %s",
-      formatDuration(BLOCK_WARMUP_DURATION_MS),
-      formatDuration(SCENARIO_SETTLE_DURATION_MS),
-      formatDuration(SCENARIO_POST_SETTLE_DURATION_MS)));
+      BenchmarkMessenger.formatDuration(BLOCK_WARMUP_DURATION_MS),
+      BenchmarkMessenger.formatDuration(SCENARIO_SETTLE_DURATION_MS),
+      BenchmarkMessenger.formatDuration(SCENARIO_POST_SETTLE_DURATION_MS)));
     if (suiteMode) {
-      sendMessage(player, "Scenario order:");
-      sendMessage(player, "Baseline General -> Items -> XP -> Entities -> Recovery");
-      sendMessage(player, "Active   General -> Items -> XP -> Entities -> Recovery");
-      sendMessage(player, "Scenario durations per block: " + formatScenarioDurationsForMessage());
+      BenchmarkMessenger.sendMessage(player, "Scenario order:");
+      BenchmarkMessenger.sendMessage(player,
+        "Baseline General -> Items -> XP -> Entities -> Recovery");
+      BenchmarkMessenger.sendMessage(player,
+        "Active   General -> Items -> XP -> Entities -> Recovery");
+      BenchmarkMessenger.sendMessage(player,
+        "Scenario durations per block: " + formatScenarioDurationsForMessage());
     } else {
       BenchmarkScenarioId scenarioId = configuredScenarios.get(0).id();
-      sendMessage(player, String.format(
+      BenchmarkMessenger.sendMessage(player, String.format(
         "Single scenario: %s | measurement per block: %s",
         scenarioId.getDisplayName(),
-        formatDuration(scenarioDurationMs.get(scenarioId))));
+        BenchmarkMessenger.formatDuration(scenarioDurationMs.get(scenarioId))));
     }
     if (autoMoveRequested) {
-      sendPrefixedMessage(player, "[Move] ",
+      BenchmarkMessenger.sendPrefixedMessage(player, "[Move] ",
         "Auto-move is only applied to the General scenario to create chunk activity.",
         ChatFormatting.LIGHT_PURPLE, ChatFormatting.GRAY);
     }
-    sendWarningMessage(player, "Only run this in a test world!");
-    sendCommandMessage(player, "Confirm", "/aptweaks benchmark confirm");
-    sendCommandMessage(player, "Cancel", "/aptweaks benchmark cancel");
-    sendNoteMessage(player, "Expires in 120 seconds.");
+    BenchmarkMessenger.sendWarningMessage(player, "Only run this in a test world!");
+    BenchmarkMessenger.sendCommandMessage(player, "Confirm", "/aptweaks benchmark confirm");
+    BenchmarkMessenger.sendCommandMessage(player, "Cancel", "/aptweaks benchmark cancel");
+    BenchmarkMessenger.sendNoteMessage(player, "Expires in 120 seconds.");
   }
 
   private static void startBlockWarmup(long now, BenchmarkBlock block) {
@@ -422,7 +402,7 @@ public final class BenchmarkManager {
 
     log.info("{} benchmark block warm-up started.", block.getDisplayName());
     if (benchmarkPlayer != null) {
-      sendNoteMessage(benchmarkPlayer, block == BenchmarkBlock.BASELINE
+      BenchmarkMessenger.sendNoteMessage(benchmarkPlayer, block == BenchmarkBlock.BASELINE
         ? "Base block warm-up started - all mod features disabled."
         : "Active block warm-up started - configured feature state restored.");
     }
@@ -463,9 +443,10 @@ public final class BenchmarkManager {
     state = BenchmarkState.SCENARIO_SETTLE;
 
     if (benchmarkPlayer != null) {
-      sendStageMessage(benchmarkPlayer, currentBlock, scenario.displayName(), String.format(
-        "setup complete. Settle: %s",
-        formatDuration(SCENARIO_SETTLE_DURATION_MS)));
+      BenchmarkMessenger.sendStageMessage(benchmarkPlayer, currentBlock, scenario.displayName(),
+        String.format(
+          "setup complete. Settle: %s",
+          BenchmarkMessenger.formatDuration(SCENARIO_SETTLE_DURATION_MS)));
     }
   }
 
@@ -493,11 +474,12 @@ public final class BenchmarkManager {
     }
 
     log.info("{} {} measurement started for {}.", currentBlock.getDisplayName(),
-      scenario.displayName(), formatDuration(currentScenarioDurationMs));
+      scenario.displayName(), BenchmarkMessenger.formatDuration(currentScenarioDurationMs));
     if (benchmarkPlayer != null) {
-      sendStageMessage(benchmarkPlayer, currentBlock, scenario.displayName(), String.format(
-        "measurement started (%s).",
-        formatDuration(currentScenarioDurationMs)));
+      BenchmarkMessenger.sendStageMessage(benchmarkPlayer, currentBlock, scenario.displayName(),
+        String.format(
+          "measurement started (%s).",
+          BenchmarkMessenger.formatDuration(currentScenarioDurationMs)));
     }
   }
 
@@ -586,9 +568,10 @@ public final class BenchmarkManager {
     state = BenchmarkState.SCENARIO_POST_SETTLE;
 
     if (benchmarkPlayer != null) {
-      sendStageMessage(benchmarkPlayer, currentBlock, scenario.displayName(), String.format(
-        "cleanup complete. Post-settle: %s",
-        formatDuration(SCENARIO_POST_SETTLE_DURATION_MS)));
+      BenchmarkMessenger.sendStageMessage(benchmarkPlayer, currentBlock, scenario.displayName(),
+        String.format(
+          "cleanup complete. Post-settle: %s",
+          BenchmarkMessenger.formatDuration(SCENARIO_POST_SETTLE_DURATION_MS)));
     }
   }
 
@@ -609,9 +592,9 @@ public final class BenchmarkManager {
   }
 
   private static void completeBlockTransition(long now) {
-    restoreFeatures();
-    disableAllDebug();
-    forceMinLoadLevels();
+    BenchmarkFeatureState.restoreFeatures();
+    BenchmarkFeatureState.disableAllDebug();
+    BenchmarkFeatureState.forceMinLoadLevels();
     PerformanceStats.reset();
     PerformanceStats.setDetailedTrackingStatsEnabled(true);
     startBlockWarmup(now, BenchmarkBlock.ACTIVE);
@@ -636,19 +619,23 @@ public final class BenchmarkManager {
       SCENARIO_POST_SETTLE_DURATION_MS,
       Map.copyOf(scenarioDurationMs),
       List.copyOf(scenarioResults),
-      countFeaturesByActivation(ModConflictDetector.FeatureActivation.MANUAL_ENABLED),
-      countFeaturesByActivation(ModConflictDetector.FeatureActivation.AUTO_ENABLED),
-      countFeaturesByActivation(ModConflictDetector.FeatureActivation.MANUAL_DISABLED),
-      countFeaturesByActivation(ModConflictDetector.FeatureActivation.CONFLICT_DISABLED),
+      BenchmarkFeatureState.countFeaturesByActivation(
+        ModConflictDetector.FeatureActivation.MANUAL_ENABLED),
+      BenchmarkFeatureState.countFeaturesByActivation(
+        ModConflictDetector.FeatureActivation.AUTO_ENABLED),
+      BenchmarkFeatureState.countFeaturesByActivation(
+        ModConflictDetector.FeatureActivation.MANUAL_DISABLED),
+      BenchmarkFeatureState.countFeaturesByActivation(
+        ModConflictDetector.FeatureActivation.CONFLICT_DISABLED),
       autoMoveRequested,
       baselineMoveWaypoints.size(),
       activeMoveWaypoints.size(),
       countSharedChunkTargets(baselineMoveWaypoints, activeMoveWaypoints),
       Instant.now());
 
-    restoreFeatures();
-    restoreDebugState();
-    restoreMinLoadLevels();
+    BenchmarkFeatureState.restoreFeatures();
+    BenchmarkFeatureState.restoreDebugState();
+    BenchmarkFeatureState.restoreMinLoadLevels();
     cleanupAllBenchmarkArtifacts();
     PerformanceStats.setDetailedTrackingStatsEnabled(false);
 
@@ -671,18 +658,18 @@ public final class BenchmarkManager {
 
     if (player != null) {
       if (lastResultPath == null) {
-        sendMessage(player, "Benchmark complete!");
+        BenchmarkMessenger.sendMessage(player, "Benchmark complete!");
       }
 
       for (Component line : lastResult.formatChat()) {
-        sendMessage(player, line);
+        BenchmarkMessenger.sendMessage(player, line);
       }
 
       if (lastResultPath == null) {
         return;
       }
 
-      sendReportLocation(player, lastResultPath);
+      BenchmarkMessenger.sendReportLocation(player, lastResultPath);
     }
   }
 
@@ -693,13 +680,13 @@ public final class BenchmarkManager {
     }
 
     long elapsedMs = Math.max(0L, now - stageStartMs);
-    ChatFormatting stageColor = getStageColor(stageLabel, currentBlock);
+    ChatFormatting stageColor = BenchmarkMessenger.getStageColor(stageLabel, currentBlock);
     MutableComponent message = Component.literal("[APT Benchmark] ").withStyle(ChatFormatting.GOLD)
-      .append(Component.literal(formatProgressBar(elapsedMs, stageDurationMs))
+      .append(Component.literal(BenchmarkMessenger.formatProgressBar(elapsedMs, stageDurationMs))
         .withStyle(stageColor))
       .append(Component.literal(
           String.format(" %s: %s %s ", currentBlock.getStatusLabel(), currentScenarioShortLabel(),
-            formatStageLabel(stageLabel)))
+            BenchmarkMessenger.formatStageLabel(stageLabel)))
         .withStyle(stageColor));
 
     if (measurement) {
@@ -712,12 +699,14 @@ public final class BenchmarkManager {
     double mspt = ServerManager.getAverageTickTime();
     double headroom = (50.0d - mspt) / 50.0d * 100.0d;
     message = message
-      .append(Component.literal(formatDuration(remainingMs) + " | "))
-      .append(Component.literal(String.format("%.1fms", mspt)).withStyle(getMsptColor(mspt)))
+      .append(Component.literal(BenchmarkMessenger.formatDuration(remainingMs) + " | "))
+      .append(Component.literal(String.format("%.1fms", mspt))
+        .withStyle(BenchmarkMessenger.getMsptColor(mspt)))
       .append(Component.literal(String.format(" | %.0f%% hr", headroom))
-        .withStyle(getHeadroomColor(headroom)))
+        .withStyle(BenchmarkMessenger.getHeadroomColor(headroom)))
       .append(Component.literal(
-          " | RAM " + formatBytes(ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed()))
+          " | RAM " + BenchmarkMessenger.formatBytes(
+            ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed()))
         .withStyle(ChatFormatting.AQUA));
 
     if (lastCpuPercent >= 0.0d) {
@@ -726,7 +715,7 @@ public final class BenchmarkManager {
           .withStyle(ChatFormatting.GRAY));
     }
 
-    sendMessage(benchmarkPlayer, message);
+    BenchmarkMessenger.sendMessage(benchmarkPlayer, message);
   }
 
   private static PerformanceStats.Snapshot captureMeasurementStartStats(BenchmarkScenario scenario,
@@ -747,18 +736,6 @@ public final class BenchmarkManager {
   private static void runScenarioMeasurementTick(BenchmarkScenario scenario,
     BenchmarkScenarioContext context) {
     scenario.onMeasurementTick(context);
-  }
-
-  private static ChatFormatting getStageColor(String stageLabel, BenchmarkBlock block) {
-    if (stageLabel.contains("measure")) {
-      return block == BenchmarkBlock.BASELINE ? ChatFormatting.AQUA : ChatFormatting.GREEN;
-    }
-
-    if ("cleanup settle".equals(stageLabel)) {
-      return ChatFormatting.GOLD;
-    }
-
-    return ChatFormatting.YELLOW;
   }
 
   private static BenchmarkScenarioContext currentScenarioContext(BenchmarkScenario scenario) {
@@ -925,7 +902,8 @@ public final class BenchmarkManager {
   private static String formatScenarioDurationsForMessage() {
     return configuredScenarios.stream()
       .map(scenario -> scenario.displayName() + '='
-        + formatDuration(scenarioDurationMs.getOrDefault(scenario.id(), configuredBlockDurationMs)))
+        + BenchmarkMessenger.formatDuration(
+        scenarioDurationMs.getOrDefault(scenario.id(), configuredBlockDurationMs)))
       .collect(Collectors.joining(" | "));
   }
 
@@ -953,146 +931,6 @@ public final class BenchmarkManager {
     }
 
     return configuredScenarios.get(currentScenarioIndex);
-  }
-
-  private static String formatProgressBar(long elapsedMs, long totalMs) {
-    if (totalMs <= 0L) {
-      return "[..........]";
-    }
-
-    double progress = Math.min(1.0d, Math.max(0.0d, (double) elapsedMs / totalMs));
-    int filled = (int) Math.round(progress * PROGRESS_BAR_WIDTH);
-    StringBuilder builder = new StringBuilder(PROGRESS_BAR_WIDTH + 2);
-    builder.append('[');
-    for (int index = 0; index < PROGRESS_BAR_WIDTH; index++) {
-      builder.append(index < filled ? '|' : '.');
-    }
-    builder.append(']');
-
-    return builder.toString();
-  }
-
-  private static String formatStageLabel(String stageLabel) {
-    return switch (stageLabel) {
-      case "warm-up" -> "warm-up";
-      case "settle" -> "settle";
-      case "measure" -> "measurement";
-      case "cleanup settle" -> "cleanup settle";
-      default -> stageLabel;
-    };
-  }
-
-  private static ChatFormatting getMsptColor(double mspt) {
-    if (mspt <= 20.0d) {
-      return ChatFormatting.GREEN;
-    }
-
-    if (mspt <= 35.0d) {
-      return ChatFormatting.YELLOW;
-    }
-
-    return ChatFormatting.RED;
-  }
-
-  private static ChatFormatting getHeadroomColor(double headroom) {
-    if (headroom >= 50.0d) {
-      return ChatFormatting.GREEN;
-    }
-
-    if (headroom >= 20.0d) {
-      return ChatFormatting.YELLOW;
-    }
-
-    return ChatFormatting.RED;
-  }
-
-  private static void saveMinLoadLevels() {
-    savedItemsMinLoad = ItemsConfig.minOptimizationLoadLevel;
-    savedXpMinLoad = ExperienceOrbsConfig.minOptimizationLoadLevel;
-    savedArrowsMinLoad = ArrowsConfig.minOptimizationLoadLevel;
-    savedSpawnMinLoad = SpawnConfig.minOptimizationLoadLevel;
-    savedGameRulesMinLoad = GameRulesConfig.minOptimizationLoadLevel;
-    savedSimDistMinLoad = SimulationDistanceConfig.minOptimizationLoadLevel;
-  }
-
-  private static void forceMinLoadLevels() {
-    ItemsConfig.minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;
-    ExperienceOrbsConfig.minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;
-    ArrowsConfig.minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;
-    SpawnConfig.minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;
-    GameRulesConfig.minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;
-    SimulationDistanceConfig.minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;
-  }
-
-  private static void restoreMinLoadLevels() {
-    ItemsConfig.minOptimizationLoadLevel = savedItemsMinLoad;
-    ExperienceOrbsConfig.minOptimizationLoadLevel = savedXpMinLoad;
-    ArrowsConfig.minOptimizationLoadLevel = savedArrowsMinLoad;
-    SpawnConfig.minOptimizationLoadLevel = savedSpawnMinLoad;
-    GameRulesConfig.minOptimizationLoadLevel = savedGameRulesMinLoad;
-    SimulationDistanceConfig.minOptimizationLoadLevel = savedSimDistMinLoad;
-  }
-
-  private static void saveFeatureState() {
-    savedFeatureState.clear();
-    savedFeatureDecision.clear();
-    for (FeatureToggle featureToggle : FeatureToggle.values()) {
-      savedFeatureState.put(featureToggle, featureToggle.isEnabled());
-      if (featureToggle != FeatureToggle.CORE) {
-        savedFeatureDecision.put(featureToggle, CoreConfig.getFeatureDecision(featureToggle));
-      }
-    }
-  }
-
-  private static void disableAllFeatures() {
-    for (FeatureToggle featureToggle : FeatureToggle.values()) {
-      if (featureToggle != FeatureToggle.CORE) {
-        featureToggle.setEnabled(false);
-      }
-    }
-  }
-
-  private static void restoreFeatures() {
-    savedFeatureState.forEach(FeatureToggle::setEnabled);
-  }
-
-  private static int countFeaturesByActivation(
-    ModConflictDetector.FeatureActivation activation) {
-    int count = 0;
-    for (Map.Entry<FeatureToggle, ModConflictDetector.FeatureDecision> entry
-      : savedFeatureDecision.entrySet()) {
-      if (entry.getKey().scope() == FeatureToggle.Scope.CLIENT) {
-        continue;
-      }
-
-      if (entry.getValue().activation() == activation) {
-        count++;
-      }
-    }
-
-    return count;
-  }
-
-  private static void saveAllDebugStates() {
-    savedDebugStates.clear();
-    for (DebugModule module : DebugModule.values()) {
-      savedDebugStates.put(module, DebugManager.isDebugLevel(module.getLoggerName()));
-    }
-  }
-
-  private static void disableAllDebug() {
-    for (DebugModule module : DebugModule.values()) {
-      DebugManager.enableDebugLevel(module.getLoggerName(), false);
-    }
-  }
-
-  private static void restoreDebugState() {
-    savedDebugStates.forEach((module, wasEnabled) -> {
-      if (wasEnabled) {
-        DebugManager.enableDebugLevel(module.getLoggerName(), true);
-      }
-    });
-    savedDebugStates.clear();
   }
 
   static String resolveModVersion() {
@@ -1134,44 +972,11 @@ public final class BenchmarkManager {
     return "unknown";
   }
 
-  private static String abbreviatePath(Path path) {
-    String full = path.toString();
-    if (full.length() <= 60) {
-      return full;
-    }
-    int nameCount = path.getNameCount();
-    String sep = java.io.File.separator;
-    String parent = nameCount >= 2 ? path.getName(nameCount - 2) + sep : "";
-    return "..." + sep + parent + path.getFileName();
-  }
-
-  private static boolean supportsLocalReportLink(ServerPlayer player) {
-    return player != null && player.getServer() != null && !player.getServer().isDedicatedServer();
-  }
-
   private static Vec3 resolveBenchmarkOriginPos(ServerPlayer player) {
     ServerLevel level = player.serverLevel();
     BlockPos surfacePos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
       BlockPos.containing(player.getX(), 0.0d, player.getZ()));
     return new Vec3(player.getX(), surfacePos.getY() + 1.0d, player.getZ());
-  }
-
-  private static void sendReportLocation(ServerPlayer player, Path resultPath) {
-    if (supportsLocalReportLink(player)) {
-      sendMessage(player, Component.literal("See Details: ")
-        .withStyle(ChatFormatting.GOLD)
-        .append(Component.literal(abbreviatePath(resultPath))
-          .withStyle(ChatFormatting.AQUA)
-          .withStyle(style -> style
-            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE,
-              resultPath.toString()))
-            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-              Component.literal(resultPath.toString()))))));
-      return;
-    }
-
-    sendMessage(player, Component.literal("Report Path: ").withStyle(ChatFormatting.GOLD)
-      .append(Component.literal(resultPath.toString()).withStyle(ChatFormatting.AQUA)));
   }
 
   private static void clearSessionState() {
@@ -1197,15 +1002,7 @@ public final class BenchmarkManager {
     scenarioDurationMs.clear();
     baselineScenarioResults.clear();
     activeScenarioResults.clear();
-    savedFeatureState.clear();
-    savedFeatureDecision.clear();
-    savedDebugStates.clear();
-    savedItemsMinLoad = null;
-    savedXpMinLoad = null;
-    savedArrowsMinLoad = null;
-    savedSpawnMinLoad = null;
-    savedGameRulesMinLoad = null;
-    savedSimDistMinLoad = null;
+    BenchmarkFeatureState.clearAll();
     requestedScenarioLabel = "Full Suite";
     suiteMode = true;
     autoMoveRequested = false;
@@ -1347,109 +1144,6 @@ public final class BenchmarkManager {
 
   private static double max(List<Double> samples, double fallback) {
     return samples.stream().mapToDouble(Double::doubleValue).max().orElse(fallback);
-  }
-
-  private static String formatBytes(long bytes) {
-    if (bytes >= 1_073_741_824L) {
-      return String.format("%.2fGB", bytes / 1_073_741_824.0d);
-    }
-
-    if (bytes >= 1_048_576L) {
-      return String.format("%.0fMB", bytes / 1_048_576.0d);
-    }
-
-    return String.format("%.0fKB", bytes / 1024.0d);
-  }
-
-  private static String formatDuration(long ms) {
-    long secs = Math.max(0L, ms / 1000L);
-    long mins = secs / 60L;
-    secs %= 60L;
-    if (mins > 0L) {
-      return String.format("%dm %ds", mins, secs);
-    }
-
-    return String.format("%ds", secs);
-  }
-
-  private static void sendMessage(ServerPlayer player, String message) {
-    player.sendSystemMessage(Component.literal(message));
-  }
-
-  private static void sendMessage(ServerPlayer player, Component message) {
-    player.sendSystemMessage(message);
-  }
-
-  private static void sendNoteMessage(ServerPlayer player, String message) {
-    sendPrefixedMessage(player, "[Note] ", message, ChatFormatting.YELLOW, ChatFormatting.GRAY);
-  }
-
-  private static void sendWarningMessage(ServerPlayer player, String message) {
-    sendPrefixedMessage(player, "[Warning] ", message, ChatFormatting.RED, ChatFormatting.YELLOW);
-  }
-
-  private static void sendCommandMessage(ServerPlayer player, String label, String command) {
-    sendMessage(player, Component.literal("[Command] ").withStyle(ChatFormatting.AQUA)
-      .append(Component.literal(label + ": ").withStyle(ChatFormatting.YELLOW))
-      .append(Component.literal(command)
-        .withStyle(ChatFormatting.GOLD)
-        .withStyle(style -> style.withClickEvent(
-          new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command)))));
-  }
-
-  private static void sendStageMessage(
-    ServerPlayer player, BenchmarkBlock block, String scenarioName, String message) {
-    sendPrefixedMessage(player,
-      '[' + block.getStatusLabel() + "] ",
-      scenarioName + ' ' + message,
-      block.getStageColor(),
-      ChatFormatting.GRAY);
-  }
-
-  private static void sendPrefixedMessage(ServerPlayer player, String prefix, String message,
-    ChatFormatting prefixColor, ChatFormatting messageColor) {
-    sendMessage(player, Component.literal(prefix).withStyle(prefixColor)
-      .append(Component.literal(message).withStyle(messageColor)));
-  }
-
-  private enum BenchmarkState {
-    IDLE,
-    PENDING_CONFIRM,
-    BLOCK_WARMUP,
-    SCENARIO_SETUP,
-    SCENARIO_SETTLE,
-    SCENARIO_MEASURE,
-    SCENARIO_CLEANUP,
-    SCENARIO_POST_SETTLE,
-    BLOCK_TRANSITION,
-    COMPLETE
-  }
-
-  private enum BenchmarkBlock {
-    BASELINE("Baseline", "Base", ChatFormatting.AQUA),
-    ACTIVE("Active", "Active", ChatFormatting.GREEN);
-
-    private final String displayName;
-    private final String statusLabel;
-    private final ChatFormatting stageColor;
-
-    BenchmarkBlock(String displayName, String statusLabel, ChatFormatting stageColor) {
-      this.displayName = displayName;
-      this.statusLabel = statusLabel;
-      this.stageColor = stageColor;
-    }
-
-    public String getDisplayName() {
-      return this.displayName;
-    }
-
-    public String getStatusLabel() {
-      return this.statusLabel;
-    }
-
-    public ChatFormatting getStageColor() {
-      return this.stageColor;
-    }
   }
 
   @FunctionalInterface

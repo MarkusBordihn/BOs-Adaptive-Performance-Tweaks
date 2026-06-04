@@ -34,10 +34,6 @@ public final class ServerLoadDispatcher {
     listeners.add(listener);
   }
 
-  public static void unregister(Consumer<ServerLoadEvent> listener) {
-    listeners.remove(listener);
-  }
-
   public static void dispatch(ServerLoadEvent event) {
     for (Consumer<ServerLoadEvent> listener : listeners) {
       listener.accept(event);

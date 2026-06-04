@@ -92,20 +92,12 @@ public class PlayerPosition {
     return this.playerName;
   }
 
-  public String getLevelName() {
-    return this.levelName;
-  }
-
   public double getMovementWindowDistance() {
     return this.movementWindowDistance;
   }
 
   public int getLastChunkX() {
     return this.lastChunkX;
-  }
-
-  public int getLastChunkZ() {
-    return this.lastChunkZ;
   }
 
   public boolean hasCompleteMovementWindow() {
