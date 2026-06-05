@@ -49,6 +49,6 @@ tasks.register('allGameTests') {
 
 tasks.register('fullCheck') {
   group = 'verification'
-  description = 'Runs the standard checks and both Fabric and Forge game tests.'
-  dependsOn 'check', 'allGameTests'
+  description = 'Runs the standard checks and Fabric, Forge, and NeoForge game tests.'
+  dependsOn ':Common:check', ':Fabric:check', ':Forge:check', 'allGameTests'
 }

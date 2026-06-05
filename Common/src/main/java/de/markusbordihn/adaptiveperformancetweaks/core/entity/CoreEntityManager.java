@@ -590,7 +590,7 @@ public final class CoreEntityManager {
 
       Map<EntityType<?>, List<Entity>> entitiesByType = new HashMap<>();
       for (Entity entity : new ArrayList<>(rawEntities)) {
-        if (!isChunkCleanupCandidate(entity) || !cleanupFilter.test(entity)) {
+        if (!isMobCleanupEligible(entity) || !cleanupFilter.test(entity)) {
           continue;
         }
 
@@ -608,6 +608,9 @@ public final class CoreEntityManager {
 
         for (int index = perTypeLimit; index < candidates.size(); index++) {
           Entity entity = candidates.get(index);
+          if (!isChunkCleanupCandidate(entity)) {
+            continue;
+          }
           if (removeChunkCleanupEntity(entity)) {
             removedEntities++;
             affectedChunks.add(entry.getKey());
@@ -1192,11 +1195,15 @@ public final class CoreEntityManager {
       && (mob.isLeashed() || mob.isPersistenceRequired() || mob.requiresCustomPersistence());
   }
 
+  private static boolean isMobCleanupEligible(Entity entity) {
+    return entity instanceof Mob
+      && entity.isAlive()
+      && !entity.isRemoved()
+      && !isProtectedPersistentEntity(entity);
+  }
+
   private static boolean isChunkCleanupCandidate(Entity entity) {
-    if (!(entity instanceof Mob) || !entity.isAlive() || entity.isRemoved()) {
-      return false;
-    }
-    if (isProtectedPersistentEntity(entity)) {
+    if (!isMobCleanupEligible(entity)) {
       return false;
     }
     Integer protectedUntil = conversionProtectedEntities.get(entity.getUUID());
