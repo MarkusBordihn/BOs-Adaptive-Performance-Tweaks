@@ -28,7 +28,7 @@ import net.minecraftforge.gametest.GameTestHolder;
 @GameTestHolder(Constants.MOD_ID)
 public class GameRuleAdaptationGameTest {
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testVeryHighLoadDisablesGameRules(GameTestHelper helper) {
     GameRuleAdaptationTests.testVeryHighLoadDisablesGameRules(helper);
   }

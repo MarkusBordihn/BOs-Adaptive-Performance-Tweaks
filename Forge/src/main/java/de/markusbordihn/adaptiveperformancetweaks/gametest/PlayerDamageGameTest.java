@@ -28,32 +28,32 @@ import net.minecraftforge.gametest.GameTestHolder;
 @GameTestHolder(Constants.MOD_ID)
 public class PlayerDamageGameTest {
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testDamageUnchangedForNonChildPlayer(GameTestHelper helper) {
     PlayerDamageTests.testDamageUnchangedForNonChildPlayer(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testDamageReducedForChildPlayer(GameTestHelper helper) {
     PlayerDamageTests.testDamageReducedForChildPlayer(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testDamageFullyBlockedAtHundredPercent(GameTestHelper helper) {
     PlayerDamageTests.testDamageFullyBlockedAtHundredPercent(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testAttackDamageIncreasedForChildPlayer(GameTestHelper helper) {
     PlayerDamageTests.testAttackDamageIncreasedForChildPlayer(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testChildModeHurtReductionThroughEventPipeline(GameTestHelper helper) {
     PlayerDamageTests.testChildModeHurtReductionThroughHook(helper, "Forge event pipeline");
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testStarterProtectionHurtReductionThroughEventPipeline(GameTestHelper helper) {
     PlayerDamageTests.testStarterProtectionHurtReductionThroughHook(helper, "Forge event pipeline");
   }

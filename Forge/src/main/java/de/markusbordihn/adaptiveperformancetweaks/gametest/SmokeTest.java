@@ -29,7 +29,7 @@ import net.minecraftforge.gametest.GameTestHolder;
 @GameTestHolder(Constants.MOD_ID)
 public class SmokeTest {
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.3x3x3")
+  @GameTest(template = Constants.MOD_ID + ":gametest.3x3x3")
   public void testModRegistered(GameTestHelper helper) {
     GameTestHelpers.assertTrue(
       helper,

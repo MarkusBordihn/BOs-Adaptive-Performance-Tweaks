@@ -35,4 +35,9 @@ public class ItemOptimizationGameTest {
   public void testItemEntityMerging(GameTestHelper helper) {
     ItemOptimizationTests.testItemEntityMerging(helper);
   }
+
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
+  public void testStaleXpOrbCleanup(GameTestHelper helper) {
+    ItemOptimizationTests.testStaleXpOrbCleanup(helper);
+  }
 }

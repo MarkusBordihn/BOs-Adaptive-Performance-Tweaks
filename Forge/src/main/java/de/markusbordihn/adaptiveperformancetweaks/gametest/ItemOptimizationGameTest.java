@@ -28,13 +28,18 @@ import net.minecraftforge.gametest.GameTestHolder;
 @GameTestHolder(Constants.MOD_ID)
 public class ItemOptimizationGameTest {
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testXpOrbClustering(GameTestHelper helper) {
     ItemOptimizationTests.testXpOrbClustering(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testItemEntityMerging(GameTestHelper helper) {
     ItemOptimizationTests.testItemEntityMerging(helper);
+  }
+
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
+  public void testStaleXpOrbCleanup(GameTestHelper helper) {
+    ItemOptimizationTests.testStaleXpOrbCleanup(helper);
   }
 }

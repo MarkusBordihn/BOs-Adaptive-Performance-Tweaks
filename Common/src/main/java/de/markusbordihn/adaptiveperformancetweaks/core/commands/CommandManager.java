@@ -25,7 +25,6 @@ import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.GameRules;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -66,25 +65,4 @@ public final class CommandManager {
       .performPrefixedCommand(minecraftServer.createCommandSourceStack(), command);
   }
 
-  public static void executeGameRuleCommand(GameRules.Key<?> gameRule, int value) {
-    executeGameRuleCommand(gameRule, String.valueOf(value));
-  }
-
-  public static void executeGameRuleCommand(GameRules.Key<?> gameRule, boolean value) {
-    executeGameRuleCommand(gameRule, Boolean.toString(value));
-  }
-
-  public static void executeGameRuleCommand(GameRules.Key<?> gameRule, String value) {
-    MinecraftServer minecraftServer = ServerManager.getMinecraftServer();
-    if (minecraftServer == null || gameRule == null || value == null || value.isEmpty()) {
-      return;
-    }
-    String command = String.format("gamerule %s %s", gameRule.getId(), value);
-    Commands commands = minecraftServer.getCommands();
-    commands.performCommand(
-      commands
-        .getDispatcher()
-        .parse(command, minecraftServer.createCommandSourceStack().withSuppressedOutput()),
-      command);
-  }
 }

@@ -28,47 +28,47 @@ import net.minecraftforge.gametest.GameTestHolder;
 @GameTestHolder(Constants.MOD_ID)
 public class SpawnThrottleGameTest {
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testSpawnerNotThrottledUnderNormalLoad(GameTestHelper helper) {
     SpawnThrottleTests.testSpawnerNotThrottledUnderNormalLoad(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testSpawnerThrottledUnderVeryHighLoad(GameTestHelper helper) {
     SpawnThrottleTests.testSpawnerThrottledUnderVeryHighLoad(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testSpawnerThrottleOnlyInHighLoadLevel(GameTestHelper helper) {
     SpawnThrottleTests.testSpawnerThrottleOnlyInHighLoadLevel(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testEntityWorldLimitBlocksSpawnAt10(GameTestHelper helper) {
     SpawnThrottleTests.testEntityWorldLimitBlocksSpawnAt10(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testEntityServerLimitBlocksSpawnAt10(GameTestHelper helper) {
     SpawnThrottleTests.testEntityServerLimitBlocksSpawnAt10(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testEntityChunkLimitBlocksSpawnAt5(GameTestHelper helper) {
     SpawnThrottleTests.testEntityChunkLimitBlocksSpawnAt5(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testEntityPlayerLimitVirtualZoneAt5(GameTestHelper helper) {
     SpawnThrottleTests.testEntityPlayerLimitVirtualZoneAt5(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testStructureSpawnGetsWorldBonus(GameTestHelper helper) {
     SpawnThrottleTests.testStructureSpawnGetsWorldBonus(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testStructureSpawnBonusDisabledAboveMaxLoad(GameTestHelper helper) {
     SpawnThrottleTests.testStructureSpawnBonusDisabledAboveMaxLoad(helper);
   }

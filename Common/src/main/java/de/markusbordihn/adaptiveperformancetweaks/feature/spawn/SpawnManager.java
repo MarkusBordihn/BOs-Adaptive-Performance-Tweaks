@@ -384,12 +384,28 @@ public final class SpawnManager {
     return SpawnConfig.spawnLimitationEnabled && getLoadLevel(level) == ServerLoadLevel.VERY_HIGH;
   }
 
-  public static void handleEntityConversion(Entity entity) {
+  public static void handleEntityConversionStart(Entity entity) {
     if (entity == null || entity.level() == null || entity.level().isClientSide()) {
       return;
     }
 
-    log.debug("[Entity Conversion] {}", entity);
+    ResourceLocation entityKey = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+    if (entityKey == null) {
+      return;
+    }
+
+    log.debug("[Entity Conversion] Removing old entity from tracking: {}", entity);
+    CoreEntityManager.removeEntity(
+      entity, entityKey.toString(), entity.level().dimension().location());
+  }
+
+  public static void handleEntityConversionEnd(Entity newEntity) {
+    if (newEntity == null) {
+      return;
+    }
+
+    log.debug("[Entity Conversion] Protecting new entity from cleanup: {}", newEntity);
+    CoreEntityManager.registerConversionProtection(newEntity.getUUID());
   }
 
   private static int countInChunk(EntityType<?> entityType, BlockPos pos, ServerLevel level,

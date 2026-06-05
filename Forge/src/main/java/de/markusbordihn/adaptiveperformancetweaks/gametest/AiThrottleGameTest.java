@@ -28,17 +28,17 @@ import net.minecraftforge.gametest.GameTestHolder;
 @GameTestHolder(Constants.MOD_ID)
 public class AiThrottleGameTest {
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testNoThrottleUnderNormalLoad(GameTestHelper helper) {
     AiThrottleTests.testNoThrottleUnderNormalLoad(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testThrottleUnderVeryHighLoad(GameTestHelper helper) {
     AiThrottleTests.testThrottleUnderVeryHighLoad(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testThrottleOnlyInHighLoadLevel(GameTestHelper helper) {
     AiThrottleTests.testThrottleOnlyInHighLoadLevel(helper);
   }

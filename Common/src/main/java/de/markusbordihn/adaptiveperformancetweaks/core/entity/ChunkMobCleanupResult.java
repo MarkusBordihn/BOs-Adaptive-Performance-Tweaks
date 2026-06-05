@@ -17,19 +17,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.adaptiveperformancetweaks.gametest;
+package de.markusbordihn.adaptiveperformancetweaks.core.entity;
 
-import de.markusbordihn.adaptiveperformancetweaks.Constants;
-import net.minecraft.gametest.framework.GameTest;
-import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraftforge.gametest.GameTestHolder;
+public record ChunkMobCleanupResult(int removedEntities, int affectedChunks,
+                                    int affectedEntityTypes) {
 
-@SuppressWarnings("unused")
-@GameTestHolder(Constants.MOD_ID)
-public class MixinGameTest {
-
-  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
-  public void testExperienceOrbAccessorMixin(GameTestHelper helper) {
-    MixinTests.testExperienceOrbAccessorMixin(helper);
-  }
+  static final ChunkMobCleanupResult EMPTY = new ChunkMobCleanupResult(0, 0, 0);
 }

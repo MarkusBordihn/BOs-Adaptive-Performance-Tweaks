@@ -17,19 +17,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.adaptiveperformancetweaks.gametest;
+package de.markusbordihn.adaptiveperformancetweaks.feature.benchmark;
 
-import de.markusbordihn.adaptiveperformancetweaks.Constants;
-import net.minecraft.gametest.framework.GameTest;
-import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraftforge.gametest.GameTestHolder;
-
-@SuppressWarnings("unused")
-@GameTestHolder(Constants.MOD_ID)
-public class MixinGameTest {
-
-  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
-  public void testExperienceOrbAccessorMixin(GameTestHelper helper) {
-    MixinTests.testExperienceOrbAccessorMixin(helper);
-  }
+public enum BenchmarkState {
+  IDLE,
+  PENDING_CONFIRM,
+  BLOCK_WARMUP,
+  SCENARIO_SETUP,
+  SCENARIO_SETTLE,
+  SCENARIO_MEASURE,
+  SCENARIO_CLEANUP,
+  SCENARIO_POST_SETTLE,
+  BLOCK_TRANSITION,
+  COMPLETE
 }

@@ -28,17 +28,17 @@ import net.minecraftforge.gametest.GameTestHolder;
 @GameTestHolder(Constants.MOD_ID)
 public class PlayerLoginProtectionGameTest {
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testProtectionAppliedOnLogin(GameTestHelper helper) {
     PlayerLoginProtectionTests.testProtectionAppliedOnLogin(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testProtectionSkippedWhenDisabled(GameTestHelper helper) {
     PlayerLoginProtectionTests.testProtectionSkippedWhenDisabled(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testValidationDetectsMovement(GameTestHelper helper) {
     PlayerLoginProtectionTests.testValidationDetectsMovement(helper);
   }

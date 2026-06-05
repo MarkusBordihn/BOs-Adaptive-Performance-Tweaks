@@ -40,6 +40,7 @@ public final class ItemOptimizationTests {
   public static void testXpOrbClustering(GameTestHelper helper) {
     ServerLevel level = helper.getLevel();
     ExperienceOrbManager.handleServerAboutToStart();
+    PerformanceStats.reset();
 
     ExperienceOrb orb1 = new ExperienceOrb(EntityType.EXPERIENCE_ORB, level);
     ((ExperienceOrbAccessor) orb1).setValue(5);
@@ -75,6 +76,7 @@ public final class ItemOptimizationTests {
   public static void testStaleXpOrbCleanup(GameTestHelper helper) {
     ServerLevel level = helper.getLevel();
     ExperienceOrbManager.handleServerAboutToStart();
+    PerformanceStats.reset();
 
     int previousMaxAge = ExperienceOrbsConfig.staleExperienceOrbAgeTicks;
     try {

@@ -28,17 +28,17 @@ import net.minecraftforge.gametest.GameTestHolder;
 @GameTestHolder(Constants.MOD_ID)
 public class SpawnPresetConfigGameTest {
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testBatPresetsLoaded(GameTestHelper helper) {
     SpawnPresetConfigTests.testBatPresetsLoaded(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testZombiePresetsLoaded(GameTestHelper helper) {
     SpawnPresetConfigTests.testZombiePresetsLoaded(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testCowPresetsLoaded(GameTestHelper helper) {
     SpawnPresetConfigTests.testCowPresetsLoaded(helper);
   }

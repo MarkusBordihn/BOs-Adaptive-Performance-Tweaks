@@ -40,6 +40,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -87,6 +88,9 @@ public final class CoreEntityManager {
   private static final int VERIFICATION_TICK = 5 * 60 * 20;
   private static final int VERIFICATION_ADD_OPERATIONS_THRESHOLD = 500;
   private static final long OPERATION_VERIFICATION_MIN_INTERVAL_MS = 1_000L;
+  private static final int CONVERSION_PROTECTION_TICKS = 200;
+  private static final ConcurrentHashMap<UUID, Integer> conversionProtectedEntities =
+    new ConcurrentHashMap<>();
   private static final Set<ChunkTrackingKey> entityChunkMap = ConcurrentHashMap.newKeySet();
   private static final Object trackingRuleLock = new Object();
   private static final Object verificationLock = new Object();
@@ -215,12 +219,17 @@ public final class CoreEntityManager {
     entityMapPerChunk = new ConcurrentHashMap<>();
     entityMapGlobal = new ConcurrentHashMap<>();
     entityChunkKeyMap = new ConcurrentHashMap<>();
+    conversionProtectedEntities.clear();
     entityDecisionCache.clear();
     ticks = 0;
     addOperationCounter = 0;
     operationVerificationStage = 0;
     lastOperationVerificationTime = 0L;
     isVerifying = false;
+  }
+
+  public static void registerConversionProtection(UUID entityUUID) {
+    conversionProtectedEntities.put(entityUUID, ticks + CONVERSION_PROTECTION_TICKS);
   }
 
   public static void handleServerTick() {
@@ -305,15 +314,6 @@ public final class CoreEntityManager {
       addOperationCounter = 0;
       triggerVerificationIfNotRunning(true);
     }
-  }
-
-  public static void removeEntity(Entity entity, String entityName, String levelName) {
-    ResourceLocation levelKey = resolveLevelKey(levelName);
-    if (levelKey == null) {
-      return;
-    }
-
-    removeEntity(entity, entityName, levelKey);
   }
 
   public static void removeEntity(Entity entity, String entityName, ResourceLocation levelName) {
@@ -492,38 +492,6 @@ public final class CoreEntityManager {
 
 
   public static int getNumberOfEntitiesNearPosition(
-    String levelName, String entityName, Vec3 center, double horizontalRange) {
-    ResourceLocation levelKey = resolveLevelKey(levelName);
-    if (levelKey == null) {
-      return 0;
-    }
-
-    return getNumberOfEntitiesNearPosition(levelKey, entityName, center, horizontalRange);
-  }
-
-  public static int getNumberOfEntitiesNearPosition(
-    ResourceLocation levelName, String entityName, Vec3 center, double horizontalRange) {
-    Set<Entity> rawSet = entityMap.get(new EntityTrackingKey(levelName, entityName));
-    if (rawSet == null || rawSet.isEmpty()) {
-      return 0;
-    }
-
-    int counter = 0;
-    for (Entity entity : rawSet) {
-      if (entity == null || entity.isRemoved()) {
-        continue;
-      }
-
-      if (Math.abs(entity.getX() - center.x) <= horizontalRange
-        && Math.abs(entity.getZ() - center.z) <= horizontalRange) {
-        counter++;
-      }
-    }
-
-    return counter;
-  }
-
-  public static int getNumberOfEntitiesNearPosition(
     String levelName, EntityType<?> entityType, Vec3 center, double horizontalRange) {
     ResourceLocation levelKey = resolveLevelKey(levelName);
     if (levelKey == null) {
@@ -624,7 +592,7 @@ public final class CoreEntityManager {
 
       Map<EntityType<?>, List<Entity>> entitiesByType = new HashMap<>();
       for (Entity entity : new ArrayList<>(rawEntities)) {
-        if (!isChunkCleanupCandidate(entity) || !cleanupFilter.test(entity)) {
+        if (!isMobCleanupEligible(entity) || !cleanupFilter.test(entity)) {
           continue;
         }
 
@@ -642,6 +610,9 @@ public final class CoreEntityManager {
 
         for (int index = perTypeLimit; index < candidates.size(); index++) {
           Entity entity = candidates.get(index);
+          if (!isChunkCleanupCandidate(entity)) {
+            continue;
+          }
           if (removeChunkCleanupEntity(entity)) {
             removedEntities++;
             affectedChunks.add(entry.getKey());
@@ -1077,6 +1048,7 @@ public final class CoreEntityManager {
     int removedGlobalEntries = removeDiscardedEntities(entityMapGlobal);
     int removedChunkKeys = removeDiscardedChunkKeys();
     int removedChunkMarkers = removeEmptyChunkMarkers();
+    conversionProtectedEntities.entrySet().removeIf(entry -> ticks > entry.getValue());
 
     if (removedEntries > 0
       || removedChunkEntries > 0
@@ -1228,11 +1200,19 @@ public final class CoreEntityManager {
       && (mob.isLeashed() || mob.isPersistenceRequired() || mob.requiresCustomPersistence());
   }
 
-  private static boolean isChunkCleanupCandidate(Entity entity) {
+  private static boolean isMobCleanupEligible(Entity entity) {
     return entity instanceof Mob
       && entity.isAlive()
       && !entity.isRemoved()
       && !isProtectedPersistentEntity(entity);
+  }
+
+  private static boolean isChunkCleanupCandidate(Entity entity) {
+    if (!isMobCleanupEligible(entity)) {
+      return false;
+    }
+    Integer protectedUntil = conversionProtectedEntities.get(entity.getUUID());
+    return protectedUntil == null || ticks > protectedUntil;
   }
 
   private static boolean removeChunkCleanupEntity(Entity entity) {
@@ -1365,9 +1345,4 @@ public final class CoreEntityManager {
     }
   }
 
-  public record ChunkMobCleanupResult(int removedEntities, int affectedChunks,
-                                      int affectedEntityTypes) {
-
-    private static final ChunkMobCleanupResult EMPTY = new ChunkMobCleanupResult(0, 0, 0);
-  }
 }

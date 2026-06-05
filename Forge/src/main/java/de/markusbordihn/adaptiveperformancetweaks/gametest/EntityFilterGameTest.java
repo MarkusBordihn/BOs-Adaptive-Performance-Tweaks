@@ -28,52 +28,52 @@ import net.minecraftforge.gametest.GameTestHolder;
 @GameTestHolder(Constants.MOD_ID)
 public class EntityFilterGameTest {
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testNullEntityNotRelevant(GameTestHelper helper) {
     EntityFilterTests.testNullEntityNotRelevant(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testRegularZombieIsRelevant(GameTestHelper helper) {
     EntityFilterTests.testRegularZombieIsRelevant(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testNamedZombieNotRelevant(GameTestHelper helper) {
     EntityFilterTests.testNamedZombieNotRelevant(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testPersistenceRequiredZombieNotRelevant(GameTestHelper helper) {
     EntityFilterTests.testPersistenceRequiredZombieNotRelevant(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testPassengerZombieNotRelevant(GameTestHelper helper) {
     EntityFilterTests.testPassengerZombieNotRelevant(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testVehicleZombieNotRelevant(GameTestHelper helper) {
     EntityFilterTests.testVehicleZombieNotRelevant(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testProjectileNotRelevant(GameTestHelper helper) {
     EntityFilterTests.testProjectileNotRelevant(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testItemEntityNotRelevant(GameTestHelper helper) {
     EntityFilterTests.testItemEntityNotRelevant(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testTamedWolfNotRelevant(GameTestHelper helper) {
     EntityFilterTests.testTamedWolfNotRelevant(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testExcludedNamespaceZombieNotRelevant(GameTestHelper helper) {
     EntityFilterTests.testExcludedNamespaceZombieNotRelevant(helper);
   }

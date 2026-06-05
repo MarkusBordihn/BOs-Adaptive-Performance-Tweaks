@@ -28,17 +28,17 @@ import net.minecraftforge.gametest.GameTestHolder;
 @GameTestHolder(Constants.MOD_ID)
 public class ChunkGenThrottleGameTest {
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testDivisorIsOneUnderNormalLoad(GameTestHelper helper) {
     ChunkGenThrottleTests.testDivisorIsOneUnderNormalLoad(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testDivisorIncreasesUnderVeryHighLoad(GameTestHelper helper) {
     ChunkGenThrottleTests.testDivisorIncreasesUnderVeryHighLoad(helper);
   }
 
-  @GameTest(template = "adaptive_performance_tweaks:gametest.1x1x1")
+  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
   public void testDivisorUsesPerLevelLoad(GameTestHelper helper) {
     ChunkGenThrottleTests.testDivisorUsesPerLevelLoad(helper);
   }

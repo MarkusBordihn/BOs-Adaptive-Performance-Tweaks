@@ -17,19 +17,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.adaptiveperformancetweaks.gametest;
+package de.markusbordihn.adaptiveperformancetweaks.feature.benchmark;
 
-import de.markusbordihn.adaptiveperformancetweaks.Constants;
-import net.minecraft.gametest.framework.GameTest;
-import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraftforge.gametest.GameTestHolder;
+import net.minecraft.ChatFormatting;
 
-@SuppressWarnings("unused")
-@GameTestHolder(Constants.MOD_ID)
-public class MixinGameTest {
+public enum BenchmarkBlock {
+  BASELINE("Baseline", "Base", ChatFormatting.AQUA),
+  ACTIVE("Active", "Active", ChatFormatting.GREEN);
 
-  @GameTest(template = Constants.MOD_ID + ":gametest.1x1x1")
-  public void testExperienceOrbAccessorMixin(GameTestHelper helper) {
-    MixinTests.testExperienceOrbAccessorMixin(helper);
+  private final String displayName;
+  private final String statusLabel;
+  private final ChatFormatting stageColor;
+
+  BenchmarkBlock(String displayName, String statusLabel, ChatFormatting stageColor) {
+    this.displayName = displayName;
+    this.statusLabel = statusLabel;
+    this.stageColor = stageColor;
+  }
+
+  public String getDisplayName() {
+    return this.displayName;
+  }
+
+  public String getStatusLabel() {
+    return this.statusLabel;
+  }
+
+  public ChatFormatting getStageColor() {
+    return this.stageColor;
   }
 }
