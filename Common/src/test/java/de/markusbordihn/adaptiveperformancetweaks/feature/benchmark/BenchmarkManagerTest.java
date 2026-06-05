@@ -148,7 +148,7 @@ class BenchmarkManagerTest {
   void minLoadLevelsForceToVeryLowDuringActiveBlockTransition() throws Exception {
     ServerLoadLevel originalLevel = ItemsConfig.minOptimizationLoadLevel;
     try {
-      invokePrivateMethod("saveMinLoadLevels");
+      BenchmarkFeatureState.saveMinLoadLevels();
       invokePrivateMethod("completeBlockTransition", new Class<?>[]{long.class},
         System.currentTimeMillis());
       assertEquals(ServerLoadLevel.VERY_LOW, ItemsConfig.minOptimizationLoadLevel);
@@ -166,9 +166,9 @@ class BenchmarkManagerTest {
       FeatureToggle.ITEMS.setEnabled(false);
       FeatureToggle.SPAWN.setEnabled(true);
 
-      invokePrivateMethod("saveFeatureState");
-      invokePrivateMethod("disableAllFeatures");
-      invokePrivateMethod("restoreFeatures");
+      BenchmarkFeatureState.saveFeatureState();
+      BenchmarkFeatureState.disableAllFeatures();
+      BenchmarkFeatureState.restoreFeatures();
 
       assertFalse(FeatureToggle.ITEMS.isEnabled());
       assertTrue(FeatureToggle.SPAWN.isEnabled());
@@ -206,8 +206,8 @@ class BenchmarkManagerTest {
       rules.set(GameRules.RANDOM_TICK_SPEED, 1, null);
       writeStaticField(SimulationDistanceManager.class, "currentDistance", 4);
 
-      invokePrivateMethod("saveFeatureState");
-      invokePrivateMethod("disableAllFeatures");
+      BenchmarkFeatureState.saveFeatureState();
+      BenchmarkFeatureState.disableAllFeatures();
 
       assertEquals(6, (Integer) rules.get(GameRules.RANDOM_TICK_SPEED));
       assertEquals(10, readStaticField(SimulationDistanceManager.class, "currentDistance"));

@@ -18,7 +18,7 @@
 > Older docs or setup guides may still describe the legacy 11.x multi-module layout.
 >
 > 💾 **Back up your world and config files before updating.**
-> 12.x is still in alpha and some configuration details may change between releases.
+> 12.x is still an early-release and some configuration details may change between releases.
 >
 > 📝 **Known limitations before stable release**
 > There is no in-game config GUI yet. 12.x currently uses a config-first workflow, and larger
@@ -29,7 +29,7 @@
 > the same `mods/` folder.
 
 Adaptive Performance Tweaks is a **server-side optimization mod** for **Forge, Fabric, and
-NeoForge** on **Minecraft 1.20.1**.
+NeoForge**.
 It watches Minecraft's server-side load and adjusts selected systems automatically to reduce lag
 pressure on dedicated servers, single-player worlds, and LAN-open worlds.
 
@@ -47,6 +47,10 @@ mod:
 - Adaptive simulation distance with movement-aware throttling
 - Optional advanced throttles for AI, chunk generation, and view distance
 - Monitoring and benchmarking tools
+
+## 🎥 Introduction and Overview Video
+
+<span><iframe width="788" height="443" src="https://www.youtube.com/embed/XqRv3liEfqs" frameborder="0" allowfullscreen="allowfullscreen"></iframe></span>
 
 ## What APTweaks is good at ✨
 
@@ -89,7 +93,7 @@ Spawn presets are loaded from:
 - `data/<namespace>/aptweaks/spawn_presets/`
 
 If you want to customize presets, start with the templates and examples in
-[wiki/SpawnPresets.md](wiki/SpawnPresets.md).
+[wiki/SpawnPresets](https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki/SpawnPresets).
 
 ## Feature overview 🧩
 
@@ -152,14 +156,14 @@ Reload note:
 
 The wiki is the main 12.x documentation:
 
-- [Home](wiki/Home.md)
-- [How To Use](wiki/HowToUse.md)
-- [Modules and Features](wiki/Modules.md)
-- [Spawn Presets](wiki/SpawnPresets.md)
-- [FAQ](wiki/FAQ.md)
-- [Troubleshooting](wiki/Troubleshooting.md)
-- [Benchmark](wiki/Benchmark.md)
-- [Versions and Legacy Notes](wiki/Versions.md)
+- [Home](https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki/Home)
+- [How To Use](https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki/HowToUse)
+- [Modules and Features](https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki/Modules)
+- [Spawn Presets](https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki/SpawnPresets)
+- [FAQ](https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki/FAQ.md)
+- [Troubleshooting](https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki/Troubleshooting)
+- [Benchmark](https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki/Benchmark)
+- [Versions and Legacy Notes](https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki/Versions)
 
 [header]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/wiki/images/aptweaks-header-only.png
 

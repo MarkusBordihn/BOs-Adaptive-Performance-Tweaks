@@ -17,26 +17,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.adaptiveperformancetweaks.core.server;
+package de.markusbordihn.adaptiveperformancetweaks.core.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
+public record ChunkMobCleanupResult(int removedEntities, int affectedChunks,
+                                    int affectedEntityTypes) {
 
-public final class ServerLoadDispatcher {
-
-  private static final List<Consumer<ServerLoadEvent>> listeners = new ArrayList<>();
-
-  private ServerLoadDispatcher() {
-  }
-
-  public static void register(Consumer<ServerLoadEvent> listener) {
-    listeners.add(listener);
-  }
-
-  public static void dispatch(ServerLoadEvent event) {
-    for (Consumer<ServerLoadEvent> listener : listeners) {
-      listener.accept(event);
-    }
-  }
+  static final ChunkMobCleanupResult EMPTY = new ChunkMobCleanupResult(0, 0, 0);
 }
