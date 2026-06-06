@@ -34,7 +34,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class VillagerConvertToMixin {
 
   @Inject(method = "convertTo", at = @At("HEAD"))
-  private <T extends Mob> void aptweaks_convertTo(
+  private <T extends Mob> void aptweaks_convertTo_head(
     EntityType<T> type, ConversionParams params, EntitySpawnReason spawnReason,
     ConversionParams.AfterConversion<T> afterConversion, CallbackInfoReturnable<T> cir) {
     if (!FeatureToggle.SPAWN.isEnabled()) {
@@ -46,6 +46,22 @@ public abstract class VillagerConvertToMixin {
       return;
     }
 
-    SpawnManager.handleEntityConversion(thisMob);
+    SpawnManager.handleEntityConversionStart(thisMob);
+  }
+
+  @Inject(method = "convertTo", at = @At("RETURN"))
+  private <T extends Mob> void aptweaks_convertTo_return(
+    EntityType<T> type, ConversionParams params, EntitySpawnReason spawnReason,
+    ConversionParams.AfterConversion<T> afterConversion, CallbackInfoReturnable<T> cir) {
+    if (!FeatureToggle.SPAWN.isEnabled()) {
+      return;
+    }
+
+    T newMob = cir.getReturnValue();
+    if (newMob == null) {
+      return;
+    }
+
+    SpawnManager.handleEntityConversionEnd(newMob);
   }
 }

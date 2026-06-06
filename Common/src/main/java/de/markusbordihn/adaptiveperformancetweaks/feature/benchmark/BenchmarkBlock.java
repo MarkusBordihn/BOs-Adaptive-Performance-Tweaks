@@ -17,26 +17,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.adaptiveperformancetweaks.core.server;
+package de.markusbordihn.adaptiveperformancetweaks.feature.benchmark;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
+import net.minecraft.ChatFormatting;
 
-public final class ServerLoadDispatcher {
+public enum BenchmarkBlock {
+  BASELINE("Baseline", "Base", ChatFormatting.AQUA),
+  ACTIVE("Active", "Active", ChatFormatting.GREEN);
 
-  private static final List<Consumer<ServerLoadEvent>> listeners = new ArrayList<>();
+  private final String displayName;
+  private final String statusLabel;
+  private final ChatFormatting stageColor;
 
-  private ServerLoadDispatcher() {
+  BenchmarkBlock(String displayName, String statusLabel, ChatFormatting stageColor) {
+    this.displayName = displayName;
+    this.statusLabel = statusLabel;
+    this.stageColor = stageColor;
   }
 
-  public static void register(Consumer<ServerLoadEvent> listener) {
-    listeners.add(listener);
+  public String getDisplayName() {
+    return this.displayName;
   }
 
-  public static void dispatch(ServerLoadEvent event) {
-    for (Consumer<ServerLoadEvent> listener : listeners) {
-      listener.accept(event);
-    }
+  public String getStatusLabel() {
+    return this.statusLabel;
+  }
+
+  public ChatFormatting getStageColor() {
+    return this.stageColor;
   }
 }

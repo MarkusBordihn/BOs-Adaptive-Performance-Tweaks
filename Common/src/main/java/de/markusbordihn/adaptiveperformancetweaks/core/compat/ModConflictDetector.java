@@ -89,10 +89,6 @@ public final class ModConflictDetector {
     return new FeatureDecision(true, FeatureActivation.AUTO_ENABLED, warningMod);
   }
 
-  public static boolean resolveFeatureState(FeatureToggle toggle, FeatureState configuredState) {
-    return resolveFeatureDecision(toggle, configuredState).enabled();
-  }
-
   public static void logCompatibilityWarnings() {
     if (compatibilityWarningsLogged) {
       return;

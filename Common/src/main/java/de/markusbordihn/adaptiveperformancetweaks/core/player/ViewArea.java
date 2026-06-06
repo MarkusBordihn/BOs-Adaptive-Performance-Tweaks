@@ -21,7 +21,6 @@ package de.markusbordihn.adaptiveperformancetweaks.core.player;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
 
 public class ViewArea {
 
@@ -56,15 +55,6 @@ public class ViewArea {
 
   public boolean isLevel(String levelName) {
     return this.levelName.equals(levelName);
-  }
-
-  public boolean isInside(Entity entity, String levelName) {
-    if (entity == null || entity.isRemoved() || !isLevel(levelName)) {
-      return false;
-    }
-
-    BlockPos blockPos = entity.blockPosition();
-    return isInside(blockPos.getX(), blockPos.getY(), blockPos.getZ());
   }
 
   public boolean isInside(int posX, int posY, int posZ) {

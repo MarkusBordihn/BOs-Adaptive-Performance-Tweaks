@@ -25,8 +25,11 @@ import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.feature.player.PlayerDamageManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnPresetLoader;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraftforge.common.util.Result;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
@@ -95,8 +98,35 @@ public final class ServerEventHandler {
   }
 
   @SubscribeEvent
+  public static void handleSpawnPlacementCheck(MobSpawnEvent.SpawnPlacementCheck event) {
+    if (event.getSpawnReason() != EntitySpawnReason.NATURAL
+      || !(event.getLevel() instanceof ServerLevel serverLevel)) {
+      return;
+    }
+
+    BlockPos pos = event.getPos();
+    if (SpawnManager.shouldDenyNaturalSpawn(event.getEntityType().getCategory(), serverLevel,
+      pos)) {
+      event.setResult(Result.DENY);
+    }
+  }
+
+  @SubscribeEvent
+  public static void handleSpawnPositionCheck(MobSpawnEvent.PositionCheck event) {
+    if (event.getSpawnReason() != EntitySpawnReason.SPAWNER
+      || !(event.getLevel() instanceof ServerLevel serverLevel)) {
+      return;
+    }
+
+    if (SpawnManager.shouldDenyMobSpawn(event.getEntity(), serverLevel, event.getSpawnReason())) {
+      event.setResult(Result.DENY);
+    }
+  }
+
+  @SubscribeEvent
   public static void handleFinalizeSpawn(MobSpawnEvent.FinalizeSpawn event) {
-    if (event.getLevel() instanceof ServerLevel serverLevel
+    if (event.getSpawnReason() != EntitySpawnReason.SPAWNER
+      && event.getLevel() instanceof ServerLevel serverLevel
       && SpawnManager.shouldDenyMobSpawn(event.getEntity(), serverLevel, event.getSpawnReason())) {
       event.setSpawnCancelled(true);
     }

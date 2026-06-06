@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
@@ -150,6 +151,19 @@ class CoreEntityManagerTest {
       mock(ServerWaypointManager.class, withSettings().mockMaker(MockMakers.SUBCLASS)));
     when(level.dimension()).thenReturn(Level.OVERWORLD);
     return level;
+  }
+
+  private static boolean isChunkCleanupCandidate(Entity entity) throws Exception {
+    Method method =
+      CoreEntityManager.class.getDeclaredMethod("isChunkCleanupCandidate", Entity.class);
+    method.setAccessible(true);
+    return (boolean) method.invoke(null, entity);
+  }
+
+  private static int conversionProtectionTicks() throws Exception {
+    Field field = CoreEntityManager.class.getDeclaredField("CONVERSION_PROTECTION_TICKS");
+    field.setAccessible(true);
+    return (int) field.get(null);
   }
 
   @BeforeEach
@@ -521,7 +535,7 @@ class CoreEntityManagerTest {
     entityChunkMap.clear();
     entityChunkMap.add(chunkKey);
 
-    CoreEntityManager.ChunkMobCleanupResult result = CoreEntityManager.cleanupChunkMobFarms(2);
+    ChunkMobCleanupResult result = CoreEntityManager.cleanupChunkMobFarms(2);
 
     assertEquals(1, result.removedEntities());
     assertEquals(1, result.affectedChunks());
@@ -562,7 +576,7 @@ class CoreEntityManagerTest {
     entityChunkMap.clear();
     entityChunkMap.add(chunkKey);
 
-    CoreEntityManager.ChunkMobCleanupResult result = CoreEntityManager.cleanupChunkMobFarms(1);
+    ChunkMobCleanupResult result = CoreEntityManager.cleanupChunkMobFarms(1);
 
     assertEquals(1, result.removedEntities());
     assertFalse(namedZombie.isRemoved());
@@ -598,5 +612,114 @@ class CoreEntityManagerTest {
     assertEquals(2, CoreEntityManager.getNumberOfEntities(entityName));
     assertEquals(1, CoreEntityManager.getNumberOfEntities(EntityType.SKELETON));
     assertTrue(CoreEntityManager.getEntitiesGlobal().containsKey(entityName));
+  }
+
+  @Test
+  void conversionProtectionPreventsChunkCleanupCandidacy() throws Exception {
+    Entity zombie = mockEntity(false);
+
+    assertTrue(isChunkCleanupCandidate(zombie),
+      "Live unprotected Zombie should be a chunk cleanup candidate");
+
+    CoreEntityManager.registerConversionProtection(zombie.getUUID());
+
+    assertFalse(isChunkCleanupCandidate(zombie),
+      "Conversion-protected Zombie must not be a chunk cleanup candidate");
+  }
+
+  @Test
+  void expiredConversionProtectionAllowsChunkCleanup() throws Exception {
+    Entity zombie = mockEntity(false);
+    CoreEntityManager.registerConversionProtection(zombie.getUUID());
+
+    assertFalse(isChunkCleanupCandidate(zombie),
+      "Freshly protected entity should not be a cleanup candidate");
+
+    writeStaticField("ticks", conversionProtectionTicks() + 1);
+
+    assertTrue(isChunkCleanupCandidate(zombie),
+      "Entity should become a cleanup candidate after protection expires");
+  }
+
+  @Test
+  void resetClearsConversionProtection() throws Exception {
+    Entity zombie = mockEntity(false);
+    CoreEntityManager.registerConversionProtection(zombie.getUUID());
+
+    assertFalse(isChunkCleanupCandidate(zombie));
+
+    CoreEntityManager.reset();
+
+    assertTrue(isChunkCleanupCandidate(zombie),
+      "Conversion protection must be cleared by reset()");
+  }
+
+  @Test
+  void verifyEntitiesCleansUpExpiredConversionProtection() throws Exception {
+    UUID uuid = UUID.randomUUID();
+    CoreEntityManager.registerConversionProtection(uuid);
+
+    Map<UUID, Integer> protectedMap = readStaticField("conversionProtectedEntities");
+    assertTrue(protectedMap.containsKey(uuid));
+
+    writeStaticField("ticks", conversionProtectionTicks() + 1);
+
+    Method verifyMethod = CoreEntityManager.class.getDeclaredMethod("verifyEntities");
+    verifyMethod.setAccessible(true);
+    verifyMethod.invoke(null);
+
+    assertFalse(protectedMap.containsKey(uuid),
+      "verifyEntities() must remove expired conversion protection entries");
+  }
+
+  @Test
+  void activeConversionProtectionSurvivesVerifyEntities() throws Exception {
+    UUID uuid = UUID.randomUUID();
+    CoreEntityManager.registerConversionProtection(uuid);
+
+    Map<UUID, Integer> protectedMap = readStaticField("conversionProtectedEntities");
+
+    Method verifyMethod = CoreEntityManager.class.getDeclaredMethod("verifyEntities");
+    verifyMethod.setAccessible(true);
+    verifyMethod.invoke(null);
+
+    assertTrue(protectedMap.containsKey(uuid),
+      "Active conversion protection must not be removed by verifyEntities()");
+  }
+
+  @Test
+  void conversionProtectedEntitySurvivesChunkMobCleanup() throws Exception {
+    String levelName = "minecraft:overworld";
+    ServerLevel level = mockOverworldLevel();
+    Object chunkKey = newChunkTrackingKey(levelName, 0, 0);
+    Object entityMapKey = newEntityTrackingKey(levelName, "minecraft:zombie");
+
+    Zombie converted = (Zombie) mockEntity(EntityType.ZOMBIE, false, level);
+    converted.tickCount = 0;
+    Zombie older = (Zombie) mockEntity(EntityType.ZOMBIE, false, level);
+    older.tickCount = 200;
+
+    CoreEntityManager.registerConversionProtection(converted.getUUID());
+
+    writeStaticField("entityMap", new ConcurrentHashMap<>(Map.of(
+      entityMapKey, newEntitySet(converted, older))));
+    writeStaticField("entityMapPerChunk", new ConcurrentHashMap<>(Map.of(
+      chunkKey, newEntitySet(converted, older))));
+    writeStaticField("entityMapGlobal", new ConcurrentHashMap<>(Map.of(
+      EntityType.ZOMBIE, newEntitySet(converted, older))));
+    writeStaticField("entityChunkKeyMap", new ConcurrentHashMap<>(Map.of(
+      converted, chunkKey,
+      older, chunkKey)));
+    Set<Object> entityChunkMap = readStaticField("entityChunkMap");
+    entityChunkMap.clear();
+    entityChunkMap.add(chunkKey);
+
+    ChunkMobCleanupResult result = CoreEntityManager.cleanupChunkMobFarms(1);
+
+    assertEquals(1, result.removedEntities());
+    assertFalse(converted.isRemoved(),
+      "Conversion-protected entity must survive chunk mob cleanup");
+    assertTrue(older.isRemoved(),
+      "Unprotected surplus entity must be removed by chunk mob cleanup");
   }
 }
