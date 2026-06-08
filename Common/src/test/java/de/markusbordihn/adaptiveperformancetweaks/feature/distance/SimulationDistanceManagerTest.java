@@ -20,12 +20,12 @@
 package de.markusbordihn.adaptiveperformancetweaks.feature.distance;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPosition;
 import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPositionManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class SimulationDistanceManagerTest {
@@ -56,14 +56,6 @@ class SimulationDistanceManagerTest {
   }
 
   @Test
-  void allLoadLevelsThrottleMovement() {
-    assertTrue(SimulationDistanceManager.supportsMovementThrottle(ServerLoadLevel.VERY_LOW));
-    assertTrue(SimulationDistanceManager.supportsMovementThrottle(ServerLoadLevel.LOW));
-    assertTrue(SimulationDistanceManager.supportsMovementThrottle(ServerLoadLevel.NORMAL));
-    assertTrue(SimulationDistanceManager.supportsMovementThrottle(ServerLoadLevel.HIGH));
-  }
-
-  @Test
   void mediumLoadNeedsHighExplorerShareForMaxReduction() {
     assertEquals(1, SimulationDistanceManager.calculateMovementReduction(
       ServerLoadLevel.MEDIUM, 4, 1));
@@ -77,7 +69,6 @@ class SimulationDistanceManagerTest {
       ServerLoadLevel.HIGH, 4, 2));
     assertEquals(2, SimulationDistanceManager.calculateMovementReduction(
       ServerLoadLevel.VERY_HIGH, 4, 1));
-    assertTrue(SimulationDistanceManager.supportsMovementThrottle(ServerLoadLevel.HIGH));
   }
 
   @Test
@@ -114,6 +105,30 @@ class SimulationDistanceManagerTest {
   }
 
   @Test
+  void movementRecoverySchedulesConfiguredMinimumHoldBeforeFirstIncrease() throws Exception {
+    int originalMinDelayTicks = SimulationDistanceConfig.movementThrottleRecoveryMinDelayTicks;
+    int originalDelayTicks = SimulationDistanceConfig.movementThrottleRecoveryDelayTicks;
+    try {
+      PlayerPositionManager.reset();
+      SimulationDistanceConfig.movementThrottleRecoveryMinDelayTicks = 200;
+      SimulationDistanceConfig.movementThrottleRecoveryDelayTicks = 140;
+      writeStaticField("currentLoadLevel", ServerLoadLevel.LOW);
+      writeStaticField("currentMovementReduction", 2);
+      writeStaticField("recoveryStartTick", -1);
+      writeStaticField("nextRecoveryTick", -1);
+
+      invokeUpdateMovementThrottle(false);
+
+      assertEquals(2, readStaticField("currentMovementReduction"));
+      assertEquals(200, readStaticField("recoveryStartTick"));
+      assertEquals(200, readStaticField("nextRecoveryTick"));
+    } finally {
+      SimulationDistanceConfig.movementThrottleRecoveryMinDelayTicks = originalMinDelayTicks;
+      SimulationDistanceConfig.movementThrottleRecoveryDelayTicks = originalDelayTicks;
+    }
+  }
+
+  @Test
   void movementRecoveryPausesAtNormalLoad() throws Exception {
     PlayerPositionManager.reset();
     writeStaticField("currentLoadLevel", ServerLoadLevel.NORMAL);
@@ -132,5 +147,31 @@ class SimulationDistanceManagerTest {
       ServerLoadLevel.HIGH, 8));
     assertEquals(6, SimulationDistanceManager.resolveNextLoadBaselineDistance(
       ServerLoadLevel.VERY_HIGH, 7));
+  }
+
+  @Test
+  void movementWarmupDoesNotRelaxTeleportWarmupBeforeStability() throws Exception {
+    PlayerPositionManager.reset();
+    writeStaticField("configuredDistanceMax", SimulationDistanceConfig.simDistanceMax);
+    writeStaticField("currentLoadLevel", ServerLoadLevel.VERY_LOW);
+    writeStaticField("currentMovementReduction", invokeIntMethod("getWarmupReduction"));
+
+    PlayerPosition playerPosition = new PlayerPosition("Benchmark", UUID.randomUUID(),
+      "minecraft:overworld", 0, 64, 0, 128);
+    playerPosition.setLoginWarmup(0, SimulationDistanceConfig.movementThrottleLoginTicks);
+    playerPosition.updateMovement(0.0d, 64.0d, 0.0d, "minecraft:overworld", 0, 3, 20);
+    playerPosition.updateMovement(16.0d, 64.0d, 0.0d, "minecraft:overworld", 20, 3, 20);
+    playerPosition.updateMovement(32.0d, 64.0d, 0.0d, "minecraft:overworld", 40, 3, 20);
+    playerPosition.updateMovement(48.0d, 64.0d, 0.0d, "minecraft:overworld", 60, 3, 20);
+    PlayerPositionManager.getPlayerPositionMap().put("benchmark", playerPosition);
+
+    Field ticksField = PlayerPositionManager.class.getDeclaredField("ticks");
+    ticksField.setAccessible(true);
+    ticksField.set(null, 61);
+
+    invokeUpdateMovementThrottle(true);
+
+    assertEquals(invokeIntMethod("getWarmupReduction"),
+      readStaticField("currentMovementReduction"));
   }
 }

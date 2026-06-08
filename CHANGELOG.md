@@ -5,6 +5,12 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [GitHub History][history] instead.
 
+### 12.5.0
+
+- Fixed benchmark report not covering all features and adjustments.
+- Added Exploration scenario and update benchmark scenarios.
+- Improved simulation distance features and set default to AUTO with better load-based adjustments.
+
 ### 12.4.0
 
 - Added player warmup for simulation distance and random tick speed on login, teleport and fast

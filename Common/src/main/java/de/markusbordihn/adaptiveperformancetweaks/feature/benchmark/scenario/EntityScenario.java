@@ -99,6 +99,16 @@ public final class EntityScenario implements BenchmarkScenario {
   }
 
   @Override
+  public boolean shouldFacePlayerToFocus() {
+    return true;
+  }
+
+  @Override
+  public Vec3 playerFocusOffset() {
+    return new Vec3(8.0d, 0.0d, 8.0d);
+  }
+
+  @Override
   public void setup(BenchmarkScenarioContext context) {
     if (ENTITY_TYPE_ID == null) {
       return;

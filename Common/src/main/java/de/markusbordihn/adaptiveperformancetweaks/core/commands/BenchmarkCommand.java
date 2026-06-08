@@ -44,7 +44,7 @@ public class BenchmarkCommand extends CustomCommand {
     return Commands.literal("benchmark").requires(source -> source.hasPermission(2))
       .executes(command)
       .then(Commands.literal("start")
-        .executes(ctx -> startBenchmark(ctx, DEFAULT_PHASE_SECONDS, true))
+        .executes(ctx -> startBenchmark(ctx, DEFAULT_PHASE_SECONDS, false))
         .then(Commands.argument("seconds", IntegerArgumentType.integer(30, 3600))
           .executes(ctx -> startBenchmark(ctx,
             IntegerArgumentType.getInteger(ctx, "seconds"), false))
@@ -52,7 +52,8 @@ public class BenchmarkCommand extends CustomCommand {
             .executes(ctx -> startBenchmark(ctx,
               IntegerArgumentType.getInteger(ctx, "seconds"), true))))
         .then(Commands.literal("scenario")
-          .then(registerScenarioStart(BenchmarkScenarioId.GENERAL, true))
+          .then(registerScenarioStart(BenchmarkScenarioId.GENERAL, false))
+          .then(registerScenarioStart(BenchmarkScenarioId.EXPLORATION, false))
           .then(registerScenarioStart(BenchmarkScenarioId.ITEMS, false))
           .then(registerScenarioStart(BenchmarkScenarioId.XP, false))
           .then(registerScenarioStart(BenchmarkScenarioId.ENTITIES, false))

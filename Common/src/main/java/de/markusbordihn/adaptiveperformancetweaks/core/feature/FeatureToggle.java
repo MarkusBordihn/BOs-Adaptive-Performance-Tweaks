@@ -59,7 +59,7 @@ public enum FeatureToggle {
     List.of("servercore"),
     Scope.SERVER),
   ADAPTIVE_VIEW_DISTANCE(
-    FeatureState.DISABLED,
+    FeatureState.AUTO,
     List.of("dynview"),
     List.of("servercore"),
     Scope.SERVER),

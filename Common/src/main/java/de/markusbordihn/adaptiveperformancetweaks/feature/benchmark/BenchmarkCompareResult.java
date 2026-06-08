@@ -47,10 +47,10 @@ public record BenchmarkCompareResult(
   int autoEnabledFeatureCount,
   int manuallyDisabledFeatureCount,
   int conflictDisabledFeatureCount,
-  boolean autoMoveEnabled,
-  int baselineMoveTargetCount,
-  int activeMoveTargetCount,
-  int sharedMoveTargetCount,
+  boolean movementRoutesEnabled,
+  int baselineMovementTargetCount,
+  int activeMovementTargetCount,
+  int sharedMovementTargetCount,
   Instant timestamp) {
 
   private static final MsptBucket[] TEN_PLUS_BUCKETS = {
@@ -64,6 +64,14 @@ public record BenchmarkCompareResult(
   };
 
   private static Component assessmentLine(BenchmarkScenarioResult result) {
+    if (result.isInconclusive()) {
+      return Component.literal("Assessment: ").withStyle(ChatFormatting.GRAY)
+        .append(Component.literal("Inconclusive").withStyle(ChatFormatting.YELLOW))
+        .append(Component.literal(
+            "  (Active exploration never triggered movement throttle; use this run as route/load context only.)")
+          .withStyle(ChatFormatting.WHITE));
+    }
+
     double improvement = result.tickTimeImprovementPercent();
     String assessment;
     ChatFormatting assessmentColor;
@@ -181,7 +189,7 @@ public record BenchmarkCompareResult(
       scenarioResult.baseline().p95TickMs() - scenarioResult.active().p95TickMs();
     double scoreDelta =
       scenarioResult.activePerformanceScore() - scenarioResult.baselinePerformanceScore();
-    return Component.literal(String.format("%-10s %-8s ", scenarioResult.displayName(),
+    return Component.literal(String.format("%-13s %-8s ", scenarioResult.summaryDisplayName(),
         formatDuration(scenarioResult.active().measurementDurationMs())))
       .withStyle(ChatFormatting.WHITE)
       .append(Component.literal(String.format("%-12s",
@@ -199,6 +207,40 @@ public record BenchmarkCompareResult(
         .withStyle(getPositiveDeltaColor(scoreDelta)));
   }
 
+  private static String chatScenarioLabel(BenchmarkScenarioResult scenarioResult) {
+    return switch (scenarioResult.scenarioId()) {
+      case GENERAL -> "General";
+      case EXPLORATION -> scenarioResult.isInconclusive() ? "Expl.*" : "Expl.";
+      case ITEMS -> "Items";
+      case XP -> "XP";
+      case ENTITIES -> "Entities";
+      case RECOVERY -> "Recovery";
+    };
+  }
+
+  private static Component chatScenarioSummaryLine(BenchmarkScenarioResult scenarioResult) {
+    double p95Delta =
+      scenarioResult.baseline().p95TickMs() - scenarioResult.active().p95TickMs();
+    double scoreDelta =
+      scenarioResult.activePerformanceScore() - scenarioResult.baselinePerformanceScore();
+    return Component.literal(String.format("%-9s %-6s ", chatScenarioLabel(scenarioResult),
+        formatDuration(scenarioResult.active().measurementDurationMs())))
+      .withStyle(ChatFormatting.WHITE)
+      .append(Component.literal(String.format("%-9s",
+          formatMspt(scenarioResult.baseline().avgTickMs())))
+        .withStyle(ChatFormatting.AQUA))
+      .append(Component.literal(String.format("%-9s",
+          formatMspt(scenarioResult.active().avgTickMs())))
+        .withStyle(ChatFormatting.GREEN))
+      .append(Component.literal(String.format("%-8s",
+          formatSignedPercent(scenarioResult.tickTimeImprovementPercent())))
+        .withStyle(getPositiveDeltaColor(scenarioResult.tickTimeImprovementPercent())))
+      .append(Component.literal(String.format("%-7s", formatSignedMs(p95Delta)))
+        .withStyle(getPositiveDeltaColor(p95Delta)))
+      .append(Component.literal(String.format("%-7s", formatSignedNumber(scoreDelta)))
+        .withStyle(getPositiveDeltaColor(scoreDelta)));
+  }
+
   private static String markdownScenarioSummaryLine(BenchmarkScenarioResult scenarioResult) {
     double p95Delta =
       scenarioResult.baseline().p95TickMs() - scenarioResult.active().p95TickMs();
@@ -206,7 +248,7 @@ public record BenchmarkCompareResult(
       scenarioResult.activePerformanceScore() - scenarioResult.baselinePerformanceScore();
     return markdownTableRow(
       new String[]{
-        scenarioResult.displayName(),
+        scenarioResult.summaryDisplayName(),
         formatDuration(scenarioResult.active().measurementDurationMs()),
         formatMspt(scenarioResult.baseline().avgTickMs()),
         formatMspt(scenarioResult.active().avgTickMs()),
@@ -245,7 +287,9 @@ public record BenchmarkCompareResult(
   private static String scenarioDescription(BenchmarkScenarioId scenarioId) {
     return switch (scenarioId) {
       case GENERAL ->
-        "Measures broad world activity with movement/chunk travel. Relevant areas: general tracking overhead, ambient spawn pressure and other global APTweaks effects during exploration.";
+        "Measures broad world activity with short local chunk hops around the benchmark origin. Relevant areas: ambient spawn pressure, general tracking overhead and other global APTweaks effects during normal player movement without long-range exploration.";
+      case EXPLORATION ->
+        "Moves the benchmark player across a deterministic chunk route. Relevant areas: exploration-triggered simulation-distance behavior, chunk travel pressure and global APTweaks effects during sustained movement.";
       case ITEMS ->
         "Spawns a dense field of dropped cobblestone items and keeps adding fresh drops during measurement. Relevant areas: item merge behavior, item cleanup pressure and item-related entity load inside the measured window.";
       case XP ->
@@ -321,6 +365,63 @@ public record BenchmarkCompareResult(
     return ChatFormatting.WHITE;
   }
 
+  private static Component explorationValidationLine(BenchmarkScenarioResult result) {
+    BenchmarkScenarioResult.ScenarioValidation baseline = result.baseline().validation();
+    BenchmarkScenarioResult.ScenarioValidation active = result.active().validation();
+    String signal = active.movementSignalObserved()
+      ? String.format("yes (%d samples, max reduction %d)",
+      active.movementThrottleSampleCount(),
+      active.movementMaxReduction())
+      : "no";
+    return Component.literal("Exploration: ").withStyle(ChatFormatting.GRAY)
+      .append(Component.literal(String.format(
+          "steps %d -> %d | unique chunks %d -> %d | overlap %d | movement throttle %s",
+          baseline.movementStepCount(),
+          active.movementStepCount(),
+          baseline.uniqueChunkTargetCount(),
+          active.uniqueChunkTargetCount(),
+          result.sharedMovementChunkTargetCount(),
+          signal))
+        .withStyle(active.movementSignalObserved() ? ChatFormatting.GREEN : ChatFormatting.YELLOW));
+  }
+
+  private static void appendExplorationValidation(List<String> lines,
+    BenchmarkScenarioResult result) {
+    BenchmarkScenarioResult.ScenarioValidation baseline = result.baseline().validation();
+    BenchmarkScenarioResult.ScenarioValidation active = result.active().validation();
+    lines.add("**Exploration validation:**");
+    lines.add("");
+    lines.add("- Baseline route: steps=" + baseline.movementStepCount()
+      + ", unique chunks=" + baseline.uniqueChunkTargetCount());
+    lines.add("- Active route: steps=" + active.movementStepCount()
+      + ", unique chunks=" + active.uniqueChunkTargetCount());
+    lines.add("- Route overlap: " + result.sharedMovementChunkTargetCount());
+    lines.add("- Movement throttle signal: " + (active.movementSignalObserved()
+      ? String.format("yes (%d samples, additional reduction %d)",
+      active.movementThrottleSampleCount(),
+      active.movementMaxReduction())
+      : "no"));
+  }
+
+  private static String formatDistanceControlState(
+    BenchmarkScenarioResult.DistanceControlState state) {
+    return String.format(
+      "view=%s/%s warmup=%s red=%d exp=%d | sim=%s/%s red=%d exp=%d",
+      formatDistanceValue(state.viewDistance()),
+      formatDistanceValue(state.viewBaselineDistance()),
+      state.viewWarmupActive() ? "yes" : "no",
+      state.viewWarmupReduction(),
+      state.viewActiveExplorers(),
+      formatDistanceValue(state.simulationDistance()),
+      formatDistanceValue(state.simulationBaselineDistance()),
+      state.simulationMovementReduction(),
+      state.simulationActiveExplorers());
+  }
+
+  private static String formatDistanceValue(int value) {
+    return value >= 0 ? Integer.toString(value) : "n/a";
+  }
+
   public List<Component> format() {
     List<Component> lines = new ArrayList<>();
     lines.add(Component.literal(String.format("=== %s Benchmark Report ===", Constants.MOD_NAME))
@@ -341,12 +442,12 @@ public record BenchmarkCompareResult(
       autoEnabledFeatureCount,
       manuallyDisabledFeatureCount,
       conflictDisabledFeatureCount)));
-    if (autoMoveEnabled) {
+    if (movementRoutesEnabled) {
       lines.add(Component.literal(String.format(
-        "Auto-move: baseline=%d chunks  active=%d chunks  overlap=%d",
-        baselineMoveTargetCount,
-        activeMoveTargetCount,
-        sharedMoveTargetCount)));
+        "Movement routes: baseline=%d chunks  active=%d chunks  overlap=%d",
+        baselineMovementTargetCount,
+        activeMovementTargetCount,
+        sharedMovementTargetCount)));
     }
 
     lines.add(Component.literal(""));
@@ -359,16 +460,21 @@ public record BenchmarkCompareResult(
       aggregateLoadDistribution(false), aggregateLoadDistribution(true));
     lines.add(Component.literal(""));
     lines.add(Component.literal(
-        String.format("%-10s %-8s %-12s %-12s %-8s %-8s %-8s",
+        String.format("%-13s %-8s %-12s %-12s %-8s %-8s %-8s",
           "Scenario", "Dur", "Baseline", "Active", "Delta", "P95 D", "Score D"))
       .withStyle(ChatFormatting.GRAY));
     for (BenchmarkScenarioResult scenarioResult : scenarioResults) {
       lines.add(scenarioSummaryLine(scenarioResult));
     }
+    if (scenarioResults.stream().anyMatch(BenchmarkScenarioResult::isInconclusive)) {
+      lines.add(
+        Component.literal("* Exploration* = active route never triggered movement throttle.")
+          .withStyle(ChatFormatting.YELLOW));
+    }
 
     for (BenchmarkScenarioResult scenarioResult : scenarioResults) {
       lines.add(Component.literal(""));
-      lines.add(Component.literal("-- " + scenarioResult.displayName() + " --")
+      lines.add(Component.literal("-- " + scenarioResult.detailDisplayName() + " --")
         .withStyle(ChatFormatting.GRAY));
       appendScenarioDetails(lines, scenarioResult);
     }
@@ -381,14 +487,18 @@ public record BenchmarkCompareResult(
     lines.add(Component.literal("=== Benchmark Summary ===").withStyle(ChatFormatting.GOLD));
     lines.add(overallSummary());
     lines.add(chatBucketSummary());
-    lines.add(overallConclusion());
+    lines.add(chatOverallConclusion());
     lines.add(Component.literal(""));
     lines.add(Component.literal(
-        String.format("%-10s %-8s %-12s %-12s %-8s %-8s %-8s",
-          "Scenario", "Dur", "Baseline", "Active", "Delta", "P95 D", "Score D"))
+        String.format("%-9s %-6s %-9s %-9s %-8s %-7s %-7s",
+          "Scene", "Dur", "Base", "Active", "Delta", "P95", "Score"))
       .withStyle(ChatFormatting.GRAY));
     for (BenchmarkScenarioResult scenarioResult : scenarioResults) {
-      lines.add(scenarioSummaryLine(scenarioResult));
+      lines.add(chatScenarioSummaryLine(scenarioResult));
+    }
+    if (scenarioResults.stream().anyMatch(BenchmarkScenarioResult::isInconclusive)) {
+      lines.add(Component.literal("* Expl.* = active route never triggered movement throttle.")
+        .withStyle(ChatFormatting.YELLOW));
     }
     return lines;
   }
@@ -409,12 +519,12 @@ public record BenchmarkCompareResult(
       autoEnabledFeatureCount,
       manuallyDisabledFeatureCount,
       conflictDisabledFeatureCount));
-    if (autoMoveEnabled) {
+    if (movementRoutesEnabled) {
       lines.add(String.format(
-        "- Auto-move: baseline=%d chunks, active=%d chunks, overlap=%d",
-        baselineMoveTargetCount,
-        activeMoveTargetCount,
-        sharedMoveTargetCount));
+        "- Movement routes: baseline=%d chunks, active=%d chunks, overlap=%d",
+        baselineMovementTargetCount,
+        activeMovementTargetCount,
+        sharedMovementTargetCount));
     }
 
     lines.add("");
@@ -443,6 +553,10 @@ public record BenchmarkCompareResult(
     lines.add("|----------|----------|---------:|-------:|-------:|-------:|--------:|");
     for (BenchmarkScenarioResult scenarioResult : scenarioResults) {
       lines.add(markdownScenarioSummaryLine(scenarioResult));
+    }
+    if (scenarioResults.stream().anyMatch(BenchmarkScenarioResult::isInconclusive)) {
+      lines.add("");
+      lines.add("* `Exploration*` means the active route never triggered movement throttle.");
     }
 
     lines.add("");
@@ -517,6 +631,9 @@ public record BenchmarkCompareResult(
       String.format("%,d", active.entityCount()),
       String.format("%+d", entityDelta),
       entityDelta <= 0 ? ChatFormatting.GREEN : ChatFormatting.RED));
+    if (result.scenarioId() == BenchmarkScenarioId.EXPLORATION) {
+      lines.add(explorationValidationLine(result));
+    }
     appendDistributionDetails(lines,
       baseline.msptDistribution(), active.msptDistribution(),
       baseline.fineMsptDistribution(), active.fineMsptDistribution(),
@@ -541,7 +658,7 @@ public record BenchmarkCompareResult(
     int entityDelta = active.entityCount() - baseline.entityCount();
 
     lines.add("");
-    lines.add("### " + result.displayName());
+    lines.add("### " + result.detailDisplayName());
     lines.add("");
     lines.add(scenarioDescription(result.scenarioId()));
     lines.add("");
@@ -589,6 +706,10 @@ public record BenchmarkCompareResult(
       String.format("%,d", baseline.entityCount()),
       String.format("%,d", active.entityCount()),
       String.format("%+d", entityDelta)));
+    if (result.scenarioId() == BenchmarkScenarioId.EXPLORATION) {
+      lines.add("");
+      appendExplorationValidation(lines, result);
+    }
     lines.add("");
     appendMarkdownDistributionRows(lines,
       baseline.msptDistribution(), active.msptDistribution(),
@@ -598,10 +719,10 @@ public record BenchmarkCompareResult(
     lines.add("Assessment: " + assessmentLine(result).getString().replace("Assessment: ", ""));
     lines.add("");
     lines.add("#### Baseline Activity");
-    appendMarkdownActivityDetails(lines, baseline.statsDelta());
+    appendMarkdownActivityDetails(lines, baseline);
     lines.add("");
     lines.add("#### Active Activity");
-    appendMarkdownActivityDetails(lines, active.statsDelta());
+    appendMarkdownActivityDetails(lines, active);
   }
 
   private Component overallSummary() {
@@ -706,6 +827,52 @@ public record BenchmarkCompareResult(
         strongestScenarioText)).withStyle(ChatFormatting.WHITE));
   }
 
+  private Component chatOverallConclusion() {
+    double baselineWeightedAvg = weightedAverage(false);
+    double activeWeightedAvg = weightedAverage(true);
+    double improvement = baselineWeightedAvg == 0.0d ? 0.0d
+      : (baselineWeightedAvg - activeWeightedAvg) / baselineWeightedAvg * 100.0d;
+    double scoreDelta = summaryScoreDelta();
+    BenchmarkScenarioResult strongestScenario = findStrongestScenario();
+    Map<MsptBucket, Integer> baselineBuckets = aggregateMsptDistribution(false);
+    Map<MsptBucket, Integer> activeBuckets = aggregateMsptDistribution(true);
+    double fastDelta = calculateFastRatio(activeBuckets) - calculateFastRatio(baselineBuckets);
+
+    String verdict;
+    ChatFormatting verdictColor;
+    if (improvement >= 25.0d && scoreDelta >= 5.0d) {
+      verdict = "Large positive change";
+      verdictColor = ChatFormatting.GREEN;
+    } else if (improvement >= 10.0d) {
+      verdict = "Clear positive change";
+      verdictColor = ChatFormatting.GREEN;
+    } else if (improvement >= 3.0d) {
+      verdict = "Moderate positive change";
+      verdictColor = ChatFormatting.YELLOW;
+    } else if (improvement > -3.0d) {
+      verdict = "Little measurable change";
+      verdictColor = ChatFormatting.YELLOW;
+    } else {
+      verdict = "Regression";
+      verdictColor = ChatFormatting.RED;
+    }
+
+    String strongestScenarioText = strongestScenario == null
+      ? "n/a"
+      : strongestScenario.displayName() + ' '
+        + formatSignedPercent(strongestScenario.tickTimeImprovementPercent());
+
+    return Component.literal("Result: ").withStyle(ChatFormatting.GRAY)
+      .append(Component.literal(verdict).withStyle(verdictColor))
+      .append(Component.literal(String.format(
+        "  (Weighted MSPT %s -> %s | score %+.1f | fast<10ms %+.0fpp | strongest %s)",
+        formatMspt(baselineWeightedAvg),
+        formatMspt(activeWeightedAvg),
+        scoreDelta,
+        fastDelta,
+        strongestScenarioText)).withStyle(ChatFormatting.WHITE));
+  }
+
   private double weightedAverage(boolean activePhase) {
     double weightedSum = 0.0d;
     long totalDuration = 0L;
@@ -746,6 +913,9 @@ public record BenchmarkCompareResult(
   private BenchmarkScenarioResult findStrongestScenario() {
     BenchmarkScenarioResult strongest = null;
     for (BenchmarkScenarioResult scenarioResult : scenarioResults) {
+      if (scenarioResult.isInconclusive()) {
+        continue;
+      }
       if (strongest == null
         || scenarioResult.tickTimeImprovementPercent() > strongest.tickTimeImprovementPercent()) {
         strongest = scenarioResult;
@@ -892,7 +1062,8 @@ public record BenchmarkCompareResult(
   }
 
   private void appendMarkdownActivityDetails(List<String> lines,
-    PerformanceStats.Snapshot snapshot) {
+    BenchmarkScenarioResult.PhaseResult phaseResult) {
+    PerformanceStats.Snapshot snapshot = phaseResult.statsDelta();
     long spawnTotal = snapshot.mobSpawnChecks() + snapshot.mobSpawnsExcluded();
     long manualExcluded = snapshot.trackingExcludedManualNamespace()
       + snapshot.trackingExcludedManualEntity();
@@ -916,6 +1087,20 @@ public record BenchmarkCompareResult(
       + String.format("merged=%d, removed=%d", snapshot.xpOrbsMerged(), snapshot.xpOrbsRemoved()));
     lines.add("- Mob farm cleanup: "
       + String.format("removed=%d", snapshot.entityChunkCleanupRemoved()));
+    lines.add("- Game rules: "
+      + String.format("changes=%d", snapshot.gameRulesChanged()));
+    lines.add("- Distance control: "
+      + String.format(
+      "view changes=%d, sim changes=%d, movement lowers=%d, movement samples=%d, max reduction=%d",
+      snapshot.viewDistanceChanges(),
+      snapshot.simulationDistanceChanges(),
+      snapshot.simulationDistanceMovementAdjustments(),
+      snapshot.simulationDistanceMovementThrottleSamples(),
+      snapshot.simulationDistanceMovementMaxReduction()));
+    lines.add(
+      "- Distance state start: " + formatDistanceControlState(phaseResult.distanceControlStart()));
+    lines.add("- Distance state end: "
+      + formatDistanceControlState(phaseResult.distanceControlEnd()));
     lines.add("- Tracking: "
       + String.format(
       "evaluated=%d, tracked=%d, manual excludes=%d, auto excludes=%d, cache=%d, protected living=%d, protected persistent=%d",

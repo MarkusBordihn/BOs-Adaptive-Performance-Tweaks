@@ -137,7 +137,7 @@ Useful commands include:
 - `/aptweaks debug`
 - `/aptweaks benchmark`
 - `/aptweaks benchmark start`
-- `/aptweaks benchmark start scenario <general|items|xp|entities|recovery>`
+- `/aptweaks benchmark start scenario <general|exploration|items|xp|entities|recovery>`
 
 If something feels wrong, run these four commands first:
 

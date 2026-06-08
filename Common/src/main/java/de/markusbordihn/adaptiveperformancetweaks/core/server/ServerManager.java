@@ -84,7 +84,8 @@ public final class ServerManager {
       numberOfPlayers = minecraftServer.getPlayerList().getPlayerCount();
     }
     CoreEntityManager.handleServerTick();
-    if (FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled()) {
+    if (FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled()
+      || FeatureToggle.ADAPTIVE_VIEW_DISTANCE.isEnabled()) {
       PlayerPositionManager.handleServerTick();
     }
     if (BenchmarkManager.isRunning()) {

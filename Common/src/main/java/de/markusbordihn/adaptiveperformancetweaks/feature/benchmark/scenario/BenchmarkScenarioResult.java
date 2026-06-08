@@ -23,7 +23,9 @@ import de.markusbordihn.adaptiveperformancetweaks.core.server.MsptBucket;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.FineMsptBucket;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public record BenchmarkScenarioResult(
   BenchmarkScenarioId scenarioId,
@@ -51,6 +53,35 @@ public record BenchmarkScenarioResult(
 
   public String displayName() {
     return this.scenarioId.getDisplayName();
+  }
+
+  public String summaryDisplayName() {
+    return isInconclusive() ? displayName() + '*' : displayName();
+  }
+
+  public String detailDisplayName() {
+    return isInconclusive() ? displayName() + " (inconclusive)" : displayName();
+  }
+
+  public boolean isInconclusive() {
+    return this.scenarioId == BenchmarkScenarioId.EXPLORATION
+      && !this.active.validation().movementSignalObserved();
+  }
+
+  public int sharedMovementChunkTargetCount() {
+    if (this.baseline.validation().movementChunkTargets().isEmpty()
+      || this.active.validation().movementChunkTargets().isEmpty()) {
+      return 0;
+    }
+
+    Set<Long> baselineTargets = new HashSet<>(this.baseline.validation().movementChunkTargets());
+    int sharedTargets = 0;
+    for (Long chunkKey : this.active.validation().movementChunkTargets()) {
+      if (baselineTargets.contains(chunkKey)) {
+        sharedTargets++;
+      }
+    }
+    return sharedTargets;
   }
 
   public double tickTimeImprovementPercent() {
@@ -95,7 +126,61 @@ public record BenchmarkScenarioResult(
     int entityCount,
     double avgCpuPercent,
     double maxCpuPercent,
-    PerformanceStats.Snapshot statsDelta) {
+    DistanceControlState distanceControlStart,
+    DistanceControlState distanceControlEnd,
+    PerformanceStats.Snapshot statsDelta,
+    ScenarioValidation validation) {
+
+  }
+
+  public record DistanceControlState(
+    int viewDistance,
+    int viewBaselineDistance,
+    int viewWarmupReduction,
+    boolean viewWarmupActive,
+    int viewActiveExplorers,
+    int simulationDistance,
+    int simulationBaselineDistance,
+    int simulationMovementReduction,
+    int simulationActiveExplorers) {
+
+    private static final DistanceControlState NONE = new DistanceControlState(
+      -1,
+      -1,
+      0,
+      false,
+      0,
+      -1,
+      -1,
+      0,
+      0);
+
+    public static DistanceControlState none() {
+      return NONE;
+    }
+  }
+
+  public record ScenarioValidation(
+    int movementStepCount,
+    int uniqueChunkTargetCount,
+    long movementAdjustmentCount,
+    long movementThrottleSampleCount,
+    long movementMaxReduction,
+    boolean movementSignalObserved,
+    Set<Long> movementChunkTargets) {
+
+    private static final ScenarioValidation NONE = new ScenarioValidation(
+      0,
+      0,
+      0L,
+      0L,
+      0L,
+      false,
+      Set.of());
+
+    public static ScenarioValidation none() {
+      return NONE;
+    }
 
   }
 }

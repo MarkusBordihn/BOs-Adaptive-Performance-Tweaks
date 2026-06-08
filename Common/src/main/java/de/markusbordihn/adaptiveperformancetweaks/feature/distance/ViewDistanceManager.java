@@ -21,10 +21,13 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.distance;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
+import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPosition;
+import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPositionManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
+import java.util.Map;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import org.apache.logging.log4j.LogManager;
@@ -32,12 +35,18 @@ import org.apache.logging.log4j.Logger;
 
 public final class ViewDistanceManager {
 
+  private static final double MEDIUM_MAX_REDUCTION_RATIO = 0.75D;
+  private static final double HIGH_MAX_REDUCTION_RATIO = 0.50D;
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME_DISTANCE);
 
   private static int currentDistance = -1;
   private static int configuredDistanceMax = -1;
-  private static long warmupUntilTime = 0L;
-  private static long lastRecoveryTime = 0L;
+  private static int currentLoadBaselineDistance = -1;
+  private static int currentWarmupReduction = 0;
+  private static int activeExplorerCount = 0;
+  private static int recoveryStartTick = -1;
+  private static int nextRecoveryTick = -1;
+  private static int lastChangeTick = Integer.MIN_VALUE;
   private static ServerLoadLevel currentLoadLevel = ServerLoadLevel.NORMAL;
 
   private ViewDistanceManager() {
@@ -46,8 +55,12 @@ public final class ViewDistanceManager {
   public static void handleServerStarting(MinecraftServer server) {
     currentDistance = -1;
     configuredDistanceMax = server.getPlayerList().getViewDistance();
-    warmupUntilTime = 0L;
-    lastRecoveryTime = System.currentTimeMillis();
+    currentLoadBaselineDistance = -1;
+    currentWarmupReduction = 0;
+    activeExplorerCount = 0;
+    recoveryStartTick = -1;
+    nextRecoveryTick = -1;
+    lastChangeTick = Integer.MIN_VALUE;
     currentLoadLevel = ServerLoadLevel.NORMAL;
     if (FeatureToggle.ADAPTIVE_VIEW_DISTANCE.isEnabled()) {
       log.info("Adaptive view distance enabled (range {}-{})",
@@ -57,23 +70,23 @@ public final class ViewDistanceManager {
 
   public static void handleFeatureEnabled(MinecraftServer server) {
     handleServerStarting(server);
-    applyDistance(server, resolveTargetDistance());
+    evaluateAndApply();
   }
 
   public static void handleFeatureDisabled() {
     MinecraftServer server = ServerManager.getMinecraftServer();
+    currentLoadBaselineDistance = -1;
+    currentWarmupReduction = 0;
+    activeExplorerCount = 0;
+    recoveryStartTick = -1;
+    nextRecoveryTick = -1;
+    currentLoadLevel = ServerLoadLevel.NORMAL;
     if (server == null || configuredDistanceMax <= 0) {
       currentDistance = -1;
-      warmupUntilTime = 0L;
-      lastRecoveryTime = System.currentTimeMillis();
-      currentLoadLevel = ServerLoadLevel.NORMAL;
       return;
     }
 
     int targetDistance = configuredDistanceMax;
-    warmupUntilTime = 0L;
-    lastRecoveryTime = System.currentTimeMillis();
-    currentLoadLevel = ServerLoadLevel.NORMAL;
     if (currentDistance == targetDistance) {
       return;
     }
@@ -83,11 +96,36 @@ public final class ViewDistanceManager {
   }
 
   public static void handlePlayerLoggedIn(ServerPlayer player) {
-    applyPlayerWarmup();
+    if (!FeatureToggle.ADAPTIVE_VIEW_DISTANCE.isEnabled()) {
+      return;
+    }
+
+    PlayerPositionManager.handlePlayerLoggedIn(player);
+    markPlayerWarmup(player, "login");
+    evaluateAndApply();
   }
 
   public static void handlePlayerTeleported(ServerPlayer player) {
-    applyPlayerWarmup();
+    if (!FeatureToggle.ADAPTIVE_VIEW_DISTANCE.isEnabled()) {
+      return;
+    }
+
+    PlayerPositionManager.handlePlayerTeleported(player);
+    markPlayerWarmup(player, "teleport");
+    evaluateAndApply();
+  }
+
+  public static void handleServerTick() {
+    if (!FeatureToggle.ADAPTIVE_VIEW_DISTANCE.isEnabled()) {
+      return;
+    }
+
+    int currentTick = PlayerPositionManager.getCurrentServerTick();
+    if (currentDistance == -1
+      || currentWarmupReduction > 0
+      || currentTick % ViewDistanceConfig.evaluationIntervalTicks == 0) {
+      evaluateAndApply();
+    }
   }
 
   public static void handleServerLoadEvent(ServerLoadEvent event) {
@@ -95,41 +133,172 @@ public final class ViewDistanceManager {
       return;
     }
 
-    MinecraftServer server = ServerManager.getMinecraftServer();
-    if (server == null) {
-      return;
-    }
-
     currentLoadLevel = event.getServerLoadLevel();
-    int targetDistance = resolveTargetDistance();
-    if (!event.hasChanged() && currentDistance != -1 && targetDistance == currentDistance) {
-      return;
-    }
-    if (targetDistance == currentDistance) {
-      return;
-    }
-
-    log.debug("View distance {} -> {} (load: {})",
-      currentDistance, targetDistance, currentLoadLevel);
-    currentDistance = targetDistance;
-    PerformanceStats.viewDistanceChanges++;
-    server.getPlayerList().setViewDistance(currentDistance);
+    evaluateAndApply();
   }
 
-  private static void applyPlayerWarmup() {
-    if (!FeatureToggle.ADAPTIVE_VIEW_DISTANCE.isEnabled()) {
+  public static int getCurrentViewDistance() {
+    return currentDistance;
+  }
+
+  public static int getCurrentLoadBaselineDistance() {
+    return currentLoadBaselineDistance;
+  }
+
+  public static int getCurrentWarmupReduction() {
+    return currentWarmupReduction;
+  }
+
+  public static int getActiveExplorerCount() {
+    return activeExplorerCount;
+  }
+
+  public static boolean isWarmupActive() {
+    return currentWarmupReduction > 0;
+  }
+
+  private static void markPlayerWarmup(ServerPlayer player, String triggerSource) {
+    if (player == null || !ViewDistanceConfig.loginWarmupEnabled) {
       return;
     }
 
+    PlayerPosition playerPosition = PlayerPositionManager.getPlayerPositionMap().get(
+      player.getStringUUID());
+    if (playerPosition != null) {
+      playerPosition.setLoginWarmup(PlayerPositionManager.getCurrentServerTick(),
+        ViewDistanceConfig.loginWarmupTicks);
+      log.debug("View distance {} warmup triggered for {} ({} ticks)",
+        triggerSource, player.getName().getString(), ViewDistanceConfig.loginWarmupTicks);
+    }
+  }
+
+  private static void evaluateAndApply() {
     MinecraftServer server = ServerManager.getMinecraftServer();
     if (server == null) {
       return;
     }
 
-    warmupUntilTime = Math.max(warmupUntilTime,
-      System.currentTimeMillis() + SimulationDistanceConfig.movementThrottleLoginTicks * 50L);
-    lastRecoveryTime = System.currentTimeMillis();
-    applyDistance(server, ViewDistanceConfig.viewDistanceMin);
+    currentLoadBaselineDistance = resolveNextLoadBaselineDistance(currentLoadLevel,
+      currentLoadBaselineDistance);
+    updateWarmupReduction();
+
+    int targetDistance = Math.max(
+      ViewDistanceConfig.viewDistanceMin,
+      Math.min(getConfiguredDistanceMax(), currentLoadBaselineDistance) - currentWarmupReduction);
+    applyDistance(server, targetDistance);
+  }
+
+  private static void updateWarmupReduction() {
+    int currentTick = PlayerPositionManager.getCurrentServerTick();
+    Map<String, PlayerPosition> playerPositions = PlayerPositionManager.getPlayerPositionMap();
+    int trackedPlayers = playerPositions.size();
+    int newActiveExplorerCount = 0;
+    int warmupPlayerCount = 0;
+    int previousReduction = currentWarmupReduction;
+    boolean allPlayersStable = trackedPlayers == 0;
+    for (PlayerPosition playerPosition : playerPositions.values()) {
+      boolean warmupActive = playerPosition.isLoginWarmupActive(currentTick);
+      boolean hasRecentMovement = playerPosition.hasRecentMovementDistance(
+        ViewDistanceConfig.movementDistanceThresholdBlocks);
+      if (warmupActive || hasRecentMovement) {
+        newActiveExplorerCount++;
+      }
+      if (warmupActive) {
+        warmupPlayerCount++;
+      }
+      if (!playerPosition.isStableForTicks(PlayerPositionManager.getMovementUpdateTick())) {
+        allPlayersStable = false;
+      }
+    }
+
+    activeExplorerCount = newActiveExplorerCount;
+    int targetReduction = 0;
+    if (ViewDistanceConfig.loginWarmupEnabled && warmupPlayerCount > 0) {
+      targetReduction = getWarmupReduction();
+    }
+    boolean movementWarmupActive = ViewDistanceConfig.movementWarmupEnabled
+      && activeExplorerCount > 0;
+    if (movementWarmupActive) {
+      targetReduction = Math.max(targetReduction,
+        calculateMovementReduction(trackedPlayers, activeExplorerCount));
+    }
+
+    if (targetReduction > 0) {
+      recoveryStartTick = -1;
+      nextRecoveryTick = -1;
+      currentWarmupReduction = Math.max(currentWarmupReduction, targetReduction);
+      if (currentWarmupReduction != previousReduction) {
+        log.debug("View distance warmup: reduction {} -> {} (activeExplorers={} load={})",
+          previousReduction, currentWarmupReduction, activeExplorerCount, currentLoadLevel);
+      }
+      return;
+    }
+
+    if (currentWarmupReduction <= 0) {
+      recoveryStartTick = -1;
+      nextRecoveryTick = -1;
+      return;
+    }
+
+    if (!allPlayersStable) {
+      recoveryStartTick = -1;
+      nextRecoveryTick = -1;
+      return;
+    }
+
+    if (recoveryStartTick < 0) {
+      recoveryStartTick = currentTick + currentRecoveryDelayTicks();
+      nextRecoveryTick = recoveryStartTick;
+    }
+    if (currentTick < nextRecoveryTick) {
+      return;
+    }
+
+    currentWarmupReduction = Math.max(0, currentWarmupReduction - 1);
+    if (currentWarmupReduction != previousReduction) {
+      log.debug("View distance warmup recovery: reduction {} -> {} (load={})",
+        previousReduction, currentWarmupReduction, currentLoadLevel);
+    }
+    if (currentWarmupReduction == 0) {
+      recoveryStartTick = -1;
+      nextRecoveryTick = -1;
+    } else {
+      nextRecoveryTick = currentTick + currentRecoveryStepTicks();
+    }
+  }
+
+  private static int calculateMovementReduction(int trackedPlayers, int activeExplorers) {
+    if (trackedPlayers <= 0 || activeExplorers <= 0
+      || ViewDistanceConfig.movementReductionMax <= 0) {
+      return 0;
+    }
+    if (ViewDistanceConfig.movementReductionMax <= 1) {
+      return ViewDistanceConfig.movementReductionMax;
+    }
+
+    double activeRatio = activeExplorers / (double) trackedPlayers;
+    boolean useMaxReduction = switch (currentLoadLevel) {
+      case MEDIUM -> activeRatio >= MEDIUM_MAX_REDUCTION_RATIO;
+      case HIGH -> activeRatio >= HIGH_MAX_REDUCTION_RATIO;
+      case VERY_HIGH -> true;
+      default -> false;
+    };
+    return useMaxReduction ? ViewDistanceConfig.movementReductionMax : 1;
+  }
+
+  private static int resolveNextLoadBaselineDistance(
+    ServerLoadLevel loadLevel, int currentBaselineDistance) {
+    int targetBaselineDistance = targetDistanceForLevel(loadLevel);
+    if (currentBaselineDistance < 0) {
+      return targetBaselineDistance;
+    }
+    if (targetBaselineDistance < currentBaselineDistance) {
+      return Math.max(targetBaselineDistance, currentBaselineDistance - 1);
+    }
+    if (targetBaselineDistance > currentBaselineDistance) {
+      return Math.min(targetBaselineDistance, currentBaselineDistance + 1);
+    }
+    return currentBaselineDistance;
   }
 
   private static void applyDistance(MinecraftServer server, int targetDistance) {
@@ -137,32 +306,46 @@ public final class ViewDistanceManager {
       return;
     }
 
+    int currentTick = PlayerPositionManager.getCurrentServerTick();
+    boolean isReduction = currentDistance < 0 || targetDistance < currentDistance;
+    if (!isReduction) {
+      if (currentTick - lastChangeTick < currentRecoveryStepTicks()) {
+        return;
+      }
+      targetDistance = Math.min(targetDistance, currentDistance + 1);
+      if (targetDistance == currentDistance) {
+        return;
+      }
+    }
+
+    log.debug("View distance {} -> {} (baseline={} warmupReduction={} activeExplorers={} load={})",
+      currentDistance, targetDistance, currentLoadBaselineDistance, currentWarmupReduction,
+      activeExplorerCount, currentLoadLevel);
     currentDistance = targetDistance;
+    lastChangeTick = currentTick;
     PerformanceStats.viewDistanceChanges++;
     server.getPlayerList().setViewDistance(currentDistance);
   }
 
-  private static int resolveTargetDistance() {
-    int configuredMax = getConfiguredDistanceMax();
-    if (isWarmupActive()) {
-      return Math.max(ViewDistanceConfig.viewDistanceMin,
-        Math.min(configuredMax, ViewDistanceConfig.viewDistanceMin));
-    }
+  private static int getWarmupReduction() {
+    return Math.max(0, getConfiguredDistanceMax() - ViewDistanceConfig.viewDistanceMin);
+  }
 
-    int baselineTarget = Math.max(ViewDistanceConfig.viewDistanceMin,
-      Math.min(configuredMax, targetDistanceForLevel(currentLoadLevel)));
-    if (currentDistance < 0 || baselineTarget <= currentDistance) {
-      return baselineTarget;
-    }
-    if (currentLoadLevel.isAtLeast(ServerLoadLevel.NORMAL)) {
-      return currentDistance;
-    }
-    if (System.currentTimeMillis() - lastRecoveryTime < 10_000L) {
-      return currentDistance;
-    }
+  private static boolean isLowLoadForRecovery() {
+    return !currentLoadLevel.isAtLeast(ViewDistanceConfig.minOptimizationLoadLevel);
+  }
 
-    lastRecoveryTime = System.currentTimeMillis();
-    return Math.min(baselineTarget, currentDistance + 1);
+  private static int currentRecoveryDelayTicks() {
+    int baseRecoveryDelayTicks = isLowLoadForRecovery()
+      ? ViewDistanceConfig.recoveryFastDelayTicks
+      : ViewDistanceConfig.recoveryDelayTicks;
+    return Math.max(baseRecoveryDelayTicks, ViewDistanceConfig.recoveryMinDelayTicks);
+  }
+
+  private static int currentRecoveryStepTicks() {
+    return isLowLoadForRecovery()
+      ? ViewDistanceConfig.recoveryFastStepTicks
+      : ViewDistanceConfig.recoveryStepTicks;
   }
 
   private static int getConfiguredDistanceMax() {
@@ -171,11 +354,11 @@ public final class ViewDistanceManager {
       : ViewDistanceConfig.viewDistanceMax;
   }
 
-  private static boolean isWarmupActive() {
-    return System.currentTimeMillis() < warmupUntilTime;
-  }
-
   private static int targetDistanceForLevel(ServerLoadLevel level) {
+    if (!level.isAtLeast(ViewDistanceConfig.minOptimizationLoadLevel)) {
+      return getConfiguredDistanceMax();
+    }
+
     int raw = switch (level) {
       case VERY_LOW -> ViewDistanceConfig.viewDistanceVeryLow;
       case LOW -> ViewDistanceConfig.viewDistanceLow;
@@ -186,6 +369,6 @@ public final class ViewDistanceManager {
     };
 
     return Math.max(ViewDistanceConfig.viewDistanceMin,
-      Math.min(ViewDistanceConfig.viewDistanceMax, raw));
+      Math.min(getConfiguredDistanceMax(), raw));
   }
 }

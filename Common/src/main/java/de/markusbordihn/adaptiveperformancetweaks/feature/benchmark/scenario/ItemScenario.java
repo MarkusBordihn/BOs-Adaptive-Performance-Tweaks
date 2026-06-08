@@ -54,6 +54,11 @@ public final class ItemScenario implements BenchmarkScenario {
   }
 
   @Override
+  public boolean shouldFacePlayerToFocus() {
+    return true;
+  }
+
+  @Override
   public void setup(BenchmarkScenarioContext context) {
     Vec3 center = context.center();
 

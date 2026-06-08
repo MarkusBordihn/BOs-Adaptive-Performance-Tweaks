@@ -22,7 +22,8 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario;
 import java.util.Locale;
 
 public enum BenchmarkScenarioId {
-  GENERAL(4, true),
+  GENERAL(3, true),
+  EXPLORATION(2, false),
   ITEMS,
   XP("XP"),
   ENTITIES,

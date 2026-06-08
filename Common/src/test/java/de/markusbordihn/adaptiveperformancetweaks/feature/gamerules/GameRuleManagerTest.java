@@ -40,6 +40,7 @@ import net.minecraft.server.Bootstrap;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.GameRules;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockMakers;
 
@@ -80,6 +81,28 @@ class GameRuleManagerTest {
     Method method = GameRuleManager.class.getDeclaredMethod("applyPlayerWarmup", String.class);
     method.setAccessible(true);
     method.invoke(null, triggerSource);
+  }
+
+  @BeforeEach
+  void resetState() throws Exception {
+    writeServerManagerField("minecraftServer", null);
+    PlayerPositionManager.reset();
+    FeatureToggle.GAMERULES.setEnabled(true);
+
+    GameRulesConfig.minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;
+    GameRulesConfig.randomTickSpeedEnabled = true;
+    GameRulesConfig.loginWarmupEnabled = true;
+    GameRulesConfig.movementWarmupEnabled = true;
+    GameRulesConfig.randomTickSpeed = 3;
+
+    writeStaticField("gameRules", null);
+    writeStaticField("configuredRandomTickSpeedMax", GameRulesConfig.randomTickSpeed);
+    writeStaticField("configuredMaxEntityCramming", GameRulesConfig.maxEntityCramming);
+    writeStaticField("currentLoadLevel", ServerLoadLevel.NORMAL);
+    writeStaticField("lastUpdateTime", System.currentTimeMillis());
+    writeStaticField("lastRandomTickRecoveryTime", System.currentTimeMillis());
+    writeStaticField("randomTickWarmupUntilTime", 0L);
+    writeStaticField("randomTickPlayerActivityRecoveryPending", false);
   }
 
   @Test
