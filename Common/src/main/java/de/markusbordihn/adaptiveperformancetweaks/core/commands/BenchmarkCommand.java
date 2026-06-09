@@ -48,7 +48,7 @@ public class BenchmarkCommand extends CustomCommand {
       .requires(cs -> cs.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
       .executes(command)
       .then(Commands.literal("start")
-        .executes(ctx -> startBenchmark(ctx, DEFAULT_PHASE_SECONDS, true))
+        .executes(ctx -> startBenchmark(ctx, DEFAULT_PHASE_SECONDS, false))
         .then(Commands.argument("seconds", IntegerArgumentType.integer(30, 3600))
           .executes(ctx -> startBenchmark(ctx,
             IntegerArgumentType.getInteger(ctx, "seconds"), false))
@@ -56,7 +56,8 @@ public class BenchmarkCommand extends CustomCommand {
             .executes(ctx -> startBenchmark(ctx,
               IntegerArgumentType.getInteger(ctx, "seconds"), true))))
         .then(Commands.literal("scenario")
-          .then(registerScenarioStart(BenchmarkScenarioId.GENERAL, true))
+          .then(registerScenarioStart(BenchmarkScenarioId.GENERAL, false))
+          .then(registerScenarioStart(BenchmarkScenarioId.EXPLORATION, false))
           .then(registerScenarioStart(BenchmarkScenarioId.ITEMS, false))
           .then(registerScenarioStart(BenchmarkScenarioId.XP, false))
           .then(registerScenarioStart(BenchmarkScenarioId.ENTITIES, false))
@@ -80,8 +81,8 @@ public class BenchmarkCommand extends CustomCommand {
   private static int startBenchmark(
     CommandContext<CommandSourceStack> context, long seconds, boolean autoMove)
     throws CommandSyntaxException {
-    ServerPlayer player = context.getSource().getPlayerOrException();
-    BenchmarkManager.requestStart(player, seconds, autoMove);
+    BenchmarkManager.requestStart(context.getSource().getPlayerOrException(), seconds, autoMove);
+
     return 0;
   }
 
@@ -101,8 +102,9 @@ public class BenchmarkCommand extends CustomCommand {
   private static int startScenarioBenchmark(CommandContext<CommandSourceStack> context,
     BenchmarkScenarioId scenarioId, long seconds, boolean autoMove)
     throws CommandSyntaxException {
-    ServerPlayer player = context.getSource().getPlayerOrException();
-    BenchmarkManager.requestScenarioStart(player, scenarioId, seconds, autoMove);
+    BenchmarkManager.requestScenarioStart(context.getSource().getPlayerOrException(), scenarioId,
+      seconds, autoMove);
+
     return 0;
   }
 
@@ -111,10 +113,11 @@ public class BenchmarkCommand extends CustomCommand {
     if (full.length() <= 60) {
       return full;
     }
+
     int nameCount = path.getNameCount();
-    String sep = java.io.File.separator;
-    String parent = nameCount >= 2 ? path.getName(nameCount - 2) + sep : "";
-    return "..." + sep + parent + path.getFileName();
+    String separator = java.io.File.separator;
+    String parentPath = nameCount >= 2 ? path.getName(nameCount - 2) + separator : "";
+    return "..." + separator + parentPath + path.getFileName();
   }
 
   private static MutableComponent buildLastResultLink(Path resultPath) {
@@ -133,6 +136,7 @@ public class BenchmarkCommand extends CustomCommand {
         Component.literal("No benchmark result available.").withStyle(ChatFormatting.RED));
       return 0;
     }
+
     if (!resultPath.toFile().exists()) {
       sendFeedback(context,
         Component.literal("Benchmark result file not found: " + resultPath)
@@ -147,6 +151,7 @@ public class BenchmarkCommand extends CustomCommand {
     }
 
     Util.getPlatform().openFile(resultPath.toFile());
+
     return 0;
   }
 
@@ -159,6 +164,7 @@ public class BenchmarkCommand extends CustomCommand {
         sendFeedback(context, buildLastResultLink(resultPath));
       }
     }
+
     return 0;
   }
 }

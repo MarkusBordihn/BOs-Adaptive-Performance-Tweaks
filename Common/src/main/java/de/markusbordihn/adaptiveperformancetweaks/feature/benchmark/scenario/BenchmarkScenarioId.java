@@ -22,7 +22,8 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario;
 import java.util.Locale;
 
 public enum BenchmarkScenarioId {
-  GENERAL(4, true),
+  GENERAL(3, true),
+  EXPLORATION(2, false),
   ITEMS,
   XP("XP"),
   ENTITIES,
@@ -58,8 +59,8 @@ public enum BenchmarkScenarioId {
     if (displayNameOverride != null) {
       return displayNameOverride;
     }
-    String n = name();
-    return n.charAt(0) + n.substring(1).toLowerCase(Locale.ROOT);
+
+    return name().charAt(0) + name().substring(1).toLowerCase(Locale.ROOT);
   }
 
   public int getSuiteWeight() {
