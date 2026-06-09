@@ -19,45 +19,15 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario;
 
-import net.minecraft.world.phys.Vec3;
+public final class ExplorationScenario implements BenchmarkScenario {
 
-public interface BenchmarkScenario {
-
-  BenchmarkScenarioId id();
-
-  default String displayName() {
-    return id().getDisplayName();
+  @Override
+  public BenchmarkScenarioId id() {
+    return BenchmarkScenarioId.EXPLORATION;
   }
 
-  default boolean usesAutoMove(boolean requestedAutoMove) {
-    return requestedAutoMove && id().supportsAutoMove();
-  }
-
-  default double cleanupRadius() {
-    return 0.0d;
-  }
-
-  default Vec3 centerOffset() {
-    return Vec3.ZERO;
-  }
-
-  default boolean shouldFacePlayerToFocus() {
-    return false;
-  }
-
-  default Vec3 playerFocusOffset() {
-    return Vec3.ZERO;
-  }
-
-  default void setup(BenchmarkScenarioContext context) {
-  }
-
-  default void beforeMeasurement(BenchmarkScenarioContext context) {
-  }
-
-  default void onMeasurementTick(BenchmarkScenarioContext context) {
-  }
-
-  default void cleanup(BenchmarkScenarioContext context) {
+  @Override
+  public boolean usesAutoMove(boolean requestedAutoMove) {
+    return true;
   }
 }

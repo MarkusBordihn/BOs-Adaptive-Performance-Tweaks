@@ -25,4 +25,9 @@ public final class GeneralScenario implements BenchmarkScenario {
   public BenchmarkScenarioId id() {
     return BenchmarkScenarioId.GENERAL;
   }
+
+  @Override
+  public boolean usesAutoMove(boolean requestedAutoMove) {
+    return true;
+  }
 }

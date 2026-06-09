@@ -54,9 +54,13 @@ public final class ItemScenario implements BenchmarkScenario {
   }
 
   @Override
+  public boolean shouldFacePlayerToFocus() {
+    return true;
+  }
+
+  @Override
   public void setup(BenchmarkScenarioContext context) {
     Vec3 center = context.center();
-
     for (int index = 0; index < ITEM_COUNT; index++) {
       double xOffset = ((index % GRID_WIDTH) - (GRID_WIDTH / 2.0d)) * ITEM_SPACING;
       double zOffset = ((index / GRID_WIDTH) - (ITEM_COUNT / GRID_WIDTH / 2.0d)) * ITEM_SPACING;

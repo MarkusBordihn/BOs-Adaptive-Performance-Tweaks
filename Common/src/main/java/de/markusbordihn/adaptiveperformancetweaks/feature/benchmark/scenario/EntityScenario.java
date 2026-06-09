@@ -43,9 +43,8 @@ public final class EntityScenario implements BenchmarkScenario {
   private static final Identifier ENTITY_TYPE_ID = Identifier.tryParse("minecraft:chicken");
 
   private static Vec3 getChunkCenter(Vec3 position) {
-    int chunkX = Mth.floor(position.x) >> 4;
-    int chunkZ = Mth.floor(position.z) >> 4;
-    return new Vec3((chunkX << 4) + 8.0d, position.y, (chunkZ << 4) + 8.0d);
+    return new Vec3((Mth.floor(position.x) >> 4 << 4) + 8.0d, position.y,
+      (Mth.floor(position.z) >> 4 << 4) + 8.0d);
   }
 
   private static Vec3[] getChunkAnchors(Vec3 chunkCenter) {
@@ -96,6 +95,16 @@ public final class EntityScenario implements BenchmarkScenario {
   @Override
   public Vec3 centerOffset() {
     return new Vec3(16.0d, 0.0d, 0.0d);
+  }
+
+  @Override
+  public boolean shouldFacePlayerToFocus() {
+    return true;
+  }
+
+  @Override
+  public Vec3 playerFocusOffset() {
+    return new Vec3(8.0d, 0.0d, 8.0d);
   }
 
   @Override

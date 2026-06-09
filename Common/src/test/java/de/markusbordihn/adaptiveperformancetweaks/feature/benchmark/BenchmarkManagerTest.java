@@ -27,6 +27,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import de.markusbordihn.adaptiveperformancetweaks.core.commands.BenchmarkCommand;
+import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.TrackingCategory;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.MsptBucket;
@@ -36,6 +40,11 @@ import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.Ben
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenarioContext;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenarioId;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenarioResult;
+import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.EntityScenario;
+import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.ExplorationScenario;
+import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.GeneralScenario;
+import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.ItemScenario;
+import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.XpScenario;
 import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimulationDistanceManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.gamerules.GameRuleManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ItemsConfig;
@@ -43,9 +52,12 @@ import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.Performance
 import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import net.minecraft.SharedConstants;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.MinecraftServer;
@@ -133,7 +145,62 @@ class BenchmarkManagerTest {
       0,
       avgCpu,
       maxCpu,
-      snapshot);
+      distanceControlState(12, 12, 0, false, 0, 12, 12, 0, 0),
+      distanceControlState(12, 12, 0, false, 0, 12, 12, 0, 0),
+      snapshot,
+      BenchmarkScenarioResult.ScenarioValidation.none());
+  }
+
+  private static BenchmarkScenarioResult.DistanceControlState distanceControlState(
+    int viewDistance, int viewBaselineDistance, int viewWarmupReduction, boolean viewWarmupActive,
+    int viewActiveExplorers, int simulationDistance, int simulationBaselineDistance,
+    int simulationMovementReduction, int simulationActiveExplorers) {
+    return new BenchmarkScenarioResult.DistanceControlState(
+      viewDistance,
+      viewBaselineDistance,
+      viewWarmupReduction,
+      viewWarmupActive,
+      viewActiveExplorers,
+      simulationDistance,
+      simulationBaselineDistance,
+      simulationMovementReduction,
+      simulationActiveExplorers);
+  }
+
+  private static BenchmarkScenarioResult.PhaseResult explorationPhaseResult(
+    long durationMs, double avgTick, double p95Tick, double avgCpu, double maxCpu,
+    PerformanceStats.Snapshot snapshot, int stepCount, int uniqueChunkCount,
+    long movementAdjustments, long movementSamples, long maxReduction, long... chunkKeys) {
+    return new BenchmarkScenarioResult.PhaseResult(
+      phaseResult(durationMs, avgTick, p95Tick, avgCpu, maxCpu, snapshot).measurementDurationMs(),
+      avgTick,
+      Math.max(0.0, avgTick - 1.5),
+      p95Tick,
+      p95Tick + 1.2,
+      new EnumMap<>(Map.of(ServerLoadLevel.VERY_LOW, 1)),
+      new EnumMap<>(Map.of(avgTick <= 5.0 ? MsptBucket.UNDER_5_MS
+        : avgTick <= 10.0 ? MsptBucket.FROM_5_TO_10_MS
+          : MsptBucket.FROM_10_TO_VERY_LOW_MS, 1)),
+      new EnumMap<>(Map.of(avgTick < 3.0 ? FineMsptBucket.UNDER_3_MS
+        : avgTick < 5.0 ? FineMsptBucket.FROM_3_TO_5_MS
+          : avgTick < 10.0 ? FineMsptBucket.FROM_5_TO_10_MS
+            : FineMsptBucket.FROM_10_MS_UP, 1)),
+      0L,
+      0,
+      avgCpu,
+      maxCpu,
+      distanceControlState(12, 12, 0, false, 0, 12, 12, 0, 0),
+      distanceControlState(12, 12, (int) maxReduction > 0 ? 1 : 0, maxReduction > 0, 1, 12, 12,
+        (int) maxReduction, movementSamples > 0 ? 1 : 0),
+      snapshot,
+      new BenchmarkScenarioResult.ScenarioValidation(
+        stepCount,
+        uniqueChunkCount,
+        movementAdjustments,
+        movementSamples,
+        maxReduction,
+        movementAdjustments > 0 || movementSamples > 0 || maxReduction > 0,
+        java.util.Arrays.stream(chunkKeys).boxed().collect(java.util.stream.Collectors.toSet())));
   }
 
   @Test
@@ -176,6 +243,36 @@ class BenchmarkManagerTest {
       invokePrivateMethod("clearSessionState");
       FeatureToggle.ITEMS.setEnabled(previousItemsState);
       FeatureToggle.SPAWN.setEnabled(previousSpawnState);
+    }
+  }
+
+  @Test
+  void restoreFeaturesDisablesConflictGatedDistanceFeaturesDuringBenchmark() throws Exception {
+    boolean previousViewDistanceState = FeatureToggle.ADAPTIVE_VIEW_DISTANCE.isEnabled();
+    boolean previousItemsState = FeatureToggle.ITEMS.isEnabled();
+    try {
+      FeatureToggle.ADAPTIVE_VIEW_DISTANCE.setEnabled(true);
+      FeatureToggle.ITEMS.setEnabled(true);
+
+      BenchmarkFeatureState.saveFeatureState();
+      @SuppressWarnings("unchecked")
+      Map<FeatureToggle, ModConflictDetector.FeatureDecision> savedDecisions =
+        (Map<FeatureToggle, ModConflictDetector.FeatureDecision>) readStaticField(
+          BenchmarkFeatureState.class, "savedFeatureDecision");
+      savedDecisions.put(
+        FeatureToggle.ADAPTIVE_VIEW_DISTANCE,
+        new ModConflictDetector.FeatureDecision(
+          true, ModConflictDetector.FeatureActivation.MANUAL_ENABLED, "dynview"));
+
+      BenchmarkFeatureState.disableAllFeatures();
+      BenchmarkFeatureState.restoreFeatures();
+
+      assertFalse(FeatureToggle.ADAPTIVE_VIEW_DISTANCE.isEnabled());
+      assertTrue(FeatureToggle.ITEMS.isEnabled());
+    } finally {
+      invokePrivateMethod("clearSessionState");
+      FeatureToggle.ADAPTIVE_VIEW_DISTANCE.setEnabled(previousViewDistanceState);
+      FeatureToggle.ITEMS.setEnabled(previousItemsState);
     }
   }
 
@@ -272,17 +369,18 @@ class BenchmarkManagerTest {
       (Map<BenchmarkScenarioId, Long>) invokePrivateMethod("buildSuiteScenarioDurationsMillis",
         new Class<?>[]{long.class}, 240L);
 
-    assertEquals(120_000L, durations.get(BenchmarkScenarioId.GENERAL));
-    assertEquals(30_000L, durations.get(BenchmarkScenarioId.ITEMS));
-    assertEquals(30_000L, durations.get(BenchmarkScenarioId.XP));
-    assertEquals(30_000L, durations.get(BenchmarkScenarioId.ENTITIES));
-    assertEquals(30_000L, durations.get(BenchmarkScenarioId.RECOVERY));
+    assertEquals(79_000L, durations.get(BenchmarkScenarioId.GENERAL));
+    assertEquals(53_000L, durations.get(BenchmarkScenarioId.EXPLORATION));
+    assertEquals(27_000L, durations.get(BenchmarkScenarioId.ITEMS));
+    assertEquals(27_000L, durations.get(BenchmarkScenarioId.XP));
+    assertEquals(27_000L, durations.get(BenchmarkScenarioId.ENTITIES));
+    assertEquals(27_000L, durations.get(BenchmarkScenarioId.RECOVERY));
   }
 
   @Test
   void suiteDurationValidationRejectsTooShortSuites() throws Exception {
     String validation = (String) invokePrivateMethod("validateSuiteDurationSeconds",
-      new Class<?>[]{long.class}, 119L);
+      new Class<?>[]{long.class}, 134L);
 
     assertNotNull(validation);
     assertTrue(validation.contains("at least"));
@@ -295,7 +393,123 @@ class BenchmarkManagerTest {
       (List<BenchmarkScenario>) invokePrivateMethod("createScenarioSuite", new Class<?>[0]);
 
     assertEquals(BenchmarkScenarioId.GENERAL, scenarios.get(0).id());
+    assertEquals(BenchmarkScenarioId.EXPLORATION, scenarios.get(1).id());
     assertEquals(BenchmarkScenarioId.RECOVERY, scenarios.get(scenarios.size() - 1).id());
+  }
+
+  @Test
+  void benchmarkCommandRegistersExplorationScenario() {
+    @SuppressWarnings("unchecked")
+    var benchmarkBuilder =
+      (com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack>) BenchmarkCommand.register();
+    CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher<>();
+    LiteralCommandNode<CommandSourceStack> benchmarkNode = dispatcher.register(benchmarkBuilder);
+
+    assertNotNull(benchmarkNode.getChild("start"));
+    assertNotNull(benchmarkNode.getChild("start").getChild("scenario"));
+    assertNotNull(benchmarkNode.getChild("start").getChild("scenario").getChild("exploration"));
+  }
+
+  @Test
+  void visualSpawnScenariosRequestPlayerFacing() {
+    BenchmarkScenario itemScenario = new ItemScenario();
+    BenchmarkScenario xpScenario = new XpScenario();
+    BenchmarkScenario entityScenario = new EntityScenario();
+    BenchmarkScenario generalScenario = new GeneralScenario();
+
+    assertTrue(itemScenario.shouldFacePlayerToFocus());
+    assertTrue(xpScenario.shouldFacePlayerToFocus());
+    assertTrue(entityScenario.shouldFacePlayerToFocus());
+    assertFalse(generalScenario.shouldFacePlayerToFocus());
+    assertEquals(Vec3.ZERO, itemScenario.playerFocusOffset());
+    assertEquals(Vec3.ZERO, xpScenario.playerFocusOffset());
+    assertEquals(new Vec3(8.0d, 0.0d, 8.0d), entityScenario.playerFocusOffset());
+  }
+
+  @Test
+  void generalRoutesUseLocalDeterministicMovementByDefault() throws Exception {
+    BenchmarkScenario scenario = new GeneralScenario();
+    Vec3 origin = new Vec3(0.0d, 64.0d, 0.0d);
+    writeStaticField(BenchmarkManager.class, "autoMoveRequested", false);
+
+    @SuppressWarnings("unchecked")
+    List<Vec3> baselineRoute = (List<Vec3>) invokePrivateMethod(
+      "computeWaypoints",
+      new Class<?>[]{BenchmarkScenario.class, Vec3.class, long.class, boolean.class, Set.class},
+      scenario,
+      origin,
+      79_000L,
+      false,
+      new HashSet<Long>());
+    @SuppressWarnings("unchecked")
+    List<Vec3> activeRoute = (List<Vec3>) invokePrivateMethod(
+      "computeWaypoints",
+      new Class<?>[]{BenchmarkScenario.class, Vec3.class, long.class, boolean.class, Set.class},
+      scenario,
+      origin,
+      79_000L,
+      true,
+      new HashSet<Long>());
+
+    assertEquals(7, baselineRoute.size());
+    assertEquals(7, activeRoute.size());
+    assertEquals(-3, ((int) Math.floor(baselineRoute.get(0).x)) >> 4);
+    assertEquals(3, ((int) Math.floor(activeRoute.get(0).x)) >> 4);
+    assertEquals(-1, (((int) Math.floor(baselineRoute.get(1).z)) >> 4)
+      - (((int) Math.floor(baselineRoute.get(0).z)) >> 4));
+    assertEquals(1, (((int) Math.floor(activeRoute.get(1).z)) >> 4)
+      - (((int) Math.floor(activeRoute.get(0).z)) >> 4));
+    assertTrue(Math.abs((((int) Math.floor(baselineRoute.get(2).x)) >> 4)
+      - (((int) Math.floor(baselineRoute.get(1).x)) >> 4)) <= 1);
+  }
+
+  @Test
+  void explorationRoutesAreDeterministicContiguousAndNonOverlapping() throws Exception {
+    BenchmarkScenario scenario = new ExplorationScenario();
+    Vec3 origin = new Vec3(0.0d, 64.0d, 0.0d);
+    Set<Long> reservedChunkKeys = new HashSet<>();
+
+    @SuppressWarnings("unchecked")
+    List<Vec3> baselineRoute = (List<Vec3>) invokePrivateMethod(
+      "computeWaypoints",
+      new Class<?>[]{BenchmarkScenario.class, Vec3.class, long.class, boolean.class, Set.class},
+      scenario,
+      origin,
+      53_000L,
+      false,
+      reservedChunkKeys);
+    @SuppressWarnings("unchecked")
+    List<Vec3> activeRoute = (List<Vec3>) invokePrivateMethod(
+      "computeWaypoints",
+      new Class<?>[]{BenchmarkScenario.class, Vec3.class, long.class, boolean.class, Set.class},
+      scenario,
+      origin,
+      53_000L,
+      true,
+      reservedChunkKeys);
+
+    assertEquals(53, baselineRoute.size());
+    assertEquals(53, activeRoute.size());
+    assertEquals(-8, ((int) Math.floor(baselineRoute.get(0).x)) >> 4);
+    assertEquals(8, ((int) Math.floor(activeRoute.get(0).x)) >> 4);
+
+    for (int index = 1; index < baselineRoute.size(); index++) {
+      int previousChunkX = ((int) Math.floor(baselineRoute.get(index - 1).x)) >> 4;
+      int currentChunkX = ((int) Math.floor(baselineRoute.get(index).x)) >> 4;
+      assertEquals(1, Math.abs(currentChunkX - previousChunkX));
+    }
+
+    for (Vec3 baselineTarget : baselineRoute) {
+      long baselineChunkKey = net.minecraft.world.level.ChunkPos.asLong(
+        ((int) Math.floor(baselineTarget.x)) >> 4,
+        ((int) Math.floor(baselineTarget.z)) >> 4);
+      for (Vec3 activeTarget : activeRoute) {
+        long activeChunkKey = net.minecraft.world.level.ChunkPos.asLong(
+          ((int) Math.floor(activeTarget.x)) >> 4,
+          ((int) Math.floor(activeTarget.z)) >> 4);
+        assertFalse(baselineChunkKey == activeChunkKey);
+      }
+    }
   }
 
   @Test
@@ -371,7 +585,13 @@ class BenchmarkManagerTest {
     assertTrue(lines.stream().anyMatch(line -> line.contains("Fine MSPT distribution:")));
     assertTrue(lines.stream().anyMatch(line -> line.contains("3-5ms")));
     assertTrue(lines.stream().anyMatch(line -> line.contains("Load distribution:")));
-    assertTrue(lines.stream().anyMatch(line -> line.contains("Measures broad world activity")));
+    assertTrue(lines.stream().anyMatch(line -> line.contains("Distance control:")));
+    assertTrue(lines.stream().anyMatch(line -> line.contains("view changes=0, sim changes=0")));
+    assertTrue(lines.stream().anyMatch(line -> line.contains("Distance state start:")));
+    assertTrue(lines.stream()
+      .anyMatch(line -> line.contains("view=12/12 warmup=no red=0 exp=0 | sim=12/12 red=0 exp=0")));
+    assertTrue(lines.stream().anyMatch(line -> line.contains("measurement window")));
+    assertTrue(lines.stream().anyMatch(line -> line.contains("short local chunk hops")));
   }
 
   @Test
@@ -402,6 +622,40 @@ class BenchmarkManagerTest {
     assertTrue(lines.stream().anyMatch(line -> line.contains("Benchmark Summary")));
     assertFalse(lines.stream().anyMatch(line -> line.contains("Baseline actions:")));
     assertFalse(lines.stream().anyMatch(line -> line.contains("Assessment:")));
+  }
+
+  @Test
+  void explorationReportMarksInconclusiveRuns() {
+    BenchmarkScenarioResult scenarioResult = new BenchmarkScenarioResult(
+      BenchmarkScenarioId.EXPLORATION,
+      explorationPhaseResult(53_000L, 8.1, 11.6, 27.8, 43.8, emptySnapshot(),
+        53, 53, 0L, 0L, 0L, -8L, -9L, -10L),
+      explorationPhaseResult(53_000L, 7.8, 10.9, 19.2, 31.8, emptySnapshot(),
+        53, 53, 0L, 0L, 0L, 8L, 9L, 10L));
+    EnumMap<BenchmarkScenarioId, Long> durations = new EnumMap<>(BenchmarkScenarioId.class);
+    durations.put(BenchmarkScenarioId.EXPLORATION, 53_000L);
+
+    BenchmarkCompareResult result = new BenchmarkCompareResult(
+      "Exploration",
+      false,
+      53_000L,
+      30_000L,
+      5_000L,
+      3_000L,
+      durations,
+      List.of(scenarioResult),
+      0, 9, 4, 0,
+      true, 53, 53, 0,
+      Instant.parse("2026-05-27T10:18:54.893486400Z"));
+
+    List<String> lines = result.formatMarkdown();
+
+    assertTrue(lines.stream().anyMatch(line -> line.contains("Exploration*")));
+    assertTrue(lines.stream().anyMatch(line -> line.contains("Assessment: Inconclusive")));
+    assertTrue(lines.stream().anyMatch(line -> line.contains("Movement throttle signal: no")));
+    assertTrue(lines.stream()
+      .anyMatch(line -> line.contains("movement lowers=0, movement samples=0, max reduction=0")));
+    assertTrue(lines.stream().anyMatch(line -> line.contains("Distance state end:")));
   }
 
   @Test

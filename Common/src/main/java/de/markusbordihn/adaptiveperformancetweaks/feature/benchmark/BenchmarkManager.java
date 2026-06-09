@@ -30,10 +30,14 @@ import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.Ben
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenarioId;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenarioResult;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.EntityScenario;
+import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.ExplorationScenario;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.GeneralScenario;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.ItemScenario;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.RecoveryScenario;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.XpScenario;
+import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimulationDistanceConfig;
+import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimulationDistanceManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.distance.ViewDistanceManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Path;
@@ -48,6 +52,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import net.minecraft.ChatFormatting;
+import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -75,11 +80,16 @@ public final class BenchmarkManager {
   private static final long SCENARIO_SETTLE_DURATION_MS = 5_000L;
   private static final long SCENARIO_POST_SETTLE_DURATION_MS = 3_000L;
   private static final long SAMPLE_INTERVAL_MS = 5_000L;
-  private static final long MOVE_INTERVAL_MS = 10_000L;
-  private static final long POST_MOVE_SETTLE_DELAY_MS = 7_500L;
+  private static final long GENERAL_MOVE_INTERVAL_MS = 12_000L;
+  private static final long GENERAL_POST_MOVE_SETTLE_DELAY_MS = 4_000L;
+  private static final long LEGACY_MOVE_INTERVAL_MS = 10_000L;
+  private static final long LEGACY_POST_MOVE_SETTLE_DELAY_MS = 7_500L;
+  private static final long EXPLORATION_START_SETTLE_DELAY_MS = 1_000L;
   private static final long CONFIRM_TIMEOUT_MS = 120_000L;
+  private static final long TICK_DURATION_MS = 50L;
   private static final int MOVE_AREA_HALF_SIZE = 10_000;
-  private static final int MOVE_WAYPOINT_COUNT = 60;
+  private static final int GENERAL_ROUTE_START_OFFSET_CHUNKS = 3;
+  private static final int EXPLORATION_ROUTE_START_OFFSET_CHUNKS = 8;
   private static final long MIN_SUITE_GENERAL_SECONDS = 60L;
   private static final long MIN_SUITE_SPECIAL_SECONDS = 15L;
   private static final double TELEPORT_Y = 100.0d;
@@ -98,6 +108,11 @@ public final class BenchmarkManager {
     new EnumMap<>(ServerLoadLevel.class);
   private static final EnumMap<MsptBucket, Integer> currentMsptDist =
     new EnumMap<>(MsptBucket.class);
+  private static final EnumMap<BenchmarkScenarioId, List<Vec3>> baselineMoveWaypoints =
+    new EnumMap<>(BenchmarkScenarioId.class);
+  private static final EnumMap<BenchmarkScenarioId, List<Vec3>> activeMoveWaypoints =
+    new EnumMap<>(BenchmarkScenarioId.class);
+  private static final Set<Long> currentMovementChunkTargets = new HashSet<>();
   private static BenchmarkState state = BenchmarkState.IDLE;
   private static BenchmarkBlock currentBlock = BenchmarkBlock.BASELINE;
   private static boolean suiteMode = true;
@@ -108,10 +123,9 @@ public final class BenchmarkManager {
   private static Vec3 playerStartPos;
   private static Vec3 benchmarkOriginPos;
   private static List<BenchmarkScenario> configuredScenarios = List.of();
-  private static List<Vec3> baselineMoveWaypoints = new ArrayList<>();
-  private static List<Vec3> activeMoveWaypoints = new ArrayList<>();
   private static int currentScenarioIndex;
   private static int currentWaypointIndex;
+  private static int currentMovementStepCount;
   private static long configuredBlockDurationMs = DEFAULT_BLOCK_DURATION_MS;
   private static long currentScenarioDurationMs;
   private static long stageStartMs;
@@ -121,6 +135,7 @@ public final class BenchmarkManager {
   private static GameType savedGameMode;
   private static double lastCpuPercent = -1.0d;
   private static PerformanceStats.Snapshot currentMeasurementStartStats;
+  private static BenchmarkScenarioResult.DistanceControlState currentMeasurementStartDistanceState;
   private static long currentMeasurementStartHeapUsed;
   private static long currentMeasurementPeakHeapUsed;
   private static BenchmarkCompareResult lastResult;
@@ -153,19 +168,20 @@ public final class BenchmarkManager {
     baselineScenarioResults.clear();
     activeScenarioResults.clear();
     currentMeasurementStartStats = null;
+    currentMeasurementStartDistanceState = null;
     currentSamples.clear();
     currentCpuSamples.clear();
     currentLoadDist.clear();
     currentMsptDist.clear();
 
-    if (autoMoveRequested && configuredScenarios.stream()
-      .anyMatch(scenario -> scenario.id().supportsAutoMove())) {
-      Set<Long> reservedChunkKeys = new HashSet<>(MOVE_WAYPOINT_COUNT * 2);
-      baselineMoveWaypoints = computeWaypoints(benchmarkOriginPos, reservedChunkKeys);
-      activeMoveWaypoints = computeWaypoints(benchmarkOriginPos, reservedChunkKeys);
-    } else {
-      baselineMoveWaypoints = new ArrayList<>();
-      activeMoveWaypoints = new ArrayList<>();
+    baselineMoveWaypoints.clear();
+    activeMoveWaypoints.clear();
+    if (configuredScenarios.stream()
+      .anyMatch(scenario -> scenario.usesAutoMove(autoMoveRequested))) {
+      Set<Long> reservedChunkKeys = new HashSet<>();
+      baselineMoveWaypoints.putAll(
+        buildMoveWaypoints(benchmarkOriginPos, false, reservedChunkKeys));
+      activeMoveWaypoints.putAll(buildMoveWaypoints(benchmarkOriginPos, true, reservedChunkKeys));
     }
 
     BenchmarkFeatureState.saveFeatureState();
@@ -233,6 +249,7 @@ public final class BenchmarkManager {
         }
         pendingConfirmPlayer = null;
       }
+
       return;
     }
 
@@ -300,6 +317,7 @@ public final class BenchmarkManager {
   private static List<BenchmarkScenario> createScenarioSuite() {
     return List.of(
       new GeneralScenario(),
+      new ExplorationScenario(),
       new ItemScenario(),
       new XpScenario(),
       new EntityScenario(),
@@ -343,6 +361,7 @@ public final class BenchmarkManager {
         BenchmarkMessenger.sendMessage(player, validationError);
         return;
       }
+
       scenarioDurationMs.putAll(buildSuiteScenarioDurationsMillis(seconds));
     } else {
       scenarioDurationMs.put(scenarioId, configuredBlockDurationMs);
@@ -367,9 +386,9 @@ public final class BenchmarkManager {
     if (suiteMode) {
       BenchmarkMessenger.sendMessage(player, "Scenario order:");
       BenchmarkMessenger.sendMessage(player,
-        "Baseline General -> Items -> XP -> Entities -> Recovery");
+        "Baseline General -> Exploration -> Items -> XP -> Entities -> Recovery");
       BenchmarkMessenger.sendMessage(player,
-        "Active   General -> Items -> XP -> Entities -> Recovery");
+        "Active   General -> Exploration -> Items -> XP -> Entities -> Recovery");
       BenchmarkMessenger.sendMessage(player,
         "Scenario durations per block: " + formatScenarioDurationsForMessage());
     } else {
@@ -381,7 +400,7 @@ public final class BenchmarkManager {
     }
     if (autoMoveRequested) {
       BenchmarkMessenger.sendPrefixedMessage(player, "[Move] ",
-        "Auto-move is only applied to the General scenario to create chunk activity.",
+        "Wider General travel enabled for comparison. Exploration keeps its own long-range route.",
         ChatFormatting.LIGHT_PURPLE, ChatFormatting.GRAY);
     }
     BenchmarkMessenger.sendWarningMessage(player, "Only run this in a test world!");
@@ -394,11 +413,13 @@ public final class BenchmarkManager {
     currentBlock = block;
     currentScenarioIndex = 0;
     currentWaypointIndex = 0;
+    currentMovementStepCount = 0;
     currentScenarioDurationMs = 0L;
     stageStartMs = now;
     lastSampleMs = now;
     lastMoveMs = now;
     sampleBlockedUntilMs = now;
+    currentMovementChunkTargets.clear();
     state = BenchmarkState.BLOCK_WARMUP;
 
     log.info("{} benchmark block warm-up started.", block.getDisplayName());
@@ -433,7 +454,9 @@ public final class BenchmarkManager {
       teleportToPos(benchmarkPlayer, benchmarkOriginPos);
     }
 
-    scenario.setup(currentScenarioContext(scenario));
+    BenchmarkScenarioContext context = currentScenarioContext(scenario);
+    facePlayerToScenarioFocus(scenario, context);
+    scenario.setup(context);
 
     currentScenarioDurationMs = scenarioDurationMs.getOrDefault(scenario.id(),
       configuredBlockDurationMs);
@@ -457,8 +480,11 @@ public final class BenchmarkManager {
     currentCpuSamples.clear();
     currentLoadDist.clear();
     currentMsptDist.clear();
+    currentMovementStepCount = 0;
+    currentMovementChunkTargets.clear();
     currentMeasurementStartStats =
       captureMeasurementStartStats(scenario, currentScenarioContext(scenario));
+    currentMeasurementStartDistanceState = captureDistanceControlState();
     currentMeasurementStartHeapUsed = getCurrentHeapUsage();
     currentMeasurementPeakHeapUsed = currentMeasurementStartHeapUsed;
 
@@ -471,7 +497,7 @@ public final class BenchmarkManager {
     if (scenario.usesAutoMove(autoMoveRequested) && !getCurrentMoveWaypoints().isEmpty()
       && benchmarkPlayer != null) {
       teleportToNextWaypoint(benchmarkPlayer, getCurrentMoveWaypoints());
-      sampleBlockedUntilMs = now + POST_MOVE_SETTLE_DELAY_MS;
+      sampleBlockedUntilMs = now + getInitialMoveSettleDelayMs(scenario);
     }
 
     log.info("{} {} measurement started for {}.", currentBlock.getDisplayName(),
@@ -492,7 +518,7 @@ public final class BenchmarkManager {
     boolean moveDue = scenario.usesAutoMove(autoMoveRequested)
       && benchmarkPlayer != null
       && !getCurrentMoveWaypoints().isEmpty()
-      && now - lastMoveMs >= MOVE_INTERVAL_MS;
+      && now - lastMoveMs >= getMoveIntervalMs(scenario);
 
     if (sampleAllowed) {
       double sampleMspt = ServerManager.getAverageTickTime();
@@ -513,7 +539,7 @@ public final class BenchmarkManager {
     if (moveDue) {
       teleportToNextWaypoint(benchmarkPlayer, getCurrentMoveWaypoints());
       lastMoveMs = now;
-      sampleBlockedUntilMs = now + POST_MOVE_SETTLE_DELAY_MS;
+      sampleBlockedUntilMs = now + getPostMoveSettleDelayMs(scenario);
     }
 
     if (now - stageStartMs >= currentScenarioDurationMs) {
@@ -523,6 +549,7 @@ public final class BenchmarkManager {
 
   private static void finalizeCurrentScenarioMeasurement(long now) {
     BenchmarkScenario scenario = currentScenario();
+    BenchmarkScenarioResult.DistanceControlState endDistanceState = captureDistanceControlState();
     PerformanceStats.Snapshot endStats = PerformanceStats.snapshot();
     PerformanceStats.Snapshot statsDelta = PerformanceStats.delta(currentMeasurementStartStats,
       endStats);
@@ -540,7 +567,12 @@ public final class BenchmarkManager {
       countEntities(),
       average(currentCpuSamples, -1.0d),
       max(currentCpuSamples, -1.0d),
-      statsDelta);
+      currentMeasurementStartDistanceState != null
+        ? currentMeasurementStartDistanceState
+        : BenchmarkScenarioResult.DistanceControlState.none(),
+      endDistanceState,
+      statsDelta,
+      buildScenarioValidation(scenario, statsDelta));
 
     if (currentBlock == BenchmarkBlock.BASELINE) {
       baselineScenarioResults.put(scenario.id(), phaseResult);
@@ -628,9 +660,9 @@ public final class BenchmarkManager {
         ModConflictDetector.FeatureActivation.MANUAL_DISABLED),
       BenchmarkFeatureState.countFeaturesByActivation(
         ModConflictDetector.FeatureActivation.CONFLICT_DISABLED),
-      autoMoveRequested,
-      baselineMoveWaypoints.size(),
-      activeMoveWaypoints.size(),
+      !baselineMoveWaypoints.isEmpty() || !activeMoveWaypoints.isEmpty(),
+      countChunkTargets(baselineMoveWaypoints),
+      countChunkTargets(activeMoveWaypoints),
       countSharedChunkTargets(baselineMoveWaypoints, activeMoveWaypoints),
       Instant.now());
 
@@ -654,7 +686,7 @@ public final class BenchmarkManager {
 
     log.info("Benchmark complete for {}.", requestedScenarioLabel);
     for (Component line : lastResult.format()) {
-      log.info(line.getString());
+      log.debug(line.getString());
     }
 
     if (player != null) {
@@ -725,6 +757,19 @@ public final class BenchmarkManager {
     return PerformanceStats.snapshot();
   }
 
+  private static BenchmarkScenarioResult.DistanceControlState captureDistanceControlState() {
+    return new BenchmarkScenarioResult.DistanceControlState(
+      ViewDistanceManager.getCurrentViewDistance(),
+      ViewDistanceManager.getCurrentLoadBaselineDistance(),
+      ViewDistanceManager.getCurrentWarmupReduction(),
+      ViewDistanceManager.isWarmupActive(),
+      ViewDistanceManager.getActiveExplorerCount(),
+      SimulationDistanceManager.getCurrentSimulationDistance(),
+      SimulationDistanceManager.getCurrentLoadBaselineDistance(),
+      SimulationDistanceManager.getCurrentMovementReduction(),
+      SimulationDistanceManager.getActiveExplorerCount());
+  }
+
   private static long getCurrentHeapUsage() {
     return ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed();
   }
@@ -737,6 +782,22 @@ public final class BenchmarkManager {
   private static void runScenarioMeasurementTick(BenchmarkScenario scenario,
     BenchmarkScenarioContext context) {
     scenario.onMeasurementTick(context);
+  }
+
+  private static void facePlayerToScenarioFocus(BenchmarkScenario scenario,
+    BenchmarkScenarioContext context) {
+    ServerPlayer player = context.player();
+    if (player == null || !scenario.shouldFacePlayerToFocus()) {
+      return;
+    }
+
+    Vec3 focusTarget = context.center().add(scenario.playerFocusOffset());
+    try {
+      player.lookAt(EntityAnchorArgument.Anchor.EYES, focusTarget);
+    } catch (Exception exception) {
+      log.warn("[Benchmark] Scenario focus look-at for {} failed: {}",
+        scenario.displayName(), exception.getMessage());
+    }
   }
 
   private static BenchmarkScenarioContext currentScenarioContext(BenchmarkScenario scenario) {
@@ -757,7 +818,10 @@ public final class BenchmarkManager {
   }
 
   private static List<Vec3> getCurrentMoveWaypoints() {
-    return currentBlock == BenchmarkBlock.BASELINE ? baselineMoveWaypoints : activeMoveWaypoints;
+    EnumMap<BenchmarkScenarioId, List<Vec3>> moveWaypoints = currentBlock == BenchmarkBlock.BASELINE
+      ? baselineMoveWaypoints
+      : activeMoveWaypoints;
+    return moveWaypoints.getOrDefault(currentScenario().id(), List.of());
   }
 
   private static void cleanupAllBenchmarkArtifacts() {
@@ -861,20 +925,23 @@ public final class BenchmarkManager {
       totalWeight += scenarioId.getSuiteWeight();
     }
     long unitSeconds = Math.max(1L, seconds / totalWeight);
-    long generalSeconds = unitSeconds * BenchmarkScenarioId.GENERAL.getSuiteWeight();
     long usedSeconds = 0L;
 
     for (BenchmarkScenarioId scenarioId : BenchmarkScenarioId.values()) {
-      if (scenarioId == BenchmarkScenarioId.GENERAL) {
-        continue;
-      }
-
-      durationMap.put(scenarioId, unitSeconds);
-      usedSeconds += unitSeconds;
+      long scenarioSeconds = unitSeconds * scenarioId.getSuiteWeight();
+      durationMap.put(scenarioId, scenarioSeconds);
+      usedSeconds += scenarioSeconds;
     }
 
-    long remainingSeconds = Math.max(0L, seconds - usedSeconds - generalSeconds);
-    durationMap.put(BenchmarkScenarioId.GENERAL, generalSeconds + remainingSeconds);
+    long remainingSeconds = Math.max(0L, seconds - usedSeconds);
+    BenchmarkScenarioId[] scenarioIds = BenchmarkScenarioId.values();
+    int scenarioIndex = 0;
+    while (remainingSeconds > 0L) {
+      BenchmarkScenarioId scenarioId = scenarioIds[scenarioIndex % scenarioIds.length];
+      durationMap.put(scenarioId, durationMap.get(scenarioId) + 1L);
+      remainingSeconds--;
+      scenarioIndex++;
+    }
 
     return durationMap;
   }
@@ -901,6 +968,7 @@ public final class BenchmarkManager {
     for (double sampleMspt : samples) {
       distribution.merge(FineMsptBucket.fromTickTime(sampleMspt), 1, Integer::sum);
     }
+
     return Map.copyOf(distribution);
   }
 
@@ -963,11 +1031,13 @@ public final class BenchmarkManager {
       return "neoforge";
     } catch (ClassNotFoundException ignored) {
     }
+
     try {
       Class.forName("net.minecraftforge.common.MinecraftForge");
       return "forge";
     } catch (ClassNotFoundException ignored) {
     }
+
     try {
       Class.forName("net.fabricmc.loader.api.FabricLoader");
       return "fabric";
@@ -978,9 +1048,9 @@ public final class BenchmarkManager {
   }
 
   private static Vec3 resolveBenchmarkOriginPos(ServerPlayer player) {
-    ServerLevel level = player.level();
-    BlockPos surfacePos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-      BlockPos.containing(player.getX(), 0.0d, player.getZ()));
+    BlockPos surfacePos = player.level()
+      .getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+        BlockPos.containing(player.getX(), 0.0d, player.getZ()));
     return new Vec3(player.getX(), surfacePos.getY() + 1.0d, player.getZ());
   }
 
@@ -992,14 +1062,17 @@ public final class BenchmarkManager {
     savedGameMode = null;
     lastCpuPercent = -1.0d;
     configuredScenarios = List.of();
-    baselineMoveWaypoints = new ArrayList<>();
-    activeMoveWaypoints = new ArrayList<>();
+    baselineMoveWaypoints.clear();
+    activeMoveWaypoints.clear();
     currentScenarioIndex = 0;
     currentWaypointIndex = 0;
+    currentMovementStepCount = 0;
     currentScenarioDurationMs = 0L;
     currentMeasurementStartStats = null;
+    currentMeasurementStartDistanceState = null;
     currentMeasurementStartHeapUsed = 0L;
     currentMeasurementPeakHeapUsed = 0L;
+    currentMovementChunkTargets.clear();
     currentSamples.clear();
     currentCpuSamples.clear();
     currentLoadDist.clear();
@@ -1013,51 +1086,222 @@ public final class BenchmarkManager {
     autoMoveRequested = false;
   }
 
-  private static List<Vec3> computeWaypoints(Vec3 origin, Set<Long> reservedChunkKeys) {
-    List<Vec3> points = new ArrayList<>(MOVE_WAYPOINT_COUNT);
-    Random rng = new Random();
-    int originChunkX = blockToChunk(origin.x);
-    int originChunkZ = blockToChunk(origin.z);
-    int moveAreaHalfChunks = Math.max(1, MOVE_AREA_HALF_SIZE >> 4);
-    int maxAttempts = MOVE_WAYPOINT_COUNT * 50;
-    int attempts = 0;
-    while (points.size() < MOVE_WAYPOINT_COUNT && attempts++ < maxAttempts) {
-      int chunkX = originChunkX + rng.nextInt(moveAreaHalfChunks * 2 + 1) - moveAreaHalfChunks;
-      int chunkZ = originChunkZ + rng.nextInt(moveAreaHalfChunks * 2 + 1) - moveAreaHalfChunks;
-      long chunkKey = ChunkPos.asLong(chunkX, chunkZ);
-      if (!reservedChunkKeys.add(chunkKey)) {
-        continue;
-      }
-      points.add(new Vec3(chunkX * 16.0d + 8.0d, origin.y, chunkZ * 16.0d + 8.0d));
-    }
-    return points;
-  }
-
   private static int blockToChunk(double blockCoord) {
     return ((int) Math.floor(blockCoord)) >> 4;
-  }
-
-  private static int countSharedChunkTargets(List<Vec3> baselineTargets, List<Vec3> activeTargets) {
-    Set<Long> baselineChunkKeys = new HashSet<>(baselineTargets.size());
-    for (Vec3 target : baselineTargets) {
-      baselineChunkKeys.add(getChunkKey(target));
-    }
-    int sharedTargets = 0;
-    for (Vec3 target : activeTargets) {
-      if (baselineChunkKeys.contains(getChunkKey(target))) {
-        sharedTargets++;
-      }
-    }
-    return sharedTargets;
   }
 
   private static long getChunkKey(Vec3 target) {
     return ChunkPos.asLong(blockToChunk(target.x), blockToChunk(target.z));
   }
 
+  private static EnumMap<BenchmarkScenarioId, List<Vec3>> buildMoveWaypoints(
+    Vec3 origin, boolean activeBlock, Set<Long> reservedChunkKeys) {
+    EnumMap<BenchmarkScenarioId, List<Vec3>> moveWaypoints =
+      new EnumMap<>(BenchmarkScenarioId.class);
+    for (BenchmarkScenario scenario : configuredScenarios) {
+      if (!scenario.usesAutoMove(autoMoveRequested)) {
+        continue;
+      }
+
+      long durationMs = scenarioDurationMs.getOrDefault(scenario.id(), configuredBlockDurationMs);
+      List<Vec3> scenarioWaypoints =
+        computeWaypoints(scenario, origin, durationMs, activeBlock, reservedChunkKeys);
+      moveWaypoints.put(scenario.id(), scenarioWaypoints);
+      for (Vec3 target : scenarioWaypoints) {
+        reservedChunkKeys.add(getChunkKey(target));
+      }
+    }
+
+    return moveWaypoints;
+  }
+
+  private static List<Vec3> computeWaypoints(BenchmarkScenario scenario, Vec3 origin,
+    long durationMs, boolean activeBlock, Set<Long> reservedChunkKeys) {
+    if (scenario.id() == BenchmarkScenarioId.GENERAL) {
+      return autoMoveRequested
+        ? computeLegacyWaypoints(scenario, origin, durationMs, activeBlock, reservedChunkKeys)
+        : computeGeneralWaypoints(origin, durationMs, activeBlock);
+    }
+
+    return scenario.id() == BenchmarkScenarioId.EXPLORATION
+      ? computeExplorationWaypoints(origin, durationMs, activeBlock)
+      : computeLegacyWaypoints(scenario, origin, durationMs, activeBlock, reservedChunkKeys);
+  }
+
+  private static List<Vec3> computeGeneralWaypoints(Vec3 origin, long durationMs,
+    boolean activeBlock) {
+    int pointCount = getPlannedMoveCount(durationMs,
+      getMoveIntervalMs(BenchmarkScenarioId.GENERAL));
+    List<Vec3> points = new ArrayList<>(pointCount);
+    int originChunkX = blockToChunk(origin.x);
+    int originChunkZ = blockToChunk(origin.z);
+    int direction = activeBlock ? 1 : -1;
+    int verticalDirection = activeBlock ? 1 : -1;
+    int chunkX = originChunkX + direction * GENERAL_ROUTE_START_OFFSET_CHUNKS;
+    int chunkZ = originChunkZ;
+    boolean alternateLane = false;
+
+    for (int index = 0; index < pointCount; index++) {
+      points.add(toChunkCenter(chunkX, chunkZ, origin.y));
+      if (alternateLane) {
+        chunkX += direction;
+      }
+      alternateLane = !alternateLane;
+      chunkZ = alternateLane ? originChunkZ + verticalDirection : originChunkZ;
+    }
+
+    return points;
+  }
+
+  private static List<Vec3> computeExplorationWaypoints(
+    Vec3 origin, long durationMs, boolean activeBlock) {
+    int pointCount = getPlannedMoveCount(durationMs,
+      getMoveIntervalMs(BenchmarkScenarioId.EXPLORATION));
+    List<Vec3> points = new ArrayList<>(pointCount);
+    int direction = activeBlock ? 1 : -1;
+    int startChunkX = blockToChunk(origin.x) + direction * EXPLORATION_ROUTE_START_OFFSET_CHUNKS;
+    for (int index = 0; index < pointCount; index++) {
+      int chunkX = startChunkX + direction * index;
+      points.add(toChunkCenter(chunkX, blockToChunk(origin.z), origin.y));
+    }
+
+    return points;
+  }
+
+  private static List<Vec3> computeLegacyWaypoints(BenchmarkScenario scenario, Vec3 origin,
+    long durationMs, boolean activeBlock, Set<Long> reservedChunkKeys) {
+    int pointCount = getPlannedMoveCount(durationMs, getMoveIntervalMs(scenario));
+    List<Vec3> points = new ArrayList<>(pointCount);
+    int originChunkX = blockToChunk(origin.x);
+    int originChunkZ = blockToChunk(origin.z);
+    int moveAreaHalfChunks = Math.max(1, MOVE_AREA_HALF_SIZE >> 4);
+    int maxAttempts = pointCount * 50;
+    long seed = 31L * scenario.id().ordinal()
+      + (activeBlock ? 1_003L : 509L)
+      + 67L * originChunkX
+      + 97L * originChunkZ;
+    Random random = new Random(seed);
+    int attempts = 0;
+    while (points.size() < pointCount && attempts++ < maxAttempts) {
+      int chunkX = originChunkX + random.nextInt(moveAreaHalfChunks * 2 + 1) - moveAreaHalfChunks;
+      int chunkZ = originChunkZ + random.nextInt(moveAreaHalfChunks * 2 + 1) - moveAreaHalfChunks;
+      long chunkKey = ChunkPos.asLong(chunkX, chunkZ);
+      if (!reservedChunkKeys.add(chunkKey)) {
+        continue;
+      }
+
+      points.add(toChunkCenter(chunkX, chunkZ, origin.y));
+    }
+
+    return points;
+  }
+
+  private static int getPlannedMoveCount(long durationMs, long moveIntervalMs) {
+    long safeIntervalMs = Math.max(TICK_DURATION_MS, moveIntervalMs);
+
+    return (int) Math.clamp((durationMs + safeIntervalMs - 1L) / safeIntervalMs, 1L,
+      Integer.MAX_VALUE);
+  }
+
+  private static Vec3 toChunkCenter(int chunkX, int chunkZ, double y) {
+    return new Vec3(chunkX * 16.0d + 8.0d, y, chunkZ * 16.0d + 8.0d);
+  }
+
+  private static long getMoveIntervalMs(BenchmarkScenario scenario) {
+    return getMoveIntervalMs(scenario.id());
+  }
+
+  private static long getMoveIntervalMs(BenchmarkScenarioId scenarioId) {
+    if (scenarioId == BenchmarkScenarioId.GENERAL && !autoMoveRequested) {
+      return GENERAL_MOVE_INTERVAL_MS;
+    }
+
+    return scenarioId == BenchmarkScenarioId.EXPLORATION
+      ? Math.max(TICK_DURATION_MS,
+      SimulationDistanceConfig.movementThrottleSampleTicks * TICK_DURATION_MS)
+      : LEGACY_MOVE_INTERVAL_MS;
+  }
+
+  private static long getInitialMoveSettleDelayMs(BenchmarkScenario scenario) {
+    if (scenario.id() == BenchmarkScenarioId.GENERAL && !autoMoveRequested) {
+      return GENERAL_POST_MOVE_SETTLE_DELAY_MS;
+    }
+
+    return scenario.id() == BenchmarkScenarioId.EXPLORATION
+      ? EXPLORATION_START_SETTLE_DELAY_MS
+      : LEGACY_POST_MOVE_SETTLE_DELAY_MS;
+  }
+
+  private static long getPostMoveSettleDelayMs(BenchmarkScenario scenario) {
+    if (scenario.id() == BenchmarkScenarioId.GENERAL && !autoMoveRequested) {
+      return GENERAL_POST_MOVE_SETTLE_DELAY_MS;
+    }
+
+    return scenario.id() == BenchmarkScenarioId.EXPLORATION ? 0L : LEGACY_POST_MOVE_SETTLE_DELAY_MS;
+  }
+
+  private static BenchmarkScenarioResult.ScenarioValidation buildScenarioValidation(
+    BenchmarkScenario scenario, PerformanceStats.Snapshot statsDelta) {
+    if (scenario.id() != BenchmarkScenarioId.EXPLORATION) {
+      return BenchmarkScenarioResult.ScenarioValidation.none();
+    }
+
+    Set<Long> chunkTargets = Set.copyOf(currentMovementChunkTargets);
+    long movementAdjustmentCount = statsDelta.simulationDistanceMovementAdjustments();
+    long movementThrottleSampleCount = statsDelta.simulationDistanceMovementThrottleSamples();
+    long movementMaxReduction = statsDelta.simulationDistanceMovementMaxReduction();
+    boolean movementSignalObserved = movementAdjustmentCount > 0L
+      || movementThrottleSampleCount > 0L
+      || movementMaxReduction > 0L;
+
+    return new BenchmarkScenarioResult.ScenarioValidation(
+      currentMovementStepCount,
+      chunkTargets.size(),
+      movementAdjustmentCount,
+      movementThrottleSampleCount,
+      movementMaxReduction,
+      movementSignalObserved,
+      chunkTargets);
+  }
+
+  private static int countChunkTargets(Map<BenchmarkScenarioId, List<Vec3>> scenarioTargets) {
+    Set<Long> chunkKeys = new HashSet<>();
+    for (List<Vec3> targets : scenarioTargets.values()) {
+      for (Vec3 target : targets) {
+        chunkKeys.add(getChunkKey(target));
+      }
+    }
+
+    return chunkKeys.size();
+  }
+
+  private static int countSharedChunkTargets(Map<BenchmarkScenarioId, List<Vec3>> baselineTargets,
+    Map<BenchmarkScenarioId, List<Vec3>> activeTargets) {
+    Set<Long> baselineChunkKeys = new HashSet<>();
+    for (List<Vec3> targets : baselineTargets.values()) {
+      for (Vec3 target : targets) {
+        baselineChunkKeys.add(getChunkKey(target));
+      }
+    }
+
+    Set<Long> sharedChunkKeys = new HashSet<>();
+    for (List<Vec3> targets : activeTargets.values()) {
+      for (Vec3 target : targets) {
+        long chunkKey = getChunkKey(target);
+        if (baselineChunkKeys.contains(chunkKey)) {
+          sharedChunkKeys.add(chunkKey);
+        }
+      }
+    }
+
+    return sharedChunkKeys.size();
+  }
+
   private static void teleportToNextWaypoint(ServerPlayer player, List<Vec3> moveWaypoints) {
     Vec3 target = moveWaypoints.get(currentWaypointIndex % moveWaypoints.size());
     currentWaypointIndex++;
+    currentMovementStepCount++;
+    currentMovementChunkTargets.add(getChunkKey(target));
     teleportToSurface(player, target);
   }
 
@@ -1099,8 +1343,8 @@ public final class BenchmarkManager {
 
   private static double getProcessCpuPercent() {
     try {
-      var osBean = ManagementFactory.getOperatingSystemMXBean();
-      if (osBean instanceof OperatingSystemMXBean sunBean) {
+      var operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
+      if (operatingSystemMXBean instanceof OperatingSystemMXBean sunBean) {
         double load = sunBean.getProcessCpuLoad();
         return load < 0.0d ? -1.0d : load * 100.0d;
       }
