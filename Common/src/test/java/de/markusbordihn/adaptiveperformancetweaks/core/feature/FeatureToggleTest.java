@@ -124,11 +124,11 @@ class FeatureToggleTest {
     assertEquals(FeatureState.AUTO, FeatureToggle.PLAYER_STARTER_PROTECTION.getDefaultState());
     assertEquals(FeatureState.AUTO, FeatureToggle.SPAWN.getDefaultState());
     assertEquals(FeatureState.AUTO, FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.getDefaultState());
+    assertEquals(FeatureState.AUTO, FeatureToggle.ADAPTIVE_VIEW_DISTANCE.getDefaultState());
   }
 
   @Test
   void defaultStateIsDisabledForOptInFeatures() {
-    assertEquals(FeatureState.DISABLED, FeatureToggle.ADAPTIVE_VIEW_DISTANCE.getDefaultState());
     assertEquals(FeatureState.DISABLED, FeatureToggle.AI_THROTTLING.getDefaultState());
     assertEquals(FeatureState.DISABLED, FeatureToggle.CHUNK_GEN_THROTTLE.getDefaultState());
     assertEquals(FeatureState.DISABLED, FeatureToggle.CLIENT_AFK_OPTIMIZATION.getDefaultState());
@@ -205,15 +205,14 @@ class FeatureToggleTest {
     try {
       FeatureToggle.ADAPTIVE_VIEW_DISTANCE.setEnabled(true);
       writeStaticField(ViewDistanceManager.class, "currentDistance", 5);
-      writeStaticField(ViewDistanceManager.class, "warmupUntilTime",
-        System.currentTimeMillis() + 1_000L);
+      writeStaticField(ViewDistanceManager.class, "currentWarmupReduction", 3);
       writeStaticField(ViewDistanceManager.class, "currentLoadLevel",
         de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel.HIGH);
 
       FeatureToggle.ADAPTIVE_VIEW_DISTANCE.setEnabled(false);
 
       assertEquals(-1, readStaticField(ViewDistanceManager.class, "currentDistance"));
-      assertEquals(0L, readStaticField(ViewDistanceManager.class, "warmupUntilTime"));
+      assertEquals(0, readStaticField(ViewDistanceManager.class, "currentWarmupReduction"));
       assertEquals(
         de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel.NORMAL,
         readStaticField(ViewDistanceManager.class, "currentLoadLevel"));
@@ -310,8 +309,6 @@ class FeatureToggleTest {
       FeatureToggle.ADAPTIVE_VIEW_DISTANCE.setEnabled(false);
       writeStaticField(ViewDistanceManager.class, "currentDistance", -1);
       writeStaticField(ViewDistanceManager.class, "configuredDistanceMax", -1);
-      writeStaticField(ViewDistanceManager.class, "warmupUntilTime", 0L);
-      writeStaticField(ViewDistanceManager.class, "lastRecoveryTime", 0L);
       writeStaticField(ViewDistanceManager.class, "currentLoadLevel", ServerLoadLevel.NORMAL);
 
       FeatureToggle.ADAPTIVE_VIEW_DISTANCE.setEnabled(true);

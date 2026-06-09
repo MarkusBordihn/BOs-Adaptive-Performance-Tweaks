@@ -22,7 +22,6 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.distance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import org.junit.jupiter.api.Test;
 
 class SimulationDistanceConfigTest {
@@ -68,8 +67,6 @@ class SimulationDistanceConfigTest {
   @Test
   void defaultMovementThrottleValues() {
     assertTrue(SimulationDistanceConfig.movementThrottleEnabled);
-    assertEquals(ServerLoadLevel.VERY_LOW,
-      SimulationDistanceConfig.movementThrottleMinimumLoadLevel);
     assertEquals(3, SimulationDistanceConfig.movementThrottleWindowSamples);
     assertEquals(5, SimulationDistanceConfig.movementThrottleWindowSamplesMax);
     assertEquals(20, SimulationDistanceConfig.movementThrottleSampleTicks);

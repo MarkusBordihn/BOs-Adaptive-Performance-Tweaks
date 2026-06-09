@@ -46,6 +46,7 @@ public final class SimulationDistanceManager {
   private static int configuredDistanceMax = -1;
   private static int recoveryStartTick = -1;
   private static int nextRecoveryTick = -1;
+  private static int lastChangeTick = Integer.MIN_VALUE;
   private static ServerLoadLevel currentLoadLevel = ServerLoadLevel.NORMAL;
 
   private SimulationDistanceManager() {
@@ -59,6 +60,7 @@ public final class SimulationDistanceManager {
     configuredDistanceMax = server.getPlayerList().getSimulationDistance();
     recoveryStartTick = -1;
     nextRecoveryTick = -1;
+    lastChangeTick = Integer.MIN_VALUE;
     currentLoadLevel = ServerLoadLevel.NORMAL;
     if (FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled()) {
       log.info("Adaptive simulation distance enabled (range {}-{})",
@@ -121,6 +123,7 @@ public final class SimulationDistanceManager {
     MinecraftServer server = ServerManager.getMinecraftServer();
     clearMovementThrottle();
     currentLoadBaselineDistance = -1;
+    lastChangeTick = Integer.MIN_VALUE;
     currentLoadLevel = ServerLoadLevel.NORMAL;
     if (server == null) {
       currentDistance = -1;
@@ -162,7 +165,7 @@ public final class SimulationDistanceManager {
 
   static int calculateMovementReduction(
     ServerLoadLevel loadLevel, int trackedPlayers, int activeExplorers) {
-    if (!supportsMovementThrottle(loadLevel) || trackedPlayers <= 0 || activeExplorers <= 0) {
+    if (trackedPlayers <= 0 || activeExplorers <= 0) {
       return 0;
     }
 
@@ -183,10 +186,6 @@ public final class SimulationDistanceManager {
     return useMaxReduction
       ? SimulationDistanceConfig.movementThrottleMaxReduction
       : reduction;
-  }
-
-  static boolean supportsMovementThrottle(ServerLoadLevel loadLevel) {
-    return loadLevel.isAtLeast(SimulationDistanceConfig.movementThrottleMinimumLoadLevel);
   }
 
   static int resolveNextLoadBaselineDistance(
@@ -229,8 +228,20 @@ public final class SimulationDistanceManager {
       return;
     }
 
-    if (recordMovementSample && currentMovementReduction > 0
-      && (currentDistance == -1 || targetDistance < currentDistance)) {
+    int currentTick = PlayerPositionManager.getCurrentServerTick();
+    boolean isReduction = currentDistance < 0 || targetDistance < currentDistance;
+    if (!isReduction) {
+      if (currentTick - lastChangeTick
+        < SimulationDistanceConfig.movementThrottleRecoveryStepTicks) {
+        return;
+      }
+      targetDistance = Math.min(targetDistance, currentDistance + 1);
+      if (targetDistance == currentDistance) {
+        return;
+      }
+    }
+
+    if (recordMovementSample && currentMovementReduction > 0 && isReduction) {
       PerformanceStats.simulationDistanceMovementAdjustments++;
     }
 
@@ -239,6 +250,7 @@ public final class SimulationDistanceManager {
       currentDistance, targetDistance, currentLoadBaselineDistance, currentMovementReduction,
       activeExplorerCount, currentLoadLevel);
     currentDistance = targetDistance;
+    lastChangeTick = currentTick;
     PerformanceStats.simulationDistanceChanges++;
     server.getPlayerList().setSimulationDistance(currentDistance);
   }
@@ -274,7 +286,6 @@ public final class SimulationDistanceManager {
       targetReduction = getWarmupReduction();
     }
     boolean movementWarmupActive = SimulationDistanceConfig.movementThrottleEnabled
-      && supportsMovementThrottle(currentLoadLevel)
       && activeExplorerCount > 0;
     if (movementWarmupActive) {
       targetReduction = Math.max(targetReduction,
@@ -284,7 +295,7 @@ public final class SimulationDistanceManager {
     if (targetReduction > 0) {
       recoveryStartTick = -1;
       nextRecoveryTick = -1;
-      currentMovementReduction = targetReduction;
+      currentMovementReduction = Math.max(currentMovementReduction, targetReduction);
       if (recordMovementSample) {
         PerformanceStats.simulationDistanceMovementThrottleSamples++;
         PerformanceStats.simulationDistanceMovementMaxReduction =
@@ -315,7 +326,7 @@ public final class SimulationDistanceManager {
     }
 
     if (recoveryStartTick < 0) {
-      recoveryStartTick = currentTick + SimulationDistanceConfig.movementThrottleRecoveryDelayTicks;
+      recoveryStartTick = currentTick + currentRecoveryDelayTicks();
       nextRecoveryTick = recoveryStartTick;
     }
 
@@ -341,6 +352,12 @@ public final class SimulationDistanceManager {
     currentMovementReduction = 0;
     recoveryStartTick = -1;
     nextRecoveryTick = -1;
+  }
+
+  private static int currentRecoveryDelayTicks() {
+    return Math.max(
+      SimulationDistanceConfig.movementThrottleRecoveryDelayTicks,
+      SimulationDistanceConfig.movementThrottleRecoveryMinDelayTicks);
   }
 
   private static int getConfiguredDistanceMax() {

@@ -32,10 +32,17 @@ import de.markusbordihn.adaptiveperformancetweaks.feature.items.ExperienceOrbsCo
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ItemsConfig;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnConfig;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 
 final class BenchmarkFeatureState {
 
+  private static final Set<FeatureToggle> CONFLICT_GATED_BENCHMARK_FEATURES =
+    EnumSet.of(
+      FeatureToggle.GAMERULES,
+      FeatureToggle.ADAPTIVE_VIEW_DISTANCE,
+      FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE);
   private static final EnumMap<FeatureToggle, Boolean> savedFeatureState =
     new EnumMap<>(FeatureToggle.class);
   private static final EnumMap<FeatureToggle, ModConflictDetector.FeatureDecision>
@@ -99,7 +106,24 @@ final class BenchmarkFeatureState {
   }
 
   static void restoreFeatures() {
-    savedFeatureState.forEach(FeatureToggle::setEnabled);
+    for (Map.Entry<FeatureToggle, Boolean> entry : savedFeatureState.entrySet()) {
+      FeatureToggle featureToggle = entry.getKey();
+      if (featureToggle != FeatureToggle.CORE && hasBenchmarkConflict(featureToggle)) {
+        featureToggle.setEnabled(false);
+        continue;
+      }
+
+      featureToggle.setEnabled(entry.getValue());
+    }
+  }
+
+  private static boolean hasBenchmarkConflict(FeatureToggle featureToggle) {
+    if (!CONFLICT_GATED_BENCHMARK_FEATURES.contains(featureToggle)) {
+      return false;
+    }
+
+    ModConflictDetector.FeatureDecision decision = savedFeatureDecision.get(featureToggle);
+    return decision != null && decision.relatedModId() != null;
   }
 
   static int countFeaturesByActivation(ModConflictDetector.FeatureActivation activation) {
