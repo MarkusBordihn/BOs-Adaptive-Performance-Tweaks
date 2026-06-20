@@ -38,7 +38,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity.RemovalReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -231,7 +231,7 @@ class ItemEntityManagerTest {
 
     private TestItemEntity(ServerLevel level, int id, double x, double y, double z,
       ItemStack itemStack) {
-      super(EntityType.ITEM, level);
+      super(EntityTypes.ITEM, level);
       this.itemStack = itemStack;
       this.setId(id);
       this.setPos(x, y, z);

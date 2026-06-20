@@ -107,6 +107,7 @@ class ExperienceOrbManagerTest {
     AtomicReference<ExperienceOrb> mergedOrbReference = new AtomicReference<>();
     doAnswer(invocation -> {
       ExperienceOrb mergedOrb = invocation.getArgument(0);
+      mergedOrb.setId(100);
       mergedOrbReference.set(mergedOrb);
       ExperienceOrbManager.handleExperienceOrbJoinLevel(mergedOrb, level);
       return true;

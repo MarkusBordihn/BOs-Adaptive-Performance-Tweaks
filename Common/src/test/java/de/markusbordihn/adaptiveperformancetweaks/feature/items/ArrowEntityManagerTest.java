@@ -36,7 +36,7 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.projectile.arrow.Arrow;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -71,7 +71,7 @@ class ArrowEntityManagerTest {
 
   private static Arrow createArrow(ServerLevel level, int id, int chunkX, int chunkZ,
     double velocitySquared, boolean named, boolean removed) {
-    Arrow arrow = new Arrow(EntityType.ARROW, level);
+    Arrow arrow = new Arrow(EntityTypes.ARROW, level);
     arrow.setId(id);
     arrow.setPos(chunkX * 16.0d, 64.0d, chunkZ * 16.0d);
     arrow.setDeltaMovement(new Vec3(velocitySquared, 0.0d, 0.0d));

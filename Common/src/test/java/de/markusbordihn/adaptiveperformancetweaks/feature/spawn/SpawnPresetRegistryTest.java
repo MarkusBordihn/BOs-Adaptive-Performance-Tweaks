@@ -20,7 +20,6 @@
 package de.markusbordihn.adaptiveperformancetweaks.feature.spawn;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.TrackingCategory;
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.TrackingMode;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
@@ -30,7 +29,7 @@ import java.util.Set;
 import net.minecraft.SharedConstants;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.Bootstrap;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -67,11 +66,11 @@ class SpawnPresetRegistryTest {
       Set.of())));
 
     assertEquals(SpawnDecision.ALLOW,
-      SpawnPresetRegistry.evaluate(EntityType.ZOMBIE, OVERWORLD));
+      SpawnPresetRegistry.evaluate(EntityTypes.ZOMBIE, OVERWORLD));
     assertEquals(SpawnDecision.ALLOW,
       SpawnPresetRegistry.evaluate("minecraft:zombie", OVERWORLD));
     assertEquals(21,
-      SpawnPresetRegistry.getEffectivePerWorldMax(EntityType.ZOMBIE, OVERWORLD,
+      SpawnPresetRegistry.getEffectivePerWorldMax(EntityTypes.ZOMBIE, OVERWORLD,
         ServerLoadLevel.VERY_LOW));
     assertEquals(21,
       SpawnPresetRegistry.getEffectivePerWorldMax("minecraft:zombie", OVERWORLD,
@@ -94,7 +93,7 @@ class SpawnPresetRegistryTest {
       Set.of())));
 
     assertEquals(SpawnDecision.DENY,
-      SpawnPresetRegistry.evaluate(EntityType.ZOMBIE, OVERWORLD));
+      SpawnPresetRegistry.evaluate(EntityTypes.ZOMBIE, OVERWORLD));
     assertEquals(SpawnDecision.DENY,
       SpawnPresetRegistry.evaluate("minecraft:cow", OVERWORLD));
   }
@@ -115,7 +114,7 @@ class SpawnPresetRegistryTest {
       Set.of())));
 
     assertEquals(18,
-      SpawnPresetRegistry.getEffectivePerWorldMax(EntityType.SKELETON, OVERWORLD,
+      SpawnPresetRegistry.getEffectivePerWorldMax(EntityTypes.SKELETON, OVERWORLD,
         ServerLoadLevel.VERY_LOW));
     assertEquals(18,
       SpawnPresetRegistry.getEffectivePerWorldMax("minecraft:skeleton", OVERWORLD,
@@ -151,10 +150,10 @@ class SpawnPresetRegistryTest {
     SpawnPresetRegistry.reload(List.of(globalPreset, overworldPreset));
 
     assertEquals(21,
-      SpawnPresetRegistry.getEffectivePerWorldMax(EntityType.ZOMBIE, OVERWORLD,
+      SpawnPresetRegistry.getEffectivePerWorldMax(EntityTypes.ZOMBIE, OVERWORLD,
         ServerLoadLevel.VERY_LOW));
     assertEquals(8,
-      SpawnPresetRegistry.getEffectivePerWorldMax(EntityType.ZOMBIE, "minecraft:the_nether",
+      SpawnPresetRegistry.getEffectivePerWorldMax(EntityTypes.ZOMBIE, "minecraft:the_nether",
         ServerLoadLevel.VERY_LOW));
   }
 
@@ -187,10 +186,10 @@ class SpawnPresetRegistryTest {
     SpawnPresetRegistry.reload(List.of(globalPreset, deniedOverworldPreset));
 
     assertEquals(8,
-      SpawnPresetRegistry.getEffectivePerWorldMax(EntityType.ZOMBIE, OVERWORLD,
+      SpawnPresetRegistry.getEffectivePerWorldMax(EntityTypes.ZOMBIE, OVERWORLD,
         ServerLoadLevel.VERY_LOW));
     assertEquals(21,
-      SpawnPresetRegistry.getEffectivePerWorldMax(EntityType.ZOMBIE, "minecraft:the_nether",
+      SpawnPresetRegistry.getEffectivePerWorldMax(EntityTypes.ZOMBIE, "minecraft:the_nether",
         ServerLoadLevel.VERY_LOW));
   }
 
@@ -220,22 +219,22 @@ class SpawnPresetRegistryTest {
       Set.of())));
 
     assertEquals(10,
-      SpawnPresetRegistry.getEffectivePerPlayerMax(EntityType.ZOMBIE, OVERWORLD,
+      SpawnPresetRegistry.getEffectivePerPlayerMax(EntityTypes.ZOMBIE, OVERWORLD,
         ServerLoadLevel.VERY_LOW));
     assertEquals(8,
-      SpawnPresetRegistry.getEffectivePerPlayerMax(EntityType.ZOMBIE, OVERWORLD,
+      SpawnPresetRegistry.getEffectivePerPlayerMax(EntityTypes.ZOMBIE, OVERWORLD,
         ServerLoadLevel.LOW));
     assertEquals(6,
-      SpawnPresetRegistry.getEffectivePerPlayerMax(EntityType.ZOMBIE, OVERWORLD,
+      SpawnPresetRegistry.getEffectivePerPlayerMax(EntityTypes.ZOMBIE, OVERWORLD,
         ServerLoadLevel.NORMAL));
     assertEquals(5,
-      SpawnPresetRegistry.getEffectivePerPlayerMax(EntityType.ZOMBIE, OVERWORLD,
+      SpawnPresetRegistry.getEffectivePerPlayerMax(EntityTypes.ZOMBIE, OVERWORLD,
         ServerLoadLevel.MEDIUM));
     assertEquals(4,
-      SpawnPresetRegistry.getEffectivePerPlayerMax(EntityType.ZOMBIE, OVERWORLD,
+      SpawnPresetRegistry.getEffectivePerPlayerMax(EntityTypes.ZOMBIE, OVERWORLD,
         ServerLoadLevel.HIGH));
     assertEquals(2,
-      SpawnPresetRegistry.getEffectivePerPlayerMax(EntityType.ZOMBIE, OVERWORLD,
+      SpawnPresetRegistry.getEffectivePerPlayerMax(EntityTypes.ZOMBIE, OVERWORLD,
         ServerLoadLevel.VERY_HIGH));
     assertEquals(2,
       SpawnPresetRegistry.getEffectivePerPlayerMax("minecraft:zombie", OVERWORLD,
@@ -260,12 +259,12 @@ class SpawnPresetRegistryTest {
 
     Identifier overworld = Identifier.tryParse(OVERWORLD);
     assertEquals(
-      SpawnPresetRegistry.evaluate(EntityType.ZOMBIE, OVERWORLD),
-      SpawnPresetRegistry.evaluate(EntityType.ZOMBIE, overworld));
+      SpawnPresetRegistry.evaluate(EntityTypes.ZOMBIE, OVERWORLD),
+      SpawnPresetRegistry.evaluate(EntityTypes.ZOMBIE, overworld));
     assertEquals(
-      SpawnPresetRegistry.getEffectivePerWorldMax(EntityType.ZOMBIE, OVERWORLD,
+      SpawnPresetRegistry.getEffectivePerWorldMax(EntityTypes.ZOMBIE, OVERWORLD,
         ServerLoadLevel.VERY_LOW),
-      SpawnPresetRegistry.getEffectivePerWorldMax(EntityType.ZOMBIE, overworld,
+      SpawnPresetRegistry.getEffectivePerWorldMax(EntityTypes.ZOMBIE, overworld,
         ServerLoadLevel.VERY_LOW));
   }
 
@@ -285,9 +284,9 @@ class SpawnPresetRegistryTest {
       Set.of())));
 
     assertEquals(SpawnDecision.ALLOW,
-      SpawnPresetRegistry.evaluate(EntityType.ZOMBIE, OVERWORLD));
+      SpawnPresetRegistry.evaluate(EntityTypes.ZOMBIE, OVERWORLD));
     assertEquals(SpawnConfig.spawnLimitationMaxMobsPerWorld,
-      SpawnPresetRegistry.getEffectivePerWorldMax(EntityType.ZOMBIE, OVERWORLD,
+      SpawnPresetRegistry.getEffectivePerWorldMax(EntityTypes.ZOMBIE, OVERWORLD,
         ServerLoadLevel.VERY_LOW));
   }
 }

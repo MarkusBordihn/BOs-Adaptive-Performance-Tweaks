@@ -31,6 +31,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -105,7 +106,7 @@ class SpawnManagerTest {
   void countInChunkUsesTypedCacheKey() throws Exception {
     Identifier dimensionId = Identifier.tryParse("minecraft:overworld");
     BlockPos pos = BlockPos.ZERO;
-    Object cacheKey = newChunkCacheKey(dimensionId, 0, 0, EntityType.ZOMBIE);
+    Object cacheKey = newChunkCacheKey(dimensionId, 0, 0, EntityTypes.ZOMBIE);
     Map<Object, Integer> tickCache = readStaticField("tickChunkEntityCountCache");
     Map<Object, Integer> deltaCache = readStaticField("chunkCountDelta");
     tickCache.put(cacheKey, 4);
@@ -113,7 +114,7 @@ class SpawnManagerTest {
 
     int result = invokeCountMethod("countInChunk",
       new Class<?>[]{EntityType.class, BlockPos.class, ServerLevel.class, Identifier.class},
-      EntityType.ZOMBIE, pos, mock(ServerLevel.class), dimensionId);
+      EntityTypes.ZOMBIE, pos, mock(ServerLevel.class), dimensionId);
 
     assertEquals(6, result);
   }
@@ -126,7 +127,7 @@ class SpawnManagerTest {
     Map<Object, Vec3> anchorCache = readStaticField("playerAnchorCache");
     anchorCache.put(anchorKey, spawnPos);
 
-    Object cacheKey = newNearPlayerCacheKey(dimensionId, 0, 0, EntityType.ZOMBIE);
+    Object cacheKey = newNearPlayerCacheKey(dimensionId, 0, 0, EntityTypes.ZOMBIE);
     Map<Object, Integer> tickCache = readStaticField("tickNearPlayerEntityCountCache");
     Map<Object, Integer> deltaCache = readStaticField("nearPlayerCountDelta");
     tickCache.put(cacheKey, 3);
@@ -134,7 +135,7 @@ class SpawnManagerTest {
 
     int result = invokeCountMethod("countNearPlayer",
       new Class<?>[]{EntityType.class, Vec3.class, ServerLevel.class, Identifier.class},
-      EntityType.ZOMBIE, spawnPos, mock(ServerLevel.class), dimensionId);
+      EntityTypes.ZOMBIE, spawnPos, mock(ServerLevel.class), dimensionId);
 
     assertEquals(4, result);
   }
@@ -142,16 +143,16 @@ class SpawnManagerTest {
   @Test
   void countInWorldUsesTypedCacheKey() throws Exception {
     Identifier dimensionId = Identifier.tryParse("minecraft:overworld");
-    Object cacheKey = newWorldCacheKey(dimensionId, EntityType.ZOMBIE);
+    Object cacheKey = newWorldCacheKey(dimensionId, EntityTypes.ZOMBIE);
     Map<Object, Integer> tickCache = readStaticField("tickWorldEntityCountCache");
     Map<Identifier, Map<EntityType<?>, Integer>> deltaCache = readStaticField(
       "worldCountDelta");
     tickCache.put(cacheKey, 5);
-    deltaCache.put(dimensionId, Map.of(EntityType.ZOMBIE, 2));
+    deltaCache.put(dimensionId, Map.of(EntityTypes.ZOMBIE, 2));
 
     int result = invokeCountMethod("countInWorld",
       new Class<?>[]{EntityType.class, ServerLevel.class, Identifier.class},
-      EntityType.ZOMBIE, mock(ServerLevel.class), dimensionId);
+      EntityTypes.ZOMBIE, mock(ServerLevel.class), dimensionId);
 
     assertEquals(7, result);
   }

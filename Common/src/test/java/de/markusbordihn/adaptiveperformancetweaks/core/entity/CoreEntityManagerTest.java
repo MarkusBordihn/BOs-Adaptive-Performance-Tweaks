@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -48,6 +49,7 @@ import net.minecraft.server.waypoints.ServerWaypointManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.monster.skeleton.Skeleton;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.level.Level;
@@ -60,6 +62,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockMakers;
 
 class CoreEntityManagerTest {
+
+  private static final AtomicInteger ENTITY_ID_COUNTER = new AtomicInteger(1);
 
   @BeforeAll
   static void bootstrapMinecraft() {
@@ -106,7 +110,7 @@ class CoreEntityManagerTest {
   }
 
   private static Entity mockEntity(boolean removed) {
-    return mockEntity(EntityType.ZOMBIE, removed);
+    return mockEntity(EntityTypes.ZOMBIE, removed);
   }
 
   private static Entity mockEntity(EntityType<?> entityType, boolean removed) {
@@ -121,13 +125,15 @@ class CoreEntityManagerTest {
 
   private static Entity mockEntity(EntityType<?> entityType, boolean removed, ServerLevel level) {
     Entity entity;
-    if (entityType == EntityType.ZOMBIE) {
-      entity = new Zombie(EntityType.ZOMBIE, level);
-    } else if (entityType == EntityType.SKELETON) {
-      entity = new Skeleton(EntityType.SKELETON, level);
+    if (entityType == EntityTypes.ZOMBIE) {
+      entity = new Zombie(EntityTypes.ZOMBIE, level);
+    } else if (entityType == EntityTypes.SKELETON) {
+      entity = new Skeleton(EntityTypes.SKELETON, level);
     } else {
       throw new IllegalArgumentException("Unsupported test entity type: " + entityType);
     }
+
+    entity.setId(ENTITY_ID_COUNTER.getAndIncrement());
 
     if (removed) {
       entity.remove(RemovalReason.DISCARDED);
@@ -315,7 +321,7 @@ class CoreEntityManagerTest {
       Set.of());
     CoreEntityManager.reloadTrackingRules(List.of(preset));
 
-    Zombie zombie = new Zombie(EntityType.ZOMBIE,
+    Zombie zombie = new Zombie(EntityTypes.ZOMBIE,
       mock(ServerLevel.class, withSettings().mockMaker(MockMakers.SUBCLASS).defaultAnswer(inv -> {
         if (inv.getMethod().getName().equals("getServer")) {
           return mock(MinecraftServer.class, withSettings().mockMaker(MockMakers.SUBCLASS));
@@ -343,7 +349,7 @@ class CoreEntityManagerTest {
       Set.of());
     CoreEntityManager.reloadTrackingRules(List.of(preset));
 
-    Zombie zombie = new Zombie(EntityType.ZOMBIE,
+    Zombie zombie = new Zombie(EntityTypes.ZOMBIE,
       mock(ServerLevel.class, withSettings().mockMaker(MockMakers.SUBCLASS).defaultAnswer(inv -> {
         if (inv.getMethod().getName().equals("getServer")) {
           return mock(MinecraftServer.class, withSettings().mockMaker(MockMakers.SUBCLASS));
@@ -369,7 +375,7 @@ class CoreEntityManagerTest {
       Set.of("immersive_aircraft:biplane"));
     CoreEntityManager.reloadTrackingRules(List.of(preset));
 
-    Zombie zombie = new Zombie(EntityType.ZOMBIE,
+    Zombie zombie = new Zombie(EntityTypes.ZOMBIE,
       mock(ServerLevel.class, withSettings().mockMaker(MockMakers.SUBCLASS).defaultAnswer(inv -> {
         if (inv.getMethod().getName().equals("getServer")) {
           return mock(MinecraftServer.class, withSettings().mockMaker(MockMakers.SUBCLASS));
@@ -397,7 +403,7 @@ class CoreEntityManagerTest {
       Set.of("minecolonies:citizen"));
     CoreEntityManager.reloadTrackingRules(List.of(preset));
 
-    Zombie zombie = new Zombie(EntityType.ZOMBIE,
+    Zombie zombie = new Zombie(EntityTypes.ZOMBIE,
       mock(ServerLevel.class, withSettings().mockMaker(MockMakers.SUBCLASS).defaultAnswer(inv -> {
         if (inv.getMethod().getName().equals("getServer")) {
           return mock(MinecraftServer.class, withSettings().mockMaker(MockMakers.SUBCLASS));
@@ -446,7 +452,7 @@ class CoreEntityManagerTest {
     entityMapPerChunk.put(activeChunkKey, newEntitySet(activeEntity, removedEntity));
 
     ConcurrentHashMap<EntityType<?>, Set<Entity>> entityMapGlobal = new ConcurrentHashMap<>();
-    entityMapGlobal.put(EntityType.ZOMBIE, newEntitySet(activeEntity, removedEntity));
+    entityMapGlobal.put(EntityTypes.ZOMBIE, newEntitySet(activeEntity, removedEntity));
 
     ConcurrentHashMap<Entity, Object> entityChunkKeyMap = new ConcurrentHashMap<>();
     entityChunkKeyMap.put(activeEntity, activeChunkKey);
@@ -473,7 +479,7 @@ class CoreEntityManagerTest {
 
     assertEquals(Set.of(activeEntity), cleanedEntityMap.get(entityMapKey));
     assertEquals(Set.of(activeEntity), cleanedEntityMapPerChunk.get(activeChunkKey));
-    assertEquals(Set.of(activeEntity), cleanedEntityMapGlobal.get(EntityType.ZOMBIE));
+    assertEquals(Set.of(activeEntity), cleanedEntityMapGlobal.get(EntityTypes.ZOMBIE));
     assertEquals(Map.of(activeEntity, activeChunkKey), cleanedChunkKeyMap);
     assertTrue(cleanedChunkMap.contains(activeChunkKey));
     assertFalse(cleanedChunkMap.contains(staleChunkKey));
@@ -486,22 +492,22 @@ class CoreEntityManagerTest {
     BlockPos blockPos = BlockPos.ZERO;
     Object chunkKey = newChunkTrackingKey(levelName, 0, 0);
 
-    Entity activeZombie = mockEntity(EntityType.ZOMBIE, false);
-    Entity removedZombie = mockEntity(EntityType.ZOMBIE, true);
-    Entity activeSkeleton = mockEntity(EntityType.SKELETON, false);
+    Entity activeZombie = mockEntity(EntityTypes.ZOMBIE, false);
+    Entity removedZombie = mockEntity(EntityTypes.ZOMBIE, true);
+    Entity activeSkeleton = mockEntity(EntityTypes.SKELETON, false);
 
     ConcurrentHashMap<Object, Set<Entity>> entityMapPerChunk = new ConcurrentHashMap<>();
     entityMapPerChunk.put(chunkKey, newEntitySet(activeZombie, removedZombie, activeSkeleton));
     writeStaticField("entityMapPerChunk", entityMapPerChunk);
 
     assertEquals(1,
-      CoreEntityManager.getNumberOfEntitiesInChunk(levelName, EntityType.ZOMBIE, blockPos));
+      CoreEntityManager.getNumberOfEntitiesInChunk(levelName, EntityTypes.ZOMBIE, blockPos));
     assertEquals(1,
-      CoreEntityManager.getNumberOfEntitiesInChunk(levelKey, EntityType.ZOMBIE, blockPos));
+      CoreEntityManager.getNumberOfEntitiesInChunk(levelKey, EntityTypes.ZOMBIE, blockPos));
     assertEquals(1,
       CoreEntityManager.getNumberOfEntitiesInChunk(levelName, "minecraft:zombie", blockPos));
     assertEquals(1,
-      CoreEntityManager.getNumberOfEntitiesInChunk(levelName, EntityType.SKELETON, blockPos));
+      CoreEntityManager.getNumberOfEntitiesInChunk(levelName, EntityTypes.SKELETON, blockPos));
     assertEquals(2,
       CoreEntityManager.getTrackedEntityCountInChunk(levelKey, blockPos));
   }
@@ -514,11 +520,11 @@ class CoreEntityManagerTest {
     Object chunkKey = newChunkTrackingKey(levelName, 0, 0);
     Object entityMapKey = newEntityTrackingKey(levelName, "minecraft:zombie");
 
-    Zombie oldest = (Zombie) mockEntity(EntityType.ZOMBIE, false, level);
+    Zombie oldest = (Zombie) mockEntity(EntityTypes.ZOMBIE, false, level);
     oldest.tickCount = 300;
-    Zombie newer = (Zombie) mockEntity(EntityType.ZOMBIE, false, level);
+    Zombie newer = (Zombie) mockEntity(EntityTypes.ZOMBIE, false, level);
     newer.tickCount = 200;
-    Zombie newest = (Zombie) mockEntity(EntityType.ZOMBIE, false, level);
+    Zombie newest = (Zombie) mockEntity(EntityTypes.ZOMBIE, false, level);
     newest.tickCount = 100;
 
     writeStaticField("entityMap", new ConcurrentHashMap<>(Map.of(
@@ -526,7 +532,7 @@ class CoreEntityManagerTest {
     writeStaticField("entityMapPerChunk", new ConcurrentHashMap<>(Map.of(
       chunkKey, newEntitySet(oldest, newer, newest))));
     writeStaticField("entityMapGlobal", new ConcurrentHashMap<>(Map.of(
-      EntityType.ZOMBIE, newEntitySet(oldest, newer, newest))));
+      EntityTypes.ZOMBIE, newEntitySet(oldest, newer, newest))));
     writeStaticField("entityChunkKeyMap", new ConcurrentHashMap<>(Map.of(
       oldest, chunkKey,
       newer, chunkKey,
@@ -554,12 +560,12 @@ class CoreEntityManagerTest {
     Object chunkKey = newChunkTrackingKey(levelName, 0, 0);
     Object entityMapKey = newEntityTrackingKey(levelName, "minecraft:zombie");
 
-    Zombie namedZombie = (Zombie) mockEntity(EntityType.ZOMBIE, false, level);
+    Zombie namedZombie = (Zombie) mockEntity(EntityTypes.ZOMBIE, false, level);
     namedZombie.setCustomName(Component.literal("Tagged"));
     namedZombie.tickCount = 500;
-    Zombie olderNormal = (Zombie) mockEntity(EntityType.ZOMBIE, false, level);
+    Zombie olderNormal = (Zombie) mockEntity(EntityTypes.ZOMBIE, false, level);
     olderNormal.tickCount = 300;
-    Zombie newerNormal = (Zombie) mockEntity(EntityType.ZOMBIE, false, level);
+    Zombie newerNormal = (Zombie) mockEntity(EntityTypes.ZOMBIE, false, level);
     newerNormal.tickCount = 100;
 
     writeStaticField("entityMap", new ConcurrentHashMap<>(Map.of(
@@ -567,7 +573,7 @@ class CoreEntityManagerTest {
     writeStaticField("entityMapPerChunk", new ConcurrentHashMap<>(Map.of(
       chunkKey, newEntitySet(namedZombie, olderNormal, newerNormal))));
     writeStaticField("entityMapGlobal", new ConcurrentHashMap<>(Map.of(
-      EntityType.ZOMBIE, newEntitySet(namedZombie, olderNormal, newerNormal))));
+      EntityTypes.ZOMBIE, newEntitySet(namedZombie, olderNormal, newerNormal))));
     writeStaticField("entityChunkKeyMap", new ConcurrentHashMap<>(Map.of(
       namedZombie, chunkKey,
       olderNormal, chunkKey,
@@ -591,26 +597,26 @@ class CoreEntityManagerTest {
     String entityName = "minecraft:zombie";
     Object entityMapKey = newEntityTrackingKey(levelName, entityName);
 
-    Entity activeZombie = mockEntity(EntityType.ZOMBIE, false);
-    Entity removedZombie = mockEntity(EntityType.ZOMBIE, true);
-    Entity activeSkeleton = mockEntity(EntityType.SKELETON, false);
+    Entity activeZombie = mockEntity(EntityTypes.ZOMBIE, false);
+    Entity removedZombie = mockEntity(EntityTypes.ZOMBIE, true);
+    Entity activeSkeleton = mockEntity(EntityTypes.SKELETON, false);
 
     ConcurrentHashMap<Object, Set<Entity>> entityMap = new ConcurrentHashMap<>();
     entityMap.put(entityMapKey, newEntitySet(activeZombie, removedZombie));
     writeStaticField("entityMap", entityMap);
 
     ConcurrentHashMap<EntityType<?>, Set<Entity>> entityMapGlobal = new ConcurrentHashMap<>();
-    entityMapGlobal.put(EntityType.ZOMBIE, newEntitySet(activeZombie, removedZombie));
-    entityMapGlobal.put(EntityType.SKELETON, newEntitySet(activeSkeleton));
+    entityMapGlobal.put(EntityTypes.ZOMBIE, newEntitySet(activeZombie, removedZombie));
+    entityMapGlobal.put(EntityTypes.SKELETON, newEntitySet(activeSkeleton));
     writeStaticField("entityMapGlobal", entityMapGlobal);
 
-    assertEquals(2, CoreEntityManager.getNumberOfEntities(levelName, EntityType.ZOMBIE));
-    assertEquals(2, CoreEntityManager.getNumberOfEntities(levelKey, EntityType.ZOMBIE));
+    assertEquals(2, CoreEntityManager.getNumberOfEntities(levelName, EntityTypes.ZOMBIE));
+    assertEquals(2, CoreEntityManager.getNumberOfEntities(levelKey, EntityTypes.ZOMBIE));
     assertEquals(2, CoreEntityManager.getNumberOfEntities(levelName, entityName));
     assertEquals(2, CoreEntityManager.getNumberOfEntities(levelKey, entityName));
-    assertEquals(2, CoreEntityManager.getNumberOfEntities(EntityType.ZOMBIE));
+    assertEquals(2, CoreEntityManager.getNumberOfEntities(EntityTypes.ZOMBIE));
     assertEquals(2, CoreEntityManager.getNumberOfEntities(entityName));
-    assertEquals(1, CoreEntityManager.getNumberOfEntities(EntityType.SKELETON));
+    assertEquals(1, CoreEntityManager.getNumberOfEntities(EntityTypes.SKELETON));
     assertTrue(CoreEntityManager.getEntitiesGlobal().containsKey(entityName));
   }
 
@@ -694,9 +700,9 @@ class CoreEntityManagerTest {
     Object chunkKey = newChunkTrackingKey(levelName, 0, 0);
     Object entityMapKey = newEntityTrackingKey(levelName, "minecraft:zombie");
 
-    Zombie converted = (Zombie) mockEntity(EntityType.ZOMBIE, false, level);
+    Zombie converted = (Zombie) mockEntity(EntityTypes.ZOMBIE, false, level);
     converted.tickCount = 0;
-    Zombie older = (Zombie) mockEntity(EntityType.ZOMBIE, false, level);
+    Zombie older = (Zombie) mockEntity(EntityTypes.ZOMBIE, false, level);
     older.tickCount = 200;
 
     CoreEntityManager.registerConversionProtection(converted.getUUID());
@@ -706,7 +712,7 @@ class CoreEntityManagerTest {
     writeStaticField("entityMapPerChunk", new ConcurrentHashMap<>(Map.of(
       chunkKey, newEntitySet(converted, older))));
     writeStaticField("entityMapGlobal", new ConcurrentHashMap<>(Map.of(
-      EntityType.ZOMBIE, newEntitySet(converted, older))));
+      EntityTypes.ZOMBIE, newEntitySet(converted, older))));
     writeStaticField("entityChunkKeyMap", new ConcurrentHashMap<>(Map.of(
       converted, chunkKey,
       older, chunkKey)));

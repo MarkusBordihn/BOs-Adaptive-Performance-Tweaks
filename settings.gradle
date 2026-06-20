@@ -20,5 +20,5 @@ pluginManagement {
   }
 }
 
-rootProject.name = 'Adaptive Performance Tweaks 26.1.2'
+rootProject.name = 'Adaptive Performance Tweaks 26.2'
 include("Common", "Fabric", "Forge", "NeoForge")
