@@ -145,6 +145,10 @@ public record BenchmarkCompareResult(
     return (bytes >= 0L ? "+" : "-") + BenchmarkMessenger.formatBytes(Math.abs(bytes));
   }
 
+  private static String formatHeapBytes(long bytes) {
+    return bytes >= 0L ? BenchmarkMessenger.formatBytes(bytes) : "n/a (GC)";
+  }
+
   private static double calculateFastRatio(Map<MsptBucket, Integer> distribution) {
     return calculateBucketRatio(distribution, MsptBucket.UNDER_5_MS, MsptBucket.FROM_5_TO_10_MS);
   }
@@ -565,7 +569,10 @@ public record BenchmarkCompareResult(
     double headroomDelta = result.activeHeadroomPercent() - result.baselineHeadroomPercent();
     double scoreDelta = result.activePerformanceScore() - result.baselinePerformanceScore();
     double fastDelta = result.activeFastRatio() - result.baselineFastRatio();
-    long heapDelta = active.peakHeapDeltaBytes() - baseline.peakHeapDeltaBytes();
+    boolean heapAvailable =
+      baseline.peakHeapDeltaBytes() >= 0L && active.peakHeapDeltaBytes() >= 0L;
+    long heapDelta =
+      heapAvailable ? active.peakHeapDeltaBytes() - baseline.peakHeapDeltaBytes() : 0L;
     double cpuDelta = active.avgCpuPercent() - baseline.avgCpuPercent();
     int entityDelta = active.entityCount() - baseline.entityCount();
 
@@ -609,10 +616,12 @@ public record BenchmarkCompareResult(
     }
     lines.add(metricLine(
       "Heap peak",
-      BenchmarkMessenger.formatBytes(baseline.peakHeapDeltaBytes()),
-      BenchmarkMessenger.formatBytes(active.peakHeapDeltaBytes()),
-      formatSignedBytes(heapDelta),
-      getEfficiencyColor(heapDelta, result.tickTimeImprovementPercent())));
+      formatHeapBytes(baseline.peakHeapDeltaBytes()),
+      formatHeapBytes(active.peakHeapDeltaBytes()),
+      heapAvailable ? formatSignedBytes(heapDelta) : "n/a",
+      heapAvailable
+        ? getEfficiencyColor(heapDelta, result.tickTimeImprovementPercent())
+        : ChatFormatting.GRAY));
     lines.add(metricLine(
       "Entities",
       String.format("%,d", baseline.entityCount()),
@@ -641,7 +650,10 @@ public record BenchmarkCompareResult(
     double headroomDelta = result.activeHeadroomPercent() - result.baselineHeadroomPercent();
     double scoreDelta = result.activePerformanceScore() - result.baselinePerformanceScore();
     double fastDelta = result.activeFastRatio() - result.baselineFastRatio();
-    long heapDelta = active.peakHeapDeltaBytes() - baseline.peakHeapDeltaBytes();
+    boolean heapAvailable =
+      baseline.peakHeapDeltaBytes() >= 0L && active.peakHeapDeltaBytes() >= 0L;
+    long heapDelta =
+      heapAvailable ? active.peakHeapDeltaBytes() - baseline.peakHeapDeltaBytes() : 0L;
     double cpuDelta = active.avgCpuPercent() - baseline.avgCpuPercent();
     int entityDelta = active.entityCount() - baseline.entityCount();
 
@@ -686,9 +698,9 @@ public record BenchmarkCompareResult(
     }
     lines.add(markdownMetricLine(
       "Heap peak",
-      BenchmarkMessenger.formatBytes(baseline.peakHeapDeltaBytes()),
-      BenchmarkMessenger.formatBytes(active.peakHeapDeltaBytes()),
-      formatSignedBytes(heapDelta)));
+      formatHeapBytes(baseline.peakHeapDeltaBytes()),
+      formatHeapBytes(active.peakHeapDeltaBytes()),
+      heapAvailable ? formatSignedBytes(heapDelta) : "n/a"));
     lines.add(markdownMetricLine(
       "Entities",
       String.format("%,d", baseline.entityCount()),

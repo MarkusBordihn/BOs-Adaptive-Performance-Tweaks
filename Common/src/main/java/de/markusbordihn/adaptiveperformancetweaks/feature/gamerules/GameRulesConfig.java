@@ -35,6 +35,8 @@ public final class GameRulesConfig extends Config {
       
        Controls which game rules are automatically adjusted under high server load.
        Integer values define the min/max boundaries used during optimization.
+       Login/movement warmup timing is shared with the Simulation Distance feature
+       (movementThrottleLoginTicks / movementThrottleDistanceThresholdBlocks in sim_distance.cfg).
       """;
 
   public static ServerLoadLevel minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;

@@ -23,7 +23,6 @@ import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -65,9 +64,13 @@ public class FeatureCommand extends CustomCommand {
       return 1;
     }
 
-    CoreConfig.setFeatureEnabled(target, enabled);
+    target.setEnabled(enabled);
     sendFeedback(
-      context, String.format("Feature '%s' %s.", featureId, enabled ? "enabled" : "disabled"));
+      context,
+      String.format(
+        "Feature '%s' %s. This change is not persistent; update the config file to keep it "
+          + "after a restart.",
+        featureId, enabled ? "enabled" : "disabled"));
     return 0;
   }
 }

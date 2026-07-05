@@ -28,9 +28,14 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,6 +45,7 @@ public final class SpawnPresetRegistry {
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME_SPAWN);
   private static final Map<PresetCacheKey, ResolvedPreset> entityPresetCache = new HashMap<>();
   private static final Set<PresetCacheKey> missingPresetCache = new HashSet<>();
+  private static final Map<PresetCacheKey, Boolean> ignoredDimensionCache = new HashMap<>();
   private static Map<EntityType<?>, List<ResolvedPreset>> presetsByEntityType =
     Collections.emptyMap();
   private static List<ResolvedPreset> loadedPresets = Collections.emptyList();
@@ -51,6 +57,7 @@ public final class SpawnPresetRegistry {
     long startTime = System.nanoTime();
     entityPresetCache.clear();
     missingPresetCache.clear();
+    ignoredDimensionCache.clear();
     SpawnPresetPartitioner.Partition partition = SpawnPresetPartitioner.partition(presets);
     List<SpawnPreset> sorted = new ArrayList<>(partition.spawnPresets());
     for (SpawnPreset preset : partition.trackingPresets()) {
@@ -103,6 +110,10 @@ public final class SpawnPresetRegistry {
       return evaluate(entityType, dimensionKey);
     }
 
+    if (isDimensionIgnored(entityType, dimensionId)) {
+      return SpawnDecision.IGNORE_DIMENSION;
+    }
+
     ResolvedPreset resolvedPreset = getEffectivePreset(entityType, dimensionId);
     if (resolvedPreset == null) {
       return SpawnDecision.ALLOW;
@@ -121,6 +132,10 @@ public final class SpawnPresetRegistry {
   }
 
   public static SpawnDecision evaluate(EntityType<?> entityType, ResourceLocation dimensionId) {
+    if (isDimensionIgnored(entityType, dimensionId)) {
+      return SpawnDecision.IGNORE_DIMENSION;
+    }
+
     ResolvedPreset resolvedPreset = getEffectivePreset(entityType, dimensionId);
     if (resolvedPreset == null) {
       return SpawnDecision.ALLOW;
@@ -341,6 +356,52 @@ public final class SpawnPresetRegistry {
     return null;
   }
 
+  private static boolean isDimensionIgnored(EntityType<?> entityType,
+    ResourceLocation dimensionId) {
+    PresetCacheKey cacheKey = new PresetCacheKey(entityType, dimensionId.toString());
+    Boolean cachedResult = ignoredDimensionCache.get(cacheKey);
+    if (cachedResult != null) {
+      return cachedResult;
+    }
+
+    boolean ignored = false;
+    List<ResolvedPreset> candidatePresets = presetsByEntityType.get(entityType);
+    if (candidatePresets != null) {
+      for (ResolvedPreset preset : candidatePresets) {
+        // Highest-priority preset covering this entity decides: an ignored dimension
+        // exempts the entity from all spawn limits instead of falling back to globals.
+        if (preset.ignoredDimensions().contains(dimensionId)) {
+          ignored = true;
+          break;
+        }
+        if (appliesToDimension(preset, dimensionId)) {
+          break;
+        }
+      }
+    }
+
+    ignoredDimensionCache.put(cacheKey, ignored);
+    return ignored;
+  }
+
+  private static boolean isDimensionIgnored(EntityType<?> entityType, String dimensionId) {
+    List<ResolvedPreset> candidatePresets = presetsByEntityType.get(entityType);
+    if (candidatePresets == null) {
+      return false;
+    }
+
+    for (ResolvedPreset preset : candidatePresets) {
+      if (preset.preset().dimensions().ignore().contains(dimensionId)) {
+        return true;
+      }
+      if (appliesToDimension(preset.preset(), dimensionId)) {
+        return false;
+      }
+    }
+
+    return false;
+  }
+
   private static boolean appliesToDimension(SpawnPreset preset, String dimensionId) {
     SpawnPreset.DimensionFilter dimensions = preset.dimensions();
     if (dimensions.ignore().contains(dimensionId)) {
@@ -476,6 +537,11 @@ public final class SpawnPresetRegistry {
         continue;
       }
 
+      if (entityPattern.startsWith("#")) {
+        resolveEntityTag(entityPattern, entityTypes);
+        continue;
+      }
+
       if (entityPattern.endsWith(":*")) {
         entityTypes.addAll(registrySnapshot.entityTypesByNamespace()
           .getOrDefault(entityPattern.substring(0, entityPattern.length() - 2),
@@ -490,6 +556,26 @@ public final class SpawnPresetRegistry {
     }
 
     return entityTypes;
+  }
+
+  private static void resolveEntityTag(String tagPattern, Set<EntityType<?>> entityTypes) {
+    ResourceLocation tagLocation = ResourceLocation.tryParse(tagPattern.substring(1));
+    if (tagLocation == null) {
+      log.warn("Invalid entity tag '{}' in spawn preset, skipping.", tagPattern);
+      return;
+    }
+
+    TagKey<EntityType<?>> tagKey = TagKey.create(Registries.ENTITY_TYPE, tagLocation);
+    Optional<HolderSet.Named<EntityType<?>>> tagHolders =
+      BuiltInRegistries.ENTITY_TYPE.getTag(tagKey);
+    if (tagHolders.isEmpty()) {
+      log.warn("Unknown entity tag '{}' in spawn preset, skipping.", tagPattern);
+      return;
+    }
+
+    for (Holder<EntityType<?>> holder : tagHolders.get()) {
+      entityTypes.add(holder.value());
+    }
   }
 
   private static EntityType<?> resolveEntityType(String entityId) {

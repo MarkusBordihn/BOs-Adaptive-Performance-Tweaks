@@ -22,8 +22,10 @@ package de.markusbordihn.adaptiveperformancetweaks.core.compat;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureState;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -31,6 +33,7 @@ public final class ModConflictDetector {
 
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
   private static final Map<String, String> LEGACY_MODULES = new LinkedHashMap<>();
+  private static final Set<String> loggedConflictWarnings = new HashSet<>();
   private static boolean compatibilityWarningsLogged = false;
 
   static {
@@ -55,14 +58,14 @@ public final class ModConflictDetector {
 
     if (configuredState == FeatureState.ENABLED) {
       if (conflictingMod != null) {
-        log.warn(
+        warnOnce(toggle.getId() + ":enabled-conflict:" + conflictingMod,
           "Feature '{}' is ENABLED but mod '{}' also handles this functionality."
             + " Consider setting 'feature.{}=auto' to let the mod take over.",
           toggle.getId(),
           conflictingMod,
           toggle.getId());
       } else if (warningMod != null) {
-        log.warn(
+        warnOnce(toggle.getId() + ":enabled-overlap:" + warningMod,
           "Feature '{}' is ENABLED while mod '{}' may overlap with this functionality."
             + " Watch for duplicate behavior or unexpected performance changes.",
           toggle.getId(),
@@ -72,7 +75,7 @@ public final class ModConflictDetector {
     }
 
     if (conflictingMod != null) {
-      log.warn(
+      warnOnce(toggle.getId() + ":auto-disabled:" + conflictingMod,
         "Feature '{}' auto-disabled: mod '{}' already handles this functionality.",
         toggle.getId(),
         conflictingMod);
@@ -80,13 +83,19 @@ public final class ModConflictDetector {
     }
 
     if (warningMod != null) {
-      log.warn(
+      warnOnce(toggle.getId() + ":auto-overlap:" + warningMod,
         "Feature '{}' remains enabled, but mod '{}' may overlap with this functionality.",
         toggle.getId(),
         warningMod);
     }
 
     return new FeatureDecision(true, FeatureActivation.AUTO_ENABLED, warningMod);
+  }
+
+  private static void warnOnce(String warningKey, String message, Object... arguments) {
+    if (loggedConflictWarnings.add(warningKey)) {
+      log.warn(message, arguments);
+    }
   }
 
   public static void logCompatibilityWarnings() {

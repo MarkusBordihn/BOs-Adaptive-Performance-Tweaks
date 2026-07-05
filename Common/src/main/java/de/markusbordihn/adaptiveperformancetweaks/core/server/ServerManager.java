@@ -24,6 +24,7 @@ import de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreEntityManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPositionManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.BenchmarkManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.gamerules.GameRulesConfig;
 import java.util.List;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -86,7 +87,8 @@ public final class ServerManager {
 
     CoreEntityManager.handleServerTick();
     if (FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled()
-      || FeatureToggle.ADAPTIVE_VIEW_DISTANCE.isEnabled()) {
+      || FeatureToggle.ADAPTIVE_VIEW_DISTANCE.isEnabled()
+      || (FeatureToggle.GAMERULES.isEnabled() && GameRulesConfig.movementWarmupEnabled)) {
       PlayerPositionManager.handleServerTick();
     }
     if (BenchmarkManager.isRunning()) {

@@ -51,7 +51,7 @@ public final class ServerLoad {
   public static void measureLoadAndPost() {
     double currentAvgTickTime = ServerManager.getAverageTickTime();
     long currentTime = System.currentTimeMillis();
-    if (lastAvgTickTime >= currentAvgTickTime
+    if (avgTickTime >= currentAvgTickTime
       && currentTime - lastUpdateTime < (long) CoreConfig.timeBetweenUpdates * 1000L) {
       return;
     }

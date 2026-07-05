@@ -27,7 +27,6 @@ import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -254,7 +253,9 @@ public final class ItemEntityManager {
           double newY = Math.max(existing.getY(), itemEntity.getY());
           existing.setPos(itemEntity.getX(), newY, itemEntity.getZ());
         }
-        return true;
+        if (itemStack.isEmpty()) {
+          return true;
+        }
       }
     }
 
@@ -285,27 +286,23 @@ public final class ItemEntityManager {
       return;
     }
 
-    Iterator<ItemEntity> iterator = worldEntities.iterator();
-    if (!iterator.hasNext()) {
+    ItemEntity removalCandidate =
+      findRemovalCandidate(worldEntities, count, ItemsConfig.maxNumberOfItems);
+    if (removalCandidate == null) {
       return;
     }
 
-    ItemEntity oldestItemEntity = iterator.next();
-    String itemName =
-      BuiltInRegistries.ITEM.getKey(oldestItemEntity.getItem().getItem()).toString();
-    log.debug(
-      "[World Limit] {} at {} removed ({}/{})",
-      itemName,
-      oldestItemEntity.blockPosition(),
-      count,
-      ItemsConfig.maxNumberOfItems);
-    oldestItemEntity.remove(RemovalReason.DISCARDED);
+    String itemName = BuiltInRegistries.ITEM.getKey(removalCandidate.getItem().getItem())
+      .toString();
+    log.debug("[World Limit] {} at {} removed ({}/{})",
+      itemName, removalCandidate.blockPosition(), count, ItemsConfig.maxNumberOfItems);
+    removalCandidate.remove(RemovalReason.DISCARDED);
     PerformanceStats.itemsRemoved++;
-    iterator.remove();
+    worldEntities.remove(removalCandidate);
     String typeKey = '[' + levelName + ']' + itemName;
     Set<ItemEntity> typeEntities = typeMap.get(typeKey);
     if (typeEntities != null) {
-      typeEntities.remove(oldestItemEntity);
+      typeEntities.remove(removalCandidate);
     }
   }
 
@@ -316,22 +313,37 @@ public final class ItemEntityManager {
       return;
     }
 
-    Iterator<ItemEntity> iterator = typeEntities.iterator();
-    if (!iterator.hasNext()) {
+    ItemEntity removalCandidate =
+      findRemovalCandidate(typeEntities, count, ItemsConfig.maxNumberOfItemsPerType);
+    if (removalCandidate == null) {
       return;
     }
 
-    ItemEntity oldestItemEntity = iterator.next();
-    log.debug(
-      "[Type Limit] {} at {} removed ({}/{})",
-      BuiltInRegistries.ITEM.getKey(oldestItemEntity.getItem().getItem()),
-      oldestItemEntity.blockPosition(),
-      count,
-      ItemsConfig.maxNumberOfItemsPerType);
-    oldestItemEntity.remove(RemovalReason.DISCARDED);
+    log.debug("[Type Limit] {} at {} removed ({}/{})",
+      BuiltInRegistries.ITEM.getKey(removalCandidate.getItem().getItem()),
+      removalCandidate.blockPosition(), count, ItemsConfig.maxNumberOfItemsPerType);
+    removalCandidate.remove(RemovalReason.DISCARDED);
     PerformanceStats.itemsRemoved++;
-    iterator.remove();
-    worldEntities.remove(oldestItemEntity);
+    typeEntities.remove(removalCandidate);
+    worldEntities.remove(removalCandidate);
+  }
+
+  private static ItemEntity findRemovalCandidate(Set<ItemEntity> entities, int count, int limit) {
+    ItemEntity oldestProtected = null;
+    for (ItemEntity entity : entities) {
+      if (!isProtectedItemEntity(entity)) {
+        return entity;
+      }
+      if (oldestProtected == null) {
+        oldestProtected = entity;
+      }
+    }
+
+    return count > limit * 2 ? oldestProtected : null;
+  }
+
+  private static boolean isProtectedItemEntity(ItemEntity itemEntity) {
+    return !itemEntity.getItem().getComponentsPatch().isEmpty();
   }
 
   private static void verifyEntities() {
