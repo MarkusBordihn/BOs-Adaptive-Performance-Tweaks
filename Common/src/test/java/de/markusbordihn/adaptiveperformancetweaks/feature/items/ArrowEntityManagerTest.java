@@ -37,7 +37,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.projectile.arrow.Arrow;
+import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -52,6 +54,7 @@ class ArrowEntityManagerTest {
   private boolean previousFeatureState;
   private int previousMaxPerWorld;
   private int previousMaxPerChunk;
+  private int previousMaxProtectedPerWorld;
   private Set<String> previousAllowList;
   private Set<String> previousDenyList;
 
@@ -61,6 +64,7 @@ class ArrowEntityManagerTest {
     Bootstrap.bootStrap();
     Bootstrap.validate();
     Items.ARROW.builtInRegistryHolder().bindComponents(DataComponentMap.EMPTY);
+    Items.TRIDENT.builtInRegistryHolder().bindComponents(DataComponentMap.EMPTY);
   }
 
   private static ServerLevel mockOverworldLevel() {
@@ -95,12 +99,14 @@ class ArrowEntityManagerTest {
     previousFeatureState = FeatureToggle.ARROWS.isEnabled();
     previousMaxPerWorld = ArrowsConfig.maxNumberOfArrowsPerWorld;
     previousMaxPerChunk = ArrowsConfig.maxNumberOfArrowsPerChunk;
+    previousMaxProtectedPerWorld = ArrowsConfig.maxNumberOfProtectedArrowsPerWorld;
     previousAllowList = new HashSet<>(ArrowsConfig.arrowsAllowList);
     previousDenyList = new HashSet<>(ArrowsConfig.arrowsDenyList);
 
     FeatureToggle.ARROWS.setEnabled(true);
     ArrowsConfig.maxNumberOfArrowsPerWorld = 512;
     ArrowsConfig.maxNumberOfArrowsPerChunk = 32;
+    ArrowsConfig.maxNumberOfProtectedArrowsPerWorld = 2048;
     ArrowsConfig.arrowsAllowList = new HashSet<>();
     ArrowsConfig.arrowsDenyList = new HashSet<>();
     PerformanceStats.reset();
@@ -112,6 +118,7 @@ class ArrowEntityManagerTest {
     FeatureToggle.ARROWS.setEnabled(previousFeatureState);
     ArrowsConfig.maxNumberOfArrowsPerWorld = previousMaxPerWorld;
     ArrowsConfig.maxNumberOfArrowsPerChunk = previousMaxPerChunk;
+    ArrowsConfig.maxNumberOfProtectedArrowsPerWorld = previousMaxProtectedPerWorld;
     ArrowsConfig.arrowsAllowList = previousAllowList;
     ArrowsConfig.arrowsDenyList = previousDenyList;
     PerformanceStats.reset();
@@ -185,6 +192,61 @@ class ArrowEntityManagerTest {
     assertFalse(newestStuck.isRemoved());
     assertEquals(2, ArrowEntityManager.getTrackedArrowCount());
     assertEquals(1L, PerformanceStats.arrowsRemoved);
+  }
+
+  @Test
+  void worldLimitProtectsTridentsAndPickupArrows() throws Exception {
+    ArrowsConfig.maxNumberOfArrowsPerChunk = 0;
+    ArrowsConfig.maxNumberOfArrowsPerWorld = 1;
+    ArrowEntityManager.handleServerAboutToStart();
+    ServerLevel level = mockOverworldLevel();
+
+    ThrownTrident trident = new ThrownTrident(EntityType.TRIDENT, level);
+    trident.setId(1);
+    trident.setPos(0.0d, 64.0d, 0.0d);
+    trident.setDeltaMovement(Vec3.ZERO);
+
+    Arrow pickupArrow = createArrow(level, 2, 0, 0, 0.0d, false, false);
+    pickupArrow.pickup = AbstractArrow.Pickup.ALLOWED;
+    Arrow oldestPlain = createArrow(level, 3, 1, 0, 0.0d, false, false);
+    Arrow newestPlain = createArrow(level, 4, 2, 0, 0.0d, false, false);
+
+    ArrowEntityManager.handleArrowJoinLevel(trident, level);
+    ArrowEntityManager.handleArrowJoinLevel(pickupArrow, level);
+    ArrowEntityManager.handleArrowJoinLevel(oldestPlain, level);
+    ArrowEntityManager.handleArrowJoinLevel(newestPlain, level);
+    setTicks((short) 599);
+
+    ArrowEntityManager.handleServerTick();
+
+    assertFalse(trident.isRemoved());
+    assertFalse(pickupArrow.isRemoved());
+    assertTrue(oldestPlain.isRemoved());
+    assertFalse(newestPlain.isRemoved());
+  }
+
+  @Test
+  void protectedHardCapRemovesNamedArrowsBeforeTridents() throws Exception {
+    ArrowsConfig.maxNumberOfArrowsPerChunk = 0;
+    ArrowsConfig.maxNumberOfArrowsPerWorld = 1000;
+    ArrowsConfig.maxNumberOfProtectedArrowsPerWorld = 1;
+    ArrowEntityManager.handleServerAboutToStart();
+    ServerLevel level = mockOverworldLevel();
+
+    Arrow namedArrow = createArrow(level, 1, 0, 0, 0.0d, true, false);
+    ThrownTrident trident = new ThrownTrident(EntityType.TRIDENT, level);
+    trident.setId(2);
+    trident.setPos(16.0d, 64.0d, 0.0d);
+    trident.setDeltaMovement(Vec3.ZERO);
+
+    ArrowEntityManager.handleArrowJoinLevel(namedArrow, level);
+    ArrowEntityManager.handleArrowJoinLevel(trident, level);
+    setTicks((short) 599);
+
+    ArrowEntityManager.handleServerTick();
+
+    assertTrue(namedArrow.isRemoved());
+    assertFalse(trident.isRemoved());
   }
 
   @Test

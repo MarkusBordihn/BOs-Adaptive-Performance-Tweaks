@@ -30,8 +30,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Mob.class)
 public abstract class MobAiThrottleMixin {
 
-  @Inject(method = "aiStep", at = @At("HEAD"), cancellable = true)
-  private void aptweaks_aiStep(CallbackInfo ci) {
+  @Inject(method = "serverAiStep", at = @At("HEAD"), cancellable = true)
+  private void aptweaks_serverAiStep(CallbackInfo ci) {
     if (!FeatureToggle.AI_THROTTLING.isEnabled()
       || !((Object) this instanceof Mob mob)
       || !AiThrottleManager.shouldSkipAiThisTick(mob)) {

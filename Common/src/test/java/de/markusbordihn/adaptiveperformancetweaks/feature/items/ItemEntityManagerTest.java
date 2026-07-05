@@ -35,6 +35,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity.RemovalReason;
@@ -42,6 +43,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -83,6 +85,12 @@ class ItemEntityManagerTest {
   private static ItemEntity createItem(ServerLevel level, int id, double x, double y, double z,
     ItemStack stack) {
     return new TestItemEntity(level, id, x, y, z, stack);
+  }
+
+  private static void markProtected(ItemStack stack, int id) {
+    CompoundTag tag = new CompoundTag();
+    tag.putInt("protected", id);
+    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
   }
 
   private static void setTicks(short value) throws Exception {
@@ -161,6 +169,59 @@ class ItemEntityManagerTest {
     assertEquals(0, second.getItem().getCount());
     assertEquals(1, ItemEntityManager.getTrackedItemEntityCount());
     assertEquals(1L, PerformanceStats.itemsMerged);
+  }
+
+  @Test
+  void partialMergeKeepsRemainderEntity() {
+    ServerLevel level = mockOverworldLevel();
+    ItemEntity existing =
+      createItem(level, 1, 0.0d, 64.0d, 0.0d, new ItemStack(Items.COBBLESTONE, 60));
+    ItemEntity incoming =
+      createItem(level, 2, 1.0d, 64.0d, 1.0d, new ItemStack(Items.COBBLESTONE, 10));
+
+    ItemEntityManager.handleItemEntityJoinLevel(existing, level);
+    boolean incomingMerged = ItemEntityManager.handleItemEntityJoinLevel(incoming, level);
+
+    assertFalse(incomingMerged);
+    assertEquals(64, existing.getItem().getCount());
+    assertEquals(6, incoming.getItem().getCount());
+    assertEquals(2, ItemEntityManager.getTrackedItemEntityCount());
+  }
+
+  @Test
+  void worldLimitProtectsItemsWithNbtUntilHardCap() {
+    ItemsConfig.maxNumberOfItems = 1;
+    ItemEntityManager.handleServerAboutToStart();
+    ServerLevel level = mockOverworldLevel();
+    ItemStack protectedStack = new ItemStack(Items.COBBLESTONE, 1);
+    markProtected(protectedStack, 1);
+    ItemEntity protectedItem = createItem(level, 1, 0.0d, 64.0d, 0.0d, protectedStack);
+    ItemEntity plainItem =
+      createItem(level, 2, 20.0d, 64.0d, 20.0d, new ItemStack(Items.DIRT, 1));
+
+    ItemEntityManager.handleItemEntityJoinLevel(protectedItem, level);
+    ItemEntityManager.handleItemEntityJoinLevel(plainItem, level);
+
+    assertFalse(protectedItem.isRemoved());
+    assertTrue(plainItem.isRemoved());
+
+    ItemStack secondProtectedStack = new ItemStack(Items.COBBLESTONE, 1);
+    markProtected(secondProtectedStack, 2);
+    ItemEntity secondProtectedItem =
+      createItem(level, 3, 40.0d, 64.0d, 40.0d, secondProtectedStack);
+    ItemStack thirdProtectedStack = new ItemStack(Items.COBBLESTONE, 1);
+    markProtected(thirdProtectedStack, 3);
+    ItemEntity thirdProtectedItem =
+      createItem(level, 4, 60.0d, 64.0d, 60.0d, thirdProtectedStack);
+
+    ItemEntityManager.handleItemEntityJoinLevel(secondProtectedItem, level);
+    assertFalse(secondProtectedItem.isRemoved());
+
+    ItemEntityManager.handleItemEntityJoinLevel(thirdProtectedItem, level);
+
+    assertTrue(protectedItem.isRemoved());
+    assertFalse(secondProtectedItem.isRemoved());
+    assertFalse(thirdProtectedItem.isRemoved());
   }
 
   @Test

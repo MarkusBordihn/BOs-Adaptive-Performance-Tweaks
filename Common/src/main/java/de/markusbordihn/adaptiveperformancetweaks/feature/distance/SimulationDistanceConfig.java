@@ -39,6 +39,10 @@ public final class SimulationDistanceConfig extends Config {
        Higher load level = lower distance to reduce server tick pressure.
        Optional movement throttling adds temporary reductions during login, teleport and
        heavy exploration independent of load.
+       Note: movementThrottleLoginTicks and movementThrottleDistanceThresholdBlocks are also
+       used by the GameRules feature for its random-tick warmup timing.
+       movementThrottleRecoveryMinDelayTicks acts as a hard floor: recovery never starts
+       earlier, even if movementThrottleRecoveryDelayTicks is set lower.
       """;
 
   public static ServerLoadLevel minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;

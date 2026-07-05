@@ -71,11 +71,12 @@ public final class PlayerLoginManager {
       log.debug("{} {}: Logged in.", LOG_PREFIX, username);
     }
 
+    PlayerValidation validation = new PlayerValidation(player);
     player.setInvisible(true);
     player.setInvulnerable(true);
     player.heal(1);
 
-    playerValidationList.add(new PlayerValidation(player));
+    playerValidationList.add(validation);
   }
 
   public static void handlePlayerLoggedOut(String username) {
@@ -119,13 +120,14 @@ public final class PlayerLoginManager {
             username,
             TimeUnit.MILLISECONDS.toSeconds(validation.getValidationTimeElapsed()));
         }
-        restorePlayer(username);
+        restorePlayer(validation);
         iterator.remove();
       }
     }
   }
 
-  private static void restorePlayer(String username) {
+  private static void restorePlayer(PlayerValidation validation) {
+    String username = validation.getUsername();
     MinecraftServer server = ServerManager.getMinecraftServer();
     if (server == null) {
       return;
@@ -137,11 +139,11 @@ public final class PlayerLoginManager {
       return;
     }
 
-    if (player.isInvisible()) {
+    if (player.isInvisible() && !validation.wasInvisible()) {
       log.debug("{} {}: Remove invisibility", LOG_PREFIX, username);
       player.setInvisible(false);
     }
-    if (player.isInvulnerable()) {
+    if (player.isInvulnerable() && !validation.wasInvulnerable()) {
       log.debug("{} {}: Remove invulnerability", LOG_PREFIX, username);
       player.setInvulnerable(false);
     }

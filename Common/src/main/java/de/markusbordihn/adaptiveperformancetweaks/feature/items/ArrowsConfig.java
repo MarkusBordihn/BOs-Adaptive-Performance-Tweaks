@@ -36,7 +36,9 @@ public final class ArrowsConfig extends Config {
        Arrows Feature Configuration
       
        Limits stuck arrows (arrows that have already hit a block or entity) per world and per chunk.
-       In-flight arrows and named arrows/tridents are never removed.
+       In-flight arrows are never removed. Named arrows, pickup-able player arrows and tridents
+       are protected from the normal limits and only removed above
+       maxNumberOfProtectedArrowsPerWorld (tridents last; 0 disables the hard cap).
        Use the allow/deny lists to include or exclude specific arrow entity types.
        Leave a list empty to disable it.
       """;
@@ -44,6 +46,7 @@ public final class ArrowsConfig extends Config {
   public static ServerLoadLevel minOptimizationLoadLevel = ServerLoadLevel.NORMAL;
   public static int maxNumberOfArrowsPerWorld = 512;
   public static int maxNumberOfArrowsPerChunk = 32;
+  public static int maxNumberOfProtectedArrowsPerWorld = 2048;
   public static Set<String> arrowsAllowList = new HashSet<>();
   public static Set<String> arrowsDenyList = new HashSet<>();
 
@@ -67,6 +70,8 @@ public final class ArrowsConfig extends Config {
       maxNumberOfArrowsPerWorld);
     maxNumberOfArrowsPerChunk = parseConfigValue(properties, "maxNumberOfArrowsPerChunk",
       maxNumberOfArrowsPerChunk);
+    maxNumberOfProtectedArrowsPerWorld = parseConfigValue(properties,
+      "maxNumberOfProtectedArrowsPerWorld", maxNumberOfProtectedArrowsPerWorld);
     arrowsAllowList = parseConfigValue(properties, "arrowsAllowList", new HashSet<>());
     arrowsDenyList = parseConfigValue(properties, "arrowsDenyList", new HashSet<>());
 

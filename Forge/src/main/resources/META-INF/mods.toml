@@ -16,9 +16,6 @@ simulation distance, AI throttling, chunk generation throttling, and monitoring 
 dedicated servers, single-player worlds, and LAN worlds.'''
 features = { java_version = "${java_version_range}" }
 
-[[mixins]]
-config = "adaptiveperformancetweaks.mixins.json"
-
 [[dependencies.adaptive_performance_tweaks]]
 modId = "forge"
 mandatory = true

@@ -23,6 +23,7 @@ import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreEntityManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ExperienceOrbManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ItemEntityManager;
@@ -35,12 +36,14 @@ public final class MonitoringManager {
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static long lastLogTime = 0;
+  private static ServerLoadLevel lastLoggedLoadLevel = null;
 
   private MonitoringManager() {
   }
 
   public static void reset() {
     lastLogTime = 0;
+    lastLoggedLoadLevel = null;
   }
 
   public static void handleServerLoadEvent(ServerLoadEvent event) {
@@ -49,18 +52,19 @@ public final class MonitoringManager {
     }
 
     long currentTime = System.currentTimeMillis();
-    if (!intervalElapsed(currentTime)) {
+    if (!shouldLog(currentTime, event.getServerLoadLevel())) {
       return;
     }
 
     lastLogTime = currentTime;
+    lastLoggedLoadLevel = event.getServerLoadLevel();
     logStatus(event);
   }
 
-  private static boolean intervalElapsed(long currentTime) {
+  private static boolean shouldLog(long currentTime, ServerLoadLevel loadLevel) {
     int intervalMs = MonitoringConfig.monitoringIntervalSeconds * 1000;
     if (intervalMs <= 0) {
-      return false;
+      return loadLevel != lastLoggedLoadLevel;
     }
 
     return currentTime - lastLogTime >= intervalMs;
