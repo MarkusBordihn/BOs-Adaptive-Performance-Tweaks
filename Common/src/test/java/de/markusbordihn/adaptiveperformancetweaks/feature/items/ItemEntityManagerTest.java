@@ -157,6 +157,59 @@ class ItemEntityManagerTest {
   }
 
   @Test
+  void partialMergeKeepsRemainderEntity() {
+    ServerLevel level = mockOverworldLevel();
+    ItemEntity existing =
+      createItem(level, 1, 0.0d, 64.0d, 0.0d, new ItemStack(Items.COBBLESTONE, 60));
+    ItemEntity incoming =
+      createItem(level, 2, 1.0d, 64.0d, 1.0d, new ItemStack(Items.COBBLESTONE, 10));
+
+    ItemEntityManager.handleItemEntityJoinLevel(existing, level);
+    boolean incomingMerged = ItemEntityManager.handleItemEntityJoinLevel(incoming, level);
+
+    assertFalse(incomingMerged);
+    assertEquals(64, existing.getItem().getCount());
+    assertEquals(6, incoming.getItem().getCount());
+    assertEquals(2, ItemEntityManager.getTrackedItemEntityCount());
+  }
+
+  @Test
+  void worldLimitProtectsItemsWithNbtUntilHardCap() {
+    ItemsConfig.maxNumberOfItems = 1;
+    ItemEntityManager.handleServerAboutToStart();
+    ServerLevel level = mockOverworldLevel();
+    ItemStack protectedStack = new ItemStack(Items.COBBLESTONE, 1);
+    protectedStack.getOrCreateTag().putInt("protected", 1);
+    ItemEntity protectedItem = createItem(level, 1, 0.0d, 64.0d, 0.0d, protectedStack);
+    ItemEntity plainItem =
+      createItem(level, 2, 20.0d, 64.0d, 20.0d, new ItemStack(Items.DIRT, 1));
+
+    ItemEntityManager.handleItemEntityJoinLevel(protectedItem, level);
+    ItemEntityManager.handleItemEntityJoinLevel(plainItem, level);
+
+    assertFalse(protectedItem.isRemoved());
+    assertTrue(plainItem.isRemoved());
+
+    ItemStack secondProtectedStack = new ItemStack(Items.COBBLESTONE, 1);
+    secondProtectedStack.getOrCreateTag().putInt("protected", 2);
+    ItemEntity secondProtectedItem =
+      createItem(level, 3, 40.0d, 64.0d, 40.0d, secondProtectedStack);
+    ItemStack thirdProtectedStack = new ItemStack(Items.COBBLESTONE, 1);
+    thirdProtectedStack.getOrCreateTag().putInt("protected", 3);
+    ItemEntity thirdProtectedItem =
+      createItem(level, 4, 60.0d, 64.0d, 60.0d, thirdProtectedStack);
+
+    ItemEntityManager.handleItemEntityJoinLevel(secondProtectedItem, level);
+    assertFalse(secondProtectedItem.isRemoved());
+
+    ItemEntityManager.handleItemEntityJoinLevel(thirdProtectedItem, level);
+
+    assertTrue(protectedItem.isRemoved());
+    assertFalse(secondProtectedItem.isRemoved());
+    assertFalse(thirdProtectedItem.isRemoved());
+  }
+
+  @Test
   void worldLimitRemovesOldestTrackedItem() {
     ItemsConfig.maxNumberOfItems = 1;
     ItemsConfig.maxNumberOfItemsPerType = 64;

@@ -773,7 +773,8 @@ public final class BenchmarkManager {
 
   private static long getCurrentPeakHeapDeltaBytes() {
     long peakHeapUsed = Math.max(currentMeasurementPeakHeapUsed, getCurrentHeapUsage());
-    return Math.max(0L, peakHeapUsed - currentMeasurementStartHeapUsed);
+    long peakHeapDelta = peakHeapUsed - currentMeasurementStartHeapUsed;
+    return peakHeapDelta > 0L ? peakHeapDelta : -1L;
   }
 
   private static void runScenarioMeasurementTick(BenchmarkScenario scenario,

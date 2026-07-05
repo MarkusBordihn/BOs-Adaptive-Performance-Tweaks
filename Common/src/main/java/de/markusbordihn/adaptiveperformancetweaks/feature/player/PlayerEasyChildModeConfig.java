@@ -58,11 +58,12 @@ public final class PlayerEasyChildModeConfig extends Config {
         FeatureToggle.PLAYER_EASY_CHILD_MODE.getDefaultState()));
 
     childPlayerNames = parseConfigValue(properties, "childPlayerNames", childPlayerNames);
-    childPlayerHurtDamageReduction = parseConfigValue(properties, "childPlayerHurtDamageReduction",
-      childPlayerHurtDamageReduction);
-    childPlayerAttackDamageIncrease = parseConfigValue(properties,
+    childPlayerHurtDamageReduction = Math.max(0, Math.min(100,
+      parseConfigValue(properties, "childPlayerHurtDamageReduction",
+        childPlayerHurtDamageReduction)));
+    childPlayerAttackDamageIncrease = Math.max(0, parseConfigValue(properties,
       "childPlayerAttackDamageIncrease",
-      childPlayerAttackDamageIncrease);
+      childPlayerAttackDamageIncrease));
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
 

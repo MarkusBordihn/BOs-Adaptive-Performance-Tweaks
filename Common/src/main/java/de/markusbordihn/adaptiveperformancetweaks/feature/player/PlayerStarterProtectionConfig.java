@@ -66,10 +66,10 @@ public final class PlayerStarterProtectionConfig extends Config {
 
     starterMaxExperienceLevel =
       parseConfigValue(properties, "starterMaxExperienceLevel", starterMaxExperienceLevel);
-    starterHurtDamageReduction =
-      parseConfigValue(properties, "starterHurtDamageReduction", starterHurtDamageReduction);
-    starterAttackDamageIncrease =
-      parseConfigValue(properties, "starterAttackDamageIncrease", starterAttackDamageIncrease);
+    starterHurtDamageReduction = Math.max(0, Math.min(100,
+      parseConfigValue(properties, "starterHurtDamageReduction", starterHurtDamageReduction)));
+    starterAttackDamageIncrease = Math.max(0,
+      parseConfigValue(properties, "starterAttackDamageIncrease", starterAttackDamageIncrease));
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
 

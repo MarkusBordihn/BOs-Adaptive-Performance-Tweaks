@@ -34,9 +34,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.level.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -90,8 +92,11 @@ public final class ArrowEntityManager {
       String dimension = entry.getKey();
       Map<String, Integer> typeCounts = new HashMap<>();
       for (AbstractArrow arrow : entry.getValue()) {
-        String entityId = BuiltInRegistries.ENTITY_TYPE.getKey(arrow.getType()).toString();
-        typeCounts.merge(entityId, 1, Integer::sum);
+        ResourceLocation entityKey = BuiltInRegistries.ENTITY_TYPE.getKey(arrow.getType());
+        if (entityKey == null) {
+          continue;
+        }
+        typeCounts.merge(entityKey.toString(), 1, Integer::sum);
       }
       if (!typeCounts.isEmpty()) {
         result.put(dimension, typeCounts);
@@ -128,7 +133,12 @@ public final class ArrowEntityManager {
       return;
     }
 
-    String entityId = BuiltInRegistries.ENTITY_TYPE.getKey(arrowEntity.getType()).toString();
+    ResourceLocation entityKey = BuiltInRegistries.ENTITY_TYPE.getKey(arrowEntity.getType());
+    if (entityKey == null) {
+      return;
+    }
+
+    String entityId = entityKey.toString();
     if (hasArrowsAllowList && !ArrowsConfig.arrowsAllowList.contains(entityId)) {
       return;
     }
@@ -163,7 +173,9 @@ public final class ArrowEntityManager {
   }
 
   private static boolean isProtectedArrow(AbstractArrow arrow) {
-    return arrow.hasCustomName();
+    return arrow.hasCustomName()
+      || arrow instanceof ThrownTrident
+      || arrow.pickup == AbstractArrow.Pickup.ALLOWED;
   }
 
   private static void enforceArrowLimits() {
@@ -217,24 +229,40 @@ public final class ArrowEntityManager {
     }
 
     List<AbstractArrow> stuckArrows = new ArrayList<>();
+    List<AbstractArrow> protectedStuckArrows = new ArrayList<>();
     for (AbstractArrow arrow : worldArrows) {
-      if (arrow.isAlive() && isStuckArrow(arrow) && !isProtectedArrow(arrow)) {
+      if (!arrow.isAlive() || !isStuckArrow(arrow)) {
+        continue;
+      }
+      if (isProtectedArrow(arrow)) {
+        protectedStuckArrows.add(arrow);
+      } else {
         stuckArrows.add(arrow);
       }
     }
 
-    int stuckCount = stuckArrows.size();
-    if (stuckCount <= ArrowsConfig.maxNumberOfArrowsPerWorld) {
+    removeOldestArrows(worldArrows, stuckArrows, ArrowsConfig.maxNumberOfArrowsPerWorld,
+      levelName, "World Limit");
+    removeOldestArrows(worldArrows, protectedStuckArrows,
+      ArrowsConfig.maxNumberOfProtectedArrowsPerWorld, levelName, "Protected World Limit");
+  }
+
+  private static void removeOldestArrows(Set<AbstractArrow> worldArrows,
+    List<AbstractArrow> candidates, int limit, String levelName, String limitName) {
+    int count = candidates.size();
+    if (limit <= 0 || count <= limit) {
       return;
     }
 
-    stuckArrows.sort(Comparator.comparingInt(Entity::getId));
-    int removeCount = stuckCount - ArrowsConfig.maxNumberOfArrowsPerWorld;
+    candidates.sort(Comparator
+      .<AbstractArrow, Boolean>comparing(ThrownTrident.class::isInstance)
+      .thenComparingInt(Entity::getId));
+    int removeCount = count - limit;
     for (int index = 0; index < removeCount; index++) {
-      AbstractArrow oldest = stuckArrows.get(index);
-      log.debug("[World Limit] {} at {} removed in {} ({}/{})",
+      AbstractArrow oldest = candidates.get(index);
+      log.debug("[{}] {} at {} removed in {} ({}/{})", limitName,
         BuiltInRegistries.ENTITY_TYPE.getKey(oldest.getType()),
-        oldest.blockPosition(), levelName, stuckCount, ArrowsConfig.maxNumberOfArrowsPerWorld);
+        oldest.blockPosition(), levelName, count, limit);
       oldest.remove(RemovalReason.DISCARDED);
       worldArrows.remove(oldest);
       PerformanceStats.arrowsRemoved++;

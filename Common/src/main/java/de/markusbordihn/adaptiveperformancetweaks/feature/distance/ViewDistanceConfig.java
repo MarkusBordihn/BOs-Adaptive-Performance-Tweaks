@@ -42,6 +42,8 @@ public final class ViewDistanceConfig extends Config {
        view distance on login/teleport and during fast movement at any load. Recovery is
        throttled (hysteresis) to avoid client-side chunk reloads from frequent view distance
        changes.
+       recoveryMinDelayTicks acts as a hard floor for both the normal and the fast recovery
+       path: lower recoveryDelayTicks/recoveryFastDelayTicks values have no effect below it.
       """;
 
   public static ServerLoadLevel minOptimizationLoadLevel = ServerLoadLevel.MEDIUM;

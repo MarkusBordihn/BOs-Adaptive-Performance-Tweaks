@@ -5,6 +5,33 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [GitHub History][history] instead.
 
+### 12.6.0
+
+- Fixed item merge losing the remainder when a drop only partially fits a nearby stack.
+- Fixed arrow cleanup removing thrown tridents and pickup-able player arrows; protected
+  projectiles now use a separate hard cap (tridents removed last).
+- Fixed game rules not being restored on shutdown, persisting optimized values
+  (randomTickSpeed, doFireTick, ...) into level.dat and corrupting the baseline on restart.
+- Fixed /aptweaks feature not applying enable/disable transitions (stale view/simulation
+  distance and game rules).
+- Fixed monitoringIntervalSeconds=0 silencing monitoring instead of logging on load changes.
+- Fixed dimensions.ignore in spawn presets falling back to global limits instead of exempting it.
+- Fixed server load rising-check comparing against a two-cycles-old measurement.
+- Fixed login protection clearing invisibility/invulnerability set by game modes or other mods.
+- Added entity tag support (#namespace:tag) in spawn preset allow/deny lists.
+- Added protection for named/enchanted/NBT items in world/type limits with a 2x hard cap.
+- Added wiring for minOptimizationLoadLevel in simulation distance and game rules.
+- Added validation for core load thresholds and damage reduction percentages.
+- Improved AI throttling to skip only goal/navigation/sensing, keeping physics, item pickup
+  and despawning intact.
+- Improved game-rule movement warmup to work without an active distance feature.
+- Improved config reload to log mod conflict warnings only once.
+- Improved entity tracking report to write asynchronously and mob-farm cleanup to use live
+  entity positions.
+- Improved benchmark heap metric: GC-collapsed measurements now report "n/a (GC)" instead of
+  a misleading 0KB delta.
+- Removed unused NeoForge-style mixin entries from the Forge mods.toml.
+
 ### 12.5.0
 
 - Fixed benchmark report not covering all features and adjustments.
