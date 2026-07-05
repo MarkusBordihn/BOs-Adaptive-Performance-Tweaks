@@ -387,6 +387,10 @@ public final class SimulationDistanceManager {
   }
 
   private static int targetDistanceForLevel(ServerLoadLevel level) {
+    if (!level.isAtLeast(SimulationDistanceConfig.minOptimizationLoadLevel)) {
+      return getConfiguredDistanceMax();
+    }
+
     int raw = switch (level) {
       case VERY_LOW -> SimulationDistanceConfig.simDistanceVeryLow;
       case LOW -> SimulationDistanceConfig.simDistanceLow;

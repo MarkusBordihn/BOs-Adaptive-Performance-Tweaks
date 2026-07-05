@@ -120,6 +120,9 @@ public final class GameRuleManager {
   }
 
   public static void handleServerStopping() {
+    if (gameRules != null && FeatureToggle.GAMERULES.isEnabled()) {
+      restoreConfiguredDefaults();
+    }
     gameRules = null;
     configuredRandomTickSpeedMax = 3;
     configuredMaxEntityCramming = GameRulesConfig.maxEntityCramming;
@@ -131,11 +134,20 @@ public final class GameRuleManager {
   }
 
   public static void handlePlayerLoggedIn(ServerPlayer player) {
+    trackPlayerForMovementWarmup(player);
     applyPlayerWarmup("login");
   }
 
   public static void handlePlayerTeleported(ServerPlayer player) {
+    trackPlayerForMovementWarmup(player);
     applyPlayerWarmup("teleport");
+  }
+
+  private static void trackPlayerForMovementWarmup(ServerPlayer player) {
+    if (FeatureToggle.GAMERULES.isEnabled() && GameRulesConfig.randomTickSpeedEnabled
+      && GameRulesConfig.movementWarmupEnabled) {
+      PlayerPositionManager.handlePlayerLoggedIn(player);
+    }
   }
 
   public static void handleServerTick() {
@@ -191,13 +203,15 @@ public final class GameRuleManager {
     }
     gameRules = minecraftServer.getGameRules();
     boolean randomTickWarmupActive = isRandomTickWarmupActive();
+    boolean optimizationAllowed =
+      event.getServerLoadLevel().isAtLeast(GameRulesConfig.minOptimizationLoadLevel);
 
-    if (event.hasVeryHighServerLoad()) {
+    if (event.hasVeryHighServerLoad() && optimizationAllowed) {
       applyVeryHighLoadOptimizations(randomTickWarmupActive);
       return;
     }
 
-    if (event.hasHighServerLoad()) {
+    if (event.hasHighServerLoad() && optimizationAllowed) {
       applyHighLoadOptimizations(randomTickWarmupActive);
       return;
     }
@@ -382,20 +396,46 @@ public final class GameRuleManager {
   }
 
   private static void restoreConfiguredDefaults() {
-    restoreRandomTickSpeed();
-    restoreMaxEntityCramming();
-    setGameRule(GameRules.BLOCK_EXPLOSION_DROP_DECAY, configuredBlockExplosionDropDecay);
-    setGameRule(GameRules.ELYTRA_MOVEMENT_CHECK, configuredElytraMovementCheck);
-    setGameRule(GameRules.SPAWN_PHANTOMS, configuredSpawnPhantoms);
-    setGameRule(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER,
-      configuredFireSpreadRadiusAroundPlayer);
-    setGameRule(GameRules.MOB_EXPLOSION_DROP_DECAY, configuredMobExplosionDropDecay);
-    setGameRule(GameRules.RAIDS, configuredRaids);
-    setGameRule(GameRules.SPAWN_PATROLS, configuredDoPatrolSpawning);
-    setGameRule(GameRules.SPAWN_WANDERING_TRADERS, configuredDoTraderSpawning);
-    setGameRule(GameRules.TNT_EXPLOSION_DROP_DECAY, configuredTntExplosionDropDecay);
-    setGameRule(GameRules.SPREAD_VINES, configuredDoVinesSpread);
-    setGameRule(GameRules.SPAWN_WARDENS, configuredDoWardenSpawning);
+    if (GameRulesConfig.randomTickSpeedEnabled) {
+      restoreRandomTickSpeed();
+    }
+    if (GameRulesConfig.entityCrammingEnabled) {
+      restoreMaxEntityCramming();
+    }
+    if (GameRulesConfig.blockExplodesEnabled) {
+      setGameRule(GameRules.BLOCK_EXPLOSION_DROP_DECAY, configuredBlockExplosionDropDecay);
+    }
+    if (GameRulesConfig.elytraMovementCheckEnabled) {
+      setGameRule(GameRules.ELYTRA_MOVEMENT_CHECK, configuredElytraMovementCheck);
+    }
+    if (GameRulesConfig.fireTickEnabled) {
+      setGameRule(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER,
+        configuredFireSpreadRadiusAroundPlayer);
+    }
+    if (GameRulesConfig.insomniaEnabled) {
+      setGameRule(GameRules.SPAWN_PHANTOMS, configuredSpawnPhantoms);
+    }
+    if (GameRulesConfig.mobExplodesEnabled) {
+      setGameRule(GameRules.MOB_EXPLOSION_DROP_DECAY, configuredMobExplosionDropDecay);
+    }
+    if (GameRulesConfig.raidsEnabled) {
+      setGameRule(GameRules.RAIDS, configuredRaids);
+    }
+    if (GameRulesConfig.patrolSpawningEnabled) {
+      setGameRule(GameRules.SPAWN_PATROLS, configuredDoPatrolSpawning);
+    }
+    if (GameRulesConfig.traderSpawningEnabled) {
+      setGameRule(GameRules.SPAWN_WANDERING_TRADERS, configuredDoTraderSpawning);
+    }
+    if (GameRulesConfig.tntExplodesEnabled) {
+      setGameRule(GameRules.TNT_EXPLOSION_DROP_DECAY, configuredTntExplosionDropDecay);
+    }
+    if (GameRulesConfig.vinesSpreadEnabled) {
+      setGameRule(GameRules.SPREAD_VINES, configuredDoVinesSpread);
+    }
+    if (GameRulesConfig.wardenSpawningEnabled) {
+      setGameRule(GameRules.SPAWN_WARDENS, configuredDoWardenSpawning);
+    }
   }
 
   private static void enableElytraMovementCheck() {
