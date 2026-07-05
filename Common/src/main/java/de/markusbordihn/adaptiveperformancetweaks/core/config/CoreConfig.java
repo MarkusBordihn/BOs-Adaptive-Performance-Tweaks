@@ -49,7 +49,7 @@ public class CoreConfig extends Config {
        serverLoadLogSignificantChangeSteps -- ordinal jump treated as significant (default: 2)
        serverLoadLogTopWorldCount -- how many top worlds to include in server load summaries (default: 5)
       
-       writeEntityTrackingReport -- write entity_tracking_report.json to the config folder on load/reload (default: true)
+       writeEntityTrackingReport -- write entity_tracking_report.json to <gameDir>/adaptive_performance_tweaks/reports on load/reload (default: true)
       """;
 
   private static final Map<FeatureToggle, Boolean> featureFlags = new EnumMap<>(
@@ -97,20 +97,43 @@ public class CoreConfig extends Config {
     serverLoadHighThreshold =
       parseConfigValue(properties, "serverLoadHighThreshold", serverLoadHighThreshold);
 
-    timeBetweenUpdates = parseConfigValue(properties, "timeBetweenUpdates", timeBetweenUpdates);
+    validateServerLoadThresholds();
+
+    timeBetweenUpdates = Math.max(1,
+      parseConfigValue(properties, "timeBetweenUpdates", timeBetweenUpdates));
     logServerLoad = parseConfigValue(properties, "logServerLoad", logServerLoad);
     logServerLevelLoadChanges = parseConfigValue(properties, "logServerLevelLoadChanges",
       logServerLevelLoadChanges);
-    serverLoadLogIntervalSeconds = parseConfigValue(properties, "serverLoadLogIntervalSeconds",
-      serverLoadLogIntervalSeconds);
-    serverLoadLogSignificantChangeSteps = parseConfigValue(properties,
-      "serverLoadLogSignificantChangeSteps", serverLoadLogSignificantChangeSteps);
-    serverLoadLogTopWorldCount = parseConfigValue(properties, "serverLoadLogTopWorldCount",
-      serverLoadLogTopWorldCount);
+    serverLoadLogIntervalSeconds = Math.max(0, parseConfigValue(properties,
+      "serverLoadLogIntervalSeconds", serverLoadLogIntervalSeconds));
+    serverLoadLogSignificantChangeSteps = Math.max(1, parseConfigValue(properties,
+      "serverLoadLogSignificantChangeSteps", serverLoadLogSignificantChangeSteps));
+    serverLoadLogTopWorldCount = Math.max(0, parseConfigValue(properties,
+      "serverLoadLogTopWorldCount", serverLoadLogTopWorldCount));
     writeEntityTrackingReport = parseConfigValue(properties, "writeEntityTrackingReport",
       writeEntityTrackingReport);
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodifiedProperties);
+  }
+
+  private static void validateServerLoadThresholds() {
+    if (serverLoadVeryLowThreshold > 0
+      && serverLoadVeryLowThreshold < serverLoadLowThreshold
+      && serverLoadLowThreshold < serverLoadNormalThreshold
+      && serverLoadNormalThreshold < serverLoadMediumThreshold
+      && serverLoadMediumThreshold < serverLoadHighThreshold) {
+      return;
+    }
+
+    log.warn(
+      "Invalid server load thresholds ({} < {} < {} < {} < {} expected), using defaults instead.",
+      serverLoadVeryLowThreshold, serverLoadLowThreshold, serverLoadNormalThreshold,
+      serverLoadMediumThreshold, serverLoadHighThreshold);
+    serverLoadVeryLowThreshold = 20;
+    serverLoadLowThreshold = 40;
+    serverLoadNormalThreshold = 46;
+    serverLoadMediumThreshold = 49;
+    serverLoadHighThreshold = 55;
   }
 
   public static boolean isFeatureEnabled(FeatureToggle toggle) {

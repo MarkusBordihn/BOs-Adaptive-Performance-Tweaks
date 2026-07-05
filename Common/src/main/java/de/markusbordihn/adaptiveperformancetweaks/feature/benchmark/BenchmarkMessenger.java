@@ -19,8 +19,8 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.benchmark;
 
-import java.nio.file.Path;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
+import java.nio.file.Path;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;

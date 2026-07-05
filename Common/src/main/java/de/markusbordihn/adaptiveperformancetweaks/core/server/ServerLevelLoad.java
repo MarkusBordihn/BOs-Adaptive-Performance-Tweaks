@@ -22,6 +22,7 @@ package de.markusbordihn.adaptiveperformancetweaks.core.server;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -139,7 +140,7 @@ public final class ServerLevelLoad {
   }
 
   public static Map<ServerLevel, ServerLoadLevel> getAllLevelLoads() {
-    return levelLoadLevels;
+    return Collections.unmodifiableMap(levelLoadLevels);
   }
 
   public static List<LevelLoadSnapshot> getTopLoadedLevels(int limit) {

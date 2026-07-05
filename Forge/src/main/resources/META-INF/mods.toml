@@ -15,9 +15,6 @@ description = '''Server-side optimization mod that adapts load with dynamic spaw
 simulation distance, AI throttling, chunk generation throttling, and monitoring tools for
 dedicated servers, single-player worlds, and LAN worlds.'''
 
-[[mixins]]
-config = "adaptiveperformancetweaks.mixins.json"
-
 [[dependencies.adaptive_performance_tweaks]]
 modId = "forge"
 mandatory = true

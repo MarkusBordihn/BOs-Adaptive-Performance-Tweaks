@@ -584,22 +584,30 @@ public final class CoreEntityManager {
     Set<ChunkTrackingKey> affectedChunks = new HashSet<>();
     Set<EntityType<?>> affectedTypes = new HashSet<>();
 
+    Map<ChunkTrackingKey, Map<EntityType<?>, List<Entity>>> chunkEntitiesByType = new HashMap<>();
     for (Map.Entry<ChunkTrackingKey, Set<Entity>> entry : entityMapPerChunk.entrySet()) {
       Set<Entity> rawEntities = entry.getValue();
       if (rawEntities == null || rawEntities.isEmpty()) {
         continue;
       }
 
-      Map<EntityType<?>, List<Entity>> entitiesByType = new HashMap<>();
       for (Entity entity : new ArrayList<>(rawEntities)) {
         if (!isMobCleanupEligible(entity) || !cleanupFilter.test(entity)) {
           continue;
         }
 
-        entitiesByType.computeIfAbsent(entity.getType(), ignored -> new ArrayList<>()).add(entity);
+        ChunkTrackingKey liveChunkKey =
+          new ChunkTrackingKey(entry.getKey().levelName(), entity.blockPosition());
+        chunkEntitiesByType
+          .computeIfAbsent(liveChunkKey, ignored -> new HashMap<>())
+          .computeIfAbsent(entity.getType(), ignored -> new ArrayList<>())
+          .add(entity);
       }
+    }
 
-      for (Map.Entry<EntityType<?>, List<Entity>> typeEntry : entitiesByType.entrySet()) {
+    for (Map.Entry<ChunkTrackingKey, Map<EntityType<?>, List<Entity>>> chunkEntry
+      : chunkEntitiesByType.entrySet()) {
+      for (Map.Entry<EntityType<?>, List<Entity>> typeEntry : chunkEntry.getValue().entrySet()) {
         List<Entity> candidates = typeEntry.getValue();
         if (candidates.size() <= perTypeLimit) {
           continue;
@@ -615,7 +623,7 @@ public final class CoreEntityManager {
           }
           if (removeChunkCleanupEntity(entity)) {
             removedEntities++;
-            affectedChunks.add(entry.getKey());
+            affectedChunks.add(chunkEntry.getKey());
             affectedTypes.add(typeEntry.getKey());
           }
         }
@@ -925,13 +933,17 @@ public final class CoreEntityManager {
       analysis.autoExcludedNamespaces(), analysis.autoExcludedEntityIds()));
     report.put("namespace_profiles", serializeNamespaceProfiles(analysis.namespaceProfiles()));
 
-    try {
-      Files.createDirectories(reportPath.getParent());
-      Files.writeString(reportPath, REPORT_GSON.toJson(report), StandardCharsets.UTF_8);
-    } catch (IOException exception) {
-      log.warn("Failed to write entity tracking report '{}': {}", reportPath,
-        exception.getMessage());
-    }
+    // The report map is fully built at this point; serialize and write off-thread to
+    // keep file I/O away from the game thread during load/reload.
+    CompletableFuture.runAsync(() -> {
+      try {
+        Files.createDirectories(reportPath.getParent());
+        Files.writeString(reportPath, REPORT_GSON.toJson(report), StandardCharsets.UTF_8);
+      } catch (IOException exception) {
+        log.warn("Failed to write entity tracking report '{}': {}", reportPath,
+          exception.getMessage());
+      }
+    });
   }
 
   private static Map<String, Map<String, Object>> serializeRuleMap(
