@@ -85,7 +85,15 @@ public final class PlayerLoginManager {
     }
 
     log.debug("{} {}: Logged out.", LOG_PREFIX, username);
-    playerValidationList.removeIf(v -> username.equals(v.getUsername()));
+
+    Iterator<PlayerValidation> iterator = playerValidationList.iterator();
+    while (iterator.hasNext()) {
+      PlayerValidation validation = iterator.next();
+      if (username.equals(validation.getUsername())) {
+        restorePlayer(validation);
+        iterator.remove();
+      }
+    }
   }
 
   public static void handleServerTick() {
