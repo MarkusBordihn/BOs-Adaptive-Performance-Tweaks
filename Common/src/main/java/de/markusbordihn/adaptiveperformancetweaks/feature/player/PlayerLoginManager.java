@@ -79,14 +79,23 @@ public final class PlayerLoginManager {
     playerValidationList.add(validation);
   }
 
-  public static void handlePlayerLoggedOut(String username) {
+  public static void handlePlayerLoggedOut(ServerPlayer player) {
     if (!FeatureToggle.PLAYER_LOGIN_PROTECTION.isEnabled()
       || !PlayerLoginProtectionConfig.protectPlayerDuringLogin) {
       return;
     }
 
+    String username = player.getName().getString();
     log.debug("{} {}: Logged out.", LOG_PREFIX, username);
-    playerValidationList.removeIf(v -> username.equals(v.getUsername()));
+
+    Iterator<PlayerValidation> iterator = playerValidationList.iterator();
+    while (iterator.hasNext()) {
+      PlayerValidation validation = iterator.next();
+      if (username.equals(validation.getUsername())) {
+        restorePlayer(player, validation);
+        iterator.remove();
+      }
+    }
   }
 
   public static void handleServerTick() {
@@ -127,18 +136,23 @@ public final class PlayerLoginManager {
   }
 
   private static void restorePlayer(PlayerValidation validation) {
-    String username = validation.getUsername();
     MinecraftServer server = ServerManager.getMinecraftServer();
     if (server == null) {
       return;
     }
 
-    ServerPlayer player = server.getPlayerList().getPlayerByName(username);
+    ServerPlayer player = server.getPlayerList().getPlayerByName(validation.getUsername());
     if (player == null) {
-      log.warn("{} {}: Cannot restore: not found on server.", LOG_PREFIX, username);
+      log.warn(
+        "{} {}: Cannot restore: not found on server.", LOG_PREFIX, validation.getUsername());
       return;
     }
 
+    restorePlayer(player, validation);
+  }
+
+  private static void restorePlayer(ServerPlayer player, PlayerValidation validation) {
+    String username = validation.getUsername();
     if (player.isInvisible() && !validation.wasInvisible()) {
       log.debug("{} {}: Remove invisibility", LOG_PREFIX, username);
       player.setInvisible(false);
