@@ -23,6 +23,7 @@ import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.commands.CommandManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.entity.CommonEntityEventHandler;
+import de.markusbordihn.adaptiveperformancetweaks.entity.EntityJoinInterceptor;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnPresetLoader;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityLevelChangeEvents;
@@ -81,6 +82,9 @@ public final class ServerEventHandler {
         CommonServerEventHandler.handlePlayerTeleported(player));
 
     ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
+      if (EntityJoinInterceptor.consumePending(entity)) {
+        return;
+      }
       if (CommonEntityEventHandler.handleEntityJoinLevel(entity, level)) {
         entity.discard();
       }
