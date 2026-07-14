@@ -5,6 +5,12 @@
 This change log includes the summarized changes.
 For the full changelog, please go to the [GitHub History][history] instead.
 
+### 12.7.0
+
+- Fixed login protection Invulnerable/Invisible flags persisting across sessions after a
+  mid-protection disconnect. Thanks to `@Anscylla`.
+- Fixed Fabric item/orb limits removing entities after they already joined the world.
+
 ### 12.6.0
 
 - Fixed item merge losing the remainder when a drop only partially fits a nearby stack.

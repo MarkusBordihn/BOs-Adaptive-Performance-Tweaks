@@ -130,7 +130,7 @@ public final class CommonServerEventHandler {
     PlayerPositionManager.handlePlayerLoggedOut(serverPlayer.getStringUUID());
     SimulationDistanceManager.handlePlayerLoggedOut();
     ServerManager.handlePlayerCountChange();
-    PlayerLoginManager.handlePlayerLoggedOut(serverPlayer.getName().getString());
+    PlayerLoginManager.handlePlayerLoggedOut(serverPlayer);
   }
 
   public static void handlePlayerTeleported(ServerPlayer serverPlayer) {
