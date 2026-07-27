@@ -42,9 +42,9 @@ public class DebugCommand extends CustomCommand {
     for (DebugModule module : DebugModule.values()) {
       debugNode.then(
         Commands.literal(module.getId())
-          .executes(ctx -> showModuleStatus(ctx, module))
+          .executes(context -> showModuleStatus(context, module))
           .then(Commands.argument("enable", BoolArgumentType.bool())
-            .executes(ctx -> setModuleDebug(ctx, module))));
+            .executes(context -> setModuleDebug(context, module))));
     }
 
     return debugNode;

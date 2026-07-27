@@ -99,7 +99,7 @@ public final class ItemEntityManager {
       String itemName = key.substring(bracketEnd + 1);
       int count = entry.getValue().size();
       if (count > 0) {
-        result.computeIfAbsent(dimension, d -> new HashMap<>()).put(itemName, count);
+        result.computeIfAbsent(dimension, dimensionKey -> new HashMap<>()).put(itemName, count);
       }
     }
     return result;

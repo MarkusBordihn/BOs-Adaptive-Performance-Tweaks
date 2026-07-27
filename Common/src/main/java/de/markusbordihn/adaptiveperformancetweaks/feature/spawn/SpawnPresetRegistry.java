@@ -22,6 +22,7 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.spawn;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -96,8 +98,10 @@ public final class SpawnPresetRegistry {
     }
 
     ResourceLocation dimensionKey = ResourceLocation.tryParse(dimensionId);
-    return dimensionKey != null ? evaluate(entityType, dimensionKey)
-      : evaluate(entityType, dimensionId);
+    if (dimensionKey != null) {
+      return evaluate(entityType, dimensionKey);
+    }
+    return evaluate(entityType, dimensionId);
   }
 
   public static SpawnDecision evaluate(EntityType<?> entityType, String dimensionId) {
@@ -259,7 +263,7 @@ public final class SpawnPresetRegistry {
 
   private static int getEffectiveLimit(
     EntityType<?> entityType, String dimensionId, ServerLoadLevel loadLevel,
-    int globalDefault, java.util.function.Function<ResolvedPreset, int[]> limitExtractor) {
+    int globalDefault, Function<ResolvedPreset, int[]> limitExtractor) {
     ResolvedPreset preset = getEffectivePreset(entityType, dimensionId);
     if (preset == null) {
       return globalDefault;
@@ -270,7 +274,7 @@ public final class SpawnPresetRegistry {
 
   private static int getEffectiveLimit(
     EntityType<?> entityType, ResourceLocation dimensionId, ServerLoadLevel loadLevel,
-    int globalDefault, java.util.function.Function<ResolvedPreset, int[]> limitExtractor) {
+    int globalDefault, Function<ResolvedPreset, int[]> limitExtractor) {
     ResolvedPreset preset = getEffectivePreset(entityType, dimensionId);
     if (preset == null) {
       return globalDefault;
@@ -488,7 +492,7 @@ public final class SpawnPresetRegistry {
   private static int[] precomputeLimits(int rawLimit, SpawnPreset.LoadFactors loadFactors) {
     int[] limits = new int[ServerLoadLevel.values().length];
     if (rawLimit < 0) {
-      java.util.Arrays.fill(limits, -1);
+      Arrays.fill(limits, -1);
       return limits;
     }
 

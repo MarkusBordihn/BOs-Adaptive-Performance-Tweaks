@@ -29,13 +29,12 @@
 > the same `mods/` folder.
 
 Adaptive Performance Tweaks is a **server-side optimization mod** for **Forge, Fabric, and
-NeoForge**.
-It watches Minecraft's server-side load and adjusts selected systems automatically to reduce lag
-pressure on dedicated servers, single-player worlds, and LAN-open worlds.
+NeoForge**. It watches Minecraft's server-side load and adjusts selected systems automatically to
+reduce lag pressure on dedicated servers, single-player worlds, and LAN-open worlds.
 
-That means APTweaks is not only for public or dedicated servers.
-It can also help in normal client worlds, because single-player and LAN sessions still run the same
-server-side systems for spawning, ticking, gamerules, items, XP orbs, and simulation distance.
+That means APTweaks is not only for public or dedicated servers. It can also help in normal client
+worlds, because single-player and LAN sessions still run the same server-side systems for spawning,
+ticking, gamerules, items, XP orbs, and simulation distance.
 
 Instead of asking you to assemble separate modules, 12.x bundles the major feature groups in one
 mod:
@@ -79,8 +78,8 @@ It is less helpful for issues that come mainly from:
 1. Remove any old 11.x APTweaks jars from `mods/`.
 2. Install APTweaks 12.x via
    the [CurseForge](https://www.curseforge.com/minecraft/mc-mods/adaptive-performance-tweaks)
-   or [Modrinth](https://modrinth.com/mod/adaptive-performance-tweaks) launcher.
-   Manual install: download the jar for your loader from one of those pages and place it in `mods/`.
+   or [Modrinth](https://modrinth.com/mod/adaptive-performance-tweaks) launcher. Manual install:
+   download the jar for your loader from one of those pages and place it in `mods/`.
 3. Start the game, world, or server once.
 4. Review the generated files in `config/adaptive_performance_tweaks/`.
 5. Leave defaults on for a first test run before tuning anything.
@@ -112,9 +111,9 @@ If you want to customize presets, start with the templates and examples in
 | Monitoring          | Optional log-based visibility into load and entity pressure                                                  |
 | Benchmark           | Built-in scenario-based baseline/active measurement suite for real worlds, servers, and modpacks             |
 
-Simulation Distance stays load-aware as before, but can now also clamp down harder during
-heavy exploration at `MEDIUM+` load and then recover gradually after players stop moving or finish
-logging in.
+Simulation Distance stays load-aware as before, but can now also clamp down harder during heavy
+exploration at `MEDIUM+` load and then recover gradually after players stop moving or finish logging
+in.
 
 ## Commands 🔧
 

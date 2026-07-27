@@ -44,6 +44,7 @@ public final class ViewDistanceManager {
   private static int currentLoadBaselineDistance = -1;
   private static int currentWarmupReduction = 0;
   private static int activeExplorerCount = 0;
+  private static int fastExplorerCount = 0;
   private static int recoveryStartTick = -1;
   private static int nextRecoveryTick = -1;
   private static int lastChangeTick = Integer.MIN_VALUE;
@@ -58,6 +59,7 @@ public final class ViewDistanceManager {
     currentLoadBaselineDistance = -1;
     currentWarmupReduction = 0;
     activeExplorerCount = 0;
+    fastExplorerCount = 0;
     recoveryStartTick = -1;
     nextRecoveryTick = -1;
     lastChangeTick = Integer.MIN_VALUE;
@@ -78,6 +80,7 @@ public final class ViewDistanceManager {
     currentLoadBaselineDistance = -1;
     currentWarmupReduction = 0;
     activeExplorerCount = 0;
+    fastExplorerCount = 0;
     recoveryStartTick = -1;
     nextRecoveryTick = -1;
     currentLoadLevel = ServerLoadLevel.NORMAL;
@@ -193,81 +196,66 @@ public final class ViewDistanceManager {
     Map<String, PlayerPosition> playerPositions = PlayerPositionManager.getPlayerPositionMap();
     int trackedPlayers = playerPositions.size();
     int newActiveExplorerCount = 0;
+    int newFastExplorerCount = 0;
     int warmupPlayerCount = 0;
     int previousReduction = currentWarmupReduction;
-    boolean allPlayersStable = trackedPlayers == 0;
     for (PlayerPosition playerPosition : playerPositions.values()) {
       boolean warmupActive = playerPosition.isLoginWarmupActive(currentTick);
-      boolean hasRecentMovement = playerPosition.hasRecentMovementDistance(
-        ViewDistanceConfig.movementDistanceThresholdBlocks);
-      if (warmupActive || hasRecentMovement) {
-        newActiveExplorerCount++;
-      }
       if (warmupActive) {
         warmupPlayerCount++;
       }
-      if (!playerPosition.isStableForTicks(PlayerPositionManager.getMovementUpdateTick())) {
-        allPlayersStable = false;
+      if (warmupActive || playerPosition.hasRecentMovementSpeed(
+        ViewDistanceConfig.movementSpeedBlocksPerSecond)) {
+        newActiveExplorerCount++;
+      }
+      if (playerPosition.hasRecentMovementSpeed(
+        ViewDistanceConfig.movementFastSpeedBlocksPerSecond)) {
+        newFastExplorerCount++;
       }
     }
 
     activeExplorerCount = newActiveExplorerCount;
+    fastExplorerCount = newFastExplorerCount;
     int targetReduction = 0;
     if (ViewDistanceConfig.loginWarmupEnabled && warmupPlayerCount > 0) {
       targetReduction = getWarmupReduction();
     }
-    boolean movementWarmupActive = ViewDistanceConfig.movementWarmupEnabled
-      && activeExplorerCount > 0;
-    if (movementWarmupActive) {
+    if (ViewDistanceConfig.movementWarmupEnabled && activeExplorerCount > 0) {
       targetReduction = Math.max(targetReduction,
-        calculateMovementReduction(trackedPlayers, activeExplorerCount));
+        calculateMovementReduction(trackedPlayers, activeExplorerCount, fastExplorerCount));
     }
 
-    if (targetReduction > 0) {
+    if (targetReduction >= currentWarmupReduction) {
+      currentWarmupReduction = targetReduction;
       recoveryStartTick = -1;
       nextRecoveryTick = -1;
-      currentWarmupReduction = Math.max(currentWarmupReduction, targetReduction);
-      if (currentWarmupReduction != previousReduction) {
-        log.debug("View distance warmup: reduction {} -> {} (activeExplorers={} load={})",
-          previousReduction, currentWarmupReduction, activeExplorerCount, currentLoadLevel);
-      }
-      return;
-    }
-
-    if (currentWarmupReduction <= 0) {
-      recoveryStartTick = -1;
-      nextRecoveryTick = -1;
-      return;
-    }
-
-    if (!allPlayersStable) {
-      recoveryStartTick = -1;
-      nextRecoveryTick = -1;
-      return;
-    }
-
-    if (recoveryStartTick < 0) {
-      recoveryStartTick = currentTick + currentRecoveryDelayTicks();
-      nextRecoveryTick = recoveryStartTick;
-    }
-    if (currentTick < nextRecoveryTick) {
-      return;
-    }
-
-    currentWarmupReduction = Math.max(0, currentWarmupReduction - 1);
-    if (currentWarmupReduction != previousReduction) {
-      log.debug("View distance warmup recovery: reduction {} -> {} (load={})",
-        previousReduction, currentWarmupReduction, currentLoadLevel);
-    }
-    if (currentWarmupReduction == 0) {
+    } else if (targetReduction <= 0 && activeExplorerCount > 0) {
       recoveryStartTick = -1;
       nextRecoveryTick = -1;
     } else {
-      nextRecoveryTick = currentTick + currentRecoveryStepTicks();
+      if (recoveryStartTick < 0) {
+        recoveryStartTick = currentTick + currentRecoveryDelayTicks();
+        nextRecoveryTick = recoveryStartTick;
+      }
+      if (currentTick >= nextRecoveryTick) {
+        currentWarmupReduction = Math.max(targetReduction, currentWarmupReduction - 1);
+        nextRecoveryTick = currentTick + currentRecoveryStepTicks();
+      }
+      if (currentWarmupReduction <= targetReduction) {
+        recoveryStartTick = -1;
+        nextRecoveryTick = -1;
+      }
+    }
+
+    if (currentWarmupReduction != previousReduction) {
+      log.debug("View distance warmup: reduction {} -> {} (target={} explorers={} fast={} load={})",
+        previousReduction, currentWarmupReduction, targetReduction, activeExplorerCount,
+        fastExplorerCount, currentLoadLevel);
     }
   }
 
-  private static int calculateMovementReduction(int trackedPlayers, int activeExplorers) {
+  private static int calculateMovementReduction(
+    int trackedPlayers, int activeExplorers, int fastExplorers) {
     if (trackedPlayers <= 0 || activeExplorers <= 0
       || ViewDistanceConfig.movementReductionMax <= 0) {
       return 0;
@@ -277,7 +265,7 @@ public final class ViewDistanceManager {
     }
 
     double activeRatio = activeExplorers / (double) trackedPlayers;
-    boolean useMaxReduction = switch (currentLoadLevel) {
+    boolean useMaxReduction = fastExplorers > 0 || switch (currentLoadLevel) {
       case MEDIUM -> activeRatio >= MEDIUM_MAX_REDUCTION_RATIO;
       case HIGH -> activeRatio >= HIGH_MAX_REDUCTION_RATIO;
       case VERY_HIGH -> true;

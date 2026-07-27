@@ -62,12 +62,12 @@ public final class MonitoringManager {
   }
 
   private static boolean shouldLog(long currentTime, ServerLoadLevel loadLevel) {
-    int intervalMs = MonitoringConfig.monitoringIntervalSeconds * 1000;
-    if (intervalMs <= 0) {
+    int intervalMillis = MonitoringConfig.monitoringIntervalSeconds * 1000;
+    if (intervalMillis <= 0) {
       return loadLevel != lastLoggedLoadLevel;
     }
 
-    return currentTime - lastLogTime >= intervalMs;
+    return currentTime - lastLogTime >= intervalMillis;
   }
 
   private static void logStatus(ServerLoadEvent event) {
@@ -79,8 +79,8 @@ public final class MonitoringManager {
     StringBuilder status = new StringBuilder("[Monitor]");
 
     if (MonitoringConfig.monitoringLogTps) {
-      double tps = Math.min(20.0, 1000.0 / Math.max(1.0, event.getAvgTickTime()));
-      status.append(String.format(" TPS=%.1f (%.1fms)", tps, event.getAvgTickTime()));
+      double ticksPerSecond = Math.min(20.0, 1000.0 / Math.max(1.0, event.getAvgTickTime()));
+      status.append(String.format(" TPS=%.1f (%.1fms)", ticksPerSecond, event.getAvgTickTime()));
     }
 
     if (MonitoringConfig.monitoringLogLoadLevel) {

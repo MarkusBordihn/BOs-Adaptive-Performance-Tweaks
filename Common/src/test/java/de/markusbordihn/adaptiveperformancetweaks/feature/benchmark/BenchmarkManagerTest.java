@@ -28,6 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import de.markusbordihn.adaptiveperformancetweaks.core.commands.BenchmarkCommand;
 import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
@@ -49,19 +50,23 @@ import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimulationDis
 import de.markusbordihn.adaptiveperformancetweaks.feature.gamerules.GameRuleManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ItemsConfig;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import net.minecraft.SharedConstants;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.players.PlayerList;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.BeforeAll;
@@ -90,13 +95,13 @@ class BenchmarkManagerTest {
 
   private static void writeStaticField(Class<?> owner, String fieldName, Object value)
     throws Exception {
-    java.lang.reflect.Field field = owner.getDeclaredField(fieldName);
+    Field field = owner.getDeclaredField(fieldName);
     field.setAccessible(true);
     field.set(null, value);
   }
 
   private static Object readStaticField(Class<?> owner, String fieldName) throws Exception {
-    java.lang.reflect.Field field = owner.getDeclaredField(fieldName);
+    Field field = owner.getDeclaredField(fieldName);
     field.setAccessible(true);
     return field.get(null);
   }
@@ -119,26 +124,29 @@ class BenchmarkManagerTest {
   private static BenchmarkScenarioResult.PhaseResult phaseResult(
     long durationMs, double avgTick, double p95Tick, double avgCpu, double maxCpu,
     PerformanceStats.Snapshot snapshot) {
-    EnumMap<ServerLoadLevel, Integer> loadDist = new EnumMap<>(ServerLoadLevel.class);
-    loadDist.put(ServerLoadLevel.VERY_LOW, 1);
-    EnumMap<MsptBucket, Integer> msptDist = new EnumMap<>(MsptBucket.class);
-    msptDist.put(MsptBucket.UNDER_5_MS, avgTick <= 5.0 ? 1 : 0);
-    msptDist.put(MsptBucket.FROM_5_TO_10_MS, avgTick > 5.0 && avgTick <= 10.0 ? 1 : 0);
-    msptDist.put(MsptBucket.FROM_10_TO_VERY_LOW_MS, avgTick > 10.0 && avgTick <= 20.0 ? 1 : 0);
-    EnumMap<FineMsptBucket, Integer> fineMsptDist = new EnumMap<>(FineMsptBucket.class);
-    fineMsptDist.put(FineMsptBucket.UNDER_3_MS, avgTick < 3.0 ? 1 : 0);
-    fineMsptDist.put(FineMsptBucket.FROM_3_TO_5_MS, avgTick >= 3.0 && avgTick < 5.0 ? 1 : 0);
-    fineMsptDist.put(FineMsptBucket.FROM_5_TO_10_MS, avgTick >= 5.0 && avgTick < 10.0 ? 1 : 0);
-    fineMsptDist.put(FineMsptBucket.FROM_10_MS_UP, avgTick >= 10.0 ? 1 : 0);
+    EnumMap<ServerLoadLevel, Integer> loadDistribution = new EnumMap<>(ServerLoadLevel.class);
+    loadDistribution.put(ServerLoadLevel.VERY_LOW, 1);
+    EnumMap<MsptBucket, Integer> msptDistribution = new EnumMap<>(MsptBucket.class);
+    msptDistribution.put(MsptBucket.UNDER_5_MS, avgTick <= 5.0 ? 1 : 0);
+    msptDistribution.put(MsptBucket.FROM_5_TO_10_MS, avgTick > 5.0 && avgTick <= 10.0 ? 1 : 0);
+    msptDistribution.put(MsptBucket.FROM_10_TO_VERY_LOW_MS,
+      avgTick > 10.0 && avgTick <= 20.0 ? 1 : 0);
+    EnumMap<FineMsptBucket, Integer> fineMsptDistribution = new EnumMap<>(FineMsptBucket.class);
+    fineMsptDistribution.put(FineMsptBucket.UNDER_3_MS, avgTick < 3.0 ? 1 : 0);
+    fineMsptDistribution.put(FineMsptBucket.FROM_3_TO_5_MS,
+      avgTick >= 3.0 && avgTick < 5.0 ? 1 : 0);
+    fineMsptDistribution.put(FineMsptBucket.FROM_5_TO_10_MS,
+      avgTick >= 5.0 && avgTick < 10.0 ? 1 : 0);
+    fineMsptDistribution.put(FineMsptBucket.FROM_10_MS_UP, avgTick >= 10.0 ? 1 : 0);
     return new BenchmarkScenarioResult.PhaseResult(
       durationMs,
       avgTick,
       Math.max(0.0, avgTick - 1.5),
       p95Tick,
       p95Tick + 1.2,
-      loadDist,
-      msptDist,
-      fineMsptDist,
+      loadDistribution,
+      msptDistribution,
+      fineMsptDistribution,
       0L,
       0,
       avgCpu,
@@ -198,12 +206,12 @@ class BenchmarkManagerTest {
         movementSamples,
         maxReduction,
         movementAdjustments > 0 || movementSamples > 0 || maxReduction > 0,
-        java.util.Arrays.stream(chunkKeys).boxed().collect(java.util.stream.Collectors.toSet())));
+        Arrays.stream(chunkKeys).boxed().collect(Collectors.toSet())));
   }
 
   @Test
   void blockWarmupDurationIs30Seconds() throws Exception {
-    java.lang.reflect.Field field =
+    Field field =
       BenchmarkManager.class.getDeclaredField("BLOCK_WARMUP_DURATION_MS");
     field.setAccessible(true);
     assertEquals(30_000L, field.get(null));
@@ -397,7 +405,7 @@ class BenchmarkManagerTest {
   void benchmarkCommandRegistersExplorationScenario() {
     @SuppressWarnings("unchecked")
     var benchmarkBuilder =
-      (com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack>) BenchmarkCommand.register();
+      (LiteralArgumentBuilder<CommandSourceStack>) BenchmarkCommand.register();
     CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher<>();
     LiteralCommandNode<CommandSourceStack> benchmarkNode = dispatcher.register(benchmarkBuilder);
 
@@ -496,11 +504,11 @@ class BenchmarkManagerTest {
     }
 
     for (Vec3 baselineTarget : baselineRoute) {
-      long baselineChunkKey = net.minecraft.world.level.ChunkPos.asLong(
+      long baselineChunkKey = ChunkPos.asLong(
         ((int) Math.floor(baselineTarget.x)) >> 4,
         ((int) Math.floor(baselineTarget.z)) >> 4);
       for (Vec3 activeTarget : activeRoute) {
-        long activeChunkKey = net.minecraft.world.level.ChunkPos.asLong(
+        long activeChunkKey = ChunkPos.asLong(
           ((int) Math.floor(activeTarget.x)) >> 4,
           ((int) Math.floor(activeTarget.z)) >> 4);
         assertFalse(baselineChunkKey == activeChunkKey);
@@ -768,13 +776,13 @@ class BenchmarkManagerTest {
 
     @Override
     public void beforeMeasurement(BenchmarkScenarioContext context) {
-      beforeMeasurementCalled = true;
+      this.beforeMeasurementCalled = true;
       PerformanceStats.itemsRemoved++;
     }
 
     @Override
     public void onMeasurementTick(BenchmarkScenarioContext context) {
-      onMeasurementTickCalled = true;
+      this.onMeasurementTickCalled = true;
       PerformanceStats.entityChunkCleanupRemoved++;
     }
   }

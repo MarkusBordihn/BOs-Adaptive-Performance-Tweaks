@@ -22,6 +22,7 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.spawn;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
@@ -29,6 +30,7 @@ import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModCompat;
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.TrackingCategory;
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.TrackingMode;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -86,7 +88,7 @@ class SpawnPresetLoaderTest {
     List<SpawnPreset> output = new ArrayList<>();
 
     Object result = invokePrivateMethod("parseAndAdd",
-      new Class<?>[]{String.class, com.google.gson.JsonElement.class, List.class},
+      new Class<?>[]{String.class, JsonElement.class, List.class},
       "test:template", jsonObject, output);
 
     assertEquals("SKIPPED_TEMPLATE", parseResultName(result));
@@ -103,7 +105,7 @@ class SpawnPresetLoaderTest {
     List<SpawnPreset> output = new ArrayList<>();
 
     Object result = invokePrivateMethod("parseAndAdd",
-      new Class<?>[]{String.class, com.google.gson.JsonElement.class, List.class},
+      new Class<?>[]{String.class, JsonElement.class, List.class},
       "test:allow_list", jsonObject, output);
 
     assertEquals("ADDED", parseResultName(result));
@@ -121,7 +123,7 @@ class SpawnPresetLoaderTest {
     List<SpawnPreset> output = new ArrayList<>();
 
     Object result = invokePrivateMethod("parseAndAdd",
-      new Class<?>[]{String.class, com.google.gson.JsonElement.class, List.class},
+      new Class<?>[]{String.class, JsonElement.class, List.class},
       "test:legacy_tracking", jsonObject, output);
 
     assertEquals("ADDED", parseResultName(result));
@@ -144,7 +146,7 @@ class SpawnPresetLoaderTest {
     List<SpawnPreset> output = new ArrayList<>();
 
     Object result = invokePrivateMethod("parseAndAdd",
-      new Class<?>[]{String.class, com.google.gson.JsonElement.class, List.class},
+      new Class<?>[]{String.class, JsonElement.class, List.class},
       "test:root_tracking_entities", jsonObject, output);
 
     assertEquals("ADDED", parseResultName(result));
@@ -169,7 +171,7 @@ class SpawnPresetLoaderTest {
     List<SpawnPreset> output = new ArrayList<>();
 
     Object result = invokePrivateMethod("parseAndAdd",
-      new Class<?>[]{String.class, com.google.gson.JsonElement.class, List.class},
+      new Class<?>[]{String.class, JsonElement.class, List.class},
       "test:nested_tracking", jsonObject, output);
 
     assertEquals("ADDED", parseResultName(result));
@@ -189,7 +191,7 @@ class SpawnPresetLoaderTest {
     List<SpawnPreset> output = new ArrayList<>();
 
     Object result = invokePrivateMethod("parseAndAdd",
-      new Class<?>[]{String.class, com.google.gson.JsonElement.class, List.class},
+      new Class<?>[]{String.class, JsonElement.class, List.class},
       "test:required_mods", jsonObject, output);
 
     assertEquals("SKIPPED_MISSING_MOD", parseResultName(result));
@@ -237,11 +239,11 @@ class SpawnPresetLoaderTest {
       .getResourceAsStream(EASY_NPC_PRESET_RESOURCE)) {
       assertTrue(inputStream != null);
       JsonObject jsonObject = JsonParser.parseReader(
-        new java.io.InputStreamReader(inputStream)).getAsJsonObject();
+        new InputStreamReader(inputStream)).getAsJsonObject();
       List<SpawnPreset> output = new ArrayList<>();
 
       Object result = invokePrivateMethod("parseAndAdd",
-        new Class<?>[]{String.class, com.google.gson.JsonElement.class, List.class},
+        new Class<?>[]{String.class, JsonElement.class, List.class},
         "resource:easy_npc", jsonObject, output);
 
       assertEquals("ADDED", parseResultName(result));

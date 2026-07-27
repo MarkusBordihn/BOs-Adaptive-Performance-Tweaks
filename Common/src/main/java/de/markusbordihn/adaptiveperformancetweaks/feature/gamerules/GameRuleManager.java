@@ -637,7 +637,6 @@ public final class GameRuleManager {
     PerformanceStats.gameRulesChanged++;
     if (gameRules != null) {
       gameRules.getRule(rule).set(value, ServerManager.getMinecraftServer());
-      return;
     }
   }
 
@@ -693,8 +692,8 @@ public final class GameRuleManager {
 
   private static boolean hasActiveMovementWarmup() {
     for (PlayerPosition playerPosition : PlayerPositionManager.getPlayerPositionMap().values()) {
-      if (playerPosition.hasRecentMovementDistance(
-        SimulationDistanceConfig.movementThrottleDistanceThresholdBlocks)) {
+      if (playerPosition.hasRecentMovementSpeed(
+        SimulationDistanceConfig.movementThrottleSpeedBlocksPerSecond)) {
         return true;
       }
     }

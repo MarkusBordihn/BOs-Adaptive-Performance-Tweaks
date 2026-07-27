@@ -22,6 +22,8 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.player;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -57,7 +59,7 @@ public final class PlayerDamageManager {
     }
   }
 
-  public static float handleLivingHurt(net.minecraft.world.entity.LivingEntity targetEntity,
+  public static float handleLivingHurt(LivingEntity targetEntity,
     float amount) {
     if (!(targetEntity instanceof ServerPlayer serverPlayer)) {
       return amount;
@@ -106,7 +108,7 @@ public final class PlayerDamageManager {
   }
 
   public static float handleLivingDamage(
-    net.minecraft.world.damagesource.DamageSource damageSource, float amount) {
+    DamageSource damageSource, float amount) {
     if (damageSource == null || !(damageSource.getEntity() instanceof ServerPlayer attacker)) {
       return amount;
     }

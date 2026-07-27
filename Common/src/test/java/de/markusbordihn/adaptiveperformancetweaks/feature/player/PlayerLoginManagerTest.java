@@ -50,7 +50,7 @@ class PlayerLoginManagerTest {
     Bootstrap.validate();
   }
 
-  private static <T> T mcMock(Class<T> type) {
+  private static <T> T minecraftMock(Class<T> type) {
     return mock(type, withSettings().mockMaker(MockMakers.SUBCLASS));
   }
 
@@ -68,15 +68,15 @@ class PlayerLoginManagerTest {
   }
 
   private static ServerPlayer mockPlayer(String username) {
-    ServerPlayer player = mcMock(ServerPlayer.class);
+    ServerPlayer player = minecraftMock(ServerPlayer.class);
     when(player.getName()).thenReturn(Component.literal(username));
     when(player.position()).thenReturn(new Vec3(0.0, 0.0, 0.0));
     return player;
   }
 
   private static MinecraftServer mockServerWith(String username, ServerPlayer player) {
-    MinecraftServer server = mcMock(MinecraftServer.class);
-    PlayerList playerList = mcMock(PlayerList.class);
+    MinecraftServer server = minecraftMock(MinecraftServer.class);
+    PlayerList playerList = minecraftMock(PlayerList.class);
     when(server.getPlayerList()).thenReturn(playerList);
     when(playerList.getPlayerByName(username)).thenReturn(player);
     return server;
@@ -91,7 +91,7 @@ class PlayerLoginManagerTest {
       PlayerLoginProtectionConfig.protectPlayerDuringLogin = true;
       PlayerLoginManager.handleServerAboutToStart();
 
-      PlayerLoginManager.handlePlayerLoggedIn(mcMock(ServerPlayer.class));
+      PlayerLoginManager.handlePlayerLoggedIn(minecraftMock(ServerPlayer.class));
 
       assertEquals(0, readPlayerValidationList().size());
     } finally {
@@ -202,7 +202,7 @@ class PlayerLoginManagerTest {
       PlayerLoginManager.handleServerAboutToStart();
 
       String username = "TestTickPlayer";
-      ServerPlayer player = mcMock(ServerPlayer.class);
+      ServerPlayer player = minecraftMock(ServerPlayer.class);
       when(player.getName()).thenReturn(Component.literal(username));
       // Initial position captured at login, then a moved position on the processing tick.
       when(player.position()).thenReturn(new Vec3(0.0, 0.0, 0.0), new Vec3(1.0, 0.0, 0.0));

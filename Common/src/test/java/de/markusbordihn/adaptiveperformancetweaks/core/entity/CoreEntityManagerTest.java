@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnPreset;
@@ -136,7 +137,7 @@ class CoreEntityManagerTest {
 
   private static ServerLevel mockOverworldLevel() {
     ServerLevel level = mock(ServerLevel.class, withSettings().mockMaker(MockMakers.SUBCLASS));
-    org.mockito.Mockito.when(level.dimension()).thenReturn(Level.OVERWORLD);
+    when(level.dimension()).thenReturn(Level.OVERWORLD);
     return level;
   }
 
@@ -484,7 +485,7 @@ class CoreEntityManagerTest {
     assertFalse(newer.isRemoved());
     assertFalse(newest.isRemoved());
     assertEquals(1L,
-      de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats.entityChunkCleanupRemoved);
+      PerformanceStats.entityChunkCleanupRemoved);
   }
 
   @Test

@@ -141,16 +141,16 @@ public enum FeatureToggle {
       return;
     }
 
-    boolean wasEnabled = isEnabled();
+    boolean wasEnabled = this.isEnabled();
     if (wasEnabled == enabled) {
       return;
     }
 
     CoreConfig.setFeatureEnabled(this, enabled);
     if (enabled) {
-      initializeFeatureState();
+      this.initializeFeatureState();
     } else {
-      restoreFeatureState();
+      this.restoreFeatureState();
     }
   }
 

@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class PlayerPositionTest {
@@ -39,9 +40,26 @@ class PlayerPositionTest {
     playerPosition.updateMovement(24.0, 64.0, 0.0, "minecraft:overworld", 80, 3, 20);
 
     assertTrue(playerPosition.hasCompleteMovementWindow());
-    assertTrue(playerPosition.hasRecentMovementDistance(24.0));
     assertEquals(24.0, playerPosition.getMovementWindowDistance(), 0.001);
+    assertEquals(8.0, playerPosition.getMovementSpeed(), 0.001);
+    assertTrue(playerPosition.hasRecentMovementSpeed(8.0));
+    assertFalse(playerPosition.hasRecentMovementSpeed(8.1));
     assertEquals(1, playerPosition.getLastChunkX());
+  }
+
+  @Test
+  @DisplayName("Vertical movement is ignored, a falling player is not treated as travelling")
+  void movementWindowIgnoresVerticalMovement() {
+    PlayerPosition playerPosition = new PlayerPosition(
+      "Faller", UUID.randomUUID(), "minecraft:overworld", 0, 320, 0, 128);
+
+    playerPosition.updateMovement(0.0, 320.0, 0.0, "minecraft:overworld", 20, 3, 20);
+    playerPosition.updateMovement(0.0, 220.0, 0.0, "minecraft:overworld", 40, 3, 20);
+    playerPosition.updateMovement(0.0, 120.0, 0.0, "minecraft:overworld", 60, 3, 20);
+    playerPosition.updateMovement(0.0, 20.0, 0.0, "minecraft:overworld", 80, 3, 20);
+
+    assertTrue(playerPosition.hasCompleteMovementWindow());
+    assertEquals(0.0, playerPosition.getMovementSpeed(), 0.001);
   }
 
   @Test

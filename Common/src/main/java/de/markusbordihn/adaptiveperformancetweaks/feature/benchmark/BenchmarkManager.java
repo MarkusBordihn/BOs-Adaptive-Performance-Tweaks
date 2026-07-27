@@ -1171,11 +1171,11 @@ public final class BenchmarkManager {
       + (activeBlock ? 1_003L : 509L)
       + 67L * originChunkX
       + 97L * originChunkZ;
-    Random rng = new Random(seed);
+    Random random = new Random(seed);
     int attempts = 0;
     while (points.size() < pointCount && attempts++ < maxAttempts) {
-      int chunkX = originChunkX + rng.nextInt(moveAreaHalfChunks * 2 + 1) - moveAreaHalfChunks;
-      int chunkZ = originChunkZ + rng.nextInt(moveAreaHalfChunks * 2 + 1) - moveAreaHalfChunks;
+      int chunkX = originChunkX + random.nextInt(moveAreaHalfChunks * 2 + 1) - moveAreaHalfChunks;
+      int chunkZ = originChunkZ + random.nextInt(moveAreaHalfChunks * 2 + 1) - moveAreaHalfChunks;
       long chunkKey = ChunkPos.asLong(chunkX, chunkZ);
       if (!reservedChunkKeys.add(chunkKey)) {
         continue;

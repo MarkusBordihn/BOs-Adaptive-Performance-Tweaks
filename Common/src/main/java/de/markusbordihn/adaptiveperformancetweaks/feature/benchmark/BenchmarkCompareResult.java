@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 
@@ -956,7 +957,7 @@ public record BenchmarkCompareResult(
 
   private <K extends Enum<K>> Map<K, Integer> aggregateDistribution(
     boolean activePhase,
-    java.util.function.Function<BenchmarkScenarioResult.PhaseResult, Map<K, Integer>> extractor,
+    Function<BenchmarkScenarioResult.PhaseResult, Map<K, Integer>> extractor,
     Class<K> keyType) {
     EnumMap<K, Integer> distribution = new EnumMap<>(keyType);
     for (BenchmarkScenarioResult scenarioResult : scenarioResults) {

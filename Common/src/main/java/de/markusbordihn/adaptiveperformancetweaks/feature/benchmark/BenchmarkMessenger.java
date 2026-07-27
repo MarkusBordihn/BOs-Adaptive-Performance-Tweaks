@@ -19,6 +19,7 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.benchmark;
 
+import java.io.File;
 import java.nio.file.Path;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.ClickEvent;
@@ -187,8 +188,8 @@ final class BenchmarkMessenger {
       return full;
     }
     int nameCount = path.getNameCount();
-    String sep = java.io.File.separator;
-    String parent = nameCount >= 2 ? path.getName(nameCount - 2) + sep : "";
-    return "..." + sep + parent + path.getFileName();
+    String separator = File.separator;
+    String parent = nameCount >= 2 ? path.getName(nameCount - 2) + separator : "";
+    return "..." + separator + parent + path.getFileName();
   }
 }

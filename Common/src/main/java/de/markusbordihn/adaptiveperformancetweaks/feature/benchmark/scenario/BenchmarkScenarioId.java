@@ -52,15 +52,15 @@ public enum BenchmarkScenarioId {
   }
 
   public String getId() {
-    return name().toLowerCase(Locale.ROOT);
+    return this.name().toLowerCase(Locale.ROOT);
   }
 
   public String getDisplayName() {
-    if (displayNameOverride != null) {
-      return displayNameOverride;
+    if (this.displayNameOverride != null) {
+      return this.displayNameOverride;
     }
-    String n = name();
-    return n.charAt(0) + n.substring(1).toLowerCase(Locale.ROOT);
+    String scenarioName = this.name();
+    return scenarioName.charAt(0) + scenarioName.substring(1).toLowerCase(Locale.ROOT);
   }
 
   public int getSuiteWeight() {

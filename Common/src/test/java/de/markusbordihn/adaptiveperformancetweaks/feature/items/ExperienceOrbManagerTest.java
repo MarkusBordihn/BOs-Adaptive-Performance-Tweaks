@@ -70,12 +70,12 @@ class ExperienceOrbManagerTest {
 
   @BeforeEach
   void setUp() {
-    previousFeatureState = FeatureToggle.EXPERIENCE_ORBS.isEnabled();
-    previousOptimizeExperienceOrbs = ExperienceOrbsConfig.optimizeExperienceOrbs;
-    previousClusterRange = ExperienceOrbsConfig.experienceOrbsClusterRange;
-    previousMoveToLastDrop = ExperienceOrbsConfig.movePositionToLastDrop;
-    previousRemoveStale = ExperienceOrbsConfig.removeStaleExperienceOrbs;
-    previousStaleTicks = ExperienceOrbsConfig.staleExperienceOrbAgeTicks;
+    this.previousFeatureState = FeatureToggle.EXPERIENCE_ORBS.isEnabled();
+    this.previousOptimizeExperienceOrbs = ExperienceOrbsConfig.optimizeExperienceOrbs;
+    this.previousClusterRange = ExperienceOrbsConfig.experienceOrbsClusterRange;
+    this.previousMoveToLastDrop = ExperienceOrbsConfig.movePositionToLastDrop;
+    this.previousRemoveStale = ExperienceOrbsConfig.removeStaleExperienceOrbs;
+    this.previousStaleTicks = ExperienceOrbsConfig.staleExperienceOrbAgeTicks;
 
     FeatureToggle.EXPERIENCE_ORBS.setEnabled(true);
     ExperienceOrbsConfig.optimizeExperienceOrbs = true;
@@ -89,12 +89,12 @@ class ExperienceOrbManagerTest {
 
   @AfterEach
   void tearDown() {
-    FeatureToggle.EXPERIENCE_ORBS.setEnabled(previousFeatureState);
-    ExperienceOrbsConfig.optimizeExperienceOrbs = previousOptimizeExperienceOrbs;
-    ExperienceOrbsConfig.experienceOrbsClusterRange = previousClusterRange;
-    ExperienceOrbsConfig.movePositionToLastDrop = previousMoveToLastDrop;
-    ExperienceOrbsConfig.removeStaleExperienceOrbs = previousRemoveStale;
-    ExperienceOrbsConfig.staleExperienceOrbAgeTicks = previousStaleTicks;
+    FeatureToggle.EXPERIENCE_ORBS.setEnabled(this.previousFeatureState);
+    ExperienceOrbsConfig.optimizeExperienceOrbs = this.previousOptimizeExperienceOrbs;
+    ExperienceOrbsConfig.experienceOrbsClusterRange = this.previousClusterRange;
+    ExperienceOrbsConfig.movePositionToLastDrop = this.previousMoveToLastDrop;
+    ExperienceOrbsConfig.removeStaleExperienceOrbs = this.previousRemoveStale;
+    ExperienceOrbsConfig.staleExperienceOrbAgeTicks = this.previousStaleTicks;
     PerformanceStats.reset();
     ExperienceOrbManager.handleServerStopping();
   }
