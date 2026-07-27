@@ -2,8 +2,22 @@
 
 ## Note
 
-This change log includes the summarized changes.
-For the full changelog, please go to the [GitHub History][history] instead.
+This change log includes the summarized changes. For the full changelog, please go to
+the [GitHub History][history] instead.
+
+### 12.8.0
+
+- Fixed #91 by letting the login and teleport warmup decay back to the load-based distance.
+- Fixed view and simulation distance never recovering while a player kept walking around.
+- Fixed simulation distance never recovering from a warmup at NORMAL load and above.
+- Changed `movementThrottleRecoverOnlyWhenStable` to wait for the movement threshold rather than a
+  motionless player; only applies with `movementThrottleEnabled=false`.
+- Changed movement throttling to a speed in blocks/s, replacing the distance-threshold settings with
+  `movementThrottleSpeedBlocksPerSecond`/`movementSpeedBlocksPerSecond` (removed on load).
+- Changed movement throttling to ignore vertical movement; falling and mining down no longer count.
+- Added a second throttle stage for fast transit, applying max reduction at any load, via
+  `movementThrottleFastSpeedBlocksPerSecond`/`movementFastSpeedBlocksPerSecond`.
+- Increased code readability.
 
 ### 12.7.0
 
@@ -14,12 +28,12 @@ For the full changelog, please go to the [GitHub History][history] instead.
 ### 12.6.0
 
 - Fixed item merge losing the remainder when a drop only partially fits a nearby stack.
-- Fixed arrow cleanup removing thrown tridents and pickup-able player arrows; protected
-  projectiles now use a separate hard cap (tridents removed last).
-- Fixed game rules not being restored on shutdown, persisting optimized values
-  (randomTickSpeed, doFireTick, ...) into level.dat and corrupting the baseline on restart.
-- Fixed /aptweaks feature not applying enable/disable transitions (stale view/simulation
-  distance and game rules).
+- Fixed arrow cleanup removing thrown tridents and pickup-able player arrows; protected projectiles
+  now use a separate hard cap (tridents removed last).
+- Fixed game rules not being restored on shutdown, persisting optimized values (randomTickSpeed,
+  doFireTick, ...) into level.dat and corrupting the baseline on restart.
+- Fixed /aptweaks feature not applying enable/disable transitions (stale view/simulation distance
+  and game rules).
 - Fixed monitoringIntervalSeconds=0 silencing monitoring instead of logging on load changes.
 - Fixed dimensions.ignore in spawn presets falling back to global limits instead of exempting it.
 - Fixed server load rising-check comparing against a two-cycles-old measurement.
@@ -28,14 +42,14 @@ For the full changelog, please go to the [GitHub History][history] instead.
 - Added protection for named/enchanted/NBT items in world/type limits with a 2x hard cap.
 - Added wiring for minOptimizationLoadLevel in simulation distance and game rules.
 - Added validation for core load thresholds and damage reduction percentages.
-- Improved AI throttling to skip only goal/navigation/sensing, keeping physics, item pickup
-  and despawning intact.
+- Improved AI throttling to skip only goal/navigation/sensing, keeping physics, item pickup and
+  despawning intact.
 - Improved game-rule movement warmup to work without an active distance feature.
 - Improved config reload to log mod conflict warnings only once.
-- Improved entity tracking report to write asynchronously and mob-farm cleanup to use live
-  entity positions.
-- Improved benchmark heap metric: GC-collapsed measurements now report "n/a (GC)" instead of
-  a misleading 0KB delta.
+- Improved entity tracking report to write asynchronously and mob-farm cleanup to use live entity
+  positions.
+- Improved benchmark heap metric: GC-collapsed measurements now report "n/a (GC)" instead of a
+  misleading 0KB delta.
 - Removed unused NeoForge-style mixin entries from the Forge mods.toml.
 
 ### 12.5.0
@@ -93,7 +107,7 @@ For the full changelog, please go to the [GitHub History][history] instead.
 
 ### 12.0.0 🚀
 
-Next major alpha release with refactored code and improved performance.
-Now available for Fabric, Forge and NeoForge with a single codebase and better maintainability.
+Next major alpha release with refactored code and improved performance. Now available for Fabric,
+Forge and NeoForge with a single codebase and better maintainability.
 
 [history]: https://github.com/MarkusBordihn/BOs-Adaptive-Performance-Tweaks/commits/main

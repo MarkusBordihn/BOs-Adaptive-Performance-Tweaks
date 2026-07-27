@@ -703,8 +703,8 @@ public final class GameRuleManager {
 
   private static boolean hasActiveMovementWarmup() {
     for (PlayerPosition playerPosition : PlayerPositionManager.getPlayerPositionMap().values()) {
-      if (playerPosition.hasRecentMovementDistance(
-        SimulationDistanceConfig.movementThrottleDistanceThresholdBlocks)) {
+      if (playerPosition.hasRecentMovementSpeed(
+        SimulationDistanceConfig.movementThrottleSpeedBlocksPerSecond)) {
         return true;
       }
     }

@@ -20,12 +20,14 @@
 package de.markusbordihn.adaptiveperformancetweaks.feature.distance;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPosition;
 import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPositionManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class SimulationDistanceManagerTest {
@@ -48,6 +50,13 @@ class SimulationDistanceManagerTest {
     return field.get(null);
   }
 
+  private static void writePlayerPositionManagerField(String fieldName, Object value)
+    throws Exception {
+    Field field = PlayerPositionManager.class.getDeclaredField(fieldName);
+    field.setAccessible(true);
+    field.set(null, value);
+  }
+
   private static void invokeUpdateMovementThrottle(boolean recordMovementSample) throws Exception {
     Method method = SimulationDistanceManager.class.getDeclaredMethod("updateMovementThrottle",
       boolean.class);
@@ -58,17 +67,26 @@ class SimulationDistanceManagerTest {
   @Test
   void mediumLoadNeedsHighExplorerShareForMaxReduction() {
     assertEquals(1, SimulationDistanceManager.calculateMovementReduction(
-      ServerLoadLevel.MEDIUM, 4, 1));
+      ServerLoadLevel.MEDIUM, 4, 1, 0));
     assertEquals(2, SimulationDistanceManager.calculateMovementReduction(
-      ServerLoadLevel.MEDIUM, 4, 3));
+      ServerLoadLevel.MEDIUM, 4, 3, 0));
   }
 
   @Test
   void highAndVeryHighLoadScaleMoreAggressively() {
     assertEquals(2, SimulationDistanceManager.calculateMovementReduction(
-      ServerLoadLevel.HIGH, 4, 2));
+      ServerLoadLevel.HIGH, 4, 2, 0));
     assertEquals(2, SimulationDistanceManager.calculateMovementReduction(
-      ServerLoadLevel.VERY_HIGH, 4, 1));
+      ServerLoadLevel.VERY_HIGH, 4, 1, 0));
+  }
+
+  @Test
+  @DisplayName("A single fast traveller reaches the max reduction even at the lowest load")
+  void fastExplorerReachesMaxReductionRegardlessOfLoad() {
+    assertEquals(1, SimulationDistanceManager.calculateMovementReduction(
+      ServerLoadLevel.VERY_LOW, 4, 1, 0));
+    assertEquals(2, SimulationDistanceManager.calculateMovementReduction(
+      ServerLoadLevel.VERY_LOW, 4, 1, 1));
   }
 
   @Test
@@ -129,7 +147,8 @@ class SimulationDistanceManagerTest {
   }
 
   @Test
-  void movementRecoveryPausesAtNormalLoad() throws Exception {
+  @DisplayName("Warmup reduction also recovers at NORMAL load, the baseline handles the load")
+  void movementRecoveryContinuesAtNormalLoad() throws Exception {
     PlayerPositionManager.reset();
     writeStaticField("currentLoadLevel", ServerLoadLevel.NORMAL);
     writeStaticField("currentMovementReduction", 2);
@@ -138,7 +157,32 @@ class SimulationDistanceManagerTest {
 
     invokeUpdateMovementThrottle(false);
 
-    assertEquals(2, readStaticField("currentMovementReduction"));
+    assertEquals(1, readStaticField("currentMovementReduction"));
+  }
+
+  @Test
+  @DisplayName("A walking player below the explorer threshold does not block recovery")
+  void movementRecoveryProceedsWhilePlayerStaysBelowExplorerThreshold() throws Exception {
+    PlayerPositionManager.reset();
+    writeStaticField("configuredDistanceMax", SimulationDistanceConfig.simDistanceMax);
+    writeStaticField("currentLoadLevel", ServerLoadLevel.VERY_LOW);
+    writeStaticField("currentMovementReduction", 2);
+    writeStaticField("recoveryStartTick", 0);
+    writeStaticField("nextRecoveryTick", 0);
+
+    PlayerPosition playerPosition = new PlayerPosition("Walker", UUID.randomUUID(),
+      "minecraft:overworld", 0, 64, 0, 128);
+    playerPosition.updateMovement(0.0d, 64.0d, 0.0d, "minecraft:overworld", 0, 3, 20);
+    playerPosition.updateMovement(4.0d, 64.0d, 0.0d, "minecraft:overworld", 20, 3, 20);
+    playerPosition.updateMovement(8.0d, 64.0d, 0.0d, "minecraft:overworld", 40, 3, 20);
+    playerPosition.updateMovement(12.0d, 64.0d, 0.0d, "minecraft:overworld", 60, 3, 20);
+    PlayerPositionManager.getPlayerPositionMap().put("walker", playerPosition);
+    writePlayerPositionManagerField("ticks", 61);
+
+    invokeUpdateMovementThrottle(false);
+
+    assertEquals(0, readStaticField("activeExplorerCount"));
+    assertEquals(1, readStaticField("currentMovementReduction"));
   }
 
   @Test
@@ -150,11 +194,40 @@ class SimulationDistanceManagerTest {
   }
 
   @Test
-  void movementWarmupDoesNotRelaxTeleportWarmupBeforeStability() throws Exception {
+  @DisplayName("Teleport warmup is held until the recovery delay has elapsed")
+  void movementWarmupHoldsTeleportWarmupUntilRecoveryDelayElapsed() throws Exception {
     PlayerPositionManager.reset();
     writeStaticField("configuredDistanceMax", SimulationDistanceConfig.simDistanceMax);
     writeStaticField("currentLoadLevel", ServerLoadLevel.VERY_LOW);
     writeStaticField("currentMovementReduction", invokeIntMethod("getWarmupReduction"));
+    writeStaticField("recoveryStartTick", -1);
+    writeStaticField("nextRecoveryTick", -1);
+
+    PlayerPosition playerPosition = new PlayerPosition("Benchmark", UUID.randomUUID(),
+      "minecraft:overworld", 0, 64, 0, 128);
+    playerPosition.setLoginWarmup(0, SimulationDistanceConfig.movementThrottleLoginTicks);
+    playerPosition.updateMovement(0.0d, 64.0d, 0.0d, "minecraft:overworld", 0, 3, 20);
+    playerPosition.updateMovement(16.0d, 64.0d, 0.0d, "minecraft:overworld", 20, 3, 20);
+    playerPosition.updateMovement(32.0d, 64.0d, 0.0d, "minecraft:overworld", 40, 3, 20);
+    playerPosition.updateMovement(48.0d, 64.0d, 0.0d, "minecraft:overworld", 60, 3, 20);
+    PlayerPositionManager.getPlayerPositionMap().put("benchmark", playerPosition);
+    writePlayerPositionManagerField("ticks", 61);
+
+    invokeUpdateMovementThrottle(true);
+
+    assertEquals(invokeIntMethod("getWarmupReduction"),
+      readStaticField("currentMovementReduction"));
+  }
+
+  @Test
+  @DisplayName("Issue #91: warmup reduction decays toward the movement target while exploring")
+  void warmupReductionDecaysTowardMovementTargetWhileExploring() throws Exception {
+    PlayerPositionManager.reset();
+    writeStaticField("configuredDistanceMax", SimulationDistanceConfig.simDistanceMax);
+    writeStaticField("currentLoadLevel", ServerLoadLevel.VERY_LOW);
+    writeStaticField("currentMovementReduction", invokeIntMethod("getWarmupReduction"));
+    writeStaticField("recoveryStartTick", -1);
+    writeStaticField("nextRecoveryTick", -1);
 
     PlayerPosition playerPosition = new PlayerPosition("Benchmark", UUID.randomUUID(),
       "minecraft:overworld", 0, 64, 0, 128);
@@ -165,13 +238,23 @@ class SimulationDistanceManagerTest {
     playerPosition.updateMovement(48.0d, 64.0d, 0.0d, "minecraft:overworld", 60, 3, 20);
     PlayerPositionManager.getPlayerPositionMap().put("benchmark", playerPosition);
 
-    Field ticksField = PlayerPositionManager.class.getDeclaredField("ticks");
-    ticksField.setAccessible(true);
-    ticksField.set(null, 61);
-
+    writePlayerPositionManagerField("ticks", 61);
     invokeUpdateMovementThrottle(true);
-
     assertEquals(invokeIntMethod("getWarmupReduction"),
       readStaticField("currentMovementReduction"));
+
+    writePlayerPositionManagerField("ticks", readStaticField("recoveryStartTick"));
+    invokeUpdateMovementThrottle(true);
+    int currentReduction = (int) readStaticField("currentMovementReduction");
+    assertEquals(invokeIntMethod("getWarmupReduction") - 1, currentReduction);
+
+    while (currentReduction > 1) {
+      writePlayerPositionManagerField("ticks", readStaticField("nextRecoveryTick"));
+      invokeUpdateMovementThrottle(true);
+      currentReduction = (int) readStaticField("currentMovementReduction");
+      assertTrue(currentReduction >= 1);
+    }
+    assertEquals(1, currentReduction);
+    assertEquals(-1, readStaticField("recoveryStartTick"));
   }
 }
