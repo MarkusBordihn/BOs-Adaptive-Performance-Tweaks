@@ -39,18 +39,18 @@ import org.junit.jupiter.params.provider.MethodSource;
 class SpawnPresetExcludedConfigTest {
 
   private static final Gson GSON = new Gson();
-  private static final Path EXCLUDED_DIR = Path.of(
+  private static final Path EXCLUDED_DIRECTORY = Path.of(
     "src/main/resources/data/adaptive_performance_tweaks/aptweaks/spawn_presets/mods/excluded");
 
   static Stream<Path> excludedPresetFiles() throws IOException {
-    return Files.walk(EXCLUDED_DIR)
+    return Files.walk(EXCLUDED_DIRECTORY)
       .filter(path -> path.toString().endsWith(".json"));
   }
 
   @ParameterizedTest(name = "{0}")
   @MethodSource("excludedPresetFiles")
   void eachExcludedPresetIsValid(Path file) throws IOException {
-    String name = EXCLUDED_DIR.relativize(file).toString();
+    String name = EXCLUDED_DIRECTORY.relativize(file).toString();
     JsonObject jsonObject;
     try (Reader reader = Files.newBufferedReader(file)) {
       jsonObject = GSON.fromJson(reader, JsonObject.class);
@@ -64,16 +64,16 @@ class SpawnPresetExcludedConfigTest {
     assertTrue(jsonObject.get("priority").getAsInt() > 0, name + ": 'priority' must be > 0");
 
     assertTrue(jsonObject.has("mode"), name + ": missing 'mode'");
-    String modeStr = jsonObject.get("mode").getAsString();
-    TrackingMode trackingMode = TrackingMode.fromSerializedName(modeStr, null);
-    assertNotNull(trackingMode, name + ": unknown 'mode' value '" + modeStr
+    String modeString = jsonObject.get("mode").getAsString();
+    TrackingMode trackingMode = TrackingMode.fromSerializedName(modeString, null);
+    assertNotNull(trackingMode, name + ": unknown 'mode' value '" + modeString
       + "' - valid values: exclude_namespace, exclude_entity, protect_namespace, protect_entity");
 
     assertTrue(jsonObject.has("category"), name + ": missing 'category'");
-    String categoryStr = jsonObject.get("category").getAsString();
-    TrackingCategory trackingCategory = TrackingCategory.fromSerializedName(categoryStr);
+    String categoryString = jsonObject.get("category").getAsString();
+    TrackingCategory trackingCategory = TrackingCategory.fromSerializedName(categoryString);
     assertNotEquals(TrackingCategory.UNKNOWN, trackingCategory,
-      name + ": unknown 'category' value '" + categoryStr
+      name + ": unknown 'category' value '" + categoryString
         + "' - valid values: technical, vehicle_structure, world_effect, managed_living, storage_network, manual_override");
 
     assertFalse(jsonObject.has("entities"),

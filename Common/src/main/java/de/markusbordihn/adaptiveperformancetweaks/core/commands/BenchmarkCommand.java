@@ -25,6 +25,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.BenchmarkManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenarioId;
+import java.io.File;
 import java.nio.file.Path;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
@@ -47,13 +48,13 @@ public class BenchmarkCommand extends CustomCommand {
       .requires(source -> source.hasPermission(2))
       .executes(command)
       .then(Commands.literal("start")
-        .executes(ctx -> startBenchmark(ctx, DEFAULT_PHASE_SECONDS, false))
+        .executes(context -> startBenchmark(context, DEFAULT_PHASE_SECONDS, false))
         .then(Commands.argument("seconds", IntegerArgumentType.integer(30, 3600))
-          .executes(ctx -> startBenchmark(ctx,
-            IntegerArgumentType.getInteger(ctx, "seconds"), false))
+          .executes(context -> startBenchmark(context,
+            IntegerArgumentType.getInteger(context, "seconds"), false))
           .then(Commands.literal("move")
-            .executes(ctx -> startBenchmark(ctx,
-              IntegerArgumentType.getInteger(ctx, "seconds"), true))))
+            .executes(context -> startBenchmark(context,
+              IntegerArgumentType.getInteger(context, "seconds"), true))))
         .then(Commands.literal("scenario")
           .then(registerScenarioStart(BenchmarkScenarioId.GENERAL, false))
           .then(registerScenarioStart(BenchmarkScenarioId.EXPLORATION, false))
@@ -62,14 +63,14 @@ public class BenchmarkCommand extends CustomCommand {
           .then(registerScenarioStart(BenchmarkScenarioId.ENTITIES, false))
           .then(registerScenarioStart(BenchmarkScenarioId.RECOVERY, false))))
       .then(Commands.literal("confirm")
-        .executes(ctx -> {
-          ServerPlayer player = ctx.getSource().getPlayerOrException();
+        .executes(context -> {
+          ServerPlayer player = context.getSource().getPlayerOrException();
           BenchmarkManager.confirm(player);
           return 0;
         }))
       .then(Commands.literal("cancel")
-        .executes(ctx -> {
-          ServerPlayer player = ctx.getSource().getPlayerOrException();
+        .executes(context -> {
+          ServerPlayer player = context.getSource().getPlayerOrException();
           BenchmarkManager.cancel(player);
           return 0;
         }))
@@ -89,13 +90,14 @@ public class BenchmarkCommand extends CustomCommand {
     BenchmarkScenarioId scenarioId, boolean defaultAutoMove) {
     return Commands.literal(scenarioId.getId())
       .executes(
-        ctx -> startScenarioBenchmark(ctx, scenarioId, DEFAULT_PHASE_SECONDS, defaultAutoMove))
+        context -> startScenarioBenchmark(context, scenarioId, DEFAULT_PHASE_SECONDS,
+          defaultAutoMove))
       .then(Commands.argument("seconds", IntegerArgumentType.integer(30, 3600))
-        .executes(ctx -> startScenarioBenchmark(ctx, scenarioId,
-          IntegerArgumentType.getInteger(ctx, "seconds"), defaultAutoMove))
+        .executes(context -> startScenarioBenchmark(context, scenarioId,
+          IntegerArgumentType.getInteger(context, "seconds"), defaultAutoMove))
         .then(Commands.literal("move")
-          .executes(ctx -> startScenarioBenchmark(ctx, scenarioId,
-            IntegerArgumentType.getInteger(ctx, "seconds"), true))));
+          .executes(context -> startScenarioBenchmark(context, scenarioId,
+            IntegerArgumentType.getInteger(context, "seconds"), true))));
   }
 
   private static int startScenarioBenchmark(CommandContext<CommandSourceStack> context,
@@ -114,9 +116,9 @@ public class BenchmarkCommand extends CustomCommand {
     }
 
     int nameCount = path.getNameCount();
-    String separator = java.io.File.separator;
-    String parentPath = nameCount >= 2 ? path.getName(nameCount - 2) + separator : "";
-    return "..." + separator + parentPath + path.getFileName();
+    String separator = File.separator;
+    String parent = nameCount >= 2 ? path.getName(nameCount - 2) + separator : "";
+    return "..." + separator + parent + path.getFileName();
   }
 
   private static MutableComponent buildLastResultLink(Path resultPath) {

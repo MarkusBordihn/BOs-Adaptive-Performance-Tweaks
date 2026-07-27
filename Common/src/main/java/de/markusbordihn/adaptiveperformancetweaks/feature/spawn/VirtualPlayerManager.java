@@ -35,7 +35,7 @@ public final class VirtualPlayerManager {
   }
 
   public static void add(ServerLevel level, Vec3 position) {
-    positions.computeIfAbsent(dimensionId(level), k -> new ArrayList<>()).add(position);
+    positions.computeIfAbsent(dimensionId(level), dimensionKey -> new ArrayList<>()).add(position);
   }
 
   public static void remove(ServerLevel level, Vec3 position) {

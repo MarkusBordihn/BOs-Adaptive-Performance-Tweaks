@@ -50,10 +50,11 @@ public class PlayerPositionCommand extends CustomCommand {
     for (Map.Entry<String, PlayerPosition> entry : playerPositionMap.entrySet()) {
       sendFeedback(
         context,
-        String.format("-> %s %s movement=%.1f stable=%s",
+        String.format("-> %s %s movement=%.1f speed=%.1fb/s stable=%s",
           entry.getValue().getPlayerName(),
           entry.getValue(),
           entry.getValue().getMovementWindowDistance(),
+          entry.getValue().getMovementSpeed(),
           entry.getValue().isStableForTicks(PlayerPositionManager.getMovementUpdateTick())));
     }
 

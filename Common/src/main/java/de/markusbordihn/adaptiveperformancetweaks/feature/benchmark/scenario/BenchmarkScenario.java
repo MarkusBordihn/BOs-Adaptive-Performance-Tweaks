@@ -26,11 +26,11 @@ public interface BenchmarkScenario {
   BenchmarkScenarioId id();
 
   default String displayName() {
-    return id().getDisplayName();
+    return this.id().getDisplayName();
   }
 
   default boolean usesAutoMove(boolean requestedAutoMove) {
-    return requestedAutoMove && id().supportsAutoMove();
+    return requestedAutoMove && this.id().supportsAutoMove();
   }
 
   default double cleanupRadius() {

@@ -315,7 +315,10 @@ public final class SpawnManager {
   }
 
   private static int applyBonus(int limit, int bonus) {
-    return limit < 0 || bonus <= 0 ? limit : limit + bonus;
+    if (limit < 0 || bonus <= 0) {
+      return limit;
+    }
+    return limit + bonus;
   }
 
   private static SpecialSpawnBonus getSpecialSpawnBonus(
@@ -428,10 +431,9 @@ public final class SpawnManager {
 
     NearPlayerCacheKey cacheKey = new NearPlayerCacheKey(
       dimensionId, ((int) anchorPos.x) >> 4, ((int) anchorPos.z) >> 4, entityType);
-    final Vec3 finalAnchorPos = anchorPos;
     int base = tickNearPlayerEntityCountCache.computeIfAbsent(cacheKey,
       key -> CoreEntityManager.getNumberOfEntitiesNearPosition(dimensionId, entityType,
-        finalAnchorPos, viewDistance));
+        anchorPos, viewDistance));
     return base + nearPlayerCountDelta.getOrDefault(cacheKey, 0);
   }
 

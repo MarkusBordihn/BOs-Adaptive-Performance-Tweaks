@@ -70,7 +70,8 @@ class SimulationDistanceConfigTest {
     assertEquals(3, SimulationDistanceConfig.movementThrottleWindowSamples);
     assertEquals(5, SimulationDistanceConfig.movementThrottleWindowSamplesMax);
     assertEquals(20, SimulationDistanceConfig.movementThrottleSampleTicks);
-    assertEquals(24, SimulationDistanceConfig.movementThrottleDistanceThresholdBlocks);
+    assertEquals(5, SimulationDistanceConfig.movementThrottleSpeedBlocksPerSecond);
+    assertEquals(20, SimulationDistanceConfig.movementThrottleFastSpeedBlocksPerSecond);
     assertEquals(140, SimulationDistanceConfig.movementThrottleRecoveryDelayTicks);
     assertEquals(40, SimulationDistanceConfig.movementThrottleRecoveryStepTicks);
     assertEquals(60, SimulationDistanceConfig.movementThrottleLoginTicks);

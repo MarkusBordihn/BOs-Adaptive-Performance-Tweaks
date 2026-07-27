@@ -26,6 +26,7 @@ import net.minecraft.server.level.ServerPlayer;
 public class PlayerPosition {
 
   private static final int CHUNK_SIZE = 16;
+  private static final int TICKS_PER_SECOND = 20;
   private static final double STATIONARY_DISTANCE_EPSILON = 0.01D;
 
   private final ViewArea viewArea;
@@ -42,6 +43,7 @@ public class PlayerPosition {
   private int movementWindowCount = 0;
   private int movementWindowIndex = 0;
   private double movementWindowDistance = 0.0D;
+  private int movementWindowSampleTicks = 0;
   private int stableTicks = 0;
   private int loginWarmupUntilTick = 0;
 
@@ -103,8 +105,17 @@ public class PlayerPosition {
     return this.movementWindow.length > 0 && this.movementWindowCount >= this.movementWindow.length;
   }
 
-  public boolean hasRecentMovementDistance(double thresholdBlocks) {
-    return hasCompleteMovementWindow() && this.movementWindowDistance >= thresholdBlocks;
+  public double getMovementSpeed() {
+    if (!this.hasCompleteMovementWindow() || this.movementWindowSampleTicks <= 0) {
+      return 0.0D;
+    }
+
+    return this.movementWindowDistance * TICKS_PER_SECOND
+      / (double) (this.movementWindow.length * this.movementWindowSampleTicks);
+  }
+
+  public boolean hasRecentMovementSpeed(double blocksPerSecond) {
+    return this.getMovementSpeed() >= blocksPerSecond;
   }
 
   public boolean isLoginWarmupActive(int currentTick) {
@@ -122,15 +133,16 @@ public class PlayerPosition {
 
   public void updateMovement(ServerPlayer serverPlayer, String levelName, int currentTick,
     int movementWindowSamples, int sampleTicks) {
-    updateMovement(serverPlayer.getX(), serverPlayer.getY(), serverPlayer.getZ(), levelName,
+    this.updateMovement(serverPlayer.getX(), serverPlayer.getY(), serverPlayer.getZ(), levelName,
       currentTick, movementWindowSamples, sampleTicks);
   }
 
   public void updateMovement(double posX, double posY, double posZ, String levelName,
     int currentTick, int movementWindowSamples, int sampleTicks) {
-    ensureMovementWindowSize(movementWindowSamples);
+    this.ensureMovementWindowSize(movementWindowSamples);
+    this.movementWindowSampleTicks = Math.max(1, sampleTicks);
     if (!levelName.equals(this.levelName)) {
-      resetMovementWindow();
+      this.resetMovementWindow();
       this.levelName = levelName;
       this.lastPosX = posX;
       this.lastPosY = posY;
@@ -156,7 +168,8 @@ public class PlayerPosition {
     double deltaY = posY - this.lastPosY;
     double deltaZ = posZ - this.lastPosZ;
     double movementDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
-    addMovementDistance(movementDistance);
+    // Only horizontal travel moves the chunk frontier, so falls and mine shafts must not count.
+    this.addMovementDistance(Math.sqrt(deltaX * deltaX + deltaZ * deltaZ));
 
     int tickDelta = Math.max(sampleTicks, currentTick - this.lastMovementSampleTick);
     if (movementDistance <= STATIONARY_DISTANCE_EPSILON) {
@@ -175,7 +188,7 @@ public class PlayerPosition {
 
   public boolean update(
     ServerPlayer serverPlayer, String levelName, int viewDistance, int simulationDistance) {
-    return updateViewArea(serverPlayer, levelName, viewDistance, simulationDistance);
+    return this.updateViewArea(serverPlayer, levelName, viewDistance, simulationDistance);
   }
 
   public boolean updateViewArea(
@@ -193,7 +206,7 @@ public class PlayerPosition {
     }
 
     this.movementWindow = new double[windowSize];
-    resetMovementWindow();
+    this.resetMovementWindow();
   }
 
   private void addMovementDistance(double movementDistance) {

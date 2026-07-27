@@ -125,7 +125,7 @@ public final class SpawnThrottleTests {
     }
 
     int allowed = spawnedZombies.size();
-    spawnedZombies.forEach(z -> z.remove(Entity.RemovalReason.DISCARDED));
+    spawnedZombies.forEach(zombie -> zombie.remove(Entity.RemovalReason.DISCARDED));
     FeatureToggle.SPAWN.setEnabled(wasSpawnEnabled);
     SpawnConfig.spawnLimitationMaxMobsPerWorld = originalWorldMax;
     SpawnConfig.friendlyChunkSpawnRate = originalFriendlyRate;
@@ -147,11 +147,11 @@ public final class SpawnThrottleTests {
     final int ATTEMPTS = 20;
 
     boolean wasSpawnEnabled = FeatureToggle.SPAWN.isEnabled();
-    int origServerMax = SpawnConfig.spawnLimitationMaxMobsPerServer;
-    int origWorldMax = SpawnConfig.spawnLimitationMaxMobsPerWorld;
-    int origChunkMax = SpawnConfig.spawnLimitationMaxMobsPerChunk;
-    int origPlayerMax = SpawnConfig.spawnLimitationMaxMobsPerPlayer;
-    int origFriendlyRate = SpawnConfig.friendlyChunkSpawnRate;
+    int originalServerMax = SpawnConfig.spawnLimitationMaxMobsPerServer;
+    int originalWorldMax = SpawnConfig.spawnLimitationMaxMobsPerWorld;
+    int originalChunkMax = SpawnConfig.spawnLimitationMaxMobsPerChunk;
+    int originalPlayerMax = SpawnConfig.spawnLimitationMaxMobsPerPlayer;
+    int originalFriendlyRate = SpawnConfig.friendlyChunkSpawnRate;
 
     FeatureToggle.SPAWN.setEnabled(true);
     SpawnConfig.spawnLimitationMaxMobsPerServer = LIMIT;
@@ -180,13 +180,13 @@ public final class SpawnThrottleTests {
     }
 
     int allowed = spawnedZombies.size();
-    spawnedZombies.forEach(z -> z.remove(Entity.RemovalReason.DISCARDED));
+    spawnedZombies.forEach(zombie -> zombie.remove(Entity.RemovalReason.DISCARDED));
     FeatureToggle.SPAWN.setEnabled(wasSpawnEnabled);
-    SpawnConfig.spawnLimitationMaxMobsPerServer = origServerMax;
-    SpawnConfig.spawnLimitationMaxMobsPerWorld = origWorldMax;
-    SpawnConfig.spawnLimitationMaxMobsPerChunk = origChunkMax;
-    SpawnConfig.spawnLimitationMaxMobsPerPlayer = origPlayerMax;
-    SpawnConfig.friendlyChunkSpawnRate = origFriendlyRate;
+    SpawnConfig.spawnLimitationMaxMobsPerServer = originalServerMax;
+    SpawnConfig.spawnLimitationMaxMobsPerWorld = originalWorldMax;
+    SpawnConfig.spawnLimitationMaxMobsPerChunk = originalChunkMax;
+    SpawnConfig.spawnLimitationMaxMobsPerPlayer = originalPlayerMax;
+    SpawnConfig.friendlyChunkSpawnRate = originalFriendlyRate;
     SpawnManager.handleServerAboutToStart();
 
     GameTestHelpers.assertTrue(
@@ -205,11 +205,11 @@ public final class SpawnThrottleTests {
     final int ATTEMPTS = 10;
 
     boolean wasSpawnEnabled = FeatureToggle.SPAWN.isEnabled();
-    int origChunkMax = SpawnConfig.spawnLimitationMaxMobsPerChunk;
-    int origWorldMax = SpawnConfig.spawnLimitationMaxMobsPerWorld;
-    int origServerMax = SpawnConfig.spawnLimitationMaxMobsPerServer;
-    int origPlayerMax = SpawnConfig.spawnLimitationMaxMobsPerPlayer;
-    int origFriendlyRate = SpawnConfig.friendlyChunkSpawnRate;
+    int originalChunkMax = SpawnConfig.spawnLimitationMaxMobsPerChunk;
+    int originalWorldMax = SpawnConfig.spawnLimitationMaxMobsPerWorld;
+    int originalServerMax = SpawnConfig.spawnLimitationMaxMobsPerServer;
+    int originalPlayerMax = SpawnConfig.spawnLimitationMaxMobsPerPlayer;
+    int originalFriendlyRate = SpawnConfig.friendlyChunkSpawnRate;
 
     FeatureToggle.SPAWN.setEnabled(true);
     SpawnConfig.spawnLimitationMaxMobsPerChunk = LIMIT;
@@ -238,13 +238,13 @@ public final class SpawnThrottleTests {
     }
 
     int allowed = spawnedZombies.size();
-    spawnedZombies.forEach(z -> z.remove(Entity.RemovalReason.DISCARDED));
+    spawnedZombies.forEach(zombie -> zombie.remove(Entity.RemovalReason.DISCARDED));
     FeatureToggle.SPAWN.setEnabled(wasSpawnEnabled);
-    SpawnConfig.spawnLimitationMaxMobsPerChunk = origChunkMax;
-    SpawnConfig.spawnLimitationMaxMobsPerWorld = origWorldMax;
-    SpawnConfig.spawnLimitationMaxMobsPerServer = origServerMax;
-    SpawnConfig.spawnLimitationMaxMobsPerPlayer = origPlayerMax;
-    SpawnConfig.friendlyChunkSpawnRate = origFriendlyRate;
+    SpawnConfig.spawnLimitationMaxMobsPerChunk = originalChunkMax;
+    SpawnConfig.spawnLimitationMaxMobsPerWorld = originalWorldMax;
+    SpawnConfig.spawnLimitationMaxMobsPerServer = originalServerMax;
+    SpawnConfig.spawnLimitationMaxMobsPerPlayer = originalPlayerMax;
+    SpawnConfig.friendlyChunkSpawnRate = originalFriendlyRate;
     SpawnManager.handleServerAboutToStart();
 
     GameTestHelpers.assertTrue(
@@ -263,11 +263,11 @@ public final class SpawnThrottleTests {
     final int ATTEMPTS = 10;
 
     boolean wasSpawnEnabled = FeatureToggle.SPAWN.isEnabled();
-    int origPlayerMax = SpawnConfig.spawnLimitationMaxMobsPerPlayer;
-    int origWorldMax = SpawnConfig.spawnLimitationMaxMobsPerWorld;
-    int origServerMax = SpawnConfig.spawnLimitationMaxMobsPerServer;
-    int origChunkMax = SpawnConfig.spawnLimitationMaxMobsPerChunk;
-    int origFriendlyRate = SpawnConfig.friendlyChunkSpawnRate;
+    int originalPlayerMax = SpawnConfig.spawnLimitationMaxMobsPerPlayer;
+    int originalWorldMax = SpawnConfig.spawnLimitationMaxMobsPerWorld;
+    int originalServerMax = SpawnConfig.spawnLimitationMaxMobsPerServer;
+    int originalChunkMax = SpawnConfig.spawnLimitationMaxMobsPerChunk;
+    int originalFriendlyRate = SpawnConfig.friendlyChunkSpawnRate;
 
     FeatureToggle.SPAWN.setEnabled(true);
     SpawnConfig.spawnLimitationMaxMobsPerPlayer = LIMIT;
@@ -299,14 +299,14 @@ public final class SpawnThrottleTests {
     }
 
     int allowed = spawnedZombies.size();
-    spawnedZombies.forEach(z -> z.remove(Entity.RemovalReason.DISCARDED));
+    spawnedZombies.forEach(zombie -> zombie.remove(Entity.RemovalReason.DISCARDED));
     VirtualPlayerManager.clearAll();
     FeatureToggle.SPAWN.setEnabled(wasSpawnEnabled);
-    SpawnConfig.spawnLimitationMaxMobsPerPlayer = origPlayerMax;
-    SpawnConfig.spawnLimitationMaxMobsPerWorld = origWorldMax;
-    SpawnConfig.spawnLimitationMaxMobsPerServer = origServerMax;
-    SpawnConfig.spawnLimitationMaxMobsPerChunk = origChunkMax;
-    SpawnConfig.friendlyChunkSpawnRate = origFriendlyRate;
+    SpawnConfig.spawnLimitationMaxMobsPerPlayer = originalPlayerMax;
+    SpawnConfig.spawnLimitationMaxMobsPerWorld = originalWorldMax;
+    SpawnConfig.spawnLimitationMaxMobsPerServer = originalServerMax;
+    SpawnConfig.spawnLimitationMaxMobsPerChunk = originalChunkMax;
+    SpawnConfig.friendlyChunkSpawnRate = originalFriendlyRate;
     SpawnManager.handleServerAboutToStart();
 
     GameTestHelpers.assertTrue(
@@ -373,7 +373,7 @@ public final class SpawnThrottleTests {
     }
 
     int allowed = spawnedZombies.size();
-    spawnedZombies.forEach(z -> z.remove(Entity.RemovalReason.DISCARDED));
+    spawnedZombies.forEach(zombie -> zombie.remove(Entity.RemovalReason.DISCARDED));
     FeatureToggle.SPAWN.setEnabled(wasSpawnEnabled);
     SpawnConfig.spawnLimitationMaxMobsPerWorld = originalWorldMax;
     SpawnConfig.spawnLimitationMaxMobsPerServer = originalServerMax;
@@ -452,7 +452,7 @@ public final class SpawnThrottleTests {
     }
 
     int allowed = spawnedZombies.size();
-    spawnedZombies.forEach(z -> z.remove(Entity.RemovalReason.DISCARDED));
+    spawnedZombies.forEach(zombie -> zombie.remove(Entity.RemovalReason.DISCARDED));
     FeatureToggle.SPAWN.setEnabled(wasSpawnEnabled);
     SpawnConfig.spawnLimitationMaxMobsPerWorld = originalWorldMax;
     SpawnConfig.spawnLimitationMaxMobsPerServer = originalServerMax;

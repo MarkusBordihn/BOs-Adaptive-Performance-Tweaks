@@ -43,6 +43,7 @@ public final class SimulationDistanceManager {
   private static int currentLoadBaselineDistance = -1;
   private static int currentMovementReduction = 0;
   private static int activeExplorerCount = 0;
+  private static int fastExplorerCount = 0;
   private static int configuredDistanceMax = -1;
   private static int recoveryStartTick = -1;
   private static int nextRecoveryTick = -1;
@@ -57,6 +58,7 @@ public final class SimulationDistanceManager {
     currentLoadBaselineDistance = -1;
     currentMovementReduction = 0;
     activeExplorerCount = 0;
+    fastExplorerCount = 0;
     configuredDistanceMax = server.getPlayerList().getSimulationDistance();
     recoveryStartTick = -1;
     nextRecoveryTick = -1;
@@ -164,7 +166,7 @@ public final class SimulationDistanceManager {
   }
 
   static int calculateMovementReduction(
-    ServerLoadLevel loadLevel, int trackedPlayers, int activeExplorers) {
+    ServerLoadLevel loadLevel, int trackedPlayers, int activeExplorers, int fastExplorers) {
     if (trackedPlayers <= 0 || activeExplorers <= 0) {
       return 0;
     }
@@ -176,7 +178,7 @@ public final class SimulationDistanceManager {
     }
 
     double activeRatio = activeExplorers / (double) trackedPlayers;
-    boolean useMaxReduction = switch (loadLevel) {
+    boolean useMaxReduction = fastExplorers > 0 || switch (loadLevel) {
       case MEDIUM -> activeRatio >= MEDIUM_MAX_REDUCTION_RATIO;
       case HIGH -> activeRatio >= HIGH_MAX_REDUCTION_RATIO;
       case VERY_HIGH -> true;
@@ -260,95 +262,77 @@ public final class SimulationDistanceManager {
     Map<String, PlayerPosition> playerPositions = PlayerPositionManager.getPlayerPositionMap();
     int trackedPlayers = playerPositions.size();
     int newActiveExplorerCount = 0;
+    int newFastExplorerCount = 0;
     int warmupPlayerCount = 0;
     int previousReduction = currentMovementReduction;
-    boolean allPlayersStable = trackedPlayers == 0;
     for (PlayerPosition playerPosition : playerPositions.values()) {
       boolean warmupActive = playerPosition.isLoginWarmupActive(currentTick);
-      boolean hasRecentMovement = playerPosition.hasRecentMovementDistance(
-        SimulationDistanceConfig.movementThrottleDistanceThresholdBlocks);
-      if (warmupActive || hasRecentMovement) {
-        newActiveExplorerCount++;
-      }
       if (warmupActive) {
         warmupPlayerCount++;
       }
-
-      if (!playerPosition.isStableForTicks(PlayerPositionManager.getMovementUpdateTick())) {
-        allPlayersStable = false;
+      if (warmupActive || playerPosition.hasRecentMovementSpeed(
+        SimulationDistanceConfig.movementThrottleSpeedBlocksPerSecond)) {
+        newActiveExplorerCount++;
+      }
+      if (playerPosition.hasRecentMovementSpeed(
+        SimulationDistanceConfig.movementThrottleFastSpeedBlocksPerSecond)) {
+        newFastExplorerCount++;
       }
     }
 
     activeExplorerCount = newActiveExplorerCount;
-    int targetReduction = 0;
-    boolean loginWarmupActive = warmupPlayerCount > 0;
-    if (loginWarmupActive) {
-      targetReduction = getWarmupReduction();
-    }
-    boolean movementWarmupActive = SimulationDistanceConfig.movementThrottleEnabled
-      && activeExplorerCount > 0;
-    if (movementWarmupActive) {
-      targetReduction = Math.max(targetReduction,
-        calculateMovementReduction(currentLoadLevel, trackedPlayers, activeExplorerCount));
+    fastExplorerCount = newFastExplorerCount;
+    int targetReduction = warmupPlayerCount > 0 ? getWarmupReduction() : 0;
+    if (SimulationDistanceConfig.movementThrottleEnabled && activeExplorerCount > 0) {
+      targetReduction = Math.max(targetReduction, calculateMovementReduction(
+        currentLoadLevel, trackedPlayers, activeExplorerCount, fastExplorerCount));
     }
 
-    if (targetReduction > 0) {
+    if (targetReduction >= currentMovementReduction) {
+      currentMovementReduction = targetReduction;
       recoveryStartTick = -1;
       nextRecoveryTick = -1;
-      currentMovementReduction = Math.max(currentMovementReduction, targetReduction);
-      if (recordMovementSample) {
-        PerformanceStats.simulationDistanceMovementThrottleSamples++;
-        PerformanceStats.simulationDistanceMovementMaxReduction =
-          Math.max(PerformanceStats.simulationDistanceMovementMaxReduction,
-            currentMovementReduction);
-      }
-      if (!loginWarmupActive && currentMovementReduction != previousReduction) {
-        log.debug(
-          "Simulation distance movement warmup: reduction {} -> {} (activeExplorers={} load={})",
-          previousReduction, currentMovementReduction, activeExplorerCount, currentLoadLevel);
-      }
-      return;
-    }
-
-    if (currentMovementReduction <= 0) {
-      clearMovementThrottle();
-      return;
-    }
-
-    if (currentLoadLevel.isAtLeast(ServerLoadLevel.NORMAL)) {
-      return;
-    }
-
-    if (SimulationDistanceConfig.movementThrottleRecoverOnlyWhenStable && !allPlayersStable) {
-      recoveryStartTick = -1;
-      nextRecoveryTick = -1;
-      return;
-    }
-
-    if (recoveryStartTick < 0) {
-      recoveryStartTick = currentTick + currentRecoveryDelayTicks();
-      nextRecoveryTick = recoveryStartTick;
-    }
-
-    if (currentTick < nextRecoveryTick) {
-      return;
-    }
-
-    currentMovementReduction = Math.max(0, currentMovementReduction - 1);
-    if (currentMovementReduction != previousReduction) {
-      log.debug("Simulation distance warmup recovery: reduction {} -> {} (load={})",
-        previousReduction, currentMovementReduction, currentLoadLevel);
-    }
-    if (currentMovementReduction == 0) {
+    } else if (isRecoveryBlocked(targetReduction)) {
       recoveryStartTick = -1;
       nextRecoveryTick = -1;
     } else {
-      nextRecoveryTick = currentTick + SimulationDistanceConfig.movementThrottleRecoveryStepTicks;
+      if (recoveryStartTick < 0) {
+        recoveryStartTick = currentTick + currentRecoveryDelayTicks();
+        nextRecoveryTick = recoveryStartTick;
+      }
+      if (currentTick >= nextRecoveryTick) {
+        currentMovementReduction = Math.max(targetReduction, currentMovementReduction - 1);
+        nextRecoveryTick = currentTick + SimulationDistanceConfig.movementThrottleRecoveryStepTicks;
+      }
+      if (currentMovementReduction <= targetReduction) {
+        recoveryStartTick = -1;
+        nextRecoveryTick = -1;
+      }
     }
+
+    if (recordMovementSample && targetReduction > 0) {
+      PerformanceStats.simulationDistanceMovementThrottleSamples++;
+      PerformanceStats.simulationDistanceMovementMaxReduction = Math.max(
+        PerformanceStats.simulationDistanceMovementMaxReduction, currentMovementReduction);
+    }
+
+    if (currentMovementReduction != previousReduction) {
+      log.debug(
+        "Simulation distance warmup: reduction {} -> {} (target={} explorers={} fast={} load={})",
+        previousReduction, currentMovementReduction, targetReduction, activeExplorerCount,
+        fastExplorerCount, currentLoadLevel);
+    }
+  }
+
+  private static boolean isRecoveryBlocked(int targetReduction) {
+    return targetReduction <= 0
+      && SimulationDistanceConfig.movementThrottleRecoverOnlyWhenStable
+      && activeExplorerCount > 0;
   }
 
   private static void clearMovementThrottle() {
     activeExplorerCount = 0;
+    fastExplorerCount = 0;
     currentMovementReduction = 0;
     recoveryStartTick = -1;
     nextRecoveryTick = -1;
