@@ -550,7 +550,7 @@ class CoreEntityManagerTest {
     assertFalse(newer.isRemoved());
     assertFalse(newest.isRemoved());
     assertEquals(1L,
-      de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats.entityChunkCleanupRemoved);
+      PerformanceStats.entityChunkCleanupRemoved);
   }
 
   @Test

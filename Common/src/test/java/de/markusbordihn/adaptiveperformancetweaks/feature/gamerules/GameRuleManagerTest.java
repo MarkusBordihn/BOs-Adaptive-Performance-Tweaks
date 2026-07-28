@@ -250,16 +250,10 @@ class GameRuleManagerTest {
     when(server.getGameRules()).thenReturn(rules);
     PlayerPosition playerPosition =
       new PlayerPosition("tester", UUID.randomUUID(), "minecraft:overworld", 0, 64, 0, 128);
-    Field movementWindowField = PlayerPosition.class.getDeclaredField("movementWindow");
-    Field movementWindowCountField = PlayerPosition.class.getDeclaredField("movementWindowCount");
-    Field movementWindowDistanceField =
-      PlayerPosition.class.getDeclaredField("movementWindowDistance");
-    movementWindowField.setAccessible(true);
-    movementWindowCountField.setAccessible(true);
-    movementWindowDistanceField.setAccessible(true);
-    movementWindowField.set(playerPosition, new double[]{32.0D, 0.0D, 0.0D});
-    movementWindowCountField.set(playerPosition, 3);
-    movementWindowDistanceField.set(playerPosition, 32.0D);
+    playerPosition.updateMovement(0.0d, 64.0d, 0.0d, "minecraft:overworld", 0, 3, 20);
+    playerPosition.updateMovement(16.0d, 64.0d, 0.0d, "minecraft:overworld", 20, 3, 20);
+    playerPosition.updateMovement(32.0d, 64.0d, 0.0d, "minecraft:overworld", 40, 3, 20);
+    playerPosition.updateMovement(48.0d, 64.0d, 0.0d, "minecraft:overworld", 60, 3, 20);
 
     try {
       writeServerManagerField("minecraftServer", server);

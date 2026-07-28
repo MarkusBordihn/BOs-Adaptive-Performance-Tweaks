@@ -490,7 +490,6 @@ public final class CoreEntityManager {
     return counter;
   }
 
-
   public static int getNumberOfEntitiesNearPosition(
     String levelName, EntityType<?> entityType, Vec3 center, double horizontalRange) {
     Identifier levelKey = resolveLevelKey(levelName);

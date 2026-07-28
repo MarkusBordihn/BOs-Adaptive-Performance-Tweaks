@@ -39,10 +39,20 @@ public final class SimulationDistanceConfig extends Config {
        Higher load level = lower distance to reduce server tick pressure.
        Optional movement throttling adds temporary reductions during login, teleport and
        heavy exploration independent of load.
-       Note: movementThrottleLoginTicks and movementThrottleDistanceThresholdBlocks are also
+       Throttling is speed based and measured in horizontal blocks per second, averaged over
+       movementThrottleWindowSamples x movementThrottleSampleTicks. Vertical movement is
+       ignored, since falling and mining down do not move the chunk frontier. Reference
+       speeds: walking 4.3, sprinting 5.6, horse 5-15, elytra 20-30, boat on ice 40.
+         movementThrottleSpeedBlocksPerSecond     -> movementThrottleMinReduction (exploration)
+         movementThrottleFastSpeedBlocksPerSecond -> movementThrottleMaxReduction (fast transit)
+       Note: movementThrottleLoginTicks and movementThrottleSpeedBlocksPerSecond are also
        used by the GameRules feature for its random-tick warmup timing.
        movementThrottleRecoveryMinDelayTicks acts as a hard floor: recovery never starts
        earlier, even if movementThrottleRecoveryDelayTicks is set lower.
+       movementThrottleRecoverOnlyWhenStable holds the last reduction step until no player
+       travels faster than movementThrottleSpeedBlocksPerSecond anymore. It only applies with
+       movementThrottleEnabled=false, since the throttle itself already keeps a reduction
+       while players are exploring.
       """;
 
   public static ServerLoadLevel minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;
@@ -59,7 +69,8 @@ public final class SimulationDistanceConfig extends Config {
   public static int movementThrottleWindowSamples = 3;
   public static int movementThrottleWindowSamplesMax = 5;
   public static int movementThrottleSampleTicks = 20;
-  public static int movementThrottleDistanceThresholdBlocks = 24;
+  public static int movementThrottleSpeedBlocksPerSecond = 5;
+  public static int movementThrottleFastSpeedBlocksPerSecond = 20;
   public static int movementThrottleRecoveryMinDelayTicks = 200;
   public static int movementThrottleRecoveryDelayTicks = 140;
   public static int movementThrottleRecoveryStepTicks = 40;
@@ -104,8 +115,11 @@ public final class SimulationDistanceConfig extends Config {
         movementThrottleWindowSamples)));
     movementThrottleSampleTicks = Math.max(1,
       parseConfigValue(properties, "movementThrottleSampleTicks", movementThrottleSampleTicks));
-    movementThrottleDistanceThresholdBlocks = Math.max(1, parseConfigValue(properties,
-      "movementThrottleDistanceThresholdBlocks", movementThrottleDistanceThresholdBlocks));
+    movementThrottleSpeedBlocksPerSecond = Math.max(1, parseConfigValue(properties,
+      "movementThrottleSpeedBlocksPerSecond", movementThrottleSpeedBlocksPerSecond));
+    movementThrottleFastSpeedBlocksPerSecond = Math.max(movementThrottleSpeedBlocksPerSecond,
+      parseConfigValue(properties, "movementThrottleFastSpeedBlocksPerSecond",
+        movementThrottleFastSpeedBlocksPerSecond));
     movementThrottleRecoveryMinDelayTicks = Math.max(0, parseConfigValue(properties,
       "movementThrottleRecoveryMinDelayTicks", movementThrottleRecoveryMinDelayTicks));
     movementThrottleRecoveryDelayTicks = Math.max(1, parseConfigValue(properties,
@@ -123,17 +137,19 @@ public final class SimulationDistanceConfig extends Config {
       parseConfigValue(properties,
         "movementThrottleMaxReduction", movementThrottleMaxReduction));
     properties.remove("movementThrottleMinimumLoadLevel");
+    properties.remove("movementThrottleDistanceThresholdBlocks");
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
     PlayerPositionManager.configureMovementTracking(movementThrottleSampleTicks,
       movementThrottleWindowSamples);
     log.debug(
-      "Simulation distance per load: VERY_LOW={} LOW={} NORMAL={} MEDIUM={} HIGH={} VERY_HIGH={} | loginWarmup={} movementThrottle={} minLoad={} samples={}/{} sampleTicks={} threshold={} recovery(minDelay={} delay={} step={}) loginTicks={} recoverOnlyWhenStable={} reduction={}..{}",
+      "Simulation distance per load: VERY_LOW={} LOW={} NORMAL={} MEDIUM={} HIGH={} VERY_HIGH={} | loginWarmup={} movementThrottle={} minLoad={} samples={}/{} sampleTicks={} speed={}/{}b/s recovery(minDelay={} delay={} step={}) loginTicks={} recoverOnlyWhenStable={} reduction={}..{}",
       simDistanceVeryLow, simDistanceLow, simDistanceNormal,
       simDistanceMedium, simDistanceHigh, simDistanceVeryHigh,
       loginWarmupEnabled, movementThrottleEnabled,
       movementThrottleWindowSamples, movementThrottleWindowSamplesMax,
-      movementThrottleSampleTicks, movementThrottleDistanceThresholdBlocks,
+      movementThrottleSampleTicks, movementThrottleSpeedBlocksPerSecond,
+      movementThrottleFastSpeedBlocksPerSecond,
       movementThrottleRecoveryMinDelayTicks, movementThrottleRecoveryDelayTicks,
       movementThrottleRecoveryStepTicks, movementThrottleLoginTicks,
       movementThrottleRecoverOnlyWhenStable, movementThrottleMinReduction,

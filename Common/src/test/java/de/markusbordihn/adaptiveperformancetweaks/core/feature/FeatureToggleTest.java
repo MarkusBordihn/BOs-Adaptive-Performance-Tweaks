@@ -182,7 +182,7 @@ class FeatureToggleTest {
       writeStaticField(SimulationDistanceManager.class, "currentMovementReduction", 3);
       writeStaticField(SimulationDistanceManager.class, "activeExplorerCount", 2);
       writeStaticField(SimulationDistanceManager.class, "currentLoadLevel",
-        de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel.HIGH);
+        ServerLoadLevel.HIGH);
 
       FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.setEnabled(false);
 
@@ -193,7 +193,7 @@ class FeatureToggleTest {
         readStaticField(SimulationDistanceManager.class, "currentMovementReduction"));
       assertEquals(0, readStaticField(SimulationDistanceManager.class, "activeExplorerCount"));
       assertEquals(
-        de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel.NORMAL,
+        ServerLoadLevel.NORMAL,
         readStaticField(SimulationDistanceManager.class, "currentLoadLevel"));
     } finally {
       FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.setEnabled(previousState);
@@ -208,14 +208,14 @@ class FeatureToggleTest {
       writeStaticField(ViewDistanceManager.class, "currentDistance", 5);
       writeStaticField(ViewDistanceManager.class, "currentWarmupReduction", 3);
       writeStaticField(ViewDistanceManager.class, "currentLoadLevel",
-        de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel.HIGH);
+        ServerLoadLevel.HIGH);
 
       FeatureToggle.ADAPTIVE_VIEW_DISTANCE.setEnabled(false);
 
       assertEquals(-1, readStaticField(ViewDistanceManager.class, "currentDistance"));
       assertEquals(0, readStaticField(ViewDistanceManager.class, "currentWarmupReduction"));
       assertEquals(
-        de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel.NORMAL,
+        ServerLoadLevel.NORMAL,
         readStaticField(ViewDistanceManager.class, "currentLoadLevel"));
     } finally {
       FeatureToggle.ADAPTIVE_VIEW_DISTANCE.setEnabled(previousState);
@@ -228,7 +228,7 @@ class FeatureToggleTest {
     try {
       FeatureToggle.GAMERULES.setEnabled(true);
       writeStaticField(GameRuleManager.class, "gameRules",
-        mock(net.minecraft.world.level.gamerules.GameRules.class));
+        mock(GameRules.class));
       writeStaticField(GameRuleManager.class, "randomTickWarmupUntilTime",
         System.currentTimeMillis() + 1_000L);
       writeStaticField(GameRuleManager.class, "randomTickPlayerActivityRecoveryPending", true);

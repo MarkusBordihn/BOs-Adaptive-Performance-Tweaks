@@ -21,20 +21,24 @@ package de.markusbordihn.adaptiveperformancetweaks.forge.mixin;
 
 import de.markusbordihn.adaptiveperformancetweaks.server.CommonServerEventHandler;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.portal.TeleportTransition;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerPlayer.class)
 public class ServerPlayerTeleportMixin {
 
-  @Inject(method = "teleportTo(DDD)V", at = @At("TAIL"))
-  private void aptweaks_handleSameDimensionTeleport(double x, double y, double z, CallbackInfo ci) {
-    if (!((Object) this instanceof ServerPlayer serverPlayer)) {
-      return;
+  @Inject(
+    method =
+      "teleport(Lnet/minecraft/world/level/portal/TeleportTransition;)Lnet/minecraft/server/level/ServerPlayer;",
+    at = @At("RETURN"))
+  private void aptweaks_handleTeleport(
+    TeleportTransition transition, CallbackInfoReturnable<ServerPlayer> cir) {
+    ServerPlayer serverPlayer = cir.getReturnValue();
+    if (serverPlayer != null) {
+      CommonServerEventHandler.handlePlayerTeleported(serverPlayer);
     }
-
-    CommonServerEventHandler.handlePlayerTeleported(serverPlayer);
   }
 }

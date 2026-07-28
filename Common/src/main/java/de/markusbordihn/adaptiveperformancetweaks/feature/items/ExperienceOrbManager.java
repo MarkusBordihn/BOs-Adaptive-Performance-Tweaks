@@ -20,6 +20,7 @@
 package de.markusbordihn.adaptiveperformancetweaks.feature.items;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
+import de.markusbordihn.adaptiveperformancetweaks.accessor.ExperienceOrbAccessor;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
@@ -148,25 +149,17 @@ public final class ExperienceOrbManager {
             mergedValue,
             orbEntity.blockPosition(),
             levelName);
-          double mergedX = existing.getX();
-          double mergedY = existing.getY();
-          double mergedZ = existing.getZ();
+
+          ((ExperienceOrbAccessor) existing).setValue(mergedValue);
+          orbEntity.entityTags().forEach(existing::addTag);
           if (ExperienceOrbsConfig.movePositionToLastDrop) {
-            mergedX = orbEntity.getX();
-            mergedY = Math.max(existing.getY(), orbEntity.getY());
-            mergedZ = orbEntity.getZ();
+            existing.snapTo(
+              orbEntity.getX(),
+              Math.max(existing.getY(), orbEntity.getY()),
+              orbEntity.getZ());
           }
 
-          ExperienceOrb mergedOrb = new ExperienceOrb(level, mergedX, mergedY, mergedZ,
-            mergedValue);
-          mergedOrb.tickCount = Math.max(existing.tickCount, orbEntity.tickCount);
-          existing.entityTags().forEach(mergedOrb::addTag);
-          orbEntity.entityTags().forEach(mergedOrb::addTag);
-
-          worldOrbs.remove(existing);
-          existing.remove(RemovalReason.DISCARDED);
           orbEntity.remove(RemovalReason.DISCARDED);
-          level.addFreshEntity(mergedOrb);
           PerformanceStats.xpOrbsMerged++;
           return true;
         }

@@ -107,7 +107,7 @@ public class ViewArea {
     this.startZ = posZ - calculatedViewAreaDistance;
     this.stopZ = posZ + calculatedViewAreaDistance;
     this.startY = Math.max(posY - calculatedViewAreaDistance, MIN_BUILD_HEIGHT);
-    this.stopY = calculateMaxHeight(posY, calculatedViewAreaDistance, isNether, isTheEnd);
+    this.stopY = this.calculateMaxHeight(posY, calculatedViewAreaDistance, isNether, isTheEnd);
 
     return true;
   }

@@ -53,10 +53,8 @@ public final class PlayerPositionManager {
 
   public static void reset() {
     playerPositionMap = new ConcurrentHashMap<>();
-    playerMovementUpdateTick = DEFAULT_PLAYER_MOVEMENT_UPDATE_TICK;
-    playerMovementWindowSamples = 5;
     ticks = 0;
-    nextMovementUpdateTick = DEFAULT_PLAYER_MOVEMENT_UPDATE_TICK;
+    nextMovementUpdateTick = playerMovementUpdateTick;
     nextFullUpdateTick = PLAYER_POSITION_UPDATE_TICK;
   }
 

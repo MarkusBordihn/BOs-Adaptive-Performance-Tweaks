@@ -23,14 +23,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.withSettings;
+import de.markusbordihn.adaptiveperformancetweaks.accessor.ExperienceOrbAccessor;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import java.lang.reflect.Field;
-import java.util.concurrent.atomic.AtomicReference;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.level.ServerLevel;
@@ -39,6 +40,7 @@ import net.minecraft.world.level.Level;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockMakers;
 
@@ -72,12 +74,12 @@ class ExperienceOrbManagerTest {
 
   @BeforeEach
   void setUp() {
-    previousFeatureState = FeatureToggle.EXPERIENCE_ORBS.isEnabled();
-    previousOptimizeExperienceOrbs = ExperienceOrbsConfig.optimizeExperienceOrbs;
-    previousClusterRange = ExperienceOrbsConfig.experienceOrbsClusterRange;
-    previousMoveToLastDrop = ExperienceOrbsConfig.movePositionToLastDrop;
-    previousRemoveStale = ExperienceOrbsConfig.removeStaleExperienceOrbs;
-    previousStaleTicks = ExperienceOrbsConfig.staleExperienceOrbAgeTicks;
+    this.previousFeatureState = FeatureToggle.EXPERIENCE_ORBS.isEnabled();
+    this.previousOptimizeExperienceOrbs = ExperienceOrbsConfig.optimizeExperienceOrbs;
+    this.previousClusterRange = ExperienceOrbsConfig.experienceOrbsClusterRange;
+    this.previousMoveToLastDrop = ExperienceOrbsConfig.movePositionToLastDrop;
+    this.previousRemoveStale = ExperienceOrbsConfig.removeStaleExperienceOrbs;
+    this.previousStaleTicks = ExperienceOrbsConfig.staleExperienceOrbAgeTicks;
 
     FeatureToggle.EXPERIENCE_ORBS.setEnabled(true);
     ExperienceOrbsConfig.optimizeExperienceOrbs = true;
@@ -91,12 +93,12 @@ class ExperienceOrbManagerTest {
 
   @AfterEach
   void tearDown() {
-    FeatureToggle.EXPERIENCE_ORBS.setEnabled(previousFeatureState);
-    ExperienceOrbsConfig.optimizeExperienceOrbs = previousOptimizeExperienceOrbs;
-    ExperienceOrbsConfig.experienceOrbsClusterRange = previousClusterRange;
-    ExperienceOrbsConfig.movePositionToLastDrop = previousMoveToLastDrop;
-    ExperienceOrbsConfig.removeStaleExperienceOrbs = previousRemoveStale;
-    ExperienceOrbsConfig.staleExperienceOrbAgeTicks = previousStaleTicks;
+    FeatureToggle.EXPERIENCE_ORBS.setEnabled(this.previousFeatureState);
+    ExperienceOrbsConfig.optimizeExperienceOrbs = this.previousOptimizeExperienceOrbs;
+    ExperienceOrbsConfig.experienceOrbsClusterRange = this.previousClusterRange;
+    ExperienceOrbsConfig.movePositionToLastDrop = this.previousMoveToLastDrop;
+    ExperienceOrbsConfig.removeStaleExperienceOrbs = this.previousRemoveStale;
+    ExperienceOrbsConfig.staleExperienceOrbAgeTicks = this.previousStaleTicks;
     PerformanceStats.reset();
     ExperienceOrbManager.handleServerStopping();
   }
@@ -104,15 +106,6 @@ class ExperienceOrbManagerTest {
   @Test
   void nearbyOrbsMergeTheirValues() {
     ServerLevel level = mockOverworldLevel();
-    AtomicReference<ExperienceOrb> mergedOrbReference = new AtomicReference<>();
-    doAnswer(invocation -> {
-      ExperienceOrb mergedOrb = invocation.getArgument(0);
-      mergedOrb.setId(100);
-      mergedOrbReference.set(mergedOrb);
-      ExperienceOrbManager.handleExperienceOrbJoinLevel(mergedOrb, level);
-      return true;
-    }).when(level).addFreshEntity(any(ExperienceOrb.class));
-
     TestExperienceOrb first = new TestExperienceOrb(level, 0.0d, 64.0d, 0.0d, 3);
     first.setId(1);
     TestExperienceOrb second = new TestExperienceOrb(level, 1.0d, 64.0d, 1.0d, 5);
@@ -123,11 +116,26 @@ class ExperienceOrbManagerTest {
 
     assertFalse(firstMerged);
     assertTrue(secondMerged);
-    assertTrue(first.isRemoved());
+    assertFalse(first.isRemoved());
     assertTrue(second.isRemoved());
-    assertEquals(8, mergedOrbReference.get().getValue());
+    assertEquals(8, first.getValue());
     assertEquals(1, ExperienceOrbManager.getTrackedExperienceOrbCount());
     assertEquals(1L, PerformanceStats.xpOrbsMerged);
+  }
+
+  @Test
+  @DisplayName("Merging keeps the surviving orb instead of spawning a replacement entity")
+  void mergingDoesNotSpawnReplacementEntities() {
+    ServerLevel level = mockOverworldLevel();
+    for (int index = 0; index < 64; index++) {
+      TestExperienceOrb orb = new TestExperienceOrb(level, 0.0d, 64.0d, 0.0d, 1);
+      orb.setId(index + 1);
+      ExperienceOrbManager.handleExperienceOrbJoinLevel(orb, level);
+    }
+
+    verify(level, never()).addFreshEntity(any());
+    assertEquals(1, ExperienceOrbManager.getTrackedExperienceOrbCount());
+    assertEquals(63L, PerformanceStats.xpOrbsMerged);
   }
 
   @Test
@@ -176,10 +184,16 @@ class ExperienceOrbManagerTest {
     assertTrue(ExperienceOrbManager.getTrackedExperienceOrbCountsByDimension().isEmpty());
   }
 
-  private static final class TestExperienceOrb extends ExperienceOrb {
+  private static final class TestExperienceOrb extends ExperienceOrb
+    implements ExperienceOrbAccessor {
 
     private TestExperienceOrb(ServerLevel level, double x, double y, double z, int value) {
       super(level, x, y, z, value);
+    }
+
+    @Override
+    public void setValue(int value) {
+      this.entityData.set(DATA_VALUE, value);
     }
   }
 }
