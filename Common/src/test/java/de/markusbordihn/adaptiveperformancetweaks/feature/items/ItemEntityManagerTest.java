@@ -22,6 +22,7 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.items;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.withSettings;
@@ -78,13 +79,13 @@ class ItemEntityManagerTest {
   private static ServerLevel mockOverworldLevel() {
     ServerLevel level = mock(ServerLevel.class, withSettings().mockMaker(MockMakers.SUBCLASS));
     doReturn(Level.OVERWORLD).when(level).dimension();
-    doReturn(false).when(level).canSeeSky(org.mockito.ArgumentMatchers.any(BlockPos.class));
+    doReturn(false).when(level).canSeeSky(any(BlockPos.class));
     return level;
   }
 
-  private static ItemEntity createItem(ServerLevel level, int id, double x, double y, double z,
-    ItemStack stack) {
-    return new TestItemEntity(level, id, x, y, z, stack);
+  private static ItemEntity createItem(ServerLevel level, int identifier, double x, double y,
+    double z, ItemStack stack) {
+    return new TestItemEntity(level, identifier, x, y, z, stack);
   }
 
   private static void markProtected(ItemStack stack, int id) {
@@ -101,15 +102,15 @@ class ItemEntityManagerTest {
 
   @BeforeEach
   void setUp() {
-    previousFeatureState = FeatureToggle.ITEMS.isEnabled();
-    previousOptimizeItems = ItemsConfig.optimizeItems;
-    previousMaxPerType = ItemsConfig.maxNumberOfItemsPerType;
-    previousMaxPerWorld = ItemsConfig.maxNumberOfItems;
-    previousClusterRange = ItemsConfig.itemsClusterRange;
-    previousMaxStackSize = ItemsConfig.maxStackSize;
-    previousMoveToLastDrop = ItemsConfig.movePositionToLastDrop;
-    previousAllowList = new HashSet<>(ItemsConfig.itemsAllowList);
-    previousDenyList = new HashSet<>(ItemsConfig.itemsDenyList);
+    this.previousFeatureState = FeatureToggle.ITEMS.isEnabled();
+    this.previousOptimizeItems = ItemsConfig.optimizeItems;
+    this.previousMaxPerType = ItemsConfig.maxNumberOfItemsPerType;
+    this.previousMaxPerWorld = ItemsConfig.maxNumberOfItems;
+    this.previousClusterRange = ItemsConfig.itemsClusterRange;
+    this.previousMaxStackSize = ItemsConfig.maxStackSize;
+    this.previousMoveToLastDrop = ItemsConfig.movePositionToLastDrop;
+    this.previousAllowList = new HashSet<>(ItemsConfig.itemsAllowList);
+    this.previousDenyList = new HashSet<>(ItemsConfig.itemsDenyList);
 
     FeatureToggle.ITEMS.setEnabled(true);
     ItemsConfig.optimizeItems = true;
@@ -126,15 +127,15 @@ class ItemEntityManagerTest {
 
   @AfterEach
   void tearDown() {
-    FeatureToggle.ITEMS.setEnabled(previousFeatureState);
-    ItemsConfig.optimizeItems = previousOptimizeItems;
-    ItemsConfig.maxNumberOfItemsPerType = previousMaxPerType;
-    ItemsConfig.maxNumberOfItems = previousMaxPerWorld;
-    ItemsConfig.itemsClusterRange = previousClusterRange;
-    ItemsConfig.maxStackSize = previousMaxStackSize;
-    ItemsConfig.movePositionToLastDrop = previousMoveToLastDrop;
-    ItemsConfig.itemsAllowList = previousAllowList;
-    ItemsConfig.itemsDenyList = previousDenyList;
+    FeatureToggle.ITEMS.setEnabled(this.previousFeatureState);
+    ItemsConfig.optimizeItems = this.previousOptimizeItems;
+    ItemsConfig.maxNumberOfItemsPerType = this.previousMaxPerType;
+    ItemsConfig.maxNumberOfItems = this.previousMaxPerWorld;
+    ItemsConfig.itemsClusterRange = this.previousClusterRange;
+    ItemsConfig.maxStackSize = this.previousMaxStackSize;
+    ItemsConfig.movePositionToLastDrop = this.previousMoveToLastDrop;
+    ItemsConfig.itemsAllowList = this.previousAllowList;
+    ItemsConfig.itemsDenyList = this.previousDenyList;
     PerformanceStats.reset();
     ItemEntityManager.handleServerStopping();
   }
@@ -290,11 +291,11 @@ class ItemEntityManagerTest {
 
     private ItemStack itemStack;
 
-    private TestItemEntity(ServerLevel level, int id, double x, double y, double z,
+    private TestItemEntity(ServerLevel level, int identifier, double x, double y, double z,
       ItemStack itemStack) {
       super(EntityType.ITEM, level);
       this.itemStack = itemStack;
-      this.setId(id);
+      this.setId(identifier);
       this.setPos(x, y, z);
     }
 

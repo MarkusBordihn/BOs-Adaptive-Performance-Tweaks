@@ -44,6 +44,11 @@ public final class ViewDistanceConfig extends Config {
        changes.
        recoveryMinDelayTicks acts as a hard floor for both the normal and the fast recovery
        path: lower recoveryDelayTicks/recoveryFastDelayTicks values have no effect below it.
+       The movement warmup is speed based and measured in horizontal blocks per second.
+       Vertical movement is ignored, since falling does not move the chunk frontier.
+       Reference speeds: walking 4.3, sprinting 5.6, horse 5-15, elytra 20-30, boat on ice 40.
+         movementSpeedBlocksPerSecond     -> reduction of 1 (exploration)
+         movementFastSpeedBlocksPerSecond -> movementReductionMax (fast transit)
       """;
 
   public static ServerLoadLevel minOptimizationLoadLevel = ServerLoadLevel.MEDIUM;
@@ -58,7 +63,8 @@ public final class ViewDistanceConfig extends Config {
   public static boolean loginWarmupEnabled = true;
   public static int loginWarmupTicks = 60;
   public static boolean movementWarmupEnabled = true;
-  public static int movementDistanceThresholdBlocks = 24;
+  public static int movementSpeedBlocksPerSecond = 5;
+  public static int movementFastSpeedBlocksPerSecond = 20;
   public static int movementReductionMax = 2;
   public static int evaluationIntervalTicks = 20;
   public static int recoveryMinDelayTicks = 200;
@@ -99,8 +105,11 @@ public final class ViewDistanceConfig extends Config {
       parseConfigValue(properties, "loginWarmupTicks", loginWarmupTicks));
     movementWarmupEnabled = parseConfigValue(properties, "movementWarmupEnabled",
       movementWarmupEnabled);
-    movementDistanceThresholdBlocks = Math.max(1, parseConfigValue(properties,
-      "movementDistanceThresholdBlocks", movementDistanceThresholdBlocks));
+    movementSpeedBlocksPerSecond = Math.max(1, parseConfigValue(properties,
+      "movementSpeedBlocksPerSecond", movementSpeedBlocksPerSecond));
+    movementFastSpeedBlocksPerSecond = Math.max(movementSpeedBlocksPerSecond,
+      parseConfigValue(properties, "movementFastSpeedBlocksPerSecond",
+        movementFastSpeedBlocksPerSecond));
     movementReductionMax = Math.max(0,
       parseConfigValue(properties, "movementReductionMax", movementReductionMax));
     evaluationIntervalTicks = Math.max(1,
@@ -116,14 +125,16 @@ public final class ViewDistanceConfig extends Config {
     recoveryFastStepTicks = Math.max(1,
       parseConfigValue(properties, "recoveryFastStepTicks", recoveryFastStepTicks));
     properties.remove("movementWarmupMinimumLoadLevel");
+    properties.remove("movementDistanceThresholdBlocks");
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
     log.debug(
-      "View distance per load: VERY_LOW={} LOW={} NORMAL={} MEDIUM={} HIGH={} VERY_HIGH={} | minOptLoad={} loginWarmup={} ({}t) movementWarmup={} minLoad={} threshold={} reductionMax={} evalInterval={} recovery(minDelay={} delay={} step={}) fastRecovery(delay={} step={})",
+      "View distance per load: VERY_LOW={} LOW={} NORMAL={} MEDIUM={} HIGH={} VERY_HIGH={} | minOptLoad={} loginWarmup={} ({}t) movementWarmup={} speed={}/{}b/s reductionMax={} evalInterval={} recovery(minDelay={} delay={} step={}) fastRecovery(delay={} step={})",
       viewDistanceVeryLow, viewDistanceLow, viewDistanceNormal,
       viewDistanceMedium, viewDistanceHigh, viewDistanceVeryHigh, minOptimizationLoadLevel,
       loginWarmupEnabled, loginWarmupTicks, movementWarmupEnabled,
-      movementDistanceThresholdBlocks, movementReductionMax, evaluationIntervalTicks,
+      movementSpeedBlocksPerSecond, movementFastSpeedBlocksPerSecond,
+      movementReductionMax, evaluationIntervalTicks,
       recoveryMinDelayTicks, recoveryDelayTicks, recoveryStepTicks,
       recoveryFastDelayTicks, recoveryFastStepTicks);
   }

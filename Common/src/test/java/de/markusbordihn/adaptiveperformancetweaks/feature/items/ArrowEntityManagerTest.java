@@ -73,10 +73,10 @@ class ArrowEntityManagerTest {
     return level;
   }
 
-  private static Arrow createArrow(ServerLevel level, int id, int chunkX, int chunkZ,
+  private static Arrow createArrow(ServerLevel level, int identifier, int chunkX, int chunkZ,
     double velocitySquared, boolean named, boolean removed) {
     Arrow arrow = new Arrow(EntityType.ARROW, level);
-    arrow.setId(id);
+    arrow.setId(identifier);
     arrow.setPos(chunkX * 16.0d, 64.0d, chunkZ * 16.0d);
     arrow.setDeltaMovement(new Vec3(velocitySquared, 0.0d, 0.0d));
     if (named) {
@@ -96,12 +96,12 @@ class ArrowEntityManagerTest {
 
   @BeforeEach
   void setUp() {
-    previousFeatureState = FeatureToggle.ARROWS.isEnabled();
-    previousMaxPerWorld = ArrowsConfig.maxNumberOfArrowsPerWorld;
-    previousMaxPerChunk = ArrowsConfig.maxNumberOfArrowsPerChunk;
-    previousMaxProtectedPerWorld = ArrowsConfig.maxNumberOfProtectedArrowsPerWorld;
-    previousAllowList = new HashSet<>(ArrowsConfig.arrowsAllowList);
-    previousDenyList = new HashSet<>(ArrowsConfig.arrowsDenyList);
+    this.previousFeatureState = FeatureToggle.ARROWS.isEnabled();
+    this.previousMaxPerWorld = ArrowsConfig.maxNumberOfArrowsPerWorld;
+    this.previousMaxPerChunk = ArrowsConfig.maxNumberOfArrowsPerChunk;
+    this.previousMaxProtectedPerWorld = ArrowsConfig.maxNumberOfProtectedArrowsPerWorld;
+    this.previousAllowList = new HashSet<>(ArrowsConfig.arrowsAllowList);
+    this.previousDenyList = new HashSet<>(ArrowsConfig.arrowsDenyList);
 
     FeatureToggle.ARROWS.setEnabled(true);
     ArrowsConfig.maxNumberOfArrowsPerWorld = 512;
@@ -115,12 +115,12 @@ class ArrowEntityManagerTest {
 
   @AfterEach
   void tearDown() {
-    FeatureToggle.ARROWS.setEnabled(previousFeatureState);
-    ArrowsConfig.maxNumberOfArrowsPerWorld = previousMaxPerWorld;
-    ArrowsConfig.maxNumberOfArrowsPerChunk = previousMaxPerChunk;
-    ArrowsConfig.maxNumberOfProtectedArrowsPerWorld = previousMaxProtectedPerWorld;
-    ArrowsConfig.arrowsAllowList = previousAllowList;
-    ArrowsConfig.arrowsDenyList = previousDenyList;
+    FeatureToggle.ARROWS.setEnabled(this.previousFeatureState);
+    ArrowsConfig.maxNumberOfArrowsPerWorld = this.previousMaxPerWorld;
+    ArrowsConfig.maxNumberOfArrowsPerChunk = this.previousMaxPerChunk;
+    ArrowsConfig.maxNumberOfProtectedArrowsPerWorld = this.previousMaxProtectedPerWorld;
+    ArrowsConfig.arrowsAllowList = this.previousAllowList;
+    ArrowsConfig.arrowsDenyList = this.previousDenyList;
     PerformanceStats.reset();
     ArrowEntityManager.handleServerStopping();
   }

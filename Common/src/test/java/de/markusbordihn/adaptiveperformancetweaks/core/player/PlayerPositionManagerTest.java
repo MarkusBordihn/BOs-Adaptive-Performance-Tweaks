@@ -17,28 +17,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.adaptiveperformancetweaks.fabric.mixin;
+package de.markusbordihn.adaptiveperformancetweaks.core.player;
 
-import de.markusbordihn.adaptiveperformancetweaks.server.CommonServerEventHandler;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.portal.TeleportTransition;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Mixin(ServerPlayer.class)
-public class ServerPlayerTeleportMixin {
+import java.lang.reflect.Field;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
-  @Inject(
-    method =
-      "teleport(Lnet/minecraft/world/level/portal/TeleportTransition;)Lnet/minecraft/server/level/ServerPlayer;",
-    at = @At("RETURN"))
-  private void aptweaks_handleTeleport(
-    TeleportTransition transition, CallbackInfoReturnable<ServerPlayer> cir) {
-    ServerPlayer serverPlayer = cir.getReturnValue();
-    if (serverPlayer != null) {
-      CommonServerEventHandler.handlePlayerTeleported(serverPlayer);
+class PlayerPositionManagerTest {
+
+  private static Object readStaticField(String fieldName) throws Exception {
+    Field field = PlayerPositionManager.class.getDeclaredField(fieldName);
+    field.setAccessible(true);
+    return field.get(null);
+  }
+
+  @Test
+  @DisplayName("The configured movement tracking survives the reset on server start")
+  void resetKeepsConfiguredMovementTracking() throws Exception {
+    try {
+      PlayerPositionManager.configureMovementTracking(10, 3);
+      PlayerPositionManager.reset();
+
+      assertEquals(10, PlayerPositionManager.getMovementUpdateTick());
+      assertEquals(3, readStaticField("playerMovementWindowSamples"));
+      assertEquals(10, readStaticField("nextMovementUpdateTick"));
+    } finally {
+      PlayerPositionManager.configureMovementTracking(20, 5);
+      PlayerPositionManager.reset();
     }
   }
 }

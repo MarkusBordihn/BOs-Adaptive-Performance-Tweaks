@@ -25,18 +25,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class ChunkGenThrottleMixinTest {
 
   @Test
-  void targetsServerChunkCacheDistanceManagerUpdates() throws IOException {
+  @DisplayName("Only the server chunk cache tick path is throttled, not every distance update")
+  void targetsServerChunkCacheTickOnly() throws IOException {
     String source = Files.readString(Path.of(
       "src/main/java/de/markusbordihn/adaptiveperformancetweaks/neoforge/mixin/ChunkGenThrottleMixin.java"));
     assertTrue(source.contains("@Mixin(ServerChunkCache.class)"));
-    assertTrue(source.contains("method = \"runDistanceManagerUpdates\""));
+    assertTrue(source.contains("method = \"tick(Ljava/util/function/BooleanSupplier;Z)V\""));
+    assertTrue(source.contains(
+      "target = \"Lnet/minecraft/server/level/ServerChunkCache;runDistanceManagerUpdates()Z\""));
     assertTrue(source.contains("getThrottleDivisor(this.level)"));
     assertFalse(source.contains("@Mixin(ChunkMap.class)"));
-    assertFalse(source.contains("method = \"tick\""));
+    assertFalse(source.contains("@Inject(method = \"runDistanceManagerUpdates\""));
   }
 }
