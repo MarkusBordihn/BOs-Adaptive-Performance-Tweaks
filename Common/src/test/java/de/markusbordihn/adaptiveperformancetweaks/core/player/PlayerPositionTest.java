@@ -63,6 +63,21 @@ class PlayerPositionTest {
   }
 
   @Test
+  @DisplayName("Speed uses the elapsed ticks, so delayed samples are not read as faster travel")
+  void movementSpeedUsesElapsedTicksInsteadOfTheSampleInterval() {
+    PlayerPosition playerPosition = new PlayerPosition(
+      "Lagging", UUID.randomUUID(), "minecraft:overworld", 0, 64, 0, 128);
+
+    playerPosition.updateMovement(0.0, 64.0, 0.0, "minecraft:overworld", 20, 3, 20);
+    playerPosition.updateMovement(8.0, 64.0, 0.0, "minecraft:overworld", 60, 3, 20);
+    playerPosition.updateMovement(16.0, 64.0, 0.0, "minecraft:overworld", 100, 3, 20);
+    playerPosition.updateMovement(24.0, 64.0, 0.0, "minecraft:overworld", 140, 3, 20);
+
+    assertTrue(playerPosition.hasCompleteMovementWindow());
+    assertEquals(4.0, playerPosition.getMovementSpeed(), 0.001);
+  }
+
+  @Test
   void stableTicksIncreaseWhenPlayerStopsMoving() {
     PlayerPosition playerPosition = new PlayerPosition(
       "Stable", UUID.randomUUID(), "minecraft:overworld", 0, 64, 0, 128);

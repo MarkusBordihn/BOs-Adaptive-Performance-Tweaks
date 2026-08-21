@@ -41,6 +41,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.GameRules;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockMakers;
 
@@ -290,7 +291,8 @@ class GameRuleManagerTest {
   }
 
   @Test
-  void playerWarmupRecoveryPausesAtNormalLoad() throws Exception {
+  @DisplayName("randomTickSpeed recovers from a warmup at NORMAL load")
+  void playerWarmupRecoveryRunsAtNormalLoad() throws Exception {
     boolean previousState = FeatureToggle.GAMERULES.isEnabled();
     MinecraftServer server = mock(MinecraftServer.class,
       withSettings().mockMaker(MockMakers.SUBCLASS));
@@ -304,6 +306,35 @@ class GameRuleManagerTest {
       GameRuleManager.handleServerStarting(server);
       rules.getRule(GameRules.RULE_RANDOMTICKING).set(1, null);
       writeStaticField("currentLoadLevel", ServerLoadLevel.NORMAL);
+      writeStaticField("randomTickWarmupUntilTime", 0L);
+      writeStaticField("randomTickPlayerActivityRecoveryPending", true);
+      writeStaticField("lastRandomTickRecoveryTime", 0L);
+
+      GameRuleManager.handleServerTick();
+
+      assertEquals(2, rules.getInt(GameRules.RULE_RANDOMTICKING));
+      assertEquals(true, readStaticField("randomTickPlayerActivityRecoveryPending"));
+    } finally {
+      FeatureToggle.GAMERULES.setEnabled(previousState);
+      writeServerManagerField("minecraftServer", null);
+    }
+  }
+
+  @Test
+  void playerWarmupRecoveryPausesAtHighLoad() throws Exception {
+    boolean previousState = FeatureToggle.GAMERULES.isEnabled();
+    MinecraftServer server = mock(MinecraftServer.class,
+      withSettings().mockMaker(MockMakers.SUBCLASS));
+    GameRules rules = new GameRules();
+    rules.getRule(GameRules.RULE_RANDOMTICKING).set(3, null);
+    when(server.getGameRules()).thenReturn(rules);
+
+    try {
+      writeServerManagerField("minecraftServer", server);
+      FeatureToggle.GAMERULES.setEnabled(true);
+      GameRuleManager.handleServerStarting(server);
+      rules.getRule(GameRules.RULE_RANDOMTICKING).set(1, null);
+      writeStaticField("currentLoadLevel", ServerLoadLevel.HIGH);
       writeStaticField("randomTickWarmupUntilTime", 0L);
       writeStaticField("randomTickPlayerActivityRecoveryPending", true);
       writeStaticField("lastRandomTickRecoveryTime", 0L);

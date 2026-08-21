@@ -20,6 +20,7 @@
 package de.markusbordihn.adaptiveperformancetweaks.feature.distance;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
+import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPosition;
 import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPositionManager;
@@ -85,6 +86,10 @@ public final class SimulationDistanceManager {
   }
 
   public static void handleServerTick() {
+    if (!FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled()) {
+      return;
+    }
+
     int currentTick = PlayerPositionManager.getCurrentServerTick();
     if (currentDistance == -1
       || currentMovementReduction > 0
@@ -132,7 +137,7 @@ public final class SimulationDistanceManager {
       return;
     }
 
-    int targetDistance = getConfiguredDistanceMax();
+    int targetDistance = configuredDistanceMax;
     if (targetDistance <= 0) {
       currentDistance = -1;
       return;
@@ -213,6 +218,7 @@ public final class SimulationDistanceManager {
       return;
     }
 
+    detectExternalDistanceChange(server);
     int previousLoadBaselineDistance = currentLoadBaselineDistance;
     currentLoadBaselineDistance = resolveNextLoadBaselineDistance(currentLoadLevel,
       currentLoadBaselineDistance);
@@ -282,7 +288,10 @@ public final class SimulationDistanceManager {
 
     activeExplorerCount = newActiveExplorerCount;
     fastExplorerCount = newFastExplorerCount;
-    int targetReduction = warmupPlayerCount > 0 ? getWarmupReduction() : 0;
+    int targetReduction =
+      SimulationDistanceConfig.loginWarmupEnabled && warmupPlayerCount > 0
+        ? getWarmupReduction()
+        : 0;
     if (SimulationDistanceConfig.movementThrottleEnabled && activeExplorerCount > 0) {
       targetReduction = Math.max(targetReduction, calculateMovementReduction(
         currentLoadLevel, trackedPlayers, activeExplorerCount, fastExplorerCount));
@@ -324,6 +333,22 @@ public final class SimulationDistanceManager {
     }
   }
 
+  private static void detectExternalDistanceChange(MinecraftServer server) {
+    if (configuredDistanceMax <= 0) {
+      return;
+    }
+
+    int expectedDistance = currentDistance > 0 ? currentDistance : configuredDistanceMax;
+    int advertisedDistance = server.getPlayerList().getSimulationDistance();
+    if (advertisedDistance == expectedDistance) {
+      return;
+    }
+
+    ModConflictDetector.warnExternalFeatureChange(FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE,
+      "simulation distance", expectedDistance, advertisedDistance);
+    configuredDistanceMax = advertisedDistance;
+  }
+
   private static boolean isRecoveryBlocked(int targetReduction) {
     return targetReduction <= 0
       && SimulationDistanceConfig.movementThrottleRecoverOnlyWhenStable
@@ -351,7 +376,8 @@ public final class SimulationDistanceManager {
   }
 
   private static int getWarmupReduction() {
-    return Math.max(0, getConfiguredDistanceMax() - SimulationDistanceConfig.simDistanceMin);
+    return Math.min(SimulationDistanceConfig.loginWarmupReductionMax,
+      Math.max(0, getConfiguredDistanceMax() - SimulationDistanceConfig.simDistanceMin));
   }
 
   private static void markPlayerWarmup(ServerPlayer player, String triggerSource) {

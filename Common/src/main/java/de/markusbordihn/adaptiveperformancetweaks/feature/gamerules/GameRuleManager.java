@@ -225,7 +225,7 @@ public final class GameRuleManager {
 
     restoreNormalLoad();
 
-    if (!event.getServerLoadLevel().isAtLeast(ServerLoadLevel.NORMAL)) {
+    if (!event.getServerLoadLevel().isAtLeast(ServerLoadLevel.HIGH)) {
       if (GameRulesConfig.randomTickSpeedEnabled && !randomTickWarmupActive
         && !randomTickPlayerActivityRecoveryPending) {
         increaseRandomTickSpeed();
@@ -703,7 +703,7 @@ public final class GameRuleManager {
 
   private static void recoverRandomTickSpeedFromPlayerWarmup() {
     if (!randomTickPlayerActivityRecoveryPending
-      || currentLoadLevel.isAtLeast(ServerLoadLevel.NORMAL)
+      || currentLoadLevel.isAtLeast(ServerLoadLevel.HIGH)
       || gameRules == null) {
       return;
     }

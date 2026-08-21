@@ -49,6 +49,13 @@ public final class ViewDistanceConfig extends Config {
        Reference speeds: walking 4.3, sprinting 5.6, horse 5-15, elytra 20-30, boat on ice 40.
          movementSpeedBlocksPerSecond     -> reduction of 1 (exploration)
          movementFastSpeedBlocksPerSecond -> movementReductionMax (fast transit)
+       loginWarmupReductionMax limits how many chunks a login or teleport warmup removes at once.
+       A very large value restores the former behaviour of dropping straight to viewDistanceMin,
+       which leaves a large empty area on the horizon instead of a thin ring.
+       preventClientChunkReload applies every change to the levels directly instead of announcing
+       a new chunk radius to the clients, so clients stop rebuilding all visible chunks on each
+       change. Clients keep the already received chunks cached, which costs client side memory.
+       Set it to false to get the previous client side render distance reduction back.
       """;
 
   public static ServerLoadLevel minOptimizationLoadLevel = ServerLoadLevel.MEDIUM;
@@ -64,6 +71,8 @@ public final class ViewDistanceConfig extends Config {
 
   public static boolean loginWarmupEnabled = true;
   public static int loginWarmupTicks = 60;
+  public static int loginWarmupReductionMax = 3;
+  public static boolean preventClientChunkReload = true;
   public static boolean movementWarmupEnabled = true;
   public static int movementSpeedBlocksPerSecond = 5;
   public static int movementFastSpeedBlocksPerSecond = 20;
@@ -105,6 +114,10 @@ public final class ViewDistanceConfig extends Config {
     loginWarmupEnabled = parseConfigValue(properties, "loginWarmupEnabled", loginWarmupEnabled);
     loginWarmupTicks = Math.max(0,
       parseConfigValue(properties, "loginWarmupTicks", loginWarmupTicks));
+    loginWarmupReductionMax = Math.max(0,
+      parseConfigValue(properties, "loginWarmupReductionMax", loginWarmupReductionMax));
+    preventClientChunkReload = parseConfigValue(properties, "preventClientChunkReload",
+      preventClientChunkReload);
     movementWarmupEnabled = parseConfigValue(properties, "movementWarmupEnabled",
       movementWarmupEnabled);
     movementSpeedBlocksPerSecond = Math.max(1, parseConfigValue(properties,
@@ -131,10 +144,11 @@ public final class ViewDistanceConfig extends Config {
 
     updateConfigFileIfChanged(configFile, CONFIG_FILE_HEADER, properties, unmodified);
     log.debug(
-      "View distance per load: VERY_LOW={} LOW={} NORMAL={} MEDIUM={} HIGH={} VERY_HIGH={} | minOptLoad={} loginWarmup={} ({}t) movementWarmup={} speed={}/{}b/s reductionMax={} evalInterval={} recovery(minDelay={} delay={} step={}) fastRecovery(delay={} step={})",
+      "View distance per load: VERY_LOW={} LOW={} NORMAL={} MEDIUM={} HIGH={} VERY_HIGH={} | minOptLoad={} loginWarmup={} ({}t, max -{}) preventClientChunkReload={} movementWarmup={} speed={}/{}b/s reductionMax={} evalInterval={} recovery(minDelay={} delay={} step={}) fastRecovery(delay={} step={})",
       viewDistanceVeryLow, viewDistanceLow, viewDistanceNormal,
       viewDistanceMedium, viewDistanceHigh, viewDistanceVeryHigh, minOptimizationLoadLevel,
-      loginWarmupEnabled, loginWarmupTicks, movementWarmupEnabled,
+      loginWarmupEnabled, loginWarmupTicks, loginWarmupReductionMax, preventClientChunkReload,
+      movementWarmupEnabled,
       movementSpeedBlocksPerSecond, movementFastSpeedBlocksPerSecond,
       movementReductionMax, evaluationIntervalTicks,
       recoveryMinDelayTicks, recoveryDelayTicks, recoveryStepTicks,

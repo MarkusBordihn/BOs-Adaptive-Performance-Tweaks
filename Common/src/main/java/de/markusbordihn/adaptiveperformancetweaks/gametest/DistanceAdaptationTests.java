@@ -39,6 +39,7 @@ public final class DistanceAdaptationTests {
     try {
       MinecraftServer server = helper.getLevel().getServer();
       ViewDistanceManager.handleServerStarting(server);
+      int announcedDistance = server.getPlayerList().getViewDistance();
 
       ViewDistanceManager.handleServerLoadEvent(
         new ServerLoadEvent(ServerLoadLevel.VERY_HIGH, ServerLoadLevel.NORMAL, 200.0, 50.0));
@@ -49,6 +50,11 @@ public final class DistanceAdaptationTests {
         helper,
         "View distance should be reduced under VERY_HIGH load",
         expected,
+        ViewDistanceManager.getCurrentViewDistance());
+      GameTestHelpers.assertEquals(
+        helper,
+        "View distance announced to clients should stay unchanged",
+        announcedDistance,
         server.getPlayerList().getViewDistance());
       helper.succeed();
     } finally {

@@ -23,6 +23,7 @@ import com.sun.management.OperatingSystemMXBean;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.MsptBucket;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoad;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenario;
@@ -78,8 +79,9 @@ public final class BenchmarkManager {
   private static final long DEFAULT_BLOCK_DURATION_MS = 240_000L;
   private static final long BLOCK_WARMUP_DURATION_MS = 30_000L;
   private static final long SCENARIO_SETTLE_DURATION_MS = 5_000L;
+  private static final long SCENARIO_SETTLE_MAX_DURATION_MS = 45_000L;
   private static final long SCENARIO_POST_SETTLE_DURATION_MS = 3_000L;
-  private static final long SAMPLE_INTERVAL_MS = 5_000L;
+  private static final long SAMPLE_INTERVAL_MS = 2_000L;
   private static final long GENERAL_MOVE_INTERVAL_MS = 12_000L;
   private static final long GENERAL_POST_MOVE_SETTLE_DELAY_MS = 4_000L;
   private static final long LEGACY_MOVE_INTERVAL_MS = 10_000L;
@@ -103,6 +105,7 @@ public final class BenchmarkManager {
     activeScenarioResults = new EnumMap<>(BenchmarkScenarioId.class);
   private static final List<Double> currentSamples = new ArrayList<>();
   private static final List<Double> currentCpuSamples = new ArrayList<>();
+  private static final List<Double> currentHeapSamples = new ArrayList<>();
   private static final EnumMap<ServerLoadLevel, Integer> currentLoadDist =
     new EnumMap<>(ServerLoadLevel.class);
   private static final EnumMap<MsptBucket, Integer> currentMsptDist =
@@ -131,12 +134,13 @@ public final class BenchmarkManager {
   private static long lastSampleMs;
   private static long lastMoveMs;
   private static long sampleBlockedUntilMs;
+  private static long settleStableSinceMs;
+  private static int settleViewDistance = Integer.MIN_VALUE;
+  private static int settleSimulationDistance = Integer.MIN_VALUE;
   private static GameType savedGameMode;
   private static double lastCpuPercent = -1.0d;
   private static PerformanceStats.Snapshot currentMeasurementStartStats;
   private static BenchmarkScenarioResult.DistanceControlState currentMeasurementStartDistanceState;
-  private static long currentMeasurementStartHeapUsed;
-  private static long currentMeasurementPeakHeapUsed;
   private static BenchmarkCompareResult lastResult;
   private static Path lastResultPath;
 
@@ -170,6 +174,7 @@ public final class BenchmarkManager {
     currentMeasurementStartDistanceState = null;
     currentSamples.clear();
     currentCpuSamples.clear();
+    currentHeapSamples.clear();
     currentLoadDist.clear();
     currentMsptDist.clear();
 
@@ -258,8 +263,7 @@ public final class BenchmarkManager {
       case BLOCK_WARMUP -> handlePassiveStage(now, BLOCK_WARMUP_DURATION_MS, "warm-up",
         thisStageComplete -> startScenarioSetup(now));
       case SCENARIO_SETUP -> runScenarioSetup(now);
-      case SCENARIO_SETTLE -> handlePassiveStage(now, SCENARIO_SETTLE_DURATION_MS, "settle",
-        thisStageComplete -> startScenarioMeasurement(now));
+      case SCENARIO_SETTLE -> handleScenarioSettle(now);
       case SCENARIO_MEASURE -> handleScenarioMeasurement(now);
       case SCENARIO_CLEANUP -> runScenarioCleanup(now);
       case SCENARIO_POST_SETTLE -> handlePassiveStage(now, SCENARIO_POST_SETTLE_DURATION_MS,
@@ -376,7 +380,7 @@ public final class BenchmarkManager {
       "Target: %s | total runtime: ~%s",
       requestedScenarioLabel, BenchmarkMessenger.formatDuration(totalRuntimeMs)));
     BenchmarkMessenger.sendMessage(player, String.format(
-      "Block warm-up: %s | settle: %s | cleanup settle: %s",
+      "Block warm-up: %s | settle: %s or longer | cleanup settle: %s",
       BenchmarkMessenger.formatDuration(BLOCK_WARMUP_DURATION_MS),
       BenchmarkMessenger.formatDuration(SCENARIO_SETTLE_DURATION_MS),
       BenchmarkMessenger.formatDuration(SCENARIO_POST_SETTLE_DURATION_MS)));
@@ -440,6 +444,33 @@ public final class BenchmarkManager {
     }
   }
 
+  private static void handleScenarioSettle(long now) {
+    trackDistanceControlStability(now);
+    handlePassiveStage(now, SCENARIO_SETTLE_DURATION_MS, "settle", thisStageComplete -> {
+      boolean settleTimedOut = now - stageStartMs >= SCENARIO_SETTLE_MAX_DURATION_MS;
+      if (now - settleStableSinceMs < SCENARIO_SETTLE_DURATION_MS && !settleTimedOut) {
+        return;
+      }
+      if (settleTimedOut) {
+        log.warn("[Benchmark] Distance control did not settle within {}, measuring anyway.",
+          BenchmarkMessenger.formatDuration(SCENARIO_SETTLE_MAX_DURATION_MS));
+      }
+      startScenarioMeasurement(now);
+    });
+  }
+
+  private static void trackDistanceControlStability(long now) {
+    int viewDistance = ViewDistanceManager.getCurrentViewDistance();
+    int simulationDistance = SimulationDistanceManager.getCurrentSimulationDistance();
+    if (viewDistance == settleViewDistance && simulationDistance == settleSimulationDistance) {
+      return;
+    }
+
+    settleViewDistance = viewDistance;
+    settleSimulationDistance = simulationDistance;
+    settleStableSinceMs = now;
+  }
+
   private static void startScenarioSetup(long now) {
     state = BenchmarkState.SCENARIO_SETUP;
     stageStartMs = now;
@@ -461,12 +492,15 @@ public final class BenchmarkManager {
     lastSampleMs = now;
     lastMoveMs = now;
     sampleBlockedUntilMs = now;
+    settleViewDistance = Integer.MIN_VALUE;
+    settleSimulationDistance = Integer.MIN_VALUE;
+    settleStableSinceMs = now;
     state = BenchmarkState.SCENARIO_SETTLE;
 
     if (benchmarkPlayer != null) {
       BenchmarkMessenger.sendStageMessage(benchmarkPlayer, currentBlock, scenario.displayName(),
         String.format(
-          "setup complete. Settle: %s",
+          "setup complete. Settle: at least %s, until view and simulation distance hold steady.",
           BenchmarkMessenger.formatDuration(SCENARIO_SETTLE_DURATION_MS)));
     }
   }
@@ -475,6 +509,7 @@ public final class BenchmarkManager {
     BenchmarkScenario scenario = currentScenario();
     currentSamples.clear();
     currentCpuSamples.clear();
+    currentHeapSamples.clear();
     currentLoadDist.clear();
     currentMsptDist.clear();
     currentMovementStepCount = 0;
@@ -482,8 +517,6 @@ public final class BenchmarkManager {
     currentMeasurementStartStats =
       captureMeasurementStartStats(scenario, currentScenarioContext(scenario));
     currentMeasurementStartDistanceState = captureDistanceControlState();
-    currentMeasurementStartHeapUsed = getCurrentHeapUsage();
-    currentMeasurementPeakHeapUsed = currentMeasurementStartHeapUsed;
 
     stageStartMs = now;
     lastSampleMs = now;
@@ -521,13 +554,12 @@ public final class BenchmarkManager {
       double sampleMspt = ServerManager.getAverageTickTime();
       MsptBucket sampleBucket = MsptBucket.fromTickTime(sampleMspt);
       currentSamples.add(sampleMspt);
-      currentMeasurementPeakHeapUsed =
-        Math.max(currentMeasurementPeakHeapUsed, getCurrentHeapUsage());
+      currentHeapSamples.add((double) getCurrentHeapUsage());
       lastCpuPercent = getProcessCpuPercent();
       if (lastCpuPercent >= 0.0d) {
         currentCpuSamples.add(lastCpuPercent);
       }
-      currentLoadDist.merge(sampleBucket.getMappedLoadLevel(), 1, Integer::sum);
+      currentLoadDist.merge(ServerLoad.getMeasuredServerLoad(), 1, Integer::sum);
       currentMsptDist.merge(sampleBucket, 1, Integer::sum);
       sendStatusUpdate(now, "measure", currentScenarioDurationMs, true);
       lastSampleMs = now;
@@ -560,7 +592,7 @@ public final class BenchmarkManager {
       Map.copyOf(currentLoadDist),
       Map.copyOf(currentMsptDist),
       buildFineMsptDistribution(currentSamples),
-      getCurrentPeakHeapDeltaBytes(),
+      getAverageHeapUsedBytes(),
       countEntities(),
       average(currentCpuSamples, -1.0d),
       max(currentCpuSamples, -1.0d),
@@ -771,10 +803,8 @@ public final class BenchmarkManager {
     return ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed();
   }
 
-  private static long getCurrentPeakHeapDeltaBytes() {
-    long peakHeapUsed = Math.max(currentMeasurementPeakHeapUsed, getCurrentHeapUsage());
-    long peakHeapDelta = peakHeapUsed - currentMeasurementStartHeapUsed;
-    return peakHeapDelta > 0L ? peakHeapDelta : -1L;
+  private static long getAverageHeapUsedBytes() {
+    return currentHeapSamples.isEmpty() ? -1L : (long) average(currentHeapSamples);
   }
 
   private static void runScenarioMeasurementTick(BenchmarkScenario scenario,
@@ -1061,11 +1091,10 @@ public final class BenchmarkManager {
     currentScenarioDurationMs = 0L;
     currentMeasurementStartStats = null;
     currentMeasurementStartDistanceState = null;
-    currentMeasurementStartHeapUsed = 0L;
-    currentMeasurementPeakHeapUsed = 0L;
     currentMovementChunkTargets.clear();
     currentSamples.clear();
     currentCpuSamples.clear();
+    currentHeapSamples.clear();
     currentLoadDist.clear();
     currentMsptDist.clear();
     scenarioDurationMs.clear();

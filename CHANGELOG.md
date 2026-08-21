@@ -5,6 +5,20 @@
 This change log includes the summarized changes. For the full changelog, please go to
 the [GitHub History][history] instead.
 
+### 12.9.0
+
+- Fixed #93 by no longer freezing the server when many items drop in the same area.
+- Fixed #92 by capping warmups and no longer forcing clients to rebuild every visible chunk.
+- Fixed item limits removing merged stacks instead of the smallest nearby item drop.
+- Fixed warmups skipping same-dimension teleports and never recovering view distance or game rules.
+- Fixed simulation distance staying capped and still evaluating with the feature disabled.
+- Fixed movement throttle settings resetting on start and speed being overestimated under lag.
+- Fixed the chunk generation throttle also delaying chunk loading and world saving.
+- Fixed the benchmark not applying all optimizations and breaking them when cancelled early.
+- Changed the server to advertise its full chunk radius; clients cache more chunks in return.
+- Changed the benchmark to run at VERY_HIGH load with steadier sampling and clearer report columns.
+- Added `loginWarmupReductionMax` and `preventClientChunkReload` plus a distance conflict warning.
+
 ### 12.8.0
 
 - Fixed #91 by letting the login and teleport warmup decay back to the load-based distance.

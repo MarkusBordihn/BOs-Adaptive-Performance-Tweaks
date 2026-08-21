@@ -33,6 +33,8 @@ public final class ServerLoad {
   private static long lastLogTime = 0L;
   private static ServerLoadLevel currentServerLoad = ServerLoadLevel.NORMAL;
   private static ServerLoadLevel lastServerLoad = ServerLoadLevel.NORMAL;
+  private static ServerLoadLevel measuredServerLoad = ServerLoadLevel.NORMAL;
+  private static ServerLoadLevel loadLevelOverride = null;
   private static double avgTickTime = 50.0;
   private static double lastAvgTickTime = 45.0;
 
@@ -44,6 +46,8 @@ public final class ServerLoad {
     lastLogTime = 0L;
     currentServerLoad = ServerLoadLevel.NORMAL;
     lastServerLoad = ServerLoadLevel.NORMAL;
+    measuredServerLoad = ServerLoadLevel.NORMAL;
+    loadLevelOverride = null;
     avgTickTime = 50.0;
     lastAvgTickTime = 45.0;
   }
@@ -59,7 +63,8 @@ public final class ServerLoad {
     lastAvgTickTime = avgTickTime;
     avgTickTime = currentAvgTickTime;
     lastServerLoad = currentServerLoad;
-    currentServerLoad = ServerLoadLevel.fromAverageTickTime(avgTickTime);
+    measuredServerLoad = ServerLoadLevel.fromAverageTickTime(avgTickTime);
+    currentServerLoad = loadLevelOverride != null ? loadLevelOverride : measuredServerLoad;
 
     if (shouldLogServerLoadChange(currentServerLoad, lastServerLoad, currentTime, lastLogTime)) {
       String indicator = getLoadChangeIndicator(lastAvgTickTime, avgTickTime);
@@ -78,6 +83,26 @@ public final class ServerLoad {
 
   public static ServerLoadLevel getCurrentServerLoad() {
     return currentServerLoad;
+  }
+
+  public static ServerLoadLevel getMeasuredServerLoad() {
+    return measuredServerLoad;
+  }
+
+  public static ServerLoadLevel getLoadLevelOverride() {
+    return loadLevelOverride;
+  }
+
+  public static void setLoadLevelOverride(ServerLoadLevel loadLevel) {
+    if (loadLevelOverride == loadLevel) {
+      return;
+    }
+
+    loadLevelOverride = loadLevel;
+    lastServerLoad = currentServerLoad;
+    currentServerLoad = loadLevel != null ? loadLevel : measuredServerLoad;
+    ServerLoadDispatcher.dispatch(
+      new ServerLoadEvent(currentServerLoad, lastServerLoad, avgTickTime, lastAvgTickTime));
   }
 
   public static double getAvgTickTime() {

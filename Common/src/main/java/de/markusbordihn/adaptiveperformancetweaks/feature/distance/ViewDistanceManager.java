@@ -20,6 +20,7 @@
 package de.markusbordihn.adaptiveperformancetweaks.feature.distance;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
+import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPosition;
 import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPositionManager;
@@ -29,6 +30,7 @@ import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import java.util.Map;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -48,6 +50,7 @@ public final class ViewDistanceManager {
   private static int recoveryStartTick = -1;
   private static int nextRecoveryTick = -1;
   private static int lastChangeTick = Integer.MIN_VALUE;
+  private static int lastPlayerListDistance = -1;
   private static ServerLoadLevel currentLoadLevel = ServerLoadLevel.NORMAL;
 
   private ViewDistanceManager() {
@@ -55,6 +58,7 @@ public final class ViewDistanceManager {
 
   public static void handleServerStarting(MinecraftServer server) {
     currentDistance = -1;
+    lastPlayerListDistance = -1;
     configuredDistanceMax = server.getPlayerList().getViewDistance();
     currentLoadBaselineDistance = -1;
     currentWarmupReduction = 0;
@@ -95,7 +99,7 @@ public final class ViewDistanceManager {
     }
 
     currentDistance = targetDistance;
-    server.getPlayerList().setViewDistance(targetDistance);
+    applyViewDistanceToServer(server, targetDistance);
   }
 
   public static void handlePlayerLoggedIn(ServerPlayer player) {
@@ -160,6 +164,10 @@ public final class ViewDistanceManager {
     return currentWarmupReduction > 0;
   }
 
+  public static int getEffectiveViewDistance(int fallbackDistance) {
+    return currentDistance > 0 ? currentDistance : fallbackDistance;
+  }
+
   private static void markPlayerWarmup(ServerPlayer player, String triggerSource) {
     if (player == null || !ViewDistanceConfig.loginWarmupEnabled) {
       return;
@@ -181,6 +189,7 @@ public final class ViewDistanceManager {
       return;
     }
 
+    detectExternalDistanceChange(server);
     currentLoadBaselineDistance = resolveNextLoadBaselineDistance(currentLoadLevel,
       currentLoadBaselineDistance);
     updateWarmupReduction();
@@ -227,9 +236,6 @@ public final class ViewDistanceManager {
 
     if (targetReduction >= currentWarmupReduction) {
       currentWarmupReduction = targetReduction;
-      recoveryStartTick = -1;
-      nextRecoveryTick = -1;
-    } else if (targetReduction <= 0 && activeExplorerCount > 0) {
       recoveryStartTick = -1;
       nextRecoveryTick = -1;
     } else {
@@ -312,11 +318,45 @@ public final class ViewDistanceManager {
     currentDistance = targetDistance;
     lastChangeTick = currentTick;
     PerformanceStats.viewDistanceChanges++;
-    server.getPlayerList().setViewDistance(currentDistance);
+    applyViewDistanceToServer(server, currentDistance);
+  }
+
+  private static void applyViewDistanceToServer(MinecraftServer server, int distance) {
+    if (!ViewDistanceConfig.preventClientChunkReload) {
+      lastPlayerListDistance = distance;
+      server.getPlayerList().setViewDistance(distance);
+      return;
+    }
+
+    if (lastPlayerListDistance > 0 && configuredDistanceMax > 0) {
+      lastPlayerListDistance = -1;
+      server.getPlayerList().setViewDistance(configuredDistanceMax);
+    }
+    for (ServerLevel serverLevel : ServerManager.getAllLevels()) {
+      serverLevel.getChunkSource().setViewDistance(distance);
+    }
+  }
+
+  private static void detectExternalDistanceChange(MinecraftServer server) {
+    if (configuredDistanceMax <= 0) {
+      return;
+    }
+
+    int expectedDistance =
+      lastPlayerListDistance > 0 ? lastPlayerListDistance : configuredDistanceMax;
+    int advertisedDistance = server.getPlayerList().getViewDistance();
+    if (advertisedDistance == expectedDistance) {
+      return;
+    }
+
+    ModConflictDetector.warnExternalFeatureChange(FeatureToggle.ADAPTIVE_VIEW_DISTANCE,
+      "view distance", expectedDistance, advertisedDistance);
+    configuredDistanceMax = advertisedDistance;
   }
 
   private static int getWarmupReduction() {
-    return Math.max(0, getConfiguredDistanceMax() - ViewDistanceConfig.viewDistanceMin);
+    return Math.min(ViewDistanceConfig.loginWarmupReductionMax,
+      Math.max(0, getConfiguredDistanceMax() - ViewDistanceConfig.viewDistanceMin));
   }
 
   private static boolean isLowLoadForRecovery() {
