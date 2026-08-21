@@ -115,6 +115,25 @@ Simulation Distance stays load-aware as before, but can now also clamp down hard
 exploration at `MEDIUM+` load and then recover gradually after players stop moving or finish logging
 in.
 
+## Recommended companion mods ⭐
+
+Adaptive Performance Tweaks lowers what the **server** has to simulate. It does not extend what you
+can **see**. These client-side mods do the second part and work well next to it:
+
+- [Farsight](https://www.curseforge.com/minecraft/mc-mods/farsight) (Forge/NeoForge/Fabric)
+- [Bobby](https://modrinth.com/project/M08ruV16) (Fabric)
+
+Both keep already visited chunks in the client cache beyond the server distance, so a reduced server
+view distance no longer shortens your horizon.
+
+Safe to combine on the server side: [Krypton](https://modrinth.com/mod/krypton),
+[C2ME](https://modrinth.com/mod/c2me-fabric), [Noisium](https://modrinth.com/mod/noisium) and
+[ServerCore](https://modrinth.com/mod/servercore).
+
+Do **not** combine with [Dynamic View](https://www.curseforge.com/minecraft/mc-mods/dynview)
+(`dynview`) - it does the same job and is disabled automatically when
+`feature.adaptive_view_distance=auto`.
+
 ## Commands 🔧
 
 The main command root is `/aptweaks`.

@@ -128,6 +128,11 @@ public final class ServerLevelLoad {
   }
 
   public static ServerLoadLevel getLevelLoad(ServerLevel serverLevel) {
+    ServerLoadLevel loadLevelOverride = ServerLoad.getLoadLevelOverride();
+    if (loadLevelOverride != null) {
+      return loadLevelOverride;
+    }
+
     return levelLoadLevels.getOrDefault(serverLevel, ServerLoadLevel.NORMAL);
   }
 

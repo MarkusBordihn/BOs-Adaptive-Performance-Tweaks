@@ -101,12 +101,61 @@ class SimulationDistanceManagerTest {
   }
 
   @Test
-  void warmupReductionDropsToConfiguredMinimumDistance() throws Exception {
-    writeStaticField("configuredDistanceMax", SimulationDistanceConfig.simDistanceMin + 4);
-    assertEquals(4, invokeIntMethod("getWarmupReduction"));
+  @DisplayName("Issue #92: a warmup removes at most loginWarmupReductionMax chunks")
+  void warmupReductionStaysWithinConfiguredReductionMaximum() throws Exception {
+    int originalReductionMax = SimulationDistanceConfig.loginWarmupReductionMax;
+    try {
+      SimulationDistanceConfig.loginWarmupReductionMax = 2;
+      writeStaticField("configuredDistanceMax", SimulationDistanceConfig.simDistanceMin + 4);
+      assertEquals(2, invokeIntMethod("getWarmupReduction"));
 
-    writeStaticField("configuredDistanceMax", SimulationDistanceConfig.simDistanceMin);
-    assertEquals(0, invokeIntMethod("getWarmupReduction"));
+      writeStaticField("configuredDistanceMax", SimulationDistanceConfig.simDistanceMin);
+      assertEquals(0, invokeIntMethod("getWarmupReduction"));
+    } finally {
+      SimulationDistanceConfig.loginWarmupReductionMax = originalReductionMax;
+    }
+  }
+
+  @Test
+  void largeReductionMaximumKeepsDroppingToConfiguredMinimumDistance() throws Exception {
+    int originalReductionMax = SimulationDistanceConfig.loginWarmupReductionMax;
+    try {
+      SimulationDistanceConfig.loginWarmupReductionMax = 64;
+      writeStaticField("configuredDistanceMax", SimulationDistanceConfig.simDistanceMin + 4);
+      assertEquals(4, invokeIntMethod("getWarmupReduction"));
+    } finally {
+      SimulationDistanceConfig.loginWarmupReductionMax = originalReductionMax;
+    }
+  }
+
+  @Test
+  @DisplayName("loginWarmupEnabled=false suppresses the warmup reduction in sim_distance.cfg")
+  void disabledLoginWarmupSuppressesWarmupReduction() throws Exception {
+    boolean originalLoginWarmupEnabled = SimulationDistanceConfig.loginWarmupEnabled;
+    boolean originalMovementThrottleEnabled = SimulationDistanceConfig.movementThrottleEnabled;
+    try {
+      SimulationDistanceConfig.loginWarmupEnabled = false;
+      SimulationDistanceConfig.movementThrottleEnabled = false;
+      PlayerPositionManager.reset();
+      writeStaticField("configuredDistanceMax", SimulationDistanceConfig.simDistanceMax);
+      writeStaticField("currentLoadLevel", ServerLoadLevel.VERY_LOW);
+      writeStaticField("currentMovementReduction", 0);
+      writeStaticField("recoveryStartTick", -1);
+      writeStaticField("nextRecoveryTick", -1);
+
+      PlayerPosition playerPosition = new PlayerPosition("Newcomer", UUID.randomUUID(),
+        "minecraft:overworld", 0, 64, 0, 128);
+      playerPosition.setLoginWarmup(0, SimulationDistanceConfig.movementThrottleLoginTicks);
+      PlayerPositionManager.getPlayerPositionMap().put("newcomer", playerPosition);
+      writePlayerPositionManagerField("ticks", 1);
+
+      invokeUpdateMovementThrottle(false);
+
+      assertEquals(0, readStaticField("currentMovementReduction"));
+    } finally {
+      SimulationDistanceConfig.loginWarmupEnabled = originalLoginWarmupEnabled;
+      SimulationDistanceConfig.movementThrottleEnabled = originalMovementThrottleEnabled;
+    }
   }
 
   @Test

@@ -147,7 +147,7 @@ public record BenchmarkCompareResult(
   }
 
   private static String formatHeapBytes(long bytes) {
-    return bytes >= 0L ? BenchmarkMessenger.formatBytes(bytes) : "n/a (GC)";
+    return bytes >= 0L ? BenchmarkMessenger.formatBytes(bytes) : "n/a";
   }
 
   private static double calculateFastRatio(Map<MsptBucket, Integer> distribution) {
@@ -243,7 +243,7 @@ public record BenchmarkCompareResult(
         formatSignedMs(p95Delta),
         formatSignedNumber(scoreDelta)
       },
-      new int[]{8, 8, 8, 6, 6, 6, 7},
+      new int[]{8, 8, 8, 6, 10, 9, 10},
       false, false, true, true, true, true, true);
   }
 
@@ -453,7 +453,7 @@ public record BenchmarkCompareResult(
     lines.add(Component.literal(""));
     lines.add(Component.literal(
         String.format("%-13s %-8s %-12s %-12s %-8s %-8s %-8s",
-          "Scenario", "Dur", "Baseline", "Active", "Delta", "P95 D", "Score D"))
+          "Scenario", "Dur", "Baseline", "Active", "Saved", "P95 sav", "Score +"))
       .withStyle(ChatFormatting.GRAY));
     for (BenchmarkScenarioResult scenarioResult : scenarioResults) {
       lines.add(scenarioSummaryLine(scenarioResult));
@@ -483,7 +483,7 @@ public record BenchmarkCompareResult(
     lines.add(Component.literal(""));
     lines.add(Component.literal(
         String.format("%-9s %-6s %-9s %-9s %-8s %-7s %-7s",
-          "Scene", "Dur", "Base", "Active", "Delta", "P95", "Score"))
+          "Scene", "Dur", "Base", "Active", "Saved", "P95 sv", "Score+"))
       .withStyle(ChatFormatting.GRAY));
     for (BenchmarkScenarioResult scenarioResult : scenarioResults) {
       lines.add(chatScenarioSummaryLine(scenarioResult));
@@ -542,8 +542,13 @@ public record BenchmarkCompareResult(
     lines.add(
       "Shows the measured runtime difference per scenario. `Baseline` is the block without optimizations, `Active` is the same scenario with the saved feature state restored.");
     lines.add("");
-    lines.add("| Scenario | Duration | Baseline | Active |  Delta |  P95 D | Score D |");
-    lines.add("|----------|----------|---------:|-------:|-------:|-------:|--------:|");
+    lines.add(
+      "`MSPT saved`, `P95 saved` and `Score gain` are written so that a positive value always means the active block was better.");
+    lines.add("");
+    lines.add(
+      "| Scenario | Duration | Baseline | Active | MSPT saved | P95 saved | Score gain |");
+    lines.add(
+      "|----------|----------|---------:|-------:|-----------:|----------:|-----------:|");
     for (BenchmarkScenarioResult scenarioResult : scenarioResults) {
       lines.add(markdownScenarioSummaryLine(scenarioResult));
     }
@@ -557,6 +562,9 @@ public record BenchmarkCompareResult(
     lines.add("");
     lines.add(
       "Each scenario section includes the measured metrics, the MSPT/load distributions, and the recorded APTweaks counters that changed during that measurement window.");
+    lines.add("");
+    lines.add(
+      "For `Avg MSPT`, `P95 MSPT`, `Headroom`, `Perf score` and `Fast <10ms` a positive delta means the active block was better. `CPU avg/max`, `Heap avg` and `Entities` are reported as active minus baseline, so a negative delta is better there.");
     for (BenchmarkScenarioResult scenarioResult : scenarioResults) {
       appendScenarioMarkdown(lines, scenarioResult);
     }
@@ -571,9 +579,9 @@ public record BenchmarkCompareResult(
     double scoreDelta = result.activePerformanceScore() - result.baselinePerformanceScore();
     double fastDelta = result.activeFastRatio() - result.baselineFastRatio();
     boolean heapAvailable =
-      baseline.peakHeapDeltaBytes() >= 0L && active.peakHeapDeltaBytes() >= 0L;
+      baseline.avgHeapUsedBytes() >= 0L && active.avgHeapUsedBytes() >= 0L;
     long heapDelta =
-      heapAvailable ? active.peakHeapDeltaBytes() - baseline.peakHeapDeltaBytes() : 0L;
+      heapAvailable ? active.avgHeapUsedBytes() - baseline.avgHeapUsedBytes() : 0L;
     double cpuDelta = active.avgCpuPercent() - baseline.avgCpuPercent();
     int entityDelta = active.entityCount() - baseline.entityCount();
 
@@ -616,9 +624,9 @@ public record BenchmarkCompareResult(
         getEfficiencyColor(cpuDelta, result.tickTimeImprovementPercent())));
     }
     lines.add(metricLine(
-      "Heap peak",
-      formatHeapBytes(baseline.peakHeapDeltaBytes()),
-      formatHeapBytes(active.peakHeapDeltaBytes()),
+      "Heap avg",
+      formatHeapBytes(baseline.avgHeapUsedBytes()),
+      formatHeapBytes(active.avgHeapUsedBytes()),
       heapAvailable ? formatSignedBytes(heapDelta) : "n/a",
       heapAvailable
         ? getEfficiencyColor(heapDelta, result.tickTimeImprovementPercent())
@@ -652,9 +660,9 @@ public record BenchmarkCompareResult(
     double scoreDelta = result.activePerformanceScore() - result.baselinePerformanceScore();
     double fastDelta = result.activeFastRatio() - result.baselineFastRatio();
     boolean heapAvailable =
-      baseline.peakHeapDeltaBytes() >= 0L && active.peakHeapDeltaBytes() >= 0L;
+      baseline.avgHeapUsedBytes() >= 0L && active.avgHeapUsedBytes() >= 0L;
     long heapDelta =
-      heapAvailable ? active.peakHeapDeltaBytes() - baseline.peakHeapDeltaBytes() : 0L;
+      heapAvailable ? active.avgHeapUsedBytes() - baseline.avgHeapUsedBytes() : 0L;
     double cpuDelta = active.avgCpuPercent() - baseline.avgCpuPercent();
     int entityDelta = active.entityCount() - baseline.entityCount();
 
@@ -698,9 +706,9 @@ public record BenchmarkCompareResult(
         String.format("%+.1fpp", cpuDelta)));
     }
     lines.add(markdownMetricLine(
-      "Heap peak",
-      formatHeapBytes(baseline.peakHeapDeltaBytes()),
-      formatHeapBytes(active.peakHeapDeltaBytes()),
+      "Heap avg",
+      formatHeapBytes(baseline.avgHeapUsedBytes()),
+      formatHeapBytes(active.avgHeapUsedBytes()),
       heapAvailable ? formatSignedBytes(heapDelta) : "n/a"));
     lines.add(markdownMetricLine(
       "Entities",

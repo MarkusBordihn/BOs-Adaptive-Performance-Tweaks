@@ -21,6 +21,7 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.benchmark;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -35,6 +36,7 @@ import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetecto
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.TrackingCategory;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.MsptBucket;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoad;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.BenchmarkScenario;
@@ -47,6 +49,7 @@ import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.Gen
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.ItemScenario;
 import de.markusbordihn.adaptiveperformancetweaks.feature.benchmark.scenario.XpScenario;
 import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimulationDistanceManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.distance.ViewDistanceConfig;
 import de.markusbordihn.adaptiveperformancetweaks.feature.gamerules.GameRuleManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ItemsConfig;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
@@ -70,6 +73,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockMakers;
 
@@ -219,15 +223,61 @@ class BenchmarkManagerTest {
 
   @Test
   void minLoadLevelsForceToVeryLowDuringActiveBlockTransition() throws Exception {
-    ServerLoadLevel originalLevel = ItemsConfig.minOptimizationLoadLevel;
     try {
       BenchmarkFeatureState.saveMinLoadLevels();
       invokePrivateMethod("completeBlockTransition", new Class<?>[]{long.class},
         System.currentTimeMillis());
       assertEquals(ServerLoadLevel.VERY_LOW, ItemsConfig.minOptimizationLoadLevel);
+      assertEquals(ServerLoadLevel.VERY_LOW, ViewDistanceConfig.minOptimizationLoadLevel);
     } finally {
-      ItemsConfig.minOptimizationLoadLevel = originalLevel;
+      BenchmarkFeatureState.restoreMinLoadLevels();
       invokePrivateMethod("clearSessionState");
+    }
+  }
+
+  @Test
+  @DisplayName("The active block reports VERY_HIGH load so every feature applies its full reduction")
+  void activeBlockTransitionForcesVeryHighLoadLevel() throws Exception {
+    try {
+      BenchmarkFeatureState.saveMinLoadLevels();
+      invokePrivateMethod("completeBlockTransition", new Class<?>[]{long.class},
+        System.currentTimeMillis());
+      assertEquals(ServerLoadLevel.VERY_HIGH, ServerLoad.getCurrentServerLoad());
+    } finally {
+      BenchmarkFeatureState.restoreMinLoadLevels();
+      invokePrivateMethod("clearSessionState");
+    }
+  }
+
+  @Test
+  @DisplayName("Restoring the min load levels also drops the forced load level")
+  void restoreMinLoadLevelsClearsLoadLevelOverride() throws Exception {
+    BenchmarkFeatureState.saveMinLoadLevels();
+    try {
+      invokePrivateMethod("completeBlockTransition", new Class<?>[]{long.class},
+        System.currentTimeMillis());
+    } finally {
+      BenchmarkFeatureState.restoreMinLoadLevels();
+      invokePrivateMethod("clearSessionState");
+    }
+
+    assertNotEquals(ServerLoadLevel.VERY_HIGH, ServerLoad.getCurrentServerLoad());
+  }
+
+  @Test
+  @DisplayName("Restoring without a preceding save keeps the min load levels intact")
+  void restoreMinLoadLevelsWithoutSaveKeepsConfiguredLevels() {
+    ServerLoadLevel previousItemsMinLoad = ItemsConfig.minOptimizationLoadLevel;
+    ServerLoadLevel previousViewDistMinLoad = ViewDistanceConfig.minOptimizationLoadLevel;
+    try {
+      BenchmarkFeatureState.clearAll();
+      BenchmarkFeatureState.restoreMinLoadLevels();
+
+      assertEquals(previousItemsMinLoad, ItemsConfig.minOptimizationLoadLevel);
+      assertEquals(previousViewDistMinLoad, ViewDistanceConfig.minOptimizationLoadLevel);
+    } finally {
+      ItemsConfig.minOptimizationLoadLevel = previousItemsMinLoad;
+      ViewDistanceConfig.minOptimizationLoadLevel = previousViewDistMinLoad;
     }
   }
 

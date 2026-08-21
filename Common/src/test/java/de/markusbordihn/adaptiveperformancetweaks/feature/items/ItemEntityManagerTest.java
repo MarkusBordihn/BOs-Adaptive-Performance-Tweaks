@@ -261,6 +261,30 @@ class ItemEntityManagerTest {
   }
 
   @Test
+  void worldLimitKeepsMergedStackAndRemovesSmallestItem() {
+    ItemsConfig.maxNumberOfItems = 2;
+    ItemEntityManager.handleServerAboutToStart();
+    ServerLevel level = mockOverworldLevel();
+    ItemEntity mergeTarget =
+      createItem(level, 1, 0.0d, 64.0d, 0.0d, new ItemStack(Items.COBBLESTONE, 32));
+    ItemEntity mergeSource =
+      createItem(level, 2, 1.0d, 64.0d, 1.0d, new ItemStack(Items.COBBLESTONE, 16));
+    ItemEntity smallestItem =
+      createItem(level, 3, 50.0d, 64.0d, 50.0d, new ItemStack(Items.DIRT, 1));
+    ItemEntity lastItem = createItem(level, 4, 60.0d, 64.0d, 60.0d, new ItemStack(Items.DIRT, 1));
+
+    ItemEntityManager.handleItemEntityJoinLevel(mergeTarget, level);
+    ItemEntityManager.handleItemEntityJoinLevel(mergeSource, level);
+    ItemEntityManager.handleItemEntityJoinLevel(smallestItem, level);
+    ItemEntityManager.handleItemEntityJoinLevel(lastItem, level);
+
+    assertFalse(mergeTarget.isRemoved());
+    assertEquals(48, mergeTarget.getItem().getCount());
+    assertTrue(smallestItem.isRemoved());
+    assertFalse(lastItem.isRemoved());
+  }
+
+  @Test
   void verificationRemovesDiscardedTrackedItems() throws Exception {
     ServerLevel level = mockOverworldLevel();
     ItemEntity active =

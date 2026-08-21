@@ -40,10 +40,11 @@ public class PlayerPosition {
   private int lastChunkZ;
   private int lastMovementSampleTick = -1;
   private double[] movementWindow = new double[0];
+  private int[] movementWindowTicks = new int[0];
   private int movementWindowCount = 0;
   private int movementWindowIndex = 0;
   private double movementWindowDistance = 0.0D;
-  private int movementWindowSampleTicks = 0;
+  private int movementWindowTickTotal = 0;
   private int stableTicks = 0;
   private int loginWarmupUntilTick = 0;
 
@@ -106,12 +107,11 @@ public class PlayerPosition {
   }
 
   public double getMovementSpeed() {
-    if (!this.hasCompleteMovementWindow() || this.movementWindowSampleTicks <= 0) {
+    if (!this.hasCompleteMovementWindow() || this.movementWindowTickTotal <= 0) {
       return 0.0D;
     }
 
-    return this.movementWindowDistance * TICKS_PER_SECOND
-      / (double) (this.movementWindow.length * this.movementWindowSampleTicks);
+    return this.movementWindowDistance * TICKS_PER_SECOND / this.movementWindowTickTotal;
   }
 
   public boolean hasRecentMovementSpeed(double blocksPerSecond) {
@@ -140,7 +140,6 @@ public class PlayerPosition {
   public void updateMovement(double posX, double posY, double posZ, String levelName,
     int currentTick, int movementWindowSamples, int sampleTicks) {
     this.ensureMovementWindowSize(movementWindowSamples);
-    this.movementWindowSampleTicks = Math.max(1, sampleTicks);
     if (!levelName.equals(this.levelName)) {
       this.resetMovementWindow();
       this.levelName = levelName;
@@ -168,10 +167,10 @@ public class PlayerPosition {
     double deltaY = posY - this.lastPosY;
     double deltaZ = posZ - this.lastPosZ;
     double movementDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
-    // Only horizontal travel moves the chunk frontier, so falls and mine shafts must not count.
-    this.addMovementDistance(Math.sqrt(deltaX * deltaX + deltaZ * deltaZ));
-
     int tickDelta = Math.max(sampleTicks, currentTick - this.lastMovementSampleTick);
+    // Only horizontal travel moves the chunk frontier, so falls and mine shafts must not count.
+    this.addMovementSample(Math.sqrt(deltaX * deltaX + deltaZ * deltaZ), tickDelta);
+
     if (movementDistance <= STATIONARY_DISTANCE_EPSILON) {
       this.stableTicks += tickDelta;
     } else {
@@ -206,30 +205,36 @@ public class PlayerPosition {
     }
 
     this.movementWindow = new double[windowSize];
+    this.movementWindowTicks = new int[windowSize];
     this.resetMovementWindow();
   }
 
-  private void addMovementDistance(double movementDistance) {
+  private void addMovementSample(double movementDistance, int tickDelta) {
     if (this.movementWindow.length == 0) {
       return;
     }
 
     if (this.movementWindowCount == this.movementWindow.length) {
       this.movementWindowDistance -= this.movementWindow[this.movementWindowIndex];
+      this.movementWindowTickTotal -= this.movementWindowTicks[this.movementWindowIndex];
     } else {
       this.movementWindowCount++;
     }
 
     this.movementWindow[this.movementWindowIndex] = movementDistance;
+    this.movementWindowTicks[this.movementWindowIndex] = tickDelta;
     this.movementWindowDistance += movementDistance;
+    this.movementWindowTickTotal += tickDelta;
     this.movementWindowIndex = (this.movementWindowIndex + 1) % this.movementWindow.length;
   }
 
   private void resetMovementWindow() {
     Arrays.fill(this.movementWindow, 0.0D);
+    Arrays.fill(this.movementWindowTicks, 0);
     this.movementWindowCount = 0;
     this.movementWindowIndex = 0;
     this.movementWindowDistance = 0.0D;
+    this.movementWindowTickTotal = 0;
   }
 
   public String toString() {
