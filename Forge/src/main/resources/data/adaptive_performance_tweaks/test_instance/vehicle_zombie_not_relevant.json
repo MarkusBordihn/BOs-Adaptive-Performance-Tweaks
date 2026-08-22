@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "adaptive_performance_tweaks:vehicle_zombie_not_relevant",
+  "environment": "minecraft:default",
+  "structure": "adaptive_performance_tweaks:gametest.1x1x1",
+  "max_ticks": 100
+}

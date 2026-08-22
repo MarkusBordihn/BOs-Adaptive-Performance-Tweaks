@@ -20,7 +20,10 @@
 package de.markusbordihn.adaptiveperformancetweaks.forge.mixin;
 
 import de.markusbordihn.adaptiveperformancetweaks.server.CommonServerEventHandler;
+import java.util.Set;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Relative;
 import net.minecraft.world.level.portal.TeleportTransition;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -38,6 +41,18 @@ public class ServerPlayerTeleportMixin {
     TeleportTransition transition, CallbackInfoReturnable<ServerPlayer> cir) {
     ServerPlayer serverPlayer = cir.getReturnValue();
     if (serverPlayer != null) {
+      CommonServerEventHandler.handlePlayerTeleported(serverPlayer);
+    }
+  }
+
+  @Inject(
+    method = "teleportTo(Lnet/minecraft/server/level/ServerLevel;DDDLjava/util/Set;FFZ)Z",
+    at = @At("RETURN"))
+  private void aptweaks_handleTeleport(ServerLevel level, double x, double y, double z,
+    Set<Relative> relatives, float yRot, float xRot, boolean setCamera,
+    CallbackInfoReturnable<Boolean> cir) {
+    if (Boolean.TRUE.equals(cir.getReturnValue())
+      && (Object) this instanceof ServerPlayer serverPlayer) {
       CommonServerEventHandler.handlePlayerTeleported(serverPlayer);
     }
   }

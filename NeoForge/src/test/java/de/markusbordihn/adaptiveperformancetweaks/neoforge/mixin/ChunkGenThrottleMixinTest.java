@@ -41,6 +41,6 @@ class ChunkGenThrottleMixinTest {
       "target = \"Lnet/minecraft/server/level/ServerChunkCache;runDistanceManagerUpdates()Z\""));
     assertTrue(source.contains("getThrottleDivisor(this.level)"));
     assertFalse(source.contains("@Mixin(ChunkMap.class)"));
-    assertFalse(source.contains("@Inject(method = \"runDistanceManagerUpdates\""));
+    assertFalse(source.contains("@Inject"));
   }
 }

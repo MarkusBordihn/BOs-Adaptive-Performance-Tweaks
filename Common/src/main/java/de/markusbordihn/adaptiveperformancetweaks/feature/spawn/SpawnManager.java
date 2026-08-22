@@ -146,7 +146,8 @@ public final class SpawnManager {
 
   public static boolean shouldDenyNaturalSpawn(
     MobCategory category, ServerLevel level, BlockPos pos) {
-    if (!SpawnConfig.naturalSpawnLimitationEnabled || !serverStartedDelay
+    if (!FeatureToggle.SPAWN.isEnabled() || !SpawnConfig.naturalSpawnLimitationEnabled
+      || !serverStartedDelay
       || !currentLoadLevel.isAtLeast(SpawnConfig.minOptimizationLoadLevel)) {
       return false;
     }

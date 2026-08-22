@@ -5,6 +5,32 @@
 This change log includes the summarized changes. For the full changelog, please go to
 the [GitHub History][history] instead.
 
+### 12.9.0
+
+- Fixed #93 by no longer freezing the server when many items drop in the same area.
+- Fixed #92 by capping warmups and no longer forcing clients to rebuild every visible chunk.
+- Fixed item limits removing merged stacks instead of the smallest nearby item drop.
+- Fixed warmups skipping same-dimension teleports and never recovering view distance or game rules.
+- Fixed simulation distance staying capped and still evaluating with the feature disabled.
+- Fixed the chunk generation throttle also delaying chunk loading and world saving.
+- Fixed the benchmark not applying all optimizations and breaking them when cancelled early.
+- Fixed spawn limits counting mobs that never joined the world, blocking more spawns over time.
+- Fixed spawn limits counting natural spawns twice on Forge and NeoForge.
+- Fixed XP orb merging spawning a replacement orb, which could freeze the server on large piles.
+- Fixed merged XP orbs restarting their despawn timer, so continuously fed piles never despawned.
+- Fixed the Forge build never registering its mixins, which disabled most of its optimizations.
+- Fixed 100% hurt damage reduction not blocking any damage on Forge for child mode and starters.
+- Fixed natural spawn throttling still running after disabling the `spawn` feature.
+- Fixed spawn limits counting spawner spawns twice on Forge, blocking more spawns than configured.
+- Fixed item limits removing live drops while still counting items that were already picked up.
+- Fixed natural spawn throttling on Forge running per spawn candidate, blocking far too many mobs.
+- Changed spawn limits to only count mobs actually in the world; more mobs may spawn than before.
+- Changed Forge to apply XP orb merging, spawner, AI and chunk throttling like NeoForge and Fabric.
+- Changed the server to advertise its full chunk radius; clients cache more chunks in return.
+- Changed the benchmark to run at VERY_HIGH load with steadier sampling and clearer report columns.
+- Added `loginWarmupReductionMax` and `preventClientChunkReload` plus a distance conflict warning.
+- Added 50 in-game tests for all loaders, which are not part of the released files.
+
 ### 12.8.0
 
 - Fixed #91 by letting the login and teleport warmup decay back to the load-based distance.

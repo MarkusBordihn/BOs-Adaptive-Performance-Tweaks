@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "adaptive_performance_tweaks:natural_spawn_not_evaluated_on_finalize_spawn",
+  "environment": "minecraft:default",
+  "structure": "adaptive_performance_tweaks:gametest.1x1x1",
+  "max_ticks": 100
+}
