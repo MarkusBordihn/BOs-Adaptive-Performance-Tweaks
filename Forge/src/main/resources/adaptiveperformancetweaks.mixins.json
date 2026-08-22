@@ -11,6 +11,7 @@
     "MobAiThrottleMixin",
     "MobMixin",
     "NaturalSpawnerEntityMixin",
+    "NaturalSpawnerMixin",
     "ServerPlayerTeleportMixin",
     "VillagerConvertToMixin"
   ],

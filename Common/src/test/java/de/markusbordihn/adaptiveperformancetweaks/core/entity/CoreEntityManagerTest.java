@@ -22,6 +22,7 @@ package de.markusbordihn.adaptiveperformancetweaks.core.entity;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
@@ -117,7 +118,9 @@ class CoreEntityManagerTest {
     MinecraftServer server = mock(MinecraftServer.class,
       withSettings().mockMaker(MockMakers.SUBCLASS));
     ServerLevel level = mock(ServerLevel.class, withSettings().mockMaker(MockMakers.SUBCLASS));
+    when(server.isSameThread()).thenReturn(true);
     when(level.getServer()).thenReturn(server);
+    when(level.isPositionEntityTicking(any(BlockPos.class))).thenReturn(true);
     when(level.getWaypointManager()).thenReturn(
       mock(ServerWaypointManager.class, withSettings().mockMaker(MockMakers.SUBCLASS)));
     return mockEntity(entityType, removed, level);
@@ -137,6 +140,8 @@ class CoreEntityManagerTest {
 
     if (removed) {
       entity.remove(RemovalReason.DISCARDED);
+    } else {
+      when(level.getEntity(entity.getId())).thenReturn(entity);
     }
 
     return entity;
@@ -152,7 +157,9 @@ class CoreEntityManagerTest {
     MinecraftServer server = mock(MinecraftServer.class,
       withSettings().mockMaker(MockMakers.SUBCLASS));
     ServerLevel level = mock(ServerLevel.class, withSettings().mockMaker(MockMakers.SUBCLASS));
+    when(server.isSameThread()).thenReturn(true);
     when(level.getServer()).thenReturn(server);
+    when(level.isPositionEntityTicking(any(BlockPos.class))).thenReturn(true);
     when(level.getWaypointManager()).thenReturn(
       mock(ServerWaypointManager.class, withSettings().mockMaker(MockMakers.SUBCLASS)));
     when(level.dimension()).thenReturn(Level.OVERWORLD);
@@ -483,6 +490,26 @@ class CoreEntityManagerTest {
     assertEquals(Map.of(activeEntity, activeChunkKey), cleanedChunkKeyMap);
     assertTrue(cleanedChunkMap.contains(activeChunkKey));
     assertFalse(cleanedChunkMap.contains(staleChunkKey));
+  }
+
+  @Test
+  void verifyEntitiesRemovesEntitiesRejectedByTheLevel() throws Exception {
+    ServerLevel level = mockOverworldLevel();
+    Entity acceptedEntity = mockEntity(EntityTypes.ZOMBIE, false, level);
+    Entity rejectedEntity = new Zombie(EntityTypes.ZOMBIE, level);
+    rejectedEntity.setId(ENTITY_ID_COUNTER.getAndIncrement());
+    Object entityMapKey = newEntityTrackingKey("minecraft:overworld", "minecraft:zombie");
+
+    ConcurrentHashMap<Object, Set<Entity>> entityMap = new ConcurrentHashMap<>();
+    entityMap.put(entityMapKey, newEntitySet(acceptedEntity, rejectedEntity));
+    writeStaticField("entityMap", entityMap);
+
+    Method method = CoreEntityManager.class.getDeclaredMethod("verifyEntities");
+    method.setAccessible(true);
+    method.invoke(null);
+
+    Map<Object, Set<Entity>> cleanedEntityMap = readStaticField("entityMap");
+    assertEquals(Set.of(acceptedEntity), cleanedEntityMap.get(entityMapKey));
   }
 
   @Test

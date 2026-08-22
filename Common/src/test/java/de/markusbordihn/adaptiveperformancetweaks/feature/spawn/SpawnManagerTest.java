@@ -20,7 +20,10 @@
 package de.markusbordihn.adaptiveperformancetweaks.feature.spawn;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -32,9 +35,11 @@ import net.minecraft.server.Bootstrap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class SpawnManagerTest {
@@ -51,6 +56,12 @@ class SpawnManagerTest {
     Field field = SpawnManager.class.getDeclaredField(fieldName);
     field.setAccessible(true);
     return (T) field.get(null);
+  }
+
+  private static void writeStaticField(String fieldName, Object value) throws Exception {
+    Field field = SpawnManager.class.getDeclaredField(fieldName);
+    field.setAccessible(true);
+    field.set(null, value);
   }
 
   private static Object newNestedRecord(
@@ -155,5 +166,32 @@ class SpawnManagerTest {
       EntityTypes.ZOMBIE, mock(ServerLevel.class), dimensionId);
 
     assertEquals(7, result);
+  }
+
+  @Test
+  @DisplayName("Natural spawn denial is skipped while the spawn feature is disabled")
+  void naturalSpawnDenialRespectsFeatureToggle() throws Exception {
+    boolean wasEnabled = FeatureToggle.SPAWN.isEnabled();
+    boolean wasPrioritizeByTimeOfDay = SpawnConfig.naturalSpawnPrioritizeByTimeOfDay;
+    double previousPassRate = SpawnConfig.naturalSpawnPassRateNormal;
+    SpawnConfig.naturalSpawnLimitationEnabled = true;
+    SpawnConfig.naturalSpawnPrioritizeByTimeOfDay = false;
+    SpawnConfig.naturalSpawnPassRateNormal = 0.0;
+    writeStaticField("serverStartedDelay", true);
+    ServerLevel level = mock(ServerLevel.class);
+
+    try {
+      FeatureToggle.SPAWN.setEnabled(true);
+      assertTrue(
+        SpawnManager.shouldDenyNaturalSpawn(MobCategory.MONSTER, level, BlockPos.ZERO));
+
+      FeatureToggle.SPAWN.setEnabled(false);
+      assertFalse(
+        SpawnManager.shouldDenyNaturalSpawn(MobCategory.MONSTER, level, BlockPos.ZERO));
+    } finally {
+      FeatureToggle.SPAWN.setEnabled(wasEnabled);
+      SpawnConfig.naturalSpawnPrioritizeByTimeOfDay = wasPrioritizeByTimeOfDay;
+      SpawnConfig.naturalSpawnPassRateNormal = previousPassRate;
+    }
   }
 }

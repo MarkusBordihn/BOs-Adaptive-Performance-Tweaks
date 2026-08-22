@@ -37,6 +37,9 @@ import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.LevelAccessor;
 
 public final class CommonServerEventHandler {
 
@@ -116,6 +119,14 @@ public final class CommonServerEventHandler {
 
   public static void handleServerLevelTickEnd(ServerLevel serverLevel) {
     ServerManager.handleServerLevelTickEnd(serverLevel);
+  }
+
+  public static boolean shouldDenyNonNaturalFinalizeSpawn(
+    Mob mob, LevelAccessor level, EntitySpawnReason spawnReason) {
+    return spawnReason != EntitySpawnReason.NATURAL
+      && spawnReason != EntitySpawnReason.SPAWNER
+      && level instanceof ServerLevel serverLevel
+      && SpawnManager.shouldDenyMobSpawn(mob, serverLevel, spawnReason);
   }
 
   public static void handlePlayerLoggedIn(ServerPlayer serverPlayer) {

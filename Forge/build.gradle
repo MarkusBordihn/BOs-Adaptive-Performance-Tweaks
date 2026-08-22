@@ -1,7 +1,8 @@
 plugins {
   id 'maven-publish'
   id 'net.minecraftforge.accesstransformers' version '5.0.1'
-  id 'net.minecraftforge.gradle' version '[7.0.17,8)'
+  // ForgeGradle 7.0.35 breaks every run task: runsJson queries outputDirectory before completion.
+  id 'net.minecraftforge.gradle' version '[7.0.17,7.0.35)'
   id 'net.darkhax.curseforgegradle' version '1.2.30'
   id 'nu.studer.credentials' version '3.0'
   id "com.modrinth.minotaur" version "2.+"
@@ -132,6 +133,13 @@ tasks.named('jar', Jar).configure {
   from(project(":Common").sourceSets.main.output)
 
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+  // Test instances and their structures are data pack registries and would otherwise be loaded in
+  // every world, which makes the game tests selectable through the /test command. Development runs
+  // read the source set output instead of this jar and therefore keep them.
+  exclude 'data/*/test_instance/**'
+  exclude 'data/*/gametest/**'
+  exclude 'data/*/structure/gametest.*'
 
   manifest {
     attributes([

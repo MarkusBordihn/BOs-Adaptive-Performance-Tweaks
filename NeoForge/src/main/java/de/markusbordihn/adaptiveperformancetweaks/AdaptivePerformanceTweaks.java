@@ -24,6 +24,7 @@ import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModCompat;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.Config;
 import de.markusbordihn.adaptiveperformancetweaks.core.debug.DebugManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureRegistry;
+import de.markusbordihn.adaptiveperformancetweaks.gametest.ModGameTests;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
@@ -64,6 +65,8 @@ public class AdaptivePerformanceTweaks {
 
     log.debug("{} Feature Registry ...", Constants.LOG_REGISTER_PREFIX);
     FeatureRegistry.registerCommon();
+
+    ModGameTests.register(modEventBus);
 
     if (FMLEnvironment.getDist() == Dist.CLIENT) {
       new AdaptivePerformanceTweaksClient(modEventBus);

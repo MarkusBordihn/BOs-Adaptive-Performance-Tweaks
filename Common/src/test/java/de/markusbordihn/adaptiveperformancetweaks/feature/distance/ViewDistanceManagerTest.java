@@ -21,6 +21,9 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.distance;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPosition;
 import de.markusbordihn.adaptiveperformancetweaks.core.player.PlayerPositionManager;
@@ -28,10 +31,23 @@ import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.UUID;
+import net.minecraft.SharedConstants;
+import net.minecraft.server.Bootstrap;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.players.PlayerList;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockMakers;
 
 class ViewDistanceManagerTest {
+
+  @BeforeAll
+  static void bootstrapMinecraft() {
+    SharedConstants.tryDetectVersion();
+    Bootstrap.bootStrap();
+    Bootstrap.validate();
+  }
 
   private static void writeStaticField(String fieldName, Object value) throws Exception {
     Field field = ViewDistanceManager.class.getDeclaredField(fieldName);
@@ -49,6 +65,13 @@ class ViewDistanceManagerTest {
     Field field = ViewDistanceManager.class.getDeclaredField(fieldName);
     field.setAccessible(true);
     return field.get(null);
+  }
+
+  private static void invokeDetectExternalDistanceChange(MinecraftServer server) throws Exception {
+    Method method = ViewDistanceManager.class.getDeclaredMethod("detectExternalDistanceChange",
+      MinecraftServer.class);
+    method.setAccessible(true);
+    method.invoke(null, server);
   }
 
   private static void invokeUpdateWarmupReduction() throws Exception {
@@ -124,13 +147,76 @@ class ViewDistanceManagerTest {
   }
 
   @Test
-  void warmupReducesBaselineDownToMinimum() throws Exception {
-    writeStaticField("configuredDistanceMax", ViewDistanceConfig.viewDistanceMax);
-    int reduction = invokeIntMethod("getWarmupReduction");
-    int baseline = ViewDistanceConfig.viewDistanceMax;
-    int target = Math.max(ViewDistanceConfig.viewDistanceMin,
-      Math.min(ViewDistanceConfig.viewDistanceMax, baseline) - reduction);
-    assertEquals(ViewDistanceConfig.viewDistanceMin, target);
+  @DisplayName("Issue #92: a warmup removes at most loginWarmupReductionMax chunks")
+  void warmupReductionStaysWithinConfiguredReductionMaximum() throws Exception {
+    int originalReductionMax = ViewDistanceConfig.loginWarmupReductionMax;
+    try {
+      ViewDistanceConfig.loginWarmupReductionMax = 3;
+      writeStaticField("configuredDistanceMax", ViewDistanceConfig.viewDistanceMax);
+      assertEquals(3, invokeIntMethod("getWarmupReduction"));
+
+      writeStaticField("configuredDistanceMax", ViewDistanceConfig.viewDistanceMin);
+      assertEquals(0, invokeIntMethod("getWarmupReduction"));
+    } finally {
+      ViewDistanceConfig.loginWarmupReductionMax = originalReductionMax;
+    }
+  }
+
+  @Test
+  void largeReductionMaximumKeepsReducingBaselineDownToMinimum() throws Exception {
+    int originalReductionMax = ViewDistanceConfig.loginWarmupReductionMax;
+    try {
+      ViewDistanceConfig.loginWarmupReductionMax = 64;
+      writeStaticField("configuredDistanceMax", ViewDistanceConfig.viewDistanceMax);
+      int reduction = invokeIntMethod("getWarmupReduction");
+      int target = Math.max(ViewDistanceConfig.viewDistanceMin,
+        ViewDistanceConfig.viewDistanceMax - reduction);
+      assertEquals(ViewDistanceConfig.viewDistanceMin, target);
+    } finally {
+      ViewDistanceConfig.loginWarmupReductionMax = originalReductionMax;
+    }
+  }
+
+  @Test
+  void effectiveViewDistanceFallsBackWhileNoDistanceIsApplied() throws Exception {
+    writeStaticField("currentDistance", -1);
+    assertEquals(16, ViewDistanceManager.getEffectiveViewDistance(16));
+
+    writeStaticField("currentDistance", 6);
+    assertEquals(6, ViewDistanceManager.getEffectiveViewDistance(16));
+  }
+
+  @Test
+  @DisplayName("A view distance changed by another mod is adopted as the new maximum")
+  void externalDistanceChangeIsAdoptedAsConfiguredMaximum() throws Exception {
+    MinecraftServer server = mock(MinecraftServer.class,
+      withSettings().mockMaker(MockMakers.SUBCLASS));
+    PlayerList playerList = mock(PlayerList.class,
+      withSettings().mockMaker(MockMakers.SUBCLASS));
+    when(server.getPlayerList()).thenReturn(playerList);
+    when(playerList.getViewDistance()).thenReturn(12);
+    writeStaticField("configuredDistanceMax", 32);
+    writeStaticField("lastPlayerListDistance", -1);
+
+    invokeDetectExternalDistanceChange(server);
+
+    assertEquals(12, readStaticField("configuredDistanceMax"));
+  }
+
+  @Test
+  void unchangedPlayerListDistanceKeepsConfiguredMaximum() throws Exception {
+    MinecraftServer server = mock(MinecraftServer.class,
+      withSettings().mockMaker(MockMakers.SUBCLASS));
+    PlayerList playerList = mock(PlayerList.class,
+      withSettings().mockMaker(MockMakers.SUBCLASS));
+    when(server.getPlayerList()).thenReturn(playerList);
+    when(playerList.getViewDistance()).thenReturn(32);
+    writeStaticField("configuredDistanceMax", 32);
+    writeStaticField("lastPlayerListDistance", -1);
+
+    invokeDetectExternalDistanceChange(server);
+
+    assertEquals(32, readStaticField("configuredDistanceMax"));
   }
 
   @Test

@@ -23,13 +23,9 @@ import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.commands.CommandManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.feature.player.PlayerDamageManager;
-import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnPresetLoader;
-import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraftforge.common.util.Result;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
@@ -98,36 +94,9 @@ public final class ServerEventHandler {
   }
 
   @SubscribeEvent
-  public static void handleSpawnPlacementCheck(MobSpawnEvent.SpawnPlacementCheck event) {
-    if (event.getSpawnReason() != EntitySpawnReason.NATURAL
-      || !(event.getLevel() instanceof ServerLevel serverLevel)) {
-      return;
-    }
-
-    BlockPos pos = event.getPos();
-    if (SpawnManager.shouldDenyNaturalSpawn(event.getEntityType().getCategory(), serverLevel,
-      pos)) {
-      event.setResult(Result.DENY);
-    }
-  }
-
-  @SubscribeEvent
-  public static void handleSpawnPositionCheck(MobSpawnEvent.PositionCheck event) {
-    if (event.getSpawnReason() != EntitySpawnReason.SPAWNER
-      || !(event.getLevel() instanceof ServerLevel serverLevel)) {
-      return;
-    }
-
-    if (SpawnManager.shouldDenyMobSpawn(event.getEntity(), serverLevel, event.getSpawnReason())) {
-      event.setResult(Result.DENY);
-    }
-  }
-
-  @SubscribeEvent
   public static void handleFinalizeSpawn(MobSpawnEvent.FinalizeSpawn event) {
-    if (event.getSpawnReason() != EntitySpawnReason.SPAWNER
-      && event.getLevel() instanceof ServerLevel serverLevel
-      && SpawnManager.shouldDenyMobSpawn(event.getEntity(), serverLevel, event.getSpawnReason())) {
+    if (CommonServerEventHandler.shouldDenyNonNaturalFinalizeSpawn(
+      event.getEntity(), event.getLevel(), event.getSpawnReason())) {
       event.setSpawnCancelled(true);
     }
   }
@@ -166,21 +135,23 @@ public final class ServerEventHandler {
   }
 
   @SubscribeEvent
-  public static void handleLivingHurt(LivingHurtEvent event) {
+  public static boolean handleLivingHurt(LivingHurtEvent event) {
     if (event.getEntity().level().isClientSide()) {
-      return;
+      return false;
     }
 
     if (!FeatureToggle.PLAYER_EASY_CHILD_MODE.isEnabled()
       && !FeatureToggle.PLAYER_STARTER_PROTECTION.isEnabled()) {
-      return;
+      return false;
     }
 
     float modified = PlayerDamageManager.handleLivingHurt(event.getEntity(), event.getAmount());
     if (modified <= 0f) {
-      return;
+      return true;
     }
     event.setAmount(modified);
+
+    return false;
   }
 
   @SubscribeEvent

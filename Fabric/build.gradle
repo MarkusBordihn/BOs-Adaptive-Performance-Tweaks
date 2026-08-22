@@ -87,6 +87,13 @@ tasks.withType(Test).configureEach {
   failOnNoDiscoveredTests = false
 }
 
+tasks.named('jar', Jar).configure {
+  // Game test structures are a data pack registry and would otherwise be loaded in every world.
+  // Development runs read the source set output instead of this jar and therefore keep them.
+  exclude 'data/*/gametest/**'
+  exclude 'data/*/structure/gametest.*'
+}
+
 test {
   useJUnitPlatform()
   exclude '**/*'

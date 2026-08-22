@@ -34,7 +34,7 @@ public final class EntityJoinInterceptor {
   }
 
   public static boolean denyOrMarkPending(Entity entity, ServerLevel level) {
-    if (CommonEntityEventHandler.handleEntityJoinLevel(entity, level)) {
+    if (CommonEntityEventHandler.shouldDenyEntityJoinLevel(entity, level)) {
       return true;
     }
     PENDING_ENTITIES.get().add(entity);

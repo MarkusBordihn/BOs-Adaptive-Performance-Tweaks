@@ -49,6 +49,8 @@ public final class SimulationDistanceConfig extends Config {
        used by the GameRules feature for its random-tick warmup timing.
        movementThrottleRecoveryMinDelayTicks acts as a hard floor: recovery never starts
        earlier, even if movementThrottleRecoveryDelayTicks is set lower.
+       loginWarmupReductionMax limits how many chunks a login or teleport warmup removes at once.
+       A very large value restores the former behaviour of dropping straight to simDistanceMin.
        movementThrottleRecoverOnlyWhenStable holds the last reduction step until no player
        travels faster than movementThrottleSpeedBlocksPerSecond anymore. It only applies with
        movementThrottleEnabled=false, since the throttle itself already keeps a reduction
@@ -65,6 +67,7 @@ public final class SimulationDistanceConfig extends Config {
   public static int simDistanceMin = 2;
   public static int simDistanceMax = 12;
   public static boolean loginWarmupEnabled = true;
+  public static int loginWarmupReductionMax = 2;
   public static boolean movementThrottleEnabled = true;
   public static int movementThrottleWindowSamples = 3;
   public static int movementThrottleWindowSamplesMax = 5;
@@ -105,6 +108,8 @@ public final class SimulationDistanceConfig extends Config {
     simDistanceMin = parseConfigValue(properties, "simDistanceMin", simDistanceMin);
     simDistanceMax = parseConfigValue(properties, "simDistanceMax", simDistanceMax);
     loginWarmupEnabled = parseConfigValue(properties, "loginWarmupEnabled", loginWarmupEnabled);
+    loginWarmupReductionMax = Math.max(0,
+      parseConfigValue(properties, "loginWarmupReductionMax", loginWarmupReductionMax));
     movementThrottleEnabled = parseConfigValue(properties, "movementThrottleEnabled",
       movementThrottleEnabled);
     movementThrottleWindowSamplesMax = Math.max(1,
@@ -143,10 +148,10 @@ public final class SimulationDistanceConfig extends Config {
     PlayerPositionManager.configureMovementTracking(movementThrottleSampleTicks,
       movementThrottleWindowSamples);
     log.debug(
-      "Simulation distance per load: VERY_LOW={} LOW={} NORMAL={} MEDIUM={} HIGH={} VERY_HIGH={} | loginWarmup={} movementThrottle={} minLoad={} samples={}/{} sampleTicks={} speed={}/{}b/s recovery(minDelay={} delay={} step={}) loginTicks={} recoverOnlyWhenStable={} reduction={}..{}",
+      "Simulation distance per load: VERY_LOW={} LOW={} NORMAL={} MEDIUM={} HIGH={} VERY_HIGH={} | loginWarmup={} (max -{}) movementThrottle={} minLoad={} samples={}/{} sampleTicks={} speed={}/{}b/s recovery(minDelay={} delay={} step={}) loginTicks={} recoverOnlyWhenStable={} reduction={}..{}",
       simDistanceVeryLow, simDistanceLow, simDistanceNormal,
       simDistanceMedium, simDistanceHigh, simDistanceVeryHigh,
-      loginWarmupEnabled, movementThrottleEnabled,
+      loginWarmupEnabled, loginWarmupReductionMax, movementThrottleEnabled,
       movementThrottleWindowSamples, movementThrottleWindowSamplesMax,
       movementThrottleSampleTicks, movementThrottleSpeedBlocksPerSecond,
       movementThrottleFastSpeedBlocksPerSecond,

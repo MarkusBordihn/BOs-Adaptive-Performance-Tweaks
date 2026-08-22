@@ -49,6 +49,7 @@ import net.minecraft.world.level.Level;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockMakers;
 
@@ -264,6 +265,54 @@ class ItemEntityManagerTest {
     assertFalse(newest.isRemoved());
     assertEquals(1, ItemEntityManager.getTrackedItemEntityCount());
     assertEquals(1L, PerformanceStats.itemsRemoved);
+  }
+
+  @Test
+  void worldLimitKeepsMergedStackAndRemovesSmallestItem() {
+    ItemsConfig.maxNumberOfItems = 2;
+    ItemEntityManager.handleServerAboutToStart();
+    ServerLevel level = mockOverworldLevel();
+    ItemEntity mergeTarget =
+      createItem(level, 1, 0.0d, 64.0d, 0.0d, new ItemStack(Items.COBBLESTONE, 32));
+    ItemEntity mergeSource =
+      createItem(level, 2, 1.0d, 64.0d, 1.0d, new ItemStack(Items.COBBLESTONE, 16));
+    ItemEntity smallestItem =
+      createItem(level, 3, 50.0d, 64.0d, 50.0d, new ItemStack(Items.DIRT, 1));
+    ItemEntity lastItem = createItem(level, 4, 60.0d, 64.0d, 60.0d, new ItemStack(Items.DIRT, 1));
+
+    ItemEntityManager.handleItemEntityJoinLevel(mergeTarget, level);
+    ItemEntityManager.handleItemEntityJoinLevel(mergeSource, level);
+    ItemEntityManager.handleItemEntityJoinLevel(smallestItem, level);
+    ItemEntityManager.handleItemEntityJoinLevel(lastItem, level);
+
+    assertFalse(mergeTarget.isRemoved());
+    assertEquals(48, mergeTarget.getItem().getCount());
+    assertTrue(smallestItem.isRemoved());
+    assertFalse(lastItem.isRemoved());
+  }
+
+  @Test
+  @DisplayName("Limits ignore items that are already removed but not yet reported as left")
+  void worldLimitIgnoresAlreadyRemovedItems() {
+    ItemsConfig.maxNumberOfItems = 2;
+    ItemsConfig.maxNumberOfItemsPerType = 64;
+    ItemsConfig.itemsClusterRange = 0;
+    ItemEntityManager.handleServerAboutToStart();
+    ServerLevel level = mockOverworldLevel();
+    ItemEntity pickedUp =
+      createItem(level, 1, 0.0d, 64.0d, 0.0d, new ItemStack(Items.COBBLESTONE, 32));
+    ItemEntity keptItem = createItem(level, 2, 20.0d, 64.0d, 20.0d, new ItemStack(Items.DIRT, 64));
+    ItemEntity newDrop = createItem(level, 3, 40.0d, 64.0d, 40.0d, new ItemStack(Items.DIRT, 1));
+
+    ItemEntityManager.handleItemEntityJoinLevel(pickedUp, level);
+    ItemEntityManager.handleItemEntityJoinLevel(keptItem, level);
+    pickedUp.remove(RemovalReason.DISCARDED);
+    ItemEntityManager.handleItemEntityJoinLevel(newDrop, level);
+
+    assertFalse(newDrop.isRemoved());
+    assertFalse(keptItem.isRemoved());
+    assertEquals(0L, PerformanceStats.itemsRemoved);
+    assertEquals(2, ItemEntityManager.getTrackedItemEntityCount());
   }
 
   @Test

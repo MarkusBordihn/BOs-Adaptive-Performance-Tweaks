@@ -36,25 +36,38 @@ public final class CommonEntityEventHandler {
   }
 
   public static boolean handleEntityJoinLevel(Entity entity, Level level) {
+    if (shouldDenyEntityJoinLevel(entity, level)) {
+      return true;
+    }
+
+    trackEntityJoinLevel(entity, level);
+
+    return false;
+  }
+
+  public static boolean shouldDenyEntityJoinLevel(Entity entity, Level level) {
     if (level.isClientSide()) {
       return false;
     }
 
     if (FeatureToggle.ITEMS.isEnabled() && entity instanceof ItemEntity itemEntity) {
-      if (ItemEntityManager.handleItemEntityJoinLevel(itemEntity, level)) {
-        return true;
-      }
+      return ItemEntityManager.handleItemEntityJoinLevel(itemEntity, level);
     } else if (FeatureToggle.EXPERIENCE_ORBS.isEnabled()
-      && entity instanceof ExperienceOrb orbEntity
-      && ExperienceOrbManager.handleExperienceOrbJoinLevel(orbEntity, level)) {
-      return true;
+      && entity instanceof ExperienceOrb orbEntity) {
+      return ExperienceOrbManager.handleExperienceOrbJoinLevel(orbEntity, level);
     } else if (FeatureToggle.ARROWS.isEnabled() && entity instanceof AbstractArrow arrowEntity) {
       ArrowEntityManager.handleArrowJoinLevel(arrowEntity, level);
     }
 
-    CoreEntityManager.handleEntityJoinLevel(entity, false);
-
     return false;
+  }
+
+  public static void trackEntityJoinLevel(Entity entity, Level level) {
+    if (level.isClientSide()) {
+      return;
+    }
+
+    CoreEntityManager.handleEntityJoinLevel(entity, false);
   }
 
   public static void handleEntityLeaveLevel(Entity entity, Level level) {
