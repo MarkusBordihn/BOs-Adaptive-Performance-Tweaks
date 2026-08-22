@@ -83,6 +83,7 @@ public final class ServerEventHandler {
 
     ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
       if (EntityJoinInterceptor.consumePending(entity)) {
+        CommonEntityEventHandler.trackEntityJoinLevel(entity, level);
         return;
       }
       if (CommonEntityEventHandler.handleEntityJoinLevel(entity, level)) {

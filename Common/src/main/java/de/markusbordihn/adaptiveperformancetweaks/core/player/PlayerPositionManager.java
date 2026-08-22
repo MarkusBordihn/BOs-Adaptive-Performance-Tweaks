@@ -21,6 +21,7 @@ package de.markusbordihn.adaptiveperformancetweaks.core.player;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.distance.ViewDistanceManager;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.server.MinecraftServer;
@@ -53,10 +54,8 @@ public final class PlayerPositionManager {
 
   public static void reset() {
     playerPositionMap = new ConcurrentHashMap<>();
-    playerMovementUpdateTick = DEFAULT_PLAYER_MOVEMENT_UPDATE_TICK;
-    playerMovementWindowSamples = 5;
     ticks = 0;
-    nextMovementUpdateTick = DEFAULT_PLAYER_MOVEMENT_UPDATE_TICK;
+    nextMovementUpdateTick = playerMovementUpdateTick;
     nextFullUpdateTick = PLAYER_POSITION_UPDATE_TICK;
   }
 
@@ -109,8 +108,9 @@ public final class PlayerPositionManager {
       return;
     }
 
-    updatePlayerPosition(player, playerList.getViewDistance(), playerList.getSimulationDistance(),
-      ticks, true, true);
+    updatePlayerPosition(player,
+      ViewDistanceManager.getEffectiveViewDistance(playerList.getViewDistance()),
+      playerList.getSimulationDistance(), ticks, true, true);
   }
 
   public static void handlePlayerLoggedOut(String playerUUID) {
@@ -137,7 +137,7 @@ public final class PlayerPositionManager {
       return;
     }
 
-    int viewDistance = playerList.getViewDistance();
+    int viewDistance = ViewDistanceManager.getEffectiveViewDistance(playerList.getViewDistance());
     int simulationDistance = playerList.getSimulationDistance();
     for (ServerPlayer player : playerList.getPlayers()) {
       if (player.isAlive() && !player.hasDisconnected()) {

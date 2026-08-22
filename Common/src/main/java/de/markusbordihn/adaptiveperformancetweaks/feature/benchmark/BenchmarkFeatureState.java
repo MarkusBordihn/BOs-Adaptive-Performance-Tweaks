@@ -24,8 +24,10 @@ import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
 import de.markusbordihn.adaptiveperformancetweaks.core.debug.DebugManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.debug.DebugModule;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
+import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoad;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimulationDistanceConfig;
+import de.markusbordihn.adaptiveperformancetweaks.feature.distance.ViewDistanceConfig;
 import de.markusbordihn.adaptiveperformancetweaks.feature.gamerules.GameRulesConfig;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ArrowsConfig;
 import de.markusbordihn.adaptiveperformancetweaks.feature.items.ExperienceOrbsConfig;
@@ -38,6 +40,7 @@ import java.util.Set;
 
 final class BenchmarkFeatureState {
 
+  private static final ServerLoadLevel BENCHMARK_LOAD_LEVEL = ServerLoadLevel.VERY_HIGH;
   private static final Set<FeatureToggle> CONFLICT_GATED_BENCHMARK_FEATURES =
     EnumSet.of(
       FeatureToggle.GAMERULES,
@@ -55,6 +58,8 @@ final class BenchmarkFeatureState {
   private static ServerLoadLevel savedSpawnMinLoad;
   private static ServerLoadLevel savedGameRulesMinLoad;
   private static ServerLoadLevel savedSimDistMinLoad;
+  private static ServerLoadLevel savedViewDistMinLoad;
+  private static boolean minLoadLevelsSaved;
 
   private BenchmarkFeatureState() {
   }
@@ -66,6 +71,8 @@ final class BenchmarkFeatureState {
     savedSpawnMinLoad = SpawnConfig.minOptimizationLoadLevel;
     savedGameRulesMinLoad = GameRulesConfig.minOptimizationLoadLevel;
     savedSimDistMinLoad = SimulationDistanceConfig.minOptimizationLoadLevel;
+    savedViewDistMinLoad = ViewDistanceConfig.minOptimizationLoadLevel;
+    minLoadLevelsSaved = true;
   }
 
   static void forceMinLoadLevels() {
@@ -75,15 +82,22 @@ final class BenchmarkFeatureState {
     SpawnConfig.minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;
     GameRulesConfig.minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;
     SimulationDistanceConfig.minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;
+    ViewDistanceConfig.minOptimizationLoadLevel = ServerLoadLevel.VERY_LOW;
+    ServerLoad.setLoadLevelOverride(BENCHMARK_LOAD_LEVEL);
   }
 
   static void restoreMinLoadLevels() {
-    ItemsConfig.minOptimizationLoadLevel = savedItemsMinLoad;
-    ExperienceOrbsConfig.minOptimizationLoadLevel = savedXpMinLoad;
-    ArrowsConfig.minOptimizationLoadLevel = savedArrowsMinLoad;
-    SpawnConfig.minOptimizationLoadLevel = savedSpawnMinLoad;
-    GameRulesConfig.minOptimizationLoadLevel = savedGameRulesMinLoad;
-    SimulationDistanceConfig.minOptimizationLoadLevel = savedSimDistMinLoad;
+    if (minLoadLevelsSaved) {
+      ItemsConfig.minOptimizationLoadLevel = savedItemsMinLoad;
+      ExperienceOrbsConfig.minOptimizationLoadLevel = savedXpMinLoad;
+      ArrowsConfig.minOptimizationLoadLevel = savedArrowsMinLoad;
+      SpawnConfig.minOptimizationLoadLevel = savedSpawnMinLoad;
+      GameRulesConfig.minOptimizationLoadLevel = savedGameRulesMinLoad;
+      SimulationDistanceConfig.minOptimizationLoadLevel = savedSimDistMinLoad;
+      ViewDistanceConfig.minOptimizationLoadLevel = savedViewDistMinLoad;
+    }
+
+    ServerLoad.setLoadLevelOverride(null);
   }
 
   static void saveFeatureState() {
@@ -178,5 +192,7 @@ final class BenchmarkFeatureState {
     savedSpawnMinLoad = null;
     savedGameRulesMinLoad = null;
     savedSimDistMinLoad = null;
+    savedViewDistMinLoad = null;
+    minLoadLevelsSaved = false;
   }
 }

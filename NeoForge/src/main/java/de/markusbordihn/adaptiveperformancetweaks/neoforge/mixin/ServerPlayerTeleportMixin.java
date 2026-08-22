@@ -20,11 +20,15 @@
 package de.markusbordihn.adaptiveperformancetweaks.neoforge.mixin;
 
 import de.markusbordihn.adaptiveperformancetweaks.server.CommonServerEventHandler;
+import java.util.Set;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Relative;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerPlayer.class)
 public class ServerPlayerTeleportMixin {
@@ -36,5 +40,17 @@ public class ServerPlayerTeleportMixin {
     }
 
     CommonServerEventHandler.handlePlayerTeleported(serverPlayer);
+  }
+
+  @Inject(
+    method = "teleportTo(Lnet/minecraft/server/level/ServerLevel;DDDLjava/util/Set;FFZ)Z",
+    at = @At("RETURN"))
+  private void aptweaks_handleTeleport(ServerLevel level, double x, double y, double z,
+    Set<Relative> relatives, float yRot, float xRot, boolean setCamera,
+    CallbackInfoReturnable<Boolean> cir) {
+    if (Boolean.TRUE.equals(cir.getReturnValue())
+      && (Object) this instanceof ServerPlayer serverPlayer) {
+      CommonServerEventHandler.handlePlayerTeleported(serverPlayer);
+    }
   }
 }

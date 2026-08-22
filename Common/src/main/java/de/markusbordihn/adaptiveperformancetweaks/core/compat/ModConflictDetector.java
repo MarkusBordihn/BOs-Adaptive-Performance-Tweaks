@@ -92,6 +92,19 @@ public final class ModConflictDetector {
     return new FeatureDecision(true, FeatureActivation.AUTO_ENABLED, warningMod);
   }
 
+  public static void warnExternalFeatureChange(
+    FeatureToggle toggle, String settingName, Object expectedValue, Object externalValue) {
+    warnOnce(toggle.getId() + ":external-change:" + settingName,
+      "Feature '{}' expected {} to be {} but found {}. Another mod or plugin changes the same"
+        + " setting and both will fight over it. Consider setting 'feature.{}=false' to let the"
+        + " other one handle it.",
+      toggle.getId(),
+      settingName,
+      expectedValue,
+      externalValue,
+      toggle.getId());
+  }
+
   private static void warnOnce(String warningKey, String message, Object... arguments) {
     if (loggedConflictWarnings.add(warningKey)) {
       log.warn(message, arguments);

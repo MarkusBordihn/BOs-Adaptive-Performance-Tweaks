@@ -23,7 +23,6 @@ import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.commands.CommandManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.feature.player.PlayerDamageManager;
-import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnPresetLoader;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -102,8 +101,8 @@ public final class ServerEventHandler {
 
   @SubscribeEvent
   public static void handleFinalizeSpawn(FinalizeSpawnEvent event) {
-    if (event.getLevel() instanceof ServerLevel serverLevel
-      && SpawnManager.shouldDenyMobSpawn(event.getEntity(), serverLevel, event.getSpawnType())) {
+    if (CommonServerEventHandler.shouldDenyNonNaturalFinalizeSpawn(
+      event.getEntity(), event.getLevel(), event.getSpawnType())) {
       event.setSpawnCancelled(true);
     }
   }

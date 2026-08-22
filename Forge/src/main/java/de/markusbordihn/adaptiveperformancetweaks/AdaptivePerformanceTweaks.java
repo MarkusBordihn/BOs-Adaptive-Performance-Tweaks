@@ -25,6 +25,7 @@ import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModCompat;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.Config;
 import de.markusbordihn.adaptiveperformancetweaks.core.debug.DebugManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureRegistry;
+import de.markusbordihn.adaptiveperformancetweaks.gametest.ModGameTests;
 import java.util.Optional;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.bus.BusGroup;
@@ -73,6 +74,8 @@ public class AdaptivePerformanceTweaks {
 
     log.debug("{} Feature Registry ...", Constants.LOG_REGISTER_PREFIX);
     FeatureRegistry.registerCommon();
+
+    ModGameTests.register(modBusGroup);
 
     if (FMLEnvironment.dist == Dist.CLIENT) {
       new AdaptivePerformanceTweaksClient(modBusGroup);

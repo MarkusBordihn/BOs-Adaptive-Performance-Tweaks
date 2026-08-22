@@ -48,6 +48,7 @@ import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -1106,6 +1107,21 @@ public final class CoreEntityManager {
     }
   }
 
+  private static boolean isStaleEntity(Entity entity) {
+    if (entity == null || entity.isRemoved()) {
+      return true;
+    }
+
+    return isRejectedByLevel(entity);
+  }
+
+  private static boolean isRejectedByLevel(Entity entity) {
+    return entity.level() instanceof ServerLevel serverLevel
+      && serverLevel.getServer().isSameThread()
+      && serverLevel.isPositionEntityTicking(entity.blockPosition())
+      && serverLevel.getEntity(entity.getId()) != entity;
+  }
+
   private static <K> int removeDiscardedEntities(ConcurrentMap<K, Set<Entity>> entityMapToCheck) {
     if (entityMapToCheck == null || entityMapToCheck.isEmpty()) {
       return 0;
@@ -1122,7 +1138,7 @@ public final class CoreEntityManager {
       Iterator<Entity> entityIterator = entities.iterator();
       while (entityIterator.hasNext()) {
         Entity entity = entityIterator.next();
-        if (entity == null || entity.isRemoved()) {
+        if (isStaleEntity(entity)) {
           entityIterator.remove();
           removedEntries++;
         }
@@ -1147,7 +1163,7 @@ public final class CoreEntityManager {
     while (iterator.hasNext()) {
       Map.Entry<Entity, ChunkTrackingKey> entry = iterator.next();
       Entity entity = entry.getKey();
-      if (entity == null || entity.isRemoved()) {
+      if (isStaleEntity(entity)) {
         iterator.remove();
         removedEntries++;
       }

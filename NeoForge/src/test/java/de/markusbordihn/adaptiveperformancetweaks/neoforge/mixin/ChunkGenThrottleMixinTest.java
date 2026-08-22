@@ -34,9 +34,11 @@ class ChunkGenThrottleMixinTest {
     String source = Files.readString(Path.of(
       "src/main/java/de/markusbordihn/adaptiveperformancetweaks/neoforge/mixin/ChunkGenThrottleMixin.java"));
     assertTrue(source.contains("@Mixin(ServerChunkCache.class)"));
-    assertTrue(source.contains("method = \"runDistanceManagerUpdates\""));
+    assertTrue(source.contains("method = \"tick(Ljava/util/function/BooleanSupplier;Z)V\""));
+    assertTrue(source.contains(
+      "target = \"Lnet/minecraft/server/level/ServerChunkCache;runDistanceManagerUpdates()Z\""));
     assertTrue(source.contains("getThrottleDivisor(this.level)"));
     assertFalse(source.contains("@Mixin(ChunkMap.class)"));
-    assertFalse(source.contains("method = \"tick\""));
+    assertFalse(source.contains("@Inject"));
   }
 }

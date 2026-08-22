@@ -220,46 +220,61 @@ public final class ItemEntityManager {
     int itemY = (int) itemEntity.getY();
     int itemZ = (int) itemEntity.getZ();
     int range = ItemsConfig.itemsClusterRange;
-    boolean canSeeSky = level.canSeeSky(itemEntity.blockPosition());
 
     for (ItemEntity existing : itemTypeEntities) {
-      ItemStack existingStack = existing.getItem();
-      if (existingStack == null || existingStack.isEmpty()) {
+      if (itemEntity.getId() == existing.getId() || !existing.isAlive()) {
         continue;
       }
-      int existingX = (int) existing.getX();
-      int existingY = (int) existing.getY();
-      int existingZ = (int) existing.getZ();
-      boolean existingCanSeeSky = level.canSeeSky(existing.blockPosition());
 
-      boolean inRange =
-        (itemX - range < existingX && existingX < itemX + range)
-          && ((canSeeSky && existingCanSeeSky)
-          || (itemY - range < existingY && existingY < itemY + range))
-          && (itemZ - range < existingZ && existingZ < itemZ + range);
+      int existingX = (int) existing.getX();
+      int existingZ = (int) existing.getZ();
+      if (existingX <= itemX - range
+        || existingX >= itemX + range
+        || existingZ <= itemZ - range
+        || existingZ >= itemZ + range) {
+        continue;
+      }
+
+      ItemStack existingStack = existing.getItem();
+      if (existingStack == null
+        || existingStack.isEmpty()
+        || !canMergeItemStacks(itemStack, existingStack)) {
+        continue;
+      }
 
       int effectiveMaxStack = Math.min(existingStack.getMaxStackSize(), ItemsConfig.maxStackSize);
-      if (itemEntity.getId() != existing.getId()
-        && existing.isAlive()
-        && canMergeItemStacks(itemStack, existingStack)
-        && existingStack.getCount() < effectiveMaxStack
-        && inRange) {
-        log.debug("[Item Merge] {} x{} -> stack at {},{},{}",
-          BuiltInRegistries.ITEM.getKey(itemStack.getItem()), itemStack.getCount(),
-          itemX, itemY, itemZ);
-        mergeItemStacks(existingStack, itemStack, effectiveMaxStack);
-        existing.setItem(existingStack);
-        if (ItemsConfig.movePositionToLastDrop) {
-          double newY = Math.max(existing.getY(), itemEntity.getY());
-          existing.setPos(itemEntity.getX(), newY, itemEntity.getZ());
-        }
-        if (itemStack.isEmpty()) {
-          return true;
-        }
+      if (existingStack.getCount() >= effectiveMaxStack
+        || !isWithinClusterHeight(level, itemEntity, existing, range)) {
+        continue;
+      }
+
+      log.debug("[Item Merge] {} x{} -> stack at {},{},{}",
+        BuiltInRegistries.ITEM.getKey(itemStack.getItem()), itemStack.getCount(),
+        itemX, itemY, itemZ);
+      mergeItemStacks(existingStack, itemStack, effectiveMaxStack);
+      existing.setItem(existingStack);
+      if (ItemsConfig.movePositionToLastDrop) {
+        double newY = Math.max(existing.getY(), itemEntity.getY());
+        existing.setPos(itemEntity.getX(), newY, itemEntity.getZ());
+      }
+      if (itemStack.isEmpty()) {
+        return true;
       }
     }
 
     return false;
+  }
+
+  private static boolean isWithinClusterHeight(
+    Level level, ItemEntity itemEntity, ItemEntity existing, int range) {
+    int itemY = (int) itemEntity.getY();
+    int existingY = (int) existing.getY();
+    if (itemY - range < existingY && existingY < itemY + range) {
+      return true;
+    }
+
+    return level.canSeeSky(itemEntity.blockPosition())
+      && level.canSeeSky(existing.blockPosition());
   }
 
   private static boolean canMergeItemStacks(ItemStack incomingStack, ItemStack existingStack) {
@@ -329,17 +344,29 @@ public final class ItemEntityManager {
   }
 
   private static ItemEntity findRemovalCandidate(Set<ItemEntity> entities, int count, int limit) {
-    ItemEntity oldestProtected = null;
+    ItemEntity smallestUnprotected = null;
+    ItemEntity smallestProtected = null;
+    int smallestUnprotectedCount = Integer.MAX_VALUE;
+    int smallestProtectedCount = Integer.MAX_VALUE;
+
     for (ItemEntity entity : entities) {
-      if (!isProtectedItemEntity(entity)) {
-        return entity;
-      }
-      if (oldestProtected == null) {
-        oldestProtected = entity;
+      int stackCount = entity.getItem().getCount();
+      if (isProtectedItemEntity(entity)) {
+        if (stackCount < smallestProtectedCount) {
+          smallestProtectedCount = stackCount;
+          smallestProtected = entity;
+        }
+      } else if (stackCount < smallestUnprotectedCount) {
+        smallestUnprotectedCount = stackCount;
+        smallestUnprotected = entity;
       }
     }
 
-    return count > limit * 2 ? oldestProtected : null;
+    if (smallestUnprotected != null) {
+      return smallestUnprotected;
+    }
+
+    return count > limit * 2 ? smallestProtected : null;
   }
 
   private static boolean isProtectedItemEntity(ItemEntity itemEntity) {

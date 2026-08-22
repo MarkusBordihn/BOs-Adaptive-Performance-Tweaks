@@ -35,6 +35,7 @@ import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimulationDis
 import de.markusbordihn.adaptiveperformancetweaks.feature.distance.ViewDistanceManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.gamerules.GameRuleManager;
 import java.lang.reflect.Field;
+import java.util.List;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.MinecraftServer;
@@ -43,6 +44,7 @@ import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.WorldData;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockMakers;
 
@@ -273,6 +275,7 @@ class FeatureToggleTest {
   }
 
   @Test
+  @DisplayName("Disabling restores the original simulation distance, not the simDistanceMax cap")
   void disablingAdaptiveSimulationDistanceRestoresServerSimulationDistance() throws Exception {
     boolean previousState = FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled();
     MinecraftServer server = mock(MinecraftServer.class,
@@ -280,18 +283,19 @@ class FeatureToggleTest {
     PlayerList playerList = mock(PlayerList.class,
       withSettings().mockMaker(MockMakers.SUBCLASS));
     when(server.getPlayerList()).thenReturn(playerList);
-    when(playerList.getSimulationDistance()).thenReturn(10);
+    when(playerList.getSimulationDistance()).thenReturn(16);
 
     try {
       writeStaticField(ServerManager.class, "minecraftServer", server);
       FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.setEnabled(false);
       FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.setEnabled(true);
+      writeStaticField(SimulationDistanceManager.class, "configuredDistanceMax", 16);
       writeStaticField(SimulationDistanceManager.class, "currentDistance", 4);
 
       FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.setEnabled(false);
 
-      assertEquals(10, readStaticField(SimulationDistanceManager.class, "currentDistance"));
-      verify(playerList).setSimulationDistance(10);
+      assertEquals(16, readStaticField(SimulationDistanceManager.class, "currentDistance"));
+      verify(playerList).setSimulationDistance(16);
     } finally {
       FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.setEnabled(previousState);
       writeStaticField(ServerManager.class, "minecraftServer", null);
@@ -306,6 +310,7 @@ class FeatureToggleTest {
     PlayerList playerList = mock(PlayerList.class,
       withSettings().mockMaker(MockMakers.SUBCLASS));
     when(server.getPlayerList()).thenReturn(playerList);
+    when(server.getAllLevels()).thenReturn(List.of());
     when(playerList.getViewDistance()).thenReturn(6);
 
     try {

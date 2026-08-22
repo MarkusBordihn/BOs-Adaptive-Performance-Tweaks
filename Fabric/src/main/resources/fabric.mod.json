@@ -20,6 +20,22 @@
     ],
     "client": [
       "de.markusbordihn.adaptiveperformancetweaks.AdaptivePerformanceTweaksClient"
+    ],
+    "fabric-gametest": [
+      "de.markusbordihn.adaptiveperformancetweaks.gametest.SmokeTest",
+      "de.markusbordihn.adaptiveperformancetweaks.gametest.AiThrottleGameTest",
+      "de.markusbordihn.adaptiveperformancetweaks.gametest.ChunkGenThrottleGameTest",
+      "de.markusbordihn.adaptiveperformancetweaks.gametest.DistanceAdaptationGameTest",
+      "de.markusbordihn.adaptiveperformancetweaks.gametest.EntityFilterGameTest",
+      "de.markusbordihn.adaptiveperformancetweaks.gametest.FeatureToggleGameTest",
+      "de.markusbordihn.adaptiveperformancetweaks.gametest.GameRuleAdaptationGameTest",
+      "de.markusbordihn.adaptiveperformancetweaks.gametest.ItemOptimizationGameTest",
+      "de.markusbordihn.adaptiveperformancetweaks.gametest.MixinGameTest",
+      "de.markusbordihn.adaptiveperformancetweaks.gametest.MonitoringGameTest",
+      "de.markusbordihn.adaptiveperformancetweaks.gametest.PlayerDamageGameTest",
+      "de.markusbordihn.adaptiveperformancetweaks.gametest.PlayerLoginProtectionGameTest",
+      "de.markusbordihn.adaptiveperformancetweaks.gametest.SpawnPresetConfigGameTest",
+      "de.markusbordihn.adaptiveperformancetweaks.gametest.SpawnThrottleGameTest"
     ]
   },
   "mixins": [
