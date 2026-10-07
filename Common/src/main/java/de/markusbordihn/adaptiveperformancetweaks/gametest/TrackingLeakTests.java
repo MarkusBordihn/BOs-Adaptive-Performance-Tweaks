@@ -65,7 +65,7 @@ public final class TrackingLeakTests {
           failedSpawns++;
         }
       }
-      logSnapshot("after duplicate spawns");
+      List<TrackedMapStatistics> afterDuplicateSpawns = logSnapshot("after duplicate spawns");
 
       CoreEntityManager.verifyTrackedEntities();
       List<TrackedMapStatistics> afterVerification = logSnapshot("after verification");
@@ -73,6 +73,9 @@ public final class TrackingLeakTests {
       GameTestHelpers.assertEquals(
         helper, "Every duplicate UUID spawn should be rejected by vanilla",
         DUPLICATE_SPAWN_ATTEMPTS, failedSpawns);
+      GameTestHelpers.assertEquals(
+        helper, "Rejected spawns should leave tracking immediately, without verification",
+        0, TrackingDiagnostics.getOrphanedEntryCount(afterDuplicateSpawns));
       GameTestHelpers.assertEquals(
         helper, "No orphaned entries should remain after verification",
         0, TrackingDiagnostics.getOrphanedEntryCount(afterVerification));

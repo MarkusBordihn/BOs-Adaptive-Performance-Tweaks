@@ -13,6 +13,7 @@
     "MobMixin",
     "NaturalSpawnerEntityMixin",
     "NaturalSpawnerMixin",
+    "PersistentEntitySectionManagerMixin",
     "ServerPlayerTeleportMixin",
     "VillagerConvertToMixin"
   ],
