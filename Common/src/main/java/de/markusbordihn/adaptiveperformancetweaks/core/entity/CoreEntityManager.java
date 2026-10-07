@@ -23,6 +23,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
+import de.markusbordihn.adaptiveperformancetweaks.core.diagnostics.TrackedMapInspector;
+import de.markusbordihn.adaptiveperformancetweaks.core.diagnostics.TrackedMapStatistics;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnPreset;
 import java.io.IOException;
@@ -112,6 +114,8 @@ public final class CoreEntityManager {
   private static int operationVerificationStage = 0;
   private static long lastOperationVerificationTime = 0L;
   private static volatile boolean isVerifying = false;
+  private static volatile long removedOrphanedEntityCount = 0L;
+  private static volatile boolean hasReportedOrphanedEntities = false;
   private static ConcurrentHashMap<EntityTrackingKey, Set<Entity>> entityMap =
     new ConcurrentHashMap<>();
   private static ConcurrentHashMap<ChunkTrackingKey, Set<Entity>> entityMapPerChunk =
@@ -226,6 +230,8 @@ public final class CoreEntityManager {
     operationVerificationStage = 0;
     lastOperationVerificationTime = 0L;
     isVerifying = false;
+    removedOrphanedEntityCount = 0L;
+    hasReportedOrphanedEntities = false;
   }
 
   public static void registerConversionProtection(UUID entityUUID) {
@@ -552,6 +558,31 @@ public final class CoreEntityManager {
     }
 
     return total;
+  }
+
+  public static List<TrackedMapStatistics> getMapStatistics() {
+    return List.of(
+      TrackedMapInspector.inspectEntityCollections("core.entity", "entityMap", entityMap),
+      TrackedMapInspector.inspectEntityCollections(
+        "core.entity", "entityMapPerChunk", entityMapPerChunk),
+      TrackedMapInspector.inspectEntityCollections(
+        "core.entity", "entityMapGlobal", entityMapGlobal),
+      TrackedMapInspector.inspectEntityKeys(
+        "core.entity", "entityChunkKeyMap", entityChunkKeyMap),
+      TrackedMapInspector.inspectSize(
+        "core.entity", "entityChunkMap", entityChunkMap.size(), entityChunkMap.size()),
+      TrackedMapInspector.inspectSize("core.entity", "conversionProtectedEntities",
+        conversionProtectedEntities.size(), conversionProtectedEntities.size()),
+      TrackedMapInspector.inspectSize("core.entity", "entityDecisionCache",
+        entityDecisionCache.size(), entityDecisionCache.size()));
+  }
+
+  public static void verifyTrackedEntities() {
+    triggerVerificationIfNotRunning(false);
+  }
+
+  public static long getRemovedOrphanedEntityCount() {
+    return removedOrphanedEntityCount;
   }
 
   public static boolean hasEntitySpawnedInChunk(String levelName, BlockPos blockPos) {
@@ -1054,11 +1085,16 @@ public final class CoreEntityManager {
   }
 
   private static void verifyEntities() {
-    int removedEntries = removeDiscardedEntities(entityMap);
-    int removedChunkEntries = removeDiscardedEntities(entityMapPerChunk);
-    int removedGlobalEntries = removeDiscardedEntities(entityMapGlobal);
-    int removedChunkKeys = removeDiscardedChunkKeys();
+    Map<String, Integer> orphanedCountsByEntityId = countOrphanedEntities();
+    Predicate<Entity> isInvalidEntity = OrphanedEntityDetector::isRemovedOrOrphaned;
+    int removedEntries = removeDiscardedEntities(entityMap, isInvalidEntity);
+    int removedChunkEntries = removeDiscardedEntities(entityMapPerChunk, isInvalidEntity);
+    int removedGlobalEntries = removeDiscardedEntities(entityMapGlobal, isInvalidEntity);
+    int removedChunkKeys = removeDiscardedChunkKeys(isInvalidEntity);
     int removedChunkMarkers = removeEmptyChunkMarkers();
+    if (!orphanedCountsByEntityId.isEmpty()) {
+      reportRemovedOrphanedEntities(orphanedCountsByEntityId);
+    }
     conversionProtectedEntities.entrySet().removeIf(entry -> ticks > entry.getValue());
 
     if (removedEntries > 0
@@ -1083,11 +1119,12 @@ public final class CoreEntityManager {
     int removedChunkKeys = 0;
     int removedChunkMarkers = 0;
 
+    Predicate<Entity> isRemovedEntity = entity -> entity == null || entity.isRemoved();
     switch (operationVerificationStage) {
-      case 0 -> removedEntries = removeDiscardedEntities(entityMap);
-      case 1 -> removedChunkEntries = removeDiscardedEntities(entityMapPerChunk);
-      case 2 -> removedGlobalEntries = removeDiscardedEntities(entityMapGlobal);
-      case 3 -> removedChunkKeys = removeDiscardedChunkKeys();
+      case 0 -> removedEntries = removeDiscardedEntities(entityMap, isRemovedEntity);
+      case 1 -> removedChunkEntries = removeDiscardedEntities(entityMapPerChunk, isRemovedEntity);
+      case 2 -> removedGlobalEntries = removeDiscardedEntities(entityMapGlobal, isRemovedEntity);
+      case 3 -> removedChunkKeys = removeDiscardedChunkKeys(isRemovedEntity);
       case 4 -> removedChunkMarkers = removeEmptyChunkMarkers();
       default -> {
       }
@@ -1106,7 +1143,46 @@ public final class CoreEntityManager {
     }
   }
 
-  private static <K> int removeDiscardedEntities(ConcurrentMap<K, Set<Entity>> entityMapToCheck) {
+  private static Map<String, Integer> countOrphanedEntities() {
+    Map<String, Integer> orphanedCountsByEntityId = new HashMap<>();
+    for (Map.Entry<EntityType<?>, Set<Entity>> entry : entityMapGlobal.entrySet()) {
+      int orphanedCount = 0;
+      for (Entity entity : entry.getValue()) {
+        if (entity != null && OrphanedEntityDetector.isOrphaned(entity)) {
+          orphanedCount++;
+        }
+      }
+      if (orphanedCount > 0) {
+        orphanedCountsByEntityId.put(String.valueOf(getEntityName(entry.getKey())), orphanedCount);
+      }
+    }
+
+    return orphanedCountsByEntityId;
+  }
+
+  private static void reportRemovedOrphanedEntities(Map<String, Integer> orphanedCountsByEntityId) {
+    int orphanedCount = 0;
+    for (int count : orphanedCountsByEntityId.values()) {
+      orphanedCount += count;
+    }
+    removedOrphanedEntityCount += orphanedCount;
+
+    if (hasReportedOrphanedEntities) {
+      log.debug("[Entity Manager] Removed {} orphaned entities from tracking: {}",
+        orphanedCount, orphanedCountsByEntityId);
+      return;
+    }
+
+    hasReportedOrphanedEntities = true;
+    log.warn(
+      "[Entity Manager] Removed {} tracked entities that never finished joining their level, "
+        + "e.g. after a duplicate UUID or a join event cancelled by another mod: {}. "
+        + "Further removals are logged at debug level.",
+      orphanedCount, orphanedCountsByEntityId);
+  }
+
+  private static <K> int removeDiscardedEntities(
+    ConcurrentMap<K, Set<Entity>> entityMapToCheck, Predicate<Entity> isInvalidEntity) {
     if (entityMapToCheck == null || entityMapToCheck.isEmpty()) {
       return 0;
     }
@@ -1122,7 +1198,7 @@ public final class CoreEntityManager {
       Iterator<Entity> entityIterator = entities.iterator();
       while (entityIterator.hasNext()) {
         Entity entity = entityIterator.next();
-        if (entity == null || entity.isRemoved()) {
+        if (isInvalidEntity.test(entity)) {
           entityIterator.remove();
           removedEntries++;
         }
@@ -1136,7 +1212,7 @@ public final class CoreEntityManager {
     return removedEntries;
   }
 
-  private static int removeDiscardedChunkKeys() {
+  private static int removeDiscardedChunkKeys(Predicate<Entity> isInvalidEntity) {
     if (entityChunkKeyMap.isEmpty()) {
       return 0;
     }
@@ -1146,8 +1222,7 @@ public final class CoreEntityManager {
       .iterator();
     while (iterator.hasNext()) {
       Map.Entry<Entity, ChunkTrackingKey> entry = iterator.next();
-      Entity entity = entry.getKey();
-      if (entity == null || entity.isRemoved()) {
+      if (isInvalidEntity.test(entry.getKey())) {
         iterator.remove();
         removedEntries++;
       }

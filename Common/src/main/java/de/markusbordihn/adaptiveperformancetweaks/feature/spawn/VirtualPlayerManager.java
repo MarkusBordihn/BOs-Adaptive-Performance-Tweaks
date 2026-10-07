@@ -34,6 +34,19 @@ public final class VirtualPlayerManager {
   private VirtualPlayerManager() {
   }
 
+  public static int getDimensionCount() {
+    return positions.size();
+  }
+
+  public static int getPositionCount() {
+    int total = 0;
+    for (List<Vec3> dimensionPositions : positions.values()) {
+      total += dimensionPositions.size();
+    }
+
+    return total;
+  }
+
   public static void add(ServerLevel level, Vec3 position) {
     positions.computeIfAbsent(dimensionId(level), dimensionKey -> new ArrayList<>()).add(position);
   }

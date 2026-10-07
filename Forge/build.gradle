@@ -42,6 +42,13 @@ minecraft {
       args '--username', 'guest_player'
     }
 
+    if (rootProject.findProperty('clientRuntimeTest')?.isAvailable()) {
+      clientTest {
+        parent minecraft.runs.client
+        workingDirectory project.file('run/clienttest')
+      }
+    }
+
     server {
       workingDirectory project.file('run/server')
       property 'forge.logging.markers', 'REGISTRIES'
@@ -97,6 +104,9 @@ dependencies {
   }
   if (project.hasProperty('forge_xaeros_minimap_mod') && project.forge_xaeros_minimap_mod) {
     runtimeOnly fg.deobf("curse.maven:xaeros_minimap-263420:${project.forge_xaeros_minimap_mod}")
+  }
+  if (rootProject.findProperty('clientRuntimeTest')?.isClientTestRun()) {
+    runtimeOnly fg.deobf(rootProject.clientRuntimeTest.toolkitCoordinate('forge'))
   }
 }
 

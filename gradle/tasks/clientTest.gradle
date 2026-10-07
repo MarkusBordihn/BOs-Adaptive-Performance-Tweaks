@@ -1,0 +1,12 @@
+clientRuntimeTest {
+  loaders = ['Fabric', 'Forge', 'NeoForge']
+  runs {
+    clientTest {}
+    clientBenchmark {
+      description = 'Runs the full benchmark suite in a development client and checks its report.'
+      inAllClientTests = false
+      includeTests '*.BenchmarkClientTest'
+      systemProperty 'aptweaks.benchmarkCommand', 'aptweaks benchmark start'
+    }
+  }
+}

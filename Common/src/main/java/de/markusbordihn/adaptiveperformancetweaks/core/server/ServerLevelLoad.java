@@ -21,6 +21,8 @@ package de.markusbordihn.adaptiveperformancetweaks.core.server;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.config.CoreConfig;
+import de.markusbordihn.adaptiveperformancetweaks.core.diagnostics.TrackedMapInspector;
+import de.markusbordihn.adaptiveperformancetweaks.core.diagnostics.TrackedMapStatistics;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -146,6 +148,18 @@ public final class ServerLevelLoad {
 
   public static Map<ServerLevel, ServerLoadLevel> getAllLevelLoads() {
     return Collections.unmodifiableMap(levelLoadLevels);
+  }
+
+  public static List<TrackedMapStatistics> getMapStatistics(Iterable<ServerLevel> loadedLevels) {
+    return List.of(
+      TrackedMapInspector.inspectLevelKeys(
+        "core.server", "levelTickStartTimes", levelTickStartTimes, loadedLevels),
+      TrackedMapInspector.inspectLevelKeys(
+        "core.server", "levelTickTimes", levelTickTimes, loadedLevels),
+      TrackedMapInspector.inspectLevelKeys(
+        "core.server", "levelReportedTickTimes", levelReportedTickTimes, loadedLevels),
+      TrackedMapInspector.inspectLevelKeys(
+        "core.server", "levelLoadLevels", levelLoadLevels, loadedLevels));
   }
 
   public static List<LevelLoadSnapshot> getTopLoadedLevels(int limit) {

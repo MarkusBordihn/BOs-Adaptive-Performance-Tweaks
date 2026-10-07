@@ -17,33 +17,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.adaptiveperformancetweaks.fabric.mixin;
+package de.markusbordihn.adaptiveperformancetweaks.neoforge.mixin;
 
-import de.markusbordihn.adaptiveperformancetweaks.entity.CommonEntityEventHandler;
-import de.markusbordihn.adaptiveperformancetweaks.entity.EntityJoinInterceptor;
-import net.minecraft.server.level.ServerLevel;
+import de.markusbordihn.adaptiveperformancetweaks.accessor.EntityLevelCallbackAccessor;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.entity.EntityInLevelCallback;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(ServerLevel.class)
-public class ServerLevelMixin {
+@Mixin(Entity.class)
+public interface EntityLevelCallbackAccessorMixin extends EntityLevelCallbackAccessor {
 
-  @Inject(method = "addFreshEntity", at = @At("HEAD"), cancellable = true)
-  private void aptweaks_addFreshEntity(Entity entity, CallbackInfoReturnable<Boolean> cir) {
-    if (EntityJoinInterceptor.denyOrMarkPending(entity, (ServerLevel) (Object) this)) {
-      cir.setReturnValue(false);
-    }
-  }
-
-  @Inject(method = "addFreshEntity", at = @At("RETURN"))
-  private void aptweaks_addFreshEntityCleanup(
-    Entity entity, CallbackInfoReturnable<Boolean> cir) {
-    EntityJoinInterceptor.clearPending(entity);
-    if (!cir.getReturnValueZ()) {
-      CommonEntityEventHandler.handleEntityLeaveLevel(entity, (ServerLevel) (Object) this);
-    }
-  }
+  @Override
+  @Accessor("levelCallback")
+  EntityInLevelCallback aptweaks$getLevelCallback();
 }
