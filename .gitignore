@@ -28,11 +28,13 @@ npm-debug.log
 .npmrc
 
 # VSCode
-.vscode/launch.json
-.vscode/settings.json
+.vscode
 
 # Ghost Reference Index
 .ghost-reference-index
+
+# Client Runtime Interface Toolkit
+.client_test
 
 # Other
 .DS_Store

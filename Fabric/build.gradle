@@ -30,6 +30,9 @@ dependencies {
   if (project.hasProperty('fabric_xaeros_minimap_mod') && project.fabric_xaeros_minimap_mod) {
     modRuntimeOnly("curse.maven:xaeros_minimap-263420:${project.fabric_xaeros_minimap_mod}")
   }
+  if (rootProject.findProperty('clientRuntimeTest')?.isClientTestRun()) {
+    modLocalRuntime rootProject.clientRuntimeTest.toolkitCoordinate('fabric')
+  }
 
 }
 
@@ -48,6 +51,14 @@ loom {
       runDir("run")
     }
 
+    if (project.rootProject.findProperty('clientRuntimeTest')?.isAvailable()) {
+      clientTest {
+        client()
+        setConfigName("Fabric Client Test")
+        runDir("run/clienttest")
+      }
+    }
+
     server {
       server()
       setConfigName("Fabric Server")
@@ -62,6 +73,12 @@ loom {
       name "Game Test"
       vmArg "-Dfabric-api.gametest"
     }
+  }
+}
+
+tasks.withType(net.fabricmc.loom.task.AbstractRunTask).configureEach {
+  javaLauncher = javaToolchains.launcherFor {
+    languageVersion = JavaLanguageVersion.of(17)
   }
 }
 

@@ -19,50 +19,41 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.core.commands;
 
-import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.ArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
-import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
+import de.markusbordihn.adaptiveperformancetweaks.core.diagnostics.TrackingDiagnostics;
+import de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreEntityManager;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public final class CommandManager {
+public class DiagnosticsCommand extends CustomCommand {
 
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  private static final DiagnosticsCommand command = new DiagnosticsCommand();
 
-  private CommandManager() {
+  public static ArgumentBuilder<CommandSourceStack, ?> register() {
+    return Commands.literal("diagnostics").requires(source -> source.hasPermission(2))
+      .executes(command)
+      .then(Commands.literal("verify").executes(context -> {
+        CoreEntityManager.verifyTrackedEntities();
+        sendReport(context);
+        return 0;
+      }));
   }
 
-  public static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
-    log.debug("{}Registering /{} commands ...", Constants.LOG_REGISTER_PREFIX,
-      Constants.MOD_COMMAND);
-    dispatcher.register(
-      Commands.literal(Constants.MOD_COMMAND)
-        .then(DebugCommand.register())
-        .then(DiagnosticsCommand.register())
-        .then(EntityCommand.register())
-        .then(FeatureCommand.register())
-        .then(KillCommand.register())
-        .then(LoadCommand.register())
-        .then(PlayerPositionCommand.register())
-        .then(ReloadCommand.register())
-        .then(BenchmarkCommand.register())
-        .then(StatsCommand.register())
-        .then(StatusCommand.register()));
-  }
-
-  public static void executeUserCommand(String command) {
-    MinecraftServer minecraftServer = ServerManager.getMinecraftServer();
-    if (minecraftServer == null) {
-      log.warn("Unable to execute user command '{}': server not available.", command);
-      return;
+  private static void sendReport(CommandContext<CommandSourceStack> context) {
+    for (String line : TrackingDiagnostics.createReportLines()) {
+      log.info("[Diagnostics] {}", line);
+      sendFeedback(context, line);
     }
-
-    log.debug("Executing user command: {}", command);
-    minecraftServer.getCommands().performPrefixedCommand(
-      minecraftServer.createCommandSourceStack(), command);
   }
 
+  @Override
+  public int run(CommandContext<CommandSourceStack> context) {
+    sendReport(context);
+    return 0;
+  }
 }

@@ -35,7 +35,8 @@
       "de.markusbordihn.adaptiveperformancetweaks.gametest.PlayerDamageGameTest",
       "de.markusbordihn.adaptiveperformancetweaks.gametest.EntityFilterGameTest",
       "de.markusbordihn.adaptiveperformancetweaks.gametest.ChunkGenThrottleGameTest",
-      "de.markusbordihn.adaptiveperformancetweaks.gametest.MonitoringGameTest"
+      "de.markusbordihn.adaptiveperformancetweaks.gametest.MonitoringGameTest",
+      "de.markusbordihn.adaptiveperformancetweaks.gametest.TrackingLeakGameTest"
     ]
   },
   "mixins": [

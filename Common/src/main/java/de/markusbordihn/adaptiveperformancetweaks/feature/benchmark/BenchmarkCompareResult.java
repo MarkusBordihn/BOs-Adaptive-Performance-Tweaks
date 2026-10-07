@@ -569,6 +569,8 @@ public record BenchmarkCompareResult(
       lines.add("* `Exploration*` means the active route never triggered movement throttle.");
     }
 
+    appendTrackingCleanupMarkdown(lines);
+
     lines.add("");
     lines.add("## Scenario Details");
     lines.add("");
@@ -582,6 +584,44 @@ public record BenchmarkCompareResult(
     }
 
     return lines;
+  }
+
+  private void appendTrackingCleanupMarkdown(List<String> lines) {
+    lines.add("");
+    lines.add("## Tracking Cleanup");
+    lines.add("");
+    lines.add(
+      "Shows the entries held by the APTweaks tracking maps before setup, at the end of the measurement and after cleanup and cleanup settle. `Retained` should stay close to 0; growing `Retained`, `Stale` or `Orphaned` values point to entities the tracking never released.");
+    lines.add("");
+    lines.add(
+      "| Scenario | Block | Before | Measure end | After cleanup | Retained | Stale | Orphaned | Orphans removed |");
+    lines.add(
+      "|----------|-------|-------:|------------:|--------------:|---------:|------:|---------:|----------------:|");
+    for (BenchmarkScenarioResult scenarioResult : scenarioResults) {
+      lines.add(markdownTrackingCleanupLine(scenarioResult.displayName(), BenchmarkBlock.BASELINE,
+        scenarioResult.baseline().trackingCleanup()));
+      lines.add(markdownTrackingCleanupLine(scenarioResult.displayName(), BenchmarkBlock.ACTIVE,
+        scenarioResult.active().trackingCleanup()));
+    }
+  }
+
+  private static String markdownTrackingCleanupLine(String scenarioName, BenchmarkBlock block,
+    BenchmarkScenarioResult.TrackingCleanup trackingCleanup) {
+    if (!trackingCleanup.isCaptured()) {
+      return String.format("| %s | %s | n/a | n/a | n/a | n/a | n/a | n/a | n/a |", scenarioName,
+        block.getDisplayName());
+    }
+
+    return String.format("| %s | %s | %,d | %,d | %,d | %+d | %d | %d | %d |",
+      scenarioName,
+      block.getDisplayName(),
+      trackingCleanup.entriesBeforeSetup(),
+      trackingCleanup.entriesAtMeasurementEnd(),
+      trackingCleanup.entriesAfterCleanup(),
+      trackingCleanup.retainedEntries(),
+      trackingCleanup.staleEntriesAfterCleanup(),
+      trackingCleanup.orphanedEntriesAfterCleanup(),
+      trackingCleanup.orphanedEntitiesRemoved());
   }
 
   private void appendScenarioDetails(List<Component> lines, BenchmarkScenarioResult result) {

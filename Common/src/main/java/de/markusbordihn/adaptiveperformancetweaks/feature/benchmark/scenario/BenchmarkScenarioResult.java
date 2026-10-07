@@ -129,8 +129,39 @@ public record BenchmarkScenarioResult(
     DistanceControlState distanceControlStart,
     DistanceControlState distanceControlEnd,
     PerformanceStats.Snapshot statsDelta,
-    ScenarioValidation validation) {
+    ScenarioValidation validation,
+    TrackingCleanup trackingCleanup) {
 
+    public PhaseResult withTrackingCleanup(TrackingCleanup trackingCleanup) {
+      return new PhaseResult(this.measurementDurationMs, this.avgTickMs, this.minTickMs,
+        this.p95TickMs, this.maxTickMs, this.loadDistribution, this.msptDistribution,
+        this.fineMsptDistribution, this.avgHeapUsedBytes, this.entityCount, this.avgCpuPercent,
+        this.maxCpuPercent, this.distanceControlStart, this.distanceControlEnd, this.statsDelta,
+        this.validation, trackingCleanup);
+    }
+  }
+
+  public record TrackingCleanup(
+    int entriesBeforeSetup,
+    int entriesAtMeasurementEnd,
+    int entriesAfterCleanup,
+    int staleEntriesAfterCleanup,
+    int orphanedEntriesAfterCleanup,
+    long orphanedEntitiesRemoved) {
+
+    private static final TrackingCleanup NONE = new TrackingCleanup(-1, -1, -1, 0, 0, 0L);
+
+    public static TrackingCleanup none() {
+      return NONE;
+    }
+
+    public boolean isCaptured() {
+      return this.entriesBeforeSetup >= 0 && this.entriesAfterCleanup >= 0;
+    }
+
+    public int retainedEntries() {
+      return this.entriesAfterCleanup - this.entriesBeforeSetup;
+    }
   }
 
   public record DistanceControlState(

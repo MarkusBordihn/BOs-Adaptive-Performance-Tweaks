@@ -6,6 +6,7 @@
   "mixins": [
     "BaseSpawnerMixin",
     "ChunkGenThrottleMixin",
+    "EntityLevelCallbackAccessorMixin",
     "ExperienceOrbAccessorMixin",
     "MobAiThrottleMixin",
     "MobMixin",

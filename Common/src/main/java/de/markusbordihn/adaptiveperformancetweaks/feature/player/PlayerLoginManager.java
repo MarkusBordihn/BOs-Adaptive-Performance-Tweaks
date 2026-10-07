@@ -43,6 +43,10 @@ public final class PlayerLoginManager {
   private PlayerLoginManager() {
   }
 
+  public static int getPlayerValidationCount() {
+    return playerValidationList.size();
+  }
+
   public static void handleServerAboutToStart() {
     playerValidationList = ConcurrentHashMap.newKeySet();
     ticker = 0;
