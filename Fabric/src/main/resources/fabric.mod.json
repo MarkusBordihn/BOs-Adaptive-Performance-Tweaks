@@ -35,7 +35,8 @@
       "de.markusbordihn.adaptiveperformancetweaks.gametest.PlayerDamageGameTest",
       "de.markusbordihn.adaptiveperformancetweaks.gametest.PlayerLoginProtectionGameTest",
       "de.markusbordihn.adaptiveperformancetweaks.gametest.SpawnPresetConfigGameTest",
-      "de.markusbordihn.adaptiveperformancetweaks.gametest.SpawnThrottleGameTest"
+      "de.markusbordihn.adaptiveperformancetweaks.gametest.SpawnThrottleGameTest",
+      "de.markusbordihn.adaptiveperformancetweaks.gametest.TrackingLeakGameTest"
     ]
   },
   "mixins": [

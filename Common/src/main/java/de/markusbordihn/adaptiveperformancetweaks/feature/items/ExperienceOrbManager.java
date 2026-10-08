@@ -21,12 +21,16 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.items;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.accessor.ExperienceOrbAccessor;
+import de.markusbordihn.adaptiveperformancetweaks.core.diagnostics.TrackedMapInspector;
+import de.markusbordihn.adaptiveperformancetweaks.core.diagnostics.TrackedMapStatistics;
+import de.markusbordihn.adaptiveperformancetweaks.core.entity.OrphanedEntityDetector;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -77,6 +81,11 @@ public final class ExperienceOrbManager {
     }
 
     return total;
+  }
+
+  public static List<TrackedMapStatistics> getMapStatistics() {
+    return List.of(TrackedMapInspector.inspectEntityCollections(
+      "experience_orbs", "experienceOrbEntityMap", experienceOrbEntityMap));
   }
 
   public static Map<String, Integer> getTrackedExperienceOrbCountsByDimension() {
@@ -203,8 +212,9 @@ public final class ExperienceOrbManager {
           removedEntries++;
           continue;
         }
-        if (removeInvalidOrb(orbEntity, entry.getKey()) || removeStaleOrb(orbEntity,
-          entry.getKey())) {
+        if (removeInvalidOrb(orbEntity, entry.getKey())
+          || removeStaleOrb(orbEntity, entry.getKey())
+          || OrphanedEntityDetector.isOrphaned(orbEntity)) {
           orbIterator.remove();
           removedEntries++;
         }
