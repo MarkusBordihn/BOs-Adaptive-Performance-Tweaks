@@ -58,19 +58,28 @@ public final class DistanceAdaptationTests {
 
   public static void testSimulationDistanceDecreasesUnderVeryHighLoad(GameTestHelper helper) {
     MinecraftServer server = helper.getLevel().getServer();
-    SimulationDistanceManager.handleServerStarting(server);
+    boolean wasEnabled = FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.isEnabled();
+    int originalDistance = server.getPlayerList().getSimulationDistance();
+    FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.setEnabled(true);
+    try {
+      server.getPlayerList().setSimulationDistance(SimulationDistanceConfig.simDistanceMax);
+      SimulationDistanceManager.handleServerStarting(server);
 
-    SimulationDistanceManager.handleServerLoadEvent(
-      new ServerLoadEvent(ServerLoadLevel.VERY_HIGH, ServerLoadLevel.NORMAL, 200.0, 50.0));
+      SimulationDistanceManager.handleServerLoadEvent(
+        new ServerLoadEvent(ServerLoadLevel.VERY_HIGH, ServerLoadLevel.NORMAL, 200.0, 50.0));
 
-    int expected = Math.max(SimulationDistanceConfig.simDistanceMin,
-      Math.min(SimulationDistanceConfig.simDistanceMax,
-        SimulationDistanceConfig.simDistanceVeryHigh));
-    GameTestHelpers.assertEquals(
-      helper,
-      "Simulation distance should be reduced under VERY_HIGH load",
-      expected,
-      server.getPlayerList().getSimulationDistance());
-    helper.succeed();
+      int expected = Math.max(SimulationDistanceConfig.simDistanceMin,
+        Math.min(SimulationDistanceConfig.simDistanceMax,
+          SimulationDistanceConfig.simDistanceVeryHigh));
+      GameTestHelpers.assertEquals(
+        helper,
+        "Simulation distance should be reduced under VERY_HIGH load",
+        expected,
+        server.getPlayerList().getSimulationDistance());
+      helper.succeed();
+    } finally {
+      FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE.setEnabled(wasEnabled);
+      server.getPlayerList().setSimulationDistance(originalDistance);
+    }
   }
 }

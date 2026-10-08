@@ -35,6 +35,13 @@ neoForge {
       programArguments.addAll '--username', 'guest_player'
     }
 
+    if (rootProject.findProperty('clientRuntimeTest')?.isAvailable()) {
+      clientTest {
+        client()
+        gameDirectory = project.file('run/clienttest')
+      }
+    }
+
     server {
       server()
       gameDirectory = project.file('run/server')
@@ -69,6 +76,9 @@ dependencies {
   }
   if (project.hasProperty('neoforge_xaeros_minimap_mod') && project.neoforge_xaeros_minimap_mod) {
     runtimeOnly "curse.maven:xaeros_minimap-263420:${project.neoforge_xaeros_minimap_mod}"
+  }
+  if (rootProject.findProperty('clientRuntimeTest')?.isClientTestRun()) {
+    runtimeOnly rootProject.clientRuntimeTest.toolkitCoordinate('neoforge')
   }
 }
 

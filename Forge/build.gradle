@@ -16,6 +16,16 @@ base {
 
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 
+// ForgeGradle 7 only inherits launch settings from the Forge metadata for runs named like one of
+// its own, so a custom client run has to repeat the ones of the "client" entry.
+def configureAsClient = { run ->
+  run.mainClass = 'net.minecraftforge.bootstrap.ForgeBootstrap'
+  run.args '--launchTarget', 'forge_userdev_client', '--version', 'MOD_DEV', '--assetIndex',
+      '{asset_index}', '--assetsDir', '{assets_root}', '--gameDir', '.'
+  run.jvmArgs '-Djava.net.preferIPv6Addresses=system'
+  run.environment(['MCP_MAPPINGS': '{mcp_mappings}'])
+}
+
 minecraft {
   mappings channel: 'official', version: "${project.minecraft_version}"
 
@@ -31,6 +41,13 @@ minecraft {
 
     client {
       workingDir = project.file('run/client')
+    }
+
+    if (rootProject.findProperty('clientRuntimeTest')?.isAvailable()) {
+      clientTest {
+        configureAsClient(it)
+        workingDir = project.file('run/clienttest')
+      }
     }
 
     server {
@@ -93,6 +110,9 @@ dependencies {
   }
   if (project.hasProperty('forge_xaeros_minimap_mod') && project.forge_xaeros_minimap_mod) {
     runtimeOnly fg.deobf("curse.maven:xaeros_minimap-263420:${project.forge_xaeros_minimap_mod}")
+  }
+  if (rootProject.findProperty('clientRuntimeTest')?.isClientTestRun()) {
+    runtimeOnly rootProject.clientRuntimeTest.toolkitCoordinate('forge')
   }
 
   implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }

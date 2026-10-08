@@ -22,6 +22,9 @@ package de.markusbordihn.adaptiveperformancetweaks.feature.benchmark;
 import com.sun.management.OperatingSystemMXBean;
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
 import de.markusbordihn.adaptiveperformancetweaks.core.compat.ModConflictDetector;
+import de.markusbordihn.adaptiveperformancetweaks.core.diagnostics.TrackedMapStatistics;
+import de.markusbordihn.adaptiveperformancetweaks.core.diagnostics.TrackingDiagnostics;
+import de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreEntityManager;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.MsptBucket;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoad;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
@@ -142,6 +145,9 @@ public final class BenchmarkManager {
   private static double lastCpuPercent = -1.0d;
   private static PerformanceStats.Snapshot currentMeasurementStartStats;
   private static BenchmarkScenarioResult.DistanceControlState currentMeasurementStartDistanceState;
+  private static int currentTrackedEntriesBeforeSetup;
+  private static long currentRemovedOrphanedEntitiesBeforeSetup;
+  private static int currentTrackedEntriesAtMeasurementEnd;
   private static BenchmarkCompareResult lastResult;
   private static Path lastResultPath;
 
@@ -485,6 +491,9 @@ public final class BenchmarkManager {
       teleportToPos(benchmarkPlayer, benchmarkOriginPos);
     }
 
+    currentTrackedEntriesBeforeSetup =
+      TrackingDiagnostics.getEntryCount(TrackingDiagnostics.collectMapStatistics());
+    currentRemovedOrphanedEntitiesBeforeSetup = CoreEntityManager.getRemovedOrphanedEntityCount();
     BenchmarkScenarioContext context = currentScenarioContext(scenario);
     facePlayerToScenarioFocus(scenario, context);
     scenario.setup(context);
@@ -604,7 +613,10 @@ public final class BenchmarkManager {
         : BenchmarkScenarioResult.DistanceControlState.none(),
       endDistanceState,
       statsDelta,
-      buildScenarioValidation(scenario, statsDelta));
+      buildScenarioValidation(scenario, statsDelta),
+      BenchmarkScenarioResult.TrackingCleanup.none());
+    currentTrackedEntriesAtMeasurementEnd =
+      TrackingDiagnostics.getEntryCount(TrackingDiagnostics.collectMapStatistics());
 
     if (currentBlock == BenchmarkBlock.BASELINE) {
       baselineScenarioResults.put(scenario.id(), phaseResult);
@@ -641,6 +653,7 @@ public final class BenchmarkManager {
   }
 
   private static void advanceScenarioOrBlock(long now) {
+    recordTrackingCleanup(currentScenario().id());
     currentScenarioIndex++;
     if (currentScenarioIndex < configuredScenarios.size()) {
       startScenarioSetup(now);
@@ -654,6 +667,26 @@ public final class BenchmarkManager {
     }
 
     finalizeBenchmark();
+  }
+
+  private static void recordTrackingCleanup(BenchmarkScenarioId scenarioId) {
+    Map<BenchmarkScenarioId, BenchmarkScenarioResult.PhaseResult> blockResults =
+      currentBlock == BenchmarkBlock.BASELINE ? baselineScenarioResults : activeScenarioResults;
+    BenchmarkScenarioResult.PhaseResult phaseResult = blockResults.get(scenarioId);
+    if (phaseResult == null) {
+      return;
+    }
+
+    List<TrackedMapStatistics> statistics = TrackingDiagnostics.collectMapStatistics();
+    blockResults.put(scenarioId, phaseResult.withTrackingCleanup(
+      new BenchmarkScenarioResult.TrackingCleanup(
+        currentTrackedEntriesBeforeSetup,
+        currentTrackedEntriesAtMeasurementEnd,
+        TrackingDiagnostics.getEntryCount(statistics),
+        TrackingDiagnostics.getStaleEntryCount(statistics),
+        TrackingDiagnostics.getOrphanedEntryCount(statistics),
+        CoreEntityManager.getRemovedOrphanedEntityCount()
+          - currentRemovedOrphanedEntitiesBeforeSetup)));
   }
 
   private static void completeBlockTransition(long now) {

@@ -147,6 +147,9 @@ public final class ModGameTests {
       SpawnThrottleTests::testStructureSpawnBonusDisabledAboveMaxLoad);
     register("natural_spawn_not_evaluated_on_finalize_spawn",
       SpawnThrottleTests::testNaturalSpawnNotEvaluatedOnFinalizeSpawn);
+
+    register("failed_spawns_do_not_stay_tracked",
+      TrackingLeakTests::testFailedSpawnsDoNotStayTracked);
   }
 
   private ModGameTests() {

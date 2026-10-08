@@ -20,7 +20,10 @@
 package de.markusbordihn.adaptiveperformancetweaks.feature.items;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
+import de.markusbordihn.adaptiveperformancetweaks.core.diagnostics.TrackedMapInspector;
+import de.markusbordihn.adaptiveperformancetweaks.core.diagnostics.TrackedMapStatistics;
 import de.markusbordihn.adaptiveperformancetweaks.core.entity.CoreItemEntityManager;
+import de.markusbordihn.adaptiveperformancetweaks.core.entity.OrphanedEntityDetector;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
@@ -28,6 +31,7 @@ import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.Performance
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -85,6 +89,13 @@ public final class ItemEntityManager {
     }
 
     return total;
+  }
+
+  public static List<TrackedMapStatistics> getMapStatistics() {
+    return List.of(
+      TrackedMapInspector.inspectEntityCollections("items", "itemTypeEntityMap", itemTypeEntityMap),
+      TrackedMapInspector.inspectEntityCollections(
+        "items", "itemWorldEntityMap", itemWorldEntityMap));
   }
 
   public static Map<String, Map<String, Integer>> getItemEntityCountsByDimension() {
@@ -389,14 +400,18 @@ public final class ItemEntityManager {
 
   private static void verifyEntities() {
     for (Map.Entry<String, Set<ItemEntity>> entry : itemTypeEntityMap.entrySet()) {
-      pruneStaleEntities(entry.getValue());
+      entry.getValue().removeIf(ItemEntityManager::isInvalidTrackedItem);
     }
 
     itemTypeEntityMap.entrySet().removeIf(entry -> entry.getValue().isEmpty());
     for (Map.Entry<String, Set<ItemEntity>> entry : itemWorldEntityMap.entrySet()) {
-      pruneStaleEntities(entry.getValue());
+      entry.getValue().removeIf(ItemEntityManager::isInvalidTrackedItem);
     }
 
     itemWorldEntityMap.entrySet().removeIf(entry -> entry.getValue().isEmpty());
+  }
+
+  private static boolean isInvalidTrackedItem(ItemEntity itemEntity) {
+    return OrphanedEntityDetector.isRemovedOrOrphaned(itemEntity) || !itemEntity.isAlive();
   }
 }
