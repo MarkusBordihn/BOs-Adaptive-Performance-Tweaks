@@ -19,6 +19,7 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.fabric.mixin;
 
+import de.markusbordihn.adaptiveperformancetweaks.entity.CommonEntityEventHandler;
 import de.markusbordihn.adaptiveperformancetweaks.entity.EntityJoinInterceptor;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -41,5 +42,8 @@ public class ServerLevelMixin {
   private void aptweaks_addFreshEntityCleanup(
     Entity entity, CallbackInfoReturnable<Boolean> cir) {
     EntityJoinInterceptor.clearPending(entity);
+    if (!cir.getReturnValueZ()) {
+      CommonEntityEventHandler.handleEntityLeaveLevel(entity, (ServerLevel) (Object) this);
+    }
   }
 }

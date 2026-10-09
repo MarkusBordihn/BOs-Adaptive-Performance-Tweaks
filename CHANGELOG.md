@@ -5,6 +5,15 @@
 This change log includes the summarized changes. For the full changelog, please go to
 the [GitHub History][history] instead.
 
+### 12.10.0
+
+- Fixed #83 by no longer tracking entities that never joined their level, e.g. duplicate UUIDs.
+- Fixed players staying invisible and invulnerable after turning off login protection at runtime.
+- Fixed the distance conflict warning blaming another mod for a singleplayer render distance change.
+- Added a warning naming the entity types removed from tracking after a failed level join.
+- Added `/aptweaks diagnostics` to show tracked entity counts and stale or orphaned entries.
+- Added a "Tracking Cleanup" table to the benchmark report.
+
 ### 12.9.0
 
 - Fixed #93 by no longer freezing the server when many items drop in the same area.

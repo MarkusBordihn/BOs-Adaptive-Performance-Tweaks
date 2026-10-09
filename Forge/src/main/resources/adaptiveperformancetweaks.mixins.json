@@ -7,11 +7,13 @@
   "mixins": [
     "BaseSpawnerMixin",
     "ChunkGenThrottleMixin",
+    "EntityLevelCallbackAccessorMixin",
     "ExperienceOrbAccessorMixin",
     "MobAiThrottleMixin",
     "MobMixin",
     "NaturalSpawnerEntityMixin",
     "NaturalSpawnerMixin",
+    "PersistentEntitySectionManagerMixin",
     "ServerPlayerTeleportMixin",
     "VillagerConvertToMixin"
   ],

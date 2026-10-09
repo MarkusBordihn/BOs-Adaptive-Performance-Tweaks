@@ -30,6 +30,7 @@ import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
 import java.lang.reflect.Field;
 import java.util.Set;
+import java.util.UUID;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.Bootstrap;
@@ -70,15 +71,16 @@ class PlayerLoginManagerTest {
   private static ServerPlayer mockPlayer(String username) {
     ServerPlayer player = minecraftMock(ServerPlayer.class);
     when(player.getName()).thenReturn(Component.literal(username));
+    when(player.getUUID()).thenReturn(UUID.randomUUID());
     when(player.position()).thenReturn(new Vec3(0.0, 0.0, 0.0));
     return player;
   }
 
-  private static MinecraftServer mockServerWith(String username, ServerPlayer player) {
+  private static MinecraftServer mockServerWith(UUID playerId, ServerPlayer player) {
     MinecraftServer server = minecraftMock(MinecraftServer.class);
     PlayerList playerList = minecraftMock(PlayerList.class);
     when(server.getPlayerList()).thenReturn(playerList);
-    when(playerList.getPlayerByName(username)).thenReturn(player);
+    when(playerList.getPlayer(playerId)).thenReturn(player);
     return server;
   }
 
@@ -201,15 +203,16 @@ class PlayerLoginManagerTest {
       PlayerLoginProtectionConfig.protectPlayerDuringLogin = true;
       PlayerLoginManager.handleServerAboutToStart();
 
-      String username = "TestTickPlayer";
+      UUID playerId = UUID.randomUUID();
       ServerPlayer player = minecraftMock(ServerPlayer.class);
-      when(player.getName()).thenReturn(Component.literal(username));
+      when(player.getName()).thenReturn(Component.literal("TestTickPlayer"));
+      when(player.getUUID()).thenReturn(playerId);
       // Initial position captured at login, then a moved position on the processing tick.
       when(player.position()).thenReturn(new Vec3(0.0, 0.0, 0.0), new Vec3(1.0, 0.0, 0.0));
       when(player.isInvisible()).thenReturn(false, true);
       when(player.isInvulnerable()).thenReturn(false, true);
-      // The tick path re-resolves the player by name via the server.
-      setMinecraftServer(mockServerWith(username, player));
+      // The tick path re-resolves the player by UUID via the server.
+      setMinecraftServer(mockServerWith(playerId, player));
 
       PlayerLoginManager.handlePlayerLoggedIn(player);
 

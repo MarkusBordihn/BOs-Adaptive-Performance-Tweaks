@@ -43,6 +43,10 @@ public final class PlayerLoginManager {
   private PlayerLoginManager() {
   }
 
+  public static int getPlayerValidationCount() {
+    return playerValidationList.size();
+  }
+
   public static void handleServerAboutToStart() {
     playerValidationList = ConcurrentHashMap.newKeySet();
     ticker = 0;
@@ -79,9 +83,17 @@ public final class PlayerLoginManager {
     playerValidationList.add(validation);
   }
 
+  public static void handleFeatureDisabled() {
+    for (PlayerValidation validation : playerValidationList) {
+      log.debug("{} {}: Feature disabled.", LOG_PREFIX, validation.getUsername());
+      restorePlayer(validation);
+    }
+    playerValidationList.clear();
+    ticker = 0;
+  }
+
   public static void handlePlayerLoggedOut(ServerPlayer player) {
-    if (!FeatureToggle.PLAYER_LOGIN_PROTECTION.isEnabled()
-      || !PlayerLoginProtectionConfig.protectPlayerDuringLogin) {
+    if (playerValidationList.isEmpty()) {
       return;
     }
 
@@ -91,7 +103,7 @@ public final class PlayerLoginManager {
     Iterator<PlayerValidation> iterator = playerValidationList.iterator();
     while (iterator.hasNext()) {
       PlayerValidation validation = iterator.next();
-      if (username.equals(validation.getUsername())) {
+      if (player.getUUID().equals(validation.getPlayerId())) {
         restorePlayer(player, validation);
         iterator.remove();
       }
@@ -141,7 +153,7 @@ public final class PlayerLoginManager {
       return;
     }
 
-    ServerPlayer player = server.getPlayerList().getPlayerByName(validation.getUsername());
+    ServerPlayer player = server.getPlayerList().getPlayer(validation.getPlayerId());
     if (player == null) {
       log.warn(
         "{} {}: Cannot restore: not found on server.", LOG_PREFIX, validation.getUsername());

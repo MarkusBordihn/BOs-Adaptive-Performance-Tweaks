@@ -41,6 +41,7 @@ public final class CommandManager {
     dispatcher.register(
       Commands.literal(Constants.MOD_COMMAND)
         .then(DebugCommand.register())
+        .then(DiagnosticsCommand.register())
         .then(EntityCommand.register())
         .then(FeatureCommand.register())
         .then(KillCommand.register())

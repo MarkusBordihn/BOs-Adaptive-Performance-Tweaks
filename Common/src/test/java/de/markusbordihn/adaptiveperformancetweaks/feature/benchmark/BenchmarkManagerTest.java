@@ -159,7 +159,8 @@ class BenchmarkManagerTest {
       distanceControlState(12, 12, 0, false, 0, 12, 12, 0, 0),
       distanceControlState(12, 12, 0, false, 0, 12, 12, 0, 0),
       snapshot,
-      BenchmarkScenarioResult.ScenarioValidation.none());
+      BenchmarkScenarioResult.ScenarioValidation.none(),
+      new BenchmarkScenarioResult.TrackingCleanup(120, 480, 121, 0, 0, 0L));
   }
 
   private static BenchmarkScenarioResult.DistanceControlState distanceControlState(
@@ -211,7 +212,8 @@ class BenchmarkManagerTest {
         movementSamples,
         maxReduction,
         movementAdjustments > 0 || movementSamples > 0 || maxReduction > 0,
-        Arrays.stream(chunkKeys).boxed().collect(Collectors.toSet())));
+        Arrays.stream(chunkKeys).boxed().collect(Collectors.toSet())),
+      BenchmarkScenarioResult.TrackingCleanup.none());
   }
 
   @Test
@@ -640,6 +642,9 @@ class BenchmarkManagerTest {
     assertTrue(lines.stream().anyMatch(line -> line.contains("Fine MSPT distribution:")));
     assertTrue(lines.stream().anyMatch(line -> line.contains("3-5ms")));
     assertTrue(lines.stream().anyMatch(line -> line.contains("Load distribution:")));
+    assertTrue(lines.contains("## Tracking Cleanup"));
+    assertTrue(lines.stream()
+      .anyMatch(line -> line.endsWith("| 120 | 480 | 121 | +1 | 0 | 0 | 0 |")));
     assertTrue(lines.stream().anyMatch(line -> line.contains("Distance control:")));
     assertTrue(lines.stream().anyMatch(line -> line.contains("view changes=0, sim changes=0")));
     assertTrue(lines.stream().anyMatch(line -> line.contains("Distance state start:")));

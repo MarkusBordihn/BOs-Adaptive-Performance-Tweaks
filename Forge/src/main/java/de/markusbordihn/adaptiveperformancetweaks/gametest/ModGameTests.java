@@ -123,6 +123,10 @@ public final class ModGameTests {
       () -> PlayerLoginProtectionTests::testProtectionSkippedWhenDisabled);
     TEST_FUNCTIONS.register("validation_detects_movement",
       () -> PlayerLoginProtectionTests::testValidationDetectsMovement);
+    TEST_FUNCTIONS.register("protection_removed_when_feature_disabled",
+      () -> PlayerLoginProtectionTests::testProtectionRemovedWhenFeatureDisabled);
+    TEST_FUNCTIONS.register("protection_removed_on_logout_after_config_disabled",
+      () -> PlayerLoginProtectionTests::testProtectionRemovedOnLogoutAfterConfigDisabled);
 
     TEST_FUNCTIONS.register("bat_presets_loaded",
       () -> SpawnPresetConfigTests::testBatPresetsLoaded);
@@ -151,6 +155,9 @@ public final class ModGameTests {
       () -> SpawnThrottleTests::testStructureSpawnBonusDisabledAboveMaxLoad);
     TEST_FUNCTIONS.register("natural_spawn_not_evaluated_on_finalize_spawn",
       () -> SpawnThrottleTests::testNaturalSpawnNotEvaluatedOnFinalizeSpawn);
+
+    TEST_FUNCTIONS.register("failed_spawns_do_not_stay_tracked",
+      () -> TrackingLeakTests::testFailedSpawnsDoNotStayTracked);
   }
 
   private ModGameTests() {

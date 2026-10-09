@@ -20,6 +20,9 @@
 package de.markusbordihn.adaptiveperformancetweaks.feature.items;
 
 import de.markusbordihn.adaptiveperformancetweaks.Constants;
+import de.markusbordihn.adaptiveperformancetweaks.core.diagnostics.TrackedMapInspector;
+import de.markusbordihn.adaptiveperformancetweaks.core.diagnostics.TrackedMapStatistics;
+import de.markusbordihn.adaptiveperformancetweaks.core.entity.OrphanedEntityDetector;
 import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadEvent;
 import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerLoadLevel;
@@ -84,6 +87,11 @@ public final class ArrowEntityManager {
       total += arrows.size();
     }
     return total;
+  }
+
+  public static List<TrackedMapStatistics> getMapStatistics() {
+    return List.of(TrackedMapInspector.inspectEntityCollections(
+      "arrows", "arrowWorldEntityMap", arrowWorldEntityMap));
   }
 
   public static Map<String, Map<String, Integer>> getArrowCountsByDimension() {
@@ -271,7 +279,8 @@ public final class ArrowEntityManager {
 
   private static void verifyEntities() {
     for (Map.Entry<String, Set<AbstractArrow>> entry : arrowWorldEntityMap.entrySet()) {
-      entry.getValue().removeIf(arrow -> arrow == null || arrow.isRemoved() || !arrow.isAlive());
+      entry.getValue().removeIf(
+        arrow -> OrphanedEntityDetector.isRemovedOrOrphaned(arrow) || !arrow.isAlive());
     }
     arrowWorldEntityMap.entrySet().removeIf(entry -> entry.getValue().isEmpty());
   }

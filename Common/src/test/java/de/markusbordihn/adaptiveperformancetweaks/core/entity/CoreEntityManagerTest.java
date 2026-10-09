@@ -26,6 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
+import de.markusbordihn.adaptiveperformancetweaks.accessor.EntityLevelCallbackAccessor;
 import de.markusbordihn.adaptiveperformancetweaks.feature.monitoring.PerformanceStats;
 import de.markusbordihn.adaptiveperformancetweaks.feature.spawn.SpawnPreset;
 import java.lang.reflect.Constructor;
@@ -54,6 +55,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.monster.skeleton.Skeleton;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.entity.EntityInLevelCallback;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,6 +67,18 @@ import org.mockito.MockMakers;
 class CoreEntityManagerTest {
 
   private static final AtomicInteger ENTITY_ID_COUNTER = new AtomicInteger(1);
+
+  private static final class OrphanedZombie extends Zombie implements EntityLevelCallbackAccessor {
+
+    private OrphanedZombie(Level level) {
+      super(EntityTypes.ZOMBIE, level);
+    }
+
+    @Override
+    public EntityInLevelCallback aptweaks$getLevelCallback() {
+      return EntityInLevelCallback.NULL;
+    }
+  }
 
   @BeforeAll
   static void bootstrapMinecraft() {
@@ -493,15 +507,15 @@ class CoreEntityManagerTest {
   }
 
   @Test
-  void verifyEntitiesRemovesEntitiesRejectedByTheLevel() throws Exception {
+  void verifyEntitiesRemovesOrphanedEntities() throws Exception {
     ServerLevel level = mockOverworldLevel();
     Entity acceptedEntity = mockEntity(EntityTypes.ZOMBIE, false, level);
-    Entity rejectedEntity = new Zombie(EntityTypes.ZOMBIE, level);
-    rejectedEntity.setId(ENTITY_ID_COUNTER.getAndIncrement());
+    Entity orphanedEntity = new OrphanedZombie(level);
+    orphanedEntity.setId(ENTITY_ID_COUNTER.getAndIncrement());
     Object entityMapKey = newEntityTrackingKey("minecraft:overworld", "minecraft:zombie");
 
     ConcurrentHashMap<Object, Set<Entity>> entityMap = new ConcurrentHashMap<>();
-    entityMap.put(entityMapKey, newEntitySet(acceptedEntity, rejectedEntity));
+    entityMap.put(entityMapKey, newEntitySet(acceptedEntity, orphanedEntity));
     writeStaticField("entityMap", entityMap);
 
     Method method = CoreEntityManager.class.getDeclaredMethod("verifyEntities");
