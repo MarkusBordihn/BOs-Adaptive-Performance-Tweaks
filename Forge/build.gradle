@@ -22,7 +22,8 @@ def configureAsClient = { run ->
   run.mainClass = 'net.minecraftforge.bootstrap.ForgeBootstrap'
   run.args '--launchTarget', 'forge_userdev_client', '--version', 'MOD_DEV', '--assetIndex',
       '{asset_index}', '--assetsDir', '{assets_root}', '--gameDir', '.'
-  run.jvmArgs '-Djava.net.preferIPv6Addresses=system'
+  run.jvmArgs '-Djava.net.preferIPv6Addresses=system', '-XX:+UseCompactObjectHeaders',
+      '-XX:StackShadowPages=32'
   run.environment(['MCP_MAPPINGS': '{mcp_mappings}'])
 }
 

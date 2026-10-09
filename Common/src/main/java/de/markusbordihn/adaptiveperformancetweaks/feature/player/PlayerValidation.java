@@ -41,7 +41,7 @@ public class PlayerValidation {
     this.initialPosition = player.position();
     this.initialYHeadRot = player.getYHeadRot();
     this.wasInvisible = player.isInvisible();
-    this.wasInvulnerable = player.isInvulnerable();
+    this.wasInvulnerable = player.isPermanentlyInvulnerable();
   }
 
   public boolean hasPlayerMoved() {

@@ -86,7 +86,7 @@ public final class MixinTests {
       level,
       level.getChunk(spawnPos),
       spawnPos,
-      (entityType, candidatePos, chunk) -> {
+      (entityType, candidateLevel, candidatePos, chunk) -> {
         candidateChecks.incrementAndGet();
         return true;
       },

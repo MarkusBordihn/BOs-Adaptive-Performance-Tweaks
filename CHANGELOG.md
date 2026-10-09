@@ -1,4 +1,4 @@
-# Changelog for Adaptive Performance Tweaks 26.2
+# Changelog for Adaptive Performance Tweaks 26.3
 
 ## Note
 

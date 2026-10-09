@@ -19,6 +19,7 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.core.commands;
 
+import com.mojang.blaze3d.Blaze3D;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -36,7 +37,6 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.Permissions;
-import net.minecraft.util.Util;
 
 public class BenchmarkCommand extends CustomCommand {
 
@@ -152,7 +152,8 @@ public class BenchmarkCommand extends CustomCommand {
       return 0;
     }
 
-    Util.getPlatform().openFile(resultPath.toFile());
+    // Blaze3D is client-only; the dedicated server check above keeps it from loading there.
+    Blaze3D.openPath(resultPath);
 
     return 0;
   }

@@ -48,12 +48,12 @@ public final class PlayerLoginProtectionTests {
     GameTestHelpers.assertTrue(
       helper,
       "Player should not be invulnerable before login protection",
-      !player.isInvulnerable());
+      !player.isPermanentlyInvulnerable());
 
     PlayerLoginManager.handlePlayerLoggedIn(player);
 
     GameTestHelpers.assertTrue(
-      helper, "Player should be invulnerable after login", player.isInvulnerable());
+      helper, "Player should be invulnerable after login", player.isPermanentlyInvulnerable());
     GameTestHelpers.assertTrue(
       helper, "Player should be invisible after login", player.isInvisible());
 
@@ -72,14 +72,14 @@ public final class PlayerLoginProtectionTests {
         new GameProfile(UUID.randomUUID(), "TestLoginPlayer2"),
         ClientInformation.createDefault());
 
-    boolean invulnerableBefore = player.isInvulnerable();
+    boolean invulnerableBefore = player.isPermanentlyInvulnerable();
     PlayerLoginManager.handlePlayerLoggedIn(player);
 
     GameTestHelpers.assertEquals(
       helper,
       "Invulnerability should not change when login protection is disabled",
       invulnerableBefore,
-      player.isInvulnerable());
+      player.isPermanentlyInvulnerable());
 
     PlayerLoginProtectionConfig.protectPlayerDuringLogin = true;
     PlayerLoginManager.handleServerAboutToStart();
@@ -118,7 +118,7 @@ public final class PlayerLoginProtectionTests {
     ServerPlayer player = helper.makeMockServerPlayerInLevel();
     PlayerLoginManager.handleServerAboutToStart();
     player.setInvisible(false);
-    player.setInvulnerable(false);
+    player.setPermanentlyInvulnerable(false);
     PlayerLoginManager.handlePlayerLoggedIn(player);
 
     FeatureToggle.PLAYER_LOGIN_PROTECTION.setEnabled(false);
@@ -130,7 +130,7 @@ public final class PlayerLoginProtectionTests {
     GameTestHelpers.assertTrue(
       helper,
       "Player should be vulnerable after login protection was disabled",
-      !player.isInvulnerable());
+      !player.isPermanentlyInvulnerable());
     GameTestHelpers.assertEquals(
       helper,
       "No player should stay in login validation after the feature was disabled",
@@ -163,7 +163,7 @@ public final class PlayerLoginProtectionTests {
     GameTestHelpers.assertTrue(
       helper,
       "Player should be vulnerable after logging out during login protection",
-      !player.isInvulnerable());
+      !player.isPermanentlyInvulnerable());
 
     PlayerLoginProtectionConfig.protectPlayerDuringLogin = true;
     PlayerLoginManager.handleServerAboutToStart();

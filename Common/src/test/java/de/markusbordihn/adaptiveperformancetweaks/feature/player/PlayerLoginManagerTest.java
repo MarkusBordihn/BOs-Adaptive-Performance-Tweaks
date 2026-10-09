@@ -115,7 +115,7 @@ class PlayerLoginManagerTest {
       ServerPlayer player = mockPlayer("TestLogoutPlayer");
       // Not protected at login time, then the mod-applied flags are observed on logout.
       when(player.isInvisible()).thenReturn(false, true);
-      when(player.isInvulnerable()).thenReturn(false, true);
+      when(player.isPermanentlyInvulnerable()).thenReturn(false, true);
 
       PlayerLoginManager.handlePlayerLoggedIn(player);
       assertEquals(1, readPlayerValidationList().size());
@@ -123,7 +123,7 @@ class PlayerLoginManagerTest {
       PlayerLoginManager.handlePlayerLoggedOut(player);
 
       verify(player).setInvisible(false);
-      verify(player).setInvulnerable(false);
+      verify(player).setPermanentlyInvulnerable(false);
       assertEquals(0, readPlayerValidationList().size());
     } finally {
       PlayerLoginProtectionConfig.protectPlayerDuringLogin = previousProtection;
@@ -144,13 +144,13 @@ class PlayerLoginManagerTest {
       ServerPlayer player = mockPlayer("TestPreProtectedPlayer");
       // Player was already invisible/invulnerable before login (e.g. game mode or another mod).
       when(player.isInvisible()).thenReturn(true);
-      when(player.isInvulnerable()).thenReturn(true);
+      when(player.isPermanentlyInvulnerable()).thenReturn(true);
 
       PlayerLoginManager.handlePlayerLoggedIn(player);
       PlayerLoginManager.handlePlayerLoggedOut(player);
 
       verify(player, never()).setInvisible(false);
-      verify(player, never()).setInvulnerable(false);
+      verify(player, never()).setPermanentlyInvulnerable(false);
       assertEquals(0, readPlayerValidationList().size());
     } finally {
       PlayerLoginProtectionConfig.protectPlayerDuringLogin = previousProtection;
@@ -170,11 +170,11 @@ class PlayerLoginManagerTest {
 
       ServerPlayer disconnecting = mockPlayer("DisconnectingPlayer");
       when(disconnecting.isInvisible()).thenReturn(false, true);
-      when(disconnecting.isInvulnerable()).thenReturn(false, true);
+      when(disconnecting.isPermanentlyInvulnerable()).thenReturn(false, true);
 
       ServerPlayer staying = mockPlayer("StayingPlayer");
       when(staying.isInvisible()).thenReturn(false);
-      when(staying.isInvulnerable()).thenReturn(false);
+      when(staying.isPermanentlyInvulnerable()).thenReturn(false);
 
       PlayerLoginManager.handlePlayerLoggedIn(disconnecting);
       PlayerLoginManager.handlePlayerLoggedIn(staying);
@@ -183,9 +183,9 @@ class PlayerLoginManagerTest {
       PlayerLoginManager.handlePlayerLoggedOut(disconnecting);
 
       verify(disconnecting).setInvisible(false);
-      verify(disconnecting).setInvulnerable(false);
+      verify(disconnecting).setPermanentlyInvulnerable(false);
       verify(staying, never()).setInvisible(false);
-      verify(staying, never()).setInvulnerable(false);
+      verify(staying, never()).setPermanentlyInvulnerable(false);
       assertEquals(1, readPlayerValidationList().size());
     } finally {
       PlayerLoginProtectionConfig.protectPlayerDuringLogin = previousProtection;
@@ -210,7 +210,7 @@ class PlayerLoginManagerTest {
       // Initial position captured at login, then a moved position on the processing tick.
       when(player.position()).thenReturn(new Vec3(0.0, 0.0, 0.0), new Vec3(1.0, 0.0, 0.0));
       when(player.isInvisible()).thenReturn(false, true);
-      when(player.isInvulnerable()).thenReturn(false, true);
+      when(player.isPermanentlyInvulnerable()).thenReturn(false, true);
       // The tick path re-resolves the player by UUID via the server.
       setMinecraftServer(mockServerWith(playerId, player));
 
@@ -222,7 +222,7 @@ class PlayerLoginManagerTest {
       }
 
       verify(player).setInvisible(false);
-      verify(player).setInvulnerable(false);
+      verify(player).setPermanentlyInvulnerable(false);
       assertEquals(0, readPlayerValidationList().size());
     } finally {
       setMinecraftServer(null);

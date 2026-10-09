@@ -77,7 +77,7 @@ public final class PlayerLoginManager {
 
     PlayerValidation validation = new PlayerValidation(player);
     player.setInvisible(true);
-    player.setInvulnerable(true);
+    player.setPermanentlyInvulnerable(true);
     player.heal(1);
 
     playerValidationList.add(validation);
@@ -169,9 +169,9 @@ public final class PlayerLoginManager {
       log.debug("{} {}: Remove invisibility", LOG_PREFIX, username);
       player.setInvisible(false);
     }
-    if (player.isInvulnerable() && !validation.wasInvulnerable()) {
+    if (player.isPermanentlyInvulnerable() && !validation.wasInvulnerable()) {
       log.debug("{} {}: Remove invulnerability", LOG_PREFIX, username);
-      player.setInvulnerable(false);
+      player.setPermanentlyInvulnerable(false);
     }
   }
 }

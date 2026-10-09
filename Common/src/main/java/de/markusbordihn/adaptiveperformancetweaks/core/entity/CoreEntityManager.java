@@ -773,7 +773,7 @@ public final class CoreEntityManager {
     return !entity.isRemoved()
       && !entity.isSpectator()
       && !entity.isInvisible()
-      && !entity.isInvulnerable()
+      && !entity.isPermanentlyInvulnerable()
       && !entity.isVehicle()
       && !entity.isPassenger()
       && !(entity instanceof Player)
