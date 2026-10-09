@@ -579,7 +579,7 @@ public record BenchmarkCompareResult(
     lines.add("## Tracking Cleanup");
     lines.add("");
     lines.add(
-      "Shows the entries held by the APTweaks tracking maps before setup, at the end of the measurement and after cleanup and cleanup settle. `Retained` should stay close to 0; growing `Retained`, `Stale` or `Orphaned` values point to entities the tracking never released.");
+      "Shows the entries held by the APTweaks tracking maps before setup, at the end of the measurement and after cleanup and cleanup settle. `Retained` compares after cleanup with before and also grows with entities still loaded in the world, such as mobs spawned during the block. Only `Stale` or `Orphaned` values above 0 point to entries the tracking never released.");
     lines.add("");
     lines.add(
       "| Scenario | Block | Before | Measure end | After cleanup | Retained | Stale | Orphaned | Orphans removed |");

@@ -20,6 +20,7 @@
 package de.markusbordihn.adaptiveperformancetweaks.gametest;
 
 import com.mojang.authlib.GameProfile;
+import de.markusbordihn.adaptiveperformancetweaks.core.feature.FeatureToggle;
 import de.markusbordihn.adaptiveperformancetweaks.feature.player.PlayerLoginManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.player.PlayerLoginProtectionConfig;
 import de.markusbordihn.adaptiveperformancetweaks.feature.player.PlayerValidation;
@@ -106,6 +107,66 @@ public final class PlayerLoginProtectionTests {
       "Player should be detected as moved after position change",
       validation.hasPlayerMoved());
 
+    helper.succeed();
+  }
+
+  public static void testProtectionRemovedWhenFeatureDisabled(GameTestHelper helper) {
+    boolean featureEnabled = FeatureToggle.PLAYER_LOGIN_PROTECTION.isEnabled();
+    FeatureToggle.PLAYER_LOGIN_PROTECTION.setEnabled(true);
+    PlayerLoginProtectionConfig.protectPlayerDuringLogin = true;
+
+    ServerPlayer player = helper.makeMockServerPlayerInLevel();
+    PlayerLoginManager.handleServerAboutToStart();
+    player.setInvisible(false);
+    player.setInvulnerable(false);
+    PlayerLoginManager.handlePlayerLoggedIn(player);
+
+    FeatureToggle.PLAYER_LOGIN_PROTECTION.setEnabled(false);
+
+    GameTestHelpers.assertTrue(
+      helper,
+      "Player should be visible after login protection was disabled",
+      !player.isInvisible());
+    GameTestHelpers.assertTrue(
+      helper,
+      "Player should be vulnerable after login protection was disabled",
+      !player.isInvulnerable());
+    GameTestHelpers.assertEquals(
+      helper,
+      "No player should stay in login validation after the feature was disabled",
+      0,
+      PlayerLoginManager.getPlayerValidationCount());
+
+    FeatureToggle.PLAYER_LOGIN_PROTECTION.setEnabled(featureEnabled);
+    helper.succeed();
+  }
+
+  public static void testProtectionRemovedOnLogoutAfterConfigDisabled(GameTestHelper helper) {
+    PlayerLoginManager.handleServerAboutToStart();
+    PlayerLoginProtectionConfig.protectPlayerDuringLogin = true;
+
+    ServerPlayer player =
+      new ServerPlayer(
+        helper.getLevel().getServer(),
+        helper.getLevel(),
+        new GameProfile(UUID.randomUUID(), "TestLogoutPlayer"),
+        ClientInformation.createDefault());
+
+    PlayerLoginManager.handlePlayerLoggedIn(player);
+    PlayerLoginProtectionConfig.protectPlayerDuringLogin = false;
+    PlayerLoginManager.handlePlayerLoggedOut(player);
+
+    GameTestHelpers.assertTrue(
+      helper,
+      "Player should be visible after logging out during login protection",
+      !player.isInvisible());
+    GameTestHelpers.assertTrue(
+      helper,
+      "Player should be vulnerable after logging out during login protection",
+      !player.isInvulnerable());
+
+    PlayerLoginProtectionConfig.protectPlayerDuringLogin = true;
+    PlayerLoginManager.handleServerAboutToStart();
     helper.succeed();
   }
 }

@@ -62,6 +62,8 @@ class BenchmarkClientTest {
       Pattern.compile("\\[Diagnostics] (\\S+): keys=\\d+ entries=\\d+ stale=\\d+ orphaned=(\\d+)");
   private static final String MOD_STACK_FRAME_MARKER =
       "at de.markusbordihn.adaptiveperformancetweaks.";
+  private static final String EXTERNAL_SETTING_CHANGE_MARKER =
+      "Another mod or plugin changes the same setting";
   private static final Duration WORLD_TIMEOUT = Duration.ofMinutes(3);
   private static final Duration BENCHMARK_TIMEOUT = Duration.ofMinutes(30);
   private static final Duration DIAGNOSTICS_TIMEOUT = Duration.ofSeconds(30);
@@ -147,5 +149,6 @@ class BenchmarkClientTest {
     List<String> modStackFrames =
         readLatestLog().stream().filter(line -> line.contains(MOD_STACK_FRAME_MARKER)).toList();
     assertEquals(List.of(), modStackFrames);
+    assertEquals(Optional.empty(), findLastLogLine(EXTERNAL_SETTING_CHANGE_MARKER));
   }
 }

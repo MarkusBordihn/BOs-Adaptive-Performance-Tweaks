@@ -41,4 +41,14 @@ public class PlayerLoginProtectionGameTest {
   public void testValidationDetectsMovement(GameTestHelper helper) {
     PlayerLoginProtectionTests.testValidationDetectsMovement(helper);
   }
+
+  @GameTest(structure = STRUCTURE)
+  public void testProtectionRemovedWhenFeatureDisabled(GameTestHelper helper) {
+    PlayerLoginProtectionTests.testProtectionRemovedWhenFeatureDisabled(helper);
+  }
+
+  @GameTest(structure = STRUCTURE)
+  public void testProtectionRemovedOnLogoutAfterConfigDisabled(GameTestHelper helper) {
+    PlayerLoginProtectionTests.testProtectionRemovedOnLogoutAfterConfigDisabled(helper);
+  }
 }

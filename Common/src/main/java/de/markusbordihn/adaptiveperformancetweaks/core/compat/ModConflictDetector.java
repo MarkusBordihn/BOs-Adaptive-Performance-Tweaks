@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -92,8 +93,12 @@ public final class ModConflictDetector {
     return new FeatureDecision(true, FeatureActivation.AUTO_ENABLED, warningMod);
   }
 
-  public static void warnExternalFeatureChange(
-    FeatureToggle toggle, String settingName, Object expectedValue, Object externalValue) {
+  public static void warnExternalFeatureChange(MinecraftServer server, FeatureToggle toggle,
+    String settingName, Object expectedValue, Object externalValue) {
+    if (!server.isDedicatedServer()) {
+      return;
+    }
+
     warnOnce(toggle.getId() + ":external-change:" + settingName,
       "Feature '{}' expected {} to be {} but found {}. Another mod or plugin changes the same"
         + " setting and both will fight over it. Consider setting 'feature.{}=false' to let the"

@@ -122,6 +122,10 @@ public final class ModGameTests {
       PlayerLoginProtectionTests::testProtectionSkippedWhenDisabled);
     register("validation_detects_movement",
       PlayerLoginProtectionTests::testValidationDetectsMovement);
+    register("protection_removed_when_feature_disabled",
+      PlayerLoginProtectionTests::testProtectionRemovedWhenFeatureDisabled);
+    register("protection_removed_on_logout_after_config_disabled",
+      PlayerLoginProtectionTests::testProtectionRemovedOnLogoutAfterConfigDisabled);
 
     register("bat_presets_loaded", SpawnPresetConfigTests::testBatPresetsLoaded);
     register("zombie_presets_loaded", SpawnPresetConfigTests::testZombiePresetsLoaded);

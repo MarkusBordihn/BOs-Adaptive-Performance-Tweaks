@@ -58,7 +58,7 @@ minecraft {
     gameTestServer {
       workingDir = project.file('run/gametest')
       systemProperty 'forge.enableGameTest', 'true'
-      systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+      args '--tests', "${project.mod_id}:*"
     }
 
     data {

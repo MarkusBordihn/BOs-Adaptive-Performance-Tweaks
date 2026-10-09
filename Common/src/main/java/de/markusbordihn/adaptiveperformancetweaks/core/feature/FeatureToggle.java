@@ -24,6 +24,7 @@ import de.markusbordihn.adaptiveperformancetweaks.core.server.ServerManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.distance.SimulationDistanceManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.distance.ViewDistanceManager;
 import de.markusbordihn.adaptiveperformancetweaks.feature.gamerules.GameRuleManager;
+import de.markusbordihn.adaptiveperformancetweaks.feature.player.PlayerLoginManager;
 import java.util.List;
 import java.util.Locale;
 import net.minecraft.server.MinecraftServer;
@@ -175,6 +176,7 @@ public enum FeatureToggle {
       case GAMERULES -> GameRuleManager.handleFeatureDisabled();
       case ADAPTIVE_VIEW_DISTANCE -> ViewDistanceManager.handleFeatureDisabled();
       case ADAPTIVE_SIMULATION_DISTANCE -> SimulationDistanceManager.handleFeatureDisabled();
+      case PLAYER_LOGIN_PROTECTION -> PlayerLoginManager.handleFeatureDisabled();
       default -> {
       }
     }

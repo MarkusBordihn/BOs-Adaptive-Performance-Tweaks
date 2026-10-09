@@ -19,12 +19,14 @@
 
 package de.markusbordihn.adaptiveperformancetweaks.feature.player;
 
+import java.util.UUID;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 
 public class PlayerValidation {
 
   private final ServerPlayer player;
+  private final UUID playerId;
   private final String username;
   private final Vec3 initialPosition;
   private final double initialYHeadRot;
@@ -34,6 +36,7 @@ public class PlayerValidation {
 
   public PlayerValidation(ServerPlayer player) {
     this.player = player;
+    this.playerId = player.getUUID();
     this.username = player.getName().getString();
     this.initialPosition = player.position();
     this.initialYHeadRot = player.getYHeadRot();
@@ -44,6 +47,10 @@ public class PlayerValidation {
   public boolean hasPlayerMoved() {
     return !this.initialPosition.equals(this.player.position())
       || this.initialYHeadRot != this.player.getYHeadRot();
+  }
+
+  public UUID getPlayerId() {
+    return this.playerId;
   }
 
   public String getUsername() {

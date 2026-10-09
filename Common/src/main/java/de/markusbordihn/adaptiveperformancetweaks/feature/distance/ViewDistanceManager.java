@@ -349,7 +349,7 @@ public final class ViewDistanceManager {
       return;
     }
 
-    ModConflictDetector.warnExternalFeatureChange(FeatureToggle.ADAPTIVE_VIEW_DISTANCE,
+    ModConflictDetector.warnExternalFeatureChange(server, FeatureToggle.ADAPTIVE_VIEW_DISTANCE,
       "view distance", expectedDistance, advertisedDistance);
     configuredDistanceMax = advertisedDistance;
   }

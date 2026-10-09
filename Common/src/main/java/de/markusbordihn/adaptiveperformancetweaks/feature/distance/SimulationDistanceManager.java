@@ -344,8 +344,9 @@ public final class SimulationDistanceManager {
       return;
     }
 
-    ModConflictDetector.warnExternalFeatureChange(FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE,
-      "simulation distance", expectedDistance, advertisedDistance);
+    ModConflictDetector.warnExternalFeatureChange(server,
+      FeatureToggle.ADAPTIVE_SIMULATION_DISTANCE, "simulation distance", expectedDistance,
+      advertisedDistance);
     configuredDistanceMax = advertisedDistance;
   }
 
